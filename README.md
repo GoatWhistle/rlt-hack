@@ -194,7 +194,7 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONPATH=src \
 
 ```bash
 cd /root/rlt/work/ml
-for variant in A B C D; do
+for variant in A D; do
   length=256
   [ "$variant" = D ] && length=512
   HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONPATH=src \
@@ -209,5 +209,6 @@ for variant in A B C D; do
 done
 PYTHONPATH=src /root/rlt/.venv/bin/python -m rlt_ml.compare_cards \
   --predictions-dir /root/rlt/runs/card-retrieval \
+  --variants AD \
   --out /root/rlt/runs/card-retrieval/paired-comparison.json
 ```

@@ -94,10 +94,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--predictions-dir", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--variants", default="ABCD",
+                        help="Имена вариантов из A, B, C, D, например AD")
     parser.add_argument("--replicates", type=int, default=2000)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
-    paths = {name: args.predictions_dir / name / "predictions.jsonl" for name in "ABCD"}
+    variants = list(dict.fromkeys(args.variants.upper()))
+    if not variants or any(name not in "ABCD" for name in variants):
+        parser.error("variants должны содержать буквы из A, B, C, D")
+    paths = {name: args.predictions_dir / name / "predictions.jsonl" for name in variants}
     report = compare(paths, replicates=args.replicates, seed=args.seed)
     write_json(args.out, report)
     print(json.dumps(report, ensure_ascii=False, indent=2))
