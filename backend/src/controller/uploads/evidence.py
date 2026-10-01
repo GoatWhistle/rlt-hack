@@ -31,9 +31,9 @@ def explanation(candidate: SupplierCandidate) -> str:
     products = list(
         dict.fromkeys(name for item in candidate.purchases for name in item.product_names)
     )
-    facts = f"Опыт в категории {candidate.category}: {candidate.category_lots} закупок"
+    facts = f"Закупок в категории {candidate.category} — {candidate.category_lots}"
     if candidate.category_wins:
-        facts += f", побед — {candidate.category_wins}"
+        facts += f", подтверждённых побед — {candidate.category_wins}"
     facts += "."
     if products:
         facts += " В истории: " + "; ".join(products[:3])[:350] + "."

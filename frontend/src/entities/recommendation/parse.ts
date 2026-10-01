@@ -20,6 +20,7 @@ import {
   type ProductMatch,
   PURCHASE_OUTCOMES,
   type Purchase,
+  RANKING_REASONS,
   type Recommendation,
   SOURCE_KINDS,
   type Source,
@@ -132,6 +133,12 @@ function company(value: unknown, path: string): Company {
       clarify: list(fields, "clarify", path, plainText),
     },
     {
+      rankingReasons:
+        fields.rankingReasons === undefined
+          ? undefined
+          : list(fields, "rankingReasons", path, (value, itemPath) =>
+              oneOf(RANKING_REASONS, { value }, "value", itemPath),
+            ),
       history: history(fields.history, `${path}.history`),
       catalog:
         fields.catalog === undefined ? undefined : list(fields, "catalog", path, catalogOffer),

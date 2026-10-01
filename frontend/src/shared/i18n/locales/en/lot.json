@@ -177,6 +177,20 @@
     "customer": "Customer · INN {{inn}}",
     "openSource": "Open archive record ↗",
     "scope": "Source: procurement archive. A win confirms the procedure outcome; stock and terms for a new delivery are agreed separately.",
-    "cardFacts": "{{count}} purchases · {{wins}} wins"
+    "purchases_one": "{{count}} purchase",
+    "winsCount_one": "{{count}} win",
+    "purchases_few": "{{count}} purchases",
+    "winsCount_few": "{{count}} wins",
+    "purchases_many": "{{count}} purchases",
+    "winsCount_many": "{{count}} wins",
+    "purchases_other": "{{count}} purchases",
+    "winsCount_other": "{{count}} wins"
+  },
+  "ranking": {
+    "title": "What raised this supplier in the ranking",
+    "relevance": "Match with the request description",
+    "experience": "Procurement participation history",
+    "category": "Experience in the relevant category",
+    "recency": "More recent procurement history"
   }
 }

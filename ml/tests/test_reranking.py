@@ -4,9 +4,15 @@ from datetime import date
 from pathlib import Path
 
 import numpy as np
+import pyarrow as pa
 import pyarrow.parquet as pq
+import pytest
+from catboost import CatBoostRanker, Pool
 
+from rlt_ml.common import sha256
 from rlt_ml.reranking.candidates import build
+from rlt_ml.reranking.evaluate import evaluate
+from rlt_ml.reranking.export import export
 from rlt_ml.reranking.features import FEATURES, feature_row
 from rlt_ml.reranking.train import metrics, train
 
@@ -90,3 +96,87 @@ def test_runtime_features_match_training():
             3,
         )
         np.testing.assert_allclose(runtime.feature_row(*args), feature_row(*args), equal_nan=True)
+
+
+def test_fixed_model_evaluation_and_export(tmp_path):
+    models, candidates, vectors, data = [
+        tmp_path / name for name in ("models", "candidates", "vectors", "data")
+    ]
+    for folder in (models, candidates, vectors, data / "validation"):
+        folder.mkdir(parents=True)
+    values = np.zeros((4, len(FEATURES)))
+    values[:, 0] = [1, 0, 1, 0]
+    model = CatBoostRanker(
+        iterations=10,
+        depth=2,
+        loss_function="QuerySoftMax",
+        verbose=False,
+        thread_count=1,
+        allow_writing_files=False,
+    )
+    model.fit(
+        Pool(values, [1, 0, 1, 0], group_id=["x", "x", "y", "y"], feature_names=list(FEATURES))
+    )
+    model.save_model(str(models / "ranker.cbm"))
+    (models / "manifest.json").write_text(
+        json.dumps(
+            {
+                "model_sha256": sha256(models / "ranker.cbm"),
+                "selected": "synthetic",
+                "features": list(FEATURES),
+            }
+        )
+    )
+    rows = []
+    for i, (lot, inn) in enumerate([("x", "a"), ("x", "b"), ("y", "a"), ("y", "b")]):
+        rows.append(
+            {
+                "lot_id": lot,
+                "supplier_inn": inn,
+                "rank": 2 - i % 2,
+                **dict(zip(FEATURES, values[i], strict=True)),
+            }
+        )
+    pq.write_table(pa.Table.from_pylist(rows), candidates / "features.parquet")
+    (candidates / "metadata.json").write_text(json.dumps({"split": "test"}))
+    (candidates / "predictions.jsonl").write_text(
+        "\n".join(
+            json.dumps(
+                {
+                    "lot_id": lot,
+                    "candidate_inns": ["b", "a"],
+                    "participants": ["a"],
+                    "winner_inn": "a",
+                    "procedure_id": lot,
+                }
+            )
+            for lot in ("x", "y")
+        )
+    )
+    evaluate(models, candidates, models / "test-report.json")
+    result = json.loads((models / "test-report.json").read_text())
+    assert result["accepted"] and result["winner_mrr_delta"] == 0.5
+    assert result["winner_mrr_delta_cluster_ci95"] == [0.5, 0.5]
+    for name in ("cards.parquet", "supplier_stats.parquet", "category_stats.parquet"):
+        pq.write_table(
+            pa.Table.from_pylist([{"supplier_inn": "a", "category": "paper"}]),
+            (vectors if name == "cards.parquet" else data / "validation") / name,
+        )
+    np.save(vectors / "card_vectors.npy", np.ones((1, 2560), dtype="float32"))
+    (vectors / "vectors.json").write_text(
+        json.dumps(
+            {
+                "model": "Qwen/Qwen3-Embedding-4B",
+                "split": "validation",
+                "revision": "synthetic",
+                "cards": 1,
+                "instruction": "synthetic",
+            }
+        )
+    )
+    export(models, vectors, data, tmp_path / "runtime")
+    assert (tmp_path / "runtime/ranker/runtime.json").exists()
+    result["accepted"] = False
+    (models / "test-report.json").write_text(json.dumps(result))
+    with pytest.raises(ValueError, match="held-out"):
+        export(models, vectors, data, tmp_path / "rejected")

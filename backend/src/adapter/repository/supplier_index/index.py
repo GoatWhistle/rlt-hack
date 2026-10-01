@@ -8,6 +8,8 @@ import numpy as np
 import pyarrow.parquet as parquet
 from sklearn.feature_extraction.text import CountVectorizer
 
+from src.adapter.repository.reference.loader import read_json
+from src.adapter.repository.reference.okpd2 import FileOkpd2Reference
 from src.adapter.repository.supplier_index.protocols import CandidateRanking
 from src.models.supplier_search import SupplierCandidate
 
@@ -20,6 +22,8 @@ class FileSupplierIndex:
         self.ranker: CandidateRanking | None = None
 
     async def initialize(self) -> None:
+        document = await read_json(Path(__file__).resolve().parents[4] / "reference" / "okpd2.json")
+        self.categories = FileOkpd2Reference.of(document, str.casefold)
         await asyncio.to_thread(self._load)
 
     def _load(self) -> None:
@@ -75,6 +79,7 @@ class FileSupplierIndex:
         date = card.get("profile_last_date")
         return replace(
             candidate,
+            category_name=self.categories.name_of(candidate.category),
             history_examples=[
                 line.strip() for line in card["profile_text"].splitlines() if line.strip()
             ],
@@ -110,8 +115,9 @@ class FileSupplierIndex:
                 scores[inn] = scores.get(inn, 0) + 1 / (60 + rank)
                 positions.setdefault(inn, position)
         selected = sorted(scores, key=lambda inn: (-scores[inn], inn))[:limit]
+        reasons: dict[str, list[str]] = {}
         if self.ranker is not None:
-            selected, positions, scores = self.ranker.rank(
+            selected, positions, scores, reasons = self.ranker.rank(
                 text, self.cards, dense, lexical, scores, dense_order, lexical_order
             )
             selected = selected[:limit]
@@ -123,6 +129,7 @@ class FileSupplierIndex:
                     profile=self.cards[positions[inn]]["profile_text"],
                     score=scores[inn],
                     similarity=float(dense[positions[inn]]),
+                    ranking_reasons=reasons.get(inn, []),
                 )
             )
             for inn in selected

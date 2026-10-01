@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pyarrow.parquet as pq
-from catboost import CatBoostRanker
+from catboost import CatBoostRanker, Pool
 
 from src.adapter.repository.ranker.features import FEATURES, feature_row
 
@@ -89,4 +89,26 @@ class CandidateRanker:
         if not np.isfinite(predicted).all():
             raise ValueError("Invalid ranker scores")
         model_scores = dict(zip(selected, predicted.tolist(), strict=True))
-        return sorted(selected, key=lambda inn: (-model_scores[inn], inn)), positions, model_scores
+        ordered = sorted(selected, key=lambda inn: (-model_scores[inn], inn))
+        top = ordered[:100]
+        lookup = {inn: row for inn, row in zip(selected, rows, strict=True)}
+        shap = self.model.get_feature_importance(
+            Pool([lookup[inn] for inn in top], feature_names=list(FEATURES)),
+            type="ShapValues",
+            thread_count=2,
+        )
+        reasons = {}
+        for inn, contributions in zip(top, shap, strict=True):
+            values = lookup[inn]
+            groups = {
+                "relevance": float(sum(contributions[:7])),
+                "experience": float(sum(contributions[7:10])) if values[7] > 0 else 0,
+                "category": float(sum(contributions[10:13])) if values[10] > 0 else 0,
+                "recency": float(contributions[17])
+                if cards[positions[inn]].get("profile_last_date")
+                else 0,
+            }
+            reasons[inn] = [
+                key for key in sorted(groups, key=groups.get, reverse=True) if groups[key] > 1e-6
+            ][:3]
+        return ordered, positions, model_scores, reasons

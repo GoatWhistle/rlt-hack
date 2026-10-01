@@ -33,49 +33,64 @@ def file_hash(path: Path) -> str:
 
 
 def prepare(database: Path, cards: Path, output: Path, before: date) -> str:
-    with database.open("rb") as stream:
-        checksum = hashlib.file_digest(stream, "sha256").hexdigest()
-    with duckdb.connect(str(database), read_only=True) as connection:
-        connection.execute("SET memory_limit='512MB'")
-        connection.execute("SET threads=2")
-        connection.execute("SET temp_directory=?", [str(output.parent / "spill")])
-        connection.execute(
-            "CREATE TEMP TABLE selected_cards AS SELECT DISTINCT supplier_inn, category "
-            "FROM read_parquet(?)",
-            [str(cards)],
-        )
-        connection.execute(
-            """
-            CREATE TEMP TABLE evidence AS
-            WITH items AS (
-                SELECT p.lot_id, p.category,
-                       list_slice(list(DISTINCT p.product_name ORDER BY p.product_name), 1, 10)
-                           product_names
-                FROM products p GROUP BY p.lot_id, p.category
-            ), history AS (
-                SELECT p.supplier_inn, c.category, l.lot_id,
-                       coalesce(nullif(l.procedure_name, ''), l.query_text) title,
-                       l.publish_date, coalesce(l.customer_inn, '') customer_inn,
-                       l.source_system, coalesce(i.product_names, []) product_names,
-                       (p.is_winner AND NOT p.label_conflict AND l.winner_count = 1)
-                           ::INTEGER is_winner
-                FROM participations p JOIN lot_info l USING (lot_id)
-                JOIN lot_categories c USING (lot_id)
-                JOIN selected_cards s ON s.supplier_inn=p.supplier_inn AND s.category=c.category
-                LEFT JOIN items i ON i.lot_id=l.lot_id AND i.category=c.category
-                WHERE l.publish_date < ? AND NOT l.notice_conflict
+    checksum = file_hash(database)
+    writer = None
+    try:
+        with duckdb.connect(str(database), read_only=True) as connection:
+            connection.execute("SET memory_limit='512MB'")
+            connection.execute("SET threads=1")
+            connection.execute("SET preserve_insertion_order=false")
+            connection.execute("SET temp_directory=?", [str(output.parent / "spill")])
+            connection.execute(
+                "CREATE TEMP TABLE selected_cards AS SELECT DISTINCT supplier_inn, category "
+                "FROM read_parquet(?)",
+                [str(cards)],
             )
-            SELECT *, count(*) OVER w category_lots, (sum(is_winner) OVER w)::BIGINT category_wins
-            FROM history
-            WINDOW w AS (PARTITION BY supplier_inn, category)
-            QUALIFY row_number() OVER (
-                PARTITION BY supplier_inn, category
-                ORDER BY is_winner DESC, publish_date DESC, lot_id
-            ) <= 5
-        """,
-            [before],
-        )
-        connection.execute("COPY evidence TO ? (FORMAT PARQUET)", [str(output)])
+            for partition in range(32):
+                connection.execute("DROP TABLE IF EXISTS chunk_picks")
+                connection.execute(
+                    """
+                    CREATE TEMP TABLE chunk_picks AS
+                    WITH history AS (
+                        SELECT p.supplier_inn, c.category, l.lot_id, l.publish_date,
+                               (p.is_winner AND NOT p.label_conflict AND l.winner_count=1)
+                                   ::INTEGER is_winner
+                        FROM participations p JOIN lot_info l USING (lot_id)
+                        JOIN lot_categories c USING (lot_id)
+                        JOIN selected_cards s
+                          ON s.supplier_inn=p.supplier_inn AND s.category=c.category
+                        WHERE l.publish_date < ? AND NOT l.notice_conflict
+                          AND hash(s.supplier_inn) % 32 = ?
+                    )
+                    SELECT *, count(*) OVER w category_lots,
+                           (sum(is_winner) OVER w)::BIGINT category_wins
+                    FROM history WINDOW w AS (PARTITION BY supplier_inn, category)
+                    QUALIFY row_number() OVER (
+                        PARTITION BY supplier_inn, category
+                        ORDER BY is_winner DESC, publish_date DESC, lot_id
+                    ) <= 5
+                """,
+                    [before, partition],
+                )
+                table = connection.execute("""
+                    SELECT e.supplier_inn, e.category, e.lot_id,
+                           coalesce(nullif(l.procedure_name, ''), l.query_text) title,
+                           e.publish_date, coalesce(l.customer_inn, '') customer_inn,
+                           l.source_system,
+                           coalesce(list_slice(list(DISTINCT p.product_name
+                               ORDER BY p.product_name) FILTER (WHERE p.product_name IS NOT NULL),
+                               1, 10), []) product_names,
+                           e.is_winner, e.category_lots, e.category_wins
+                    FROM chunk_picks e JOIN lot_info l USING (lot_id)
+                    LEFT JOIN products p ON p.lot_id=e.lot_id AND p.category=e.category
+                    GROUP BY ALL
+                """).to_arrow_table()
+                if writer is None:
+                    writer = parquet.ParquetWriter(output, table.schema, compression="zstd")
+                writer.write_table(table)
+    finally:
+        if writer is not None:
+            writer.close()
     return checksum
 
 

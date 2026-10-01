@@ -66,6 +66,7 @@ describe("grounded procurement recommendations", () => {
     const grounded: Company = {
       ...company,
       status: "recommended",
+      rankingReasons: ["relevance", "category"],
       similarPurchases: 12,
       wins: 4,
       purchases: [
@@ -88,6 +89,10 @@ describe("grounded procurement recommendations", () => {
     expect(
       within(panel).getByRole("heading", { name: "Grounds for this recommendation" }),
     ).toBeInTheDocument()
+    expect(
+      within(panel).getByRole("region", { name: "What raised this supplier in the ranking" }),
+    ).toBeInTheDocument()
+    expect(within(panel).getByText("Match with the request description")).toBeInTheDocument()
     expect(within(panel).getByText("12")).toBeInTheDocument()
     expect(within(panel).getByText("Paper A4")).toBeInTheDocument()
     expect(within(panel).getByText("2024-11-01")).toBeInTheDocument()

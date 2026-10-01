@@ -43,10 +43,9 @@ function CompanyFacts({
     <>
       {company.similarPurchases !== null && company.history ? (
         <span>
-          {t("grounds.cardFacts", {
-            count: company.similarPurchases,
-            wins: company.wins ?? 0,
-          })}
+          {t("grounds.purchases", { count: company.similarPurchases })}
+          {" · "}
+          {t("grounds.winsCount", { count: company.wins ?? 0 })}
         </span>
       ) : company.history ? (
         <span>{t("history.examples", { count: company.history.examples.length })}</span>

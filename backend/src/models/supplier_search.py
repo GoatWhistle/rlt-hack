@@ -37,3 +37,5 @@ class SupplierCandidate:
     purchases: list[SupplierPurchase] = field(default_factory=list)
     category_lots: int | None = None
     category_wins: int | None = None
+    category_name: str = ""
+    ranking_reasons: list[str] = field(default_factory=list)

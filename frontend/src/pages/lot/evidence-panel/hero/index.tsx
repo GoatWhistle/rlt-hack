@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { Icon } from "@/shared/ui/icon"
 import { SegmentMeter } from "../../segment-meter"
+import { RankingReasons } from "../ranking-reasons"
 import styles from "./styles.module.css"
 
 export type HeroProps = {
@@ -38,6 +39,7 @@ export function Hero({ company, products }: HeroProps) {
         ) : null}
       </div>
       <p className={styles.summary}>{company.summary}</p>
+      <RankingReasons company={company} />
       <SegmentMeter company={company} products={products} size="lg" />
       {main && company.status !== "historical" && !company.history ? (
         <p className={styles.callout}>

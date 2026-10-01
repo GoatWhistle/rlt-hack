@@ -61,7 +61,7 @@ async def main():
         ]
         ranker = CandidateRanker(root)
         await ranker.initialize(cards, "cards")
-        selected, positions, scores = await asyncio.to_thread(
+        selected, positions, scores, reasons = await asyncio.to_thread(
             ranker.rank,
             "paper",
             cards,
@@ -73,6 +73,11 @@ async def main():
         )
         assert set(selected) == {"a", "b"} and positions == {"a": 0, "b": 1}
         assert all(np.isfinite(list(scores.values())))
+        assert set(reasons) == {"a", "b"}
+        assert all(
+            set(value) <= {"relevance", "experience", "category", "recency"}
+            for value in reasons.values()
+        )
         try:
             await ranker.initialize(cards, "other-cards")
             raise AssertionError("Mismatched index accepted")

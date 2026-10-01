@@ -59,7 +59,7 @@ def result(upload: Upload, lot: LotRecommendation) -> dict:
                     "id": candidate.inn,
                     "name": candidate.name or f"Поставщик ИНН {candidate.inn}",
                     "inn": candidate.inn,
-                    "role": f"Исторический профиль: {candidate.category}",
+                    "role": candidate.category_name or f"ОКПД2 {candidate.category}",
                     "status": "recommended" if candidate.purchases else "historical",
                     "summary": explanation(candidate)
                     or profile_summary(
@@ -87,6 +87,7 @@ def result(upload: Upload, lot: LotRecommendation) -> dict:
                         if safe_url(item.url)
                     ],
                     "identitySource": safe_url(candidate.identity_url),
+                    "rankingReasons": candidate.ranking_reasons,
                     "matches": [],
                     "similarPurchases": candidate.category_lots,
                     "wins": candidate.category_wins,

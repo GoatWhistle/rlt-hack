@@ -186,6 +186,20 @@
     "customer": "Заказчик · ИНН {{inn}}",
     "openSource": "Открыть архивную запись ↗",
     "scope": "Источник — архив закупок. Победа подтверждает результат процедуры; наличие товара и условия новой поставки согласуются отдельно.",
-    "cardFacts": "{{count}} закупок · {{wins}} побед"
+    "purchases_one": "{{count}} закупка",
+    "winsCount_one": "{{count}} победа",
+    "purchases_few": "{{count}} закупки",
+    "winsCount_few": "{{count}} победы",
+    "purchases_many": "{{count}} закупок",
+    "winsCount_many": "{{count}} побед",
+    "purchases_other": "{{count}} закупки",
+    "winsCount_other": "{{count}} победы"
+  },
+  "ranking": {
+    "title": "Что повысило позицию в подборке",
+    "relevance": "Соответствие описанию закупки",
+    "experience": "История участия в закупках",
+    "category": "Опыт в нужной категории",
+    "recency": "Более свежая история закупок"
   }
 }
