@@ -28,6 +28,33 @@
 
 Находок: **P0 — 0, P1 — 3, P2 — 17**.
 
+## Статус исправлений
+
+Исправления — отдельная задача после аудита. Проверено: `ruff check`, `ruff format --check`, `mypy` (strict), `pytest` на Windows и в Linux-контейнере с chDB и `REQUIRE_CHDB=1` (покрытие 97,95 %), смоуки chDB, `npm run verify` и `npm run e2e`.
+
+| № | Приоритет | Статус | Что сделано |
+| --- | --- | --- | --- |
+| 1 | P1 | закрыта | `OfferEvidence.backs_supplier`; `stock` и `catalog` только у подтверждённого продавца без конфликта; роль и её основание — `models/company_role.assess_role` по таким предложениям; `noCurrentOffer` проверяет предложения, на которых держатся совпадения. Сценарий и свойственный тест — `tests/service/supplier_search/test_seller_confirmation.py` |
+| 2 | P1 | закрыта | `InvalidInputError` для ошибок ввода, на 422 отображаются только они; прочие `DomainError` — 500 `internal_error` со стеком. Декодеры архива и загрузок проверяют `payload_version` и поднимают `CorruptRecordError`; эталон `fixtures/search_payload_v1.json` |
+| 3 | P1 | закрыта | `SearchPipeline.run → MatchReport` общий для поиска и загрузки; `LotResult` хранит `pipeline` (payload v2, v1 читается); `warnings` и `pipeline` в рекомендации закупки, контракт и фронтенд (необязательное поле, `WarningNote` у закупки); отказ канала или обогащения переводит закупку в `needsCheck` |
+| 4 | P2 | закрыта | `MatchOutcome`/`MatchReport` и роль компании в `models`; профиль не зависит от поиска; правило `service-context` по всему `src`, явное исключение — `classifier → normalizer.text` |
+| 5 | P2 | закрыта | адаптер отдаёт `matched_content_hash`, правило — `OfferEvidence.catalog_confirmed` |
+| 6 | P2 | открыта | «похожая закупка» по-прежнему в SQL адаптеров; нужна общая выборка текста лота и параметры в `SearchSettings` — отдельная задача вместе с аудитом производительности |
+| 7 | P2 | закрыта | `models/inn.py` с контрольной суммой и отсевом заполнителей, адаптеры и `Supplier.has_valid_inn` используют его; фейки на корректных ИНН; `hypothesis`-тесты |
+| 8 | P2 | частично | `contacts`, `attributes` — `MappingProxyType`, модели хешируются; объект-значение `Contacts` не вводился |
+| 9 | P2 | открыта | разбиение `models/` на подпакеты и отдельная модель чтения предложения — крупный перенос, отложен |
+| 10 | P2 | частично | глоссарий в `backend/README.md`; переименования отложены до следующей несовместимой версии контракта |
+| 11 | P2 | закрыта | `LotQueue` и `PendingLots` вместо конкретного раннера и широкого хранилища; `BackgroundTask` и `ServiceProvider.background()`, lifespan запускает все фоновые задачи |
+| 12 | P2 | открыта | объединение контейнеров и `DeferredGateway` пересекается с пулами из аудита 1 и производительностью (аудит 2), отложено до его отчёта |
+| 13 | P2 | закрыта | CLI джоб типизирует зависимости протоколами из `controller/job/protocols.py` |
+| 14 | P2 | открыта | стратегии `SnapshotSync`/`StreamingSync` — код сбора из `main`, отдельная задача |
+| 15 | P2 | частично | сняты исключения mypy для джобы, контейнера и репозиториев ClickHouse (`_batches`, `__exit__`, LSP `is_measure` через `MeasuredUnit`); остаются `adapter/supplier/*`, `service/supplier/*`, `clickhouse/offer.py` |
+| 16 | P2 | частично | правила `protocols-location`, `errors-location`, `service-context` по всему `src`, `no-any` для чистого кода; базовая линия docstring и комментариев кода из `main` не заводилась |
+| 17 | P2 | частично | общий `ranking_problem` для `SearchResult` и `LotResult` с проверкой единственности поставщика; статус закупки по-прежнему хранится колонкой (новые правила применяются к новым результатам) |
+| 18 | P2 | закрыта | `RetrievalChannel`, `EnrichmentSource` в `models/enums.py`, контрактный тест |
+| 19 | P2 | открыта | два стеммера — без изменений |
+| 20 | P2 | открыта | семантический поиск ClickHouse как канал — отдельная задача ML |
+
 ## Находки
 
 ### P1 — исправить до фронтенд-аудитов

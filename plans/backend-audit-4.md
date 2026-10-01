@@ -45,6 +45,30 @@
 
 Находок: **P0 — 0, P1 — 7, P2 — 10**.
 
+## Статус исправлений
+
+Проверено: `ruff check`, `ruff format --check`, `mypy`, `pytest` на Windows и в Linux-контейнере с chDB и `REQUIRE_CHDB=1` (покрытие 97,95 % при пороге 90), смоуки chDB, `shellcheck deploy/smoke.sh`, засев и сценарий смоука на chDB, `npm run verify`, `npm run e2e`, `docker compose config` для обычного и продакшн-набора. Сам `deploy/smoke.sh` с образами не запускался.
+
+| № | Приоритет | Статус | Что сделано |
+| --- | --- | --- | --- |
+| 1 | P1 | закрыта | на 422 только `InvalidInputError`; нарушения инвариантов — 500 `internal_error`, ERROR со стеком; `test_server_side_invariant_violation_is_internal` |
+| 2 | P1 | закрыта | `RequestContextMiddleware` — самый внешний слой приложения: ловит исключение, отдаёт 500 с `X-Request-Id` и `Server-Timing`, пишет одну запись `request completed`; uvicorn запускается с `--log-config src/controller/api/logging.json` (Compose и `Dockerfile`) |
+| 3 | P1 | закрыта | `contextvars` + `RequestIdFilter`; `X-Request-Id` в ML-сервис, `log_comment` в ClickHouse; канал, источник и `search_id` полями |
+| 4 | P1 | закрыта | событие `search completed`; `/api/metrics` (Prometheus, закрыт в nginx): HTTP по маршрутам, кандидаты по статусам, пустые поиски, предупреждения |
+| 5 | P1 | закрыта | слабый `ETag` по прогрессу и 304 без чтения закупок; `GET /api/uploads/{id}/summary`; фронтенд опрашивает сводку раз в секунду, деталь — раз в 5 с и после окончания. Постраничная выдача закупок не делалась: фильтр и поиск по закупкам выполняются на клиенте |
+| 6 | P1 | закрыта | смоук: `ready`, засев компании и предложения, поиск → 201, переход по `Location`, профиль, загрузка CSV до `processed == total` без `failed`, в проверке частоты нужен 201 и нет 5xx; healthcheck API — `/api/health/ready` |
+| 7 | P1 | закрыта | CI: проверка импорта chDB, `REQUIRE_CHDB=1` (пропуск chDB-теста валит прогон), `--cov=src` с порогом 90, смоуки нормализатора, классификатора, пересчёта и идентичности в pytest, `normalization_smoke` и `pulscen_smoke` в CI |
+| 8 | P2 | закрыта | тело `multipart/form-data` у загрузки, статусы на маршрут со схемой `ApiErrorDto` и `Retry-After`, `Location` у 201, `date-time`, `uuid`, короткие имена схем и `operationId`; `tests/controller/test_openapi.py`. Примеры из `contracts/` в схему не встраивались |
+| 9 | P2 | закрыта | `GET /api/searches/{id}` — `ETag` и `private, no-cache` с 304; списки — `no-store` |
+| 10 | P2 | закрыта | `contracts/README.md`; фронтенд пропускает незнакомые коды в `warnings`, `highlights`, `checkReasons`; декодеры проверяют `payload_version`, эталон v1 |
+| 11 | P2 | закрыта | `contracts/error-codes.json` сверяется с backend и словарями фронтенда (ru/en), добавлены `storage_unavailable`, `upload_queue_full`, `rate_limited`, `not_found`, `method_not_allowed`, `internal_error`; фильтр `itemType` без `unknown` |
+| 12 | P2 | открыта | два представления кандидата, `startPrice` числом и пустые `originNote`/`year`/`source` — несовместимая правка контракта, отложена до следующей версии |
+| 13 | P2 | открыта | курсоры списков не делались |
+| 14 | P2 | частично | `Retry-After` у 503/504, `HEAD /api/health/live`, при `archiveFailed` ответ 200 без `Location`; `invalid_limit` для `?limit=` и `missing` в ответе `results` не делались |
+| 15 | P2 | закрыта | повторяющийся сбой готовности и дообработки — стек один раз, затем `error_type`/`repeated`; `urllib3` и `clickhouse_connect` на уровне ERROR; поля вместо `%s` |
+| 16 | P2 | закрыта | тесты на 7 выживших мутантов (вес `catalog`, формула истории, вес истории, ничья по ИНН, `rank`, `wins`, смешанные позиции); `mutmut` в CI не добавлялся |
+| 17 | P2 | частично | `hypothesis`: `SearchText`, `RuleQueryInterpreter`, `Score.clamp`, `Accept-Language`, `CsvNoticeReader`, `rfc3339`, ИНН, свойство подтверждённого продавца; свойство кодека архива не делалось |
+
 ## Находки
 
 ### P1 — исправить до фронтенд-аудитов
