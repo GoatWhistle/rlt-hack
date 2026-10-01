@@ -4,6 +4,8 @@ services:
     build: !reset null
     ports: !override
       - "127.0.0.1:${API_PORT:-18082}:8000"
+    mem_limit: ${API_MEMORY_LIMIT:-768m}
+    pids_limit: 256
   frontend:
     image: rlt/frontend:${RLT_IMAGE_TAG:?Set the release revision}
     ports:
