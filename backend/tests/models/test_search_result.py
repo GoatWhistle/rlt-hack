@@ -3,9 +3,17 @@ from dataclasses import replace
 import pytest
 
 from src.models.enums import CheckReason, ComponentState, Locale
-from src.models.errors import InvalidSearchResultError
+from src.models.errors import InvalidLotResultError, InvalidSearchResultError
 from src.models.health import ComponentHealth, Readiness
-from tests.fakes.domain import make_candidate, make_item, make_query, make_result, make_supplier
+from src.models.lot_result import LotResult
+from tests.fakes.domain import (
+    MOMENT,
+    make_candidate,
+    make_item,
+    make_query,
+    make_result,
+    make_supplier,
+)
 
 
 def test_result_summarises_itself() -> None:
@@ -33,6 +41,14 @@ def test_result_respects_the_limit() -> None:
 def test_result_matches_point_to_known_items() -> None:
     with pytest.raises(InvalidSearchResultError):
         make_result(make_candidate(item_id="i9"), items=(make_item("i1"),))
+
+
+def test_a_supplier_is_ranked_once_in_searches_and_lots() -> None:
+    twice = (make_candidate(rank=1), make_candidate(rank=2))
+    with pytest.raises(InvalidSearchResultError, match="twice"):
+        make_result(*twice)
+    with pytest.raises(InvalidLotResultError, match="twice"):
+        LotResult("L-1", MOMENT, items=(make_item(),), candidates=twice)
 
 
 def test_readiness_needs_every_component_up() -> None:

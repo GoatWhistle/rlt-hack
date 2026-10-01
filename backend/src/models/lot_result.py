@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Self
 
-from src.models.candidate import SupplierCandidate
+from src.models.candidate import SupplierCandidate, ranking_problem
 from src.models.enums import CandidateStatus, ItemOrigin, LotStatus, WarningCode
 from src.models.errors import InvalidLotResultError
 from src.models.query_item import QueryItem
@@ -28,12 +28,9 @@ class LotResult:
             raise InvalidLotResultError("processed_at must carry a timezone")
         if self.failed and (self.items or self.candidates):
             raise InvalidLotResultError("a failed lot has no items or candidates")
-        ranks = [candidate.rank for candidate in self.candidates]
-        if ranks != list(range(1, len(ranks) + 1)):
-            raise InvalidLotResultError("candidate ranks must run 1..n in order")
-        known = {item.item_id for item in self.items}
-        if any(not candidate.matched_item_ids <= known for candidate in self.candidates):
-            raise InvalidLotResultError("a match points to an unknown item")
+        problem = ranking_problem(self.candidates, self.items)
+        if problem is not None:
+            raise InvalidLotResultError(problem)
 
     @classmethod
     def failure(cls, lot_id: str, processed_at: datetime) -> Self:

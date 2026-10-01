@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from src.models.candidate import SupplierCandidate
+from src.models.candidate import SupplierCandidate, ranking_problem
 from src.models.enums import CandidateStatus, Locale, WarningCode
 from src.models.errors import InvalidSearchResultError
 from src.models.query_item import QueryItem
@@ -33,15 +33,11 @@ class SearchResult:
     warnings: tuple[SearchWarning, ...] = ()
 
     def __post_init__(self) -> None:
-        ranks = [candidate.rank for candidate in self.candidates]
-        if ranks != list(range(1, len(ranks) + 1)):
-            raise InvalidSearchResultError("candidate ranks must run 1..n in order")
+        problem = ranking_problem(self.candidates, self.items)
+        if problem is not None:
+            raise InvalidSearchResultError(problem)
         if len(self.candidates) > self.query.limit.value:
             raise InvalidSearchResultError("more candidates than the limit")
-        known = {item.item_id for item in self.items}
-        for candidate in self.candidates:
-            if not candidate.matched_item_ids <= known:
-                raise InvalidSearchResultError("a match points to an unknown item")
 
     @property
     def recommended(self) -> int:

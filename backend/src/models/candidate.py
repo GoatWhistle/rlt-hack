@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID
@@ -7,6 +7,7 @@ from src.models.enums import CandidateStatus, CheckReason, CompanyRole, Highligh
 from src.models.errors import InvalidCandidateError, InvalidMatchError
 from src.models.evidence import Evidence
 from src.models.purchase import PurchaseSummary
+from src.models.query_item import QueryItem
 from src.models.scoring import ScoreBreakdown
 from src.models.supplier import Supplier
 
@@ -68,3 +69,18 @@ class SupplierCandidate:
     @property
     def matched_item_ids(self) -> frozenset[str]:
         return frozenset(match.item_id for match in self.matches)
+
+
+def ranking_problem(
+    candidates: Sequence[SupplierCandidate], items: Sequence[QueryItem]
+) -> str | None:
+    ranks = [candidate.rank for candidate in candidates]
+    if ranks != list(range(1, len(ranks) + 1)):
+        return "candidate ranks must run 1..n in order"
+    suppliers = {candidate.supplier_id for candidate in candidates}
+    if len(suppliers) != len(candidates):
+        return "a supplier is ranked twice"
+    known = {item.item_id for item in items}
+    if any(not candidate.matched_item_ids <= known for candidate in candidates):
+        return "a match points to an unknown item"
+    return None
