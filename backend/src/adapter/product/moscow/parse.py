@@ -67,7 +67,9 @@ def parse_product(
     ):
         if isinstance(value, str) and value.strip():
             classifier_codes[code_name] = value.strip()
-    image_urls = _image_urls(payload.get("images"), payload.get("skuImageIds"))
+    image_urls = _image_urls(
+        payload.get("images"), payload.get("skuImageIds"), payload.get("skuImageId")
+    )
     category_name = _string(directory.get("name")) or _string(
         payload.get("productionDirectoryName")
     )
@@ -156,15 +158,19 @@ def _attributes(value: object) -> dict[str, str]:
     return result
 
 
-def _image_urls(value: object, fallback: object) -> tuple[str, ...]:
-    ids = []
+def _image_urls(value: object, fallback: object, primary: object) -> tuple[str, ...]:
+    ids: list[int] = []
     if isinstance(value, list):
         for image in value:
             identifier = _mapping(image).get("fileStorageId")
             if isinstance(identifier, int) and identifier > 0:
                 ids.append(identifier)
-    elif isinstance(fallback, list):
+    if isinstance(fallback, list):
         ids.extend(
             identifier for identifier in fallback if isinstance(identifier, int) and identifier > 0
         )
-    return tuple(f"https://zakupki.mos.ru/newapi/api/FileStorage/Download?id={i}" for i in ids)
+    if isinstance(primary, int) and primary > 0:
+        ids.append(primary)
+    return tuple(
+        f"https://zakupki.mos.ru/newapi/api/FileStorage/Download?id={i}" for i in dict.fromkeys(ids)
+    )

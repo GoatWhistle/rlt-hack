@@ -150,6 +150,7 @@ async def main() -> None:
                             "productionDirectoryPath": ".2.9.",
                             "productionCode": "02.01",
                             "skuImageIds": [11],
+                            "skuImageId": 11,
                         }
                     ],
                 },
@@ -164,6 +165,7 @@ async def main() -> None:
     assert restricted.name == "Старая СТЕ" and restricted.item_type == "work"
     assert restricted.classifier_codes == {"production": "02.01"}
     assert restricted.image_urls[0].endswith("id=11")
+    assert len(restricted.image_urls) == 1
 
     for responses, error_type in (
         ([{"count": 1, "items": [{"id": 1}]}], MoscowProductFormatError),
