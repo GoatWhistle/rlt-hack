@@ -1,5 +1,6 @@
 """Постраничное чтение публичного индекса СТЕ."""
 
+import asyncio
 import json
 from collections.abc import AsyncIterator, Mapping
 from dataclasses import dataclass
@@ -46,9 +47,8 @@ class MoscowProductProvider:
             "withCount": True,
             "order": [{"field": "id", "desc": False}],
         }
-        response = await client.get(
-            INDEX_URL,
-            params={"queryFilter": json.dumps(query, separators=(",", ":"))},
+        response = await self._request(
+            client, {"queryFilter": json.dumps(query, separators=(",", ":"))}
         )
         response.raise_for_status()
         try:
@@ -68,6 +68,19 @@ class MoscowProductProvider:
         if any(not isinstance(item, Mapping) for item in raw_items):
             raise MoscowProductFormatError("элемент СТЕ не объект")
         return ProductPage(total, tuple(parse_product(self.source_id, item) for item in raw_items))
+
+    async def _request(self, client: httpx.AsyncClient, params: dict[str, str]) -> httpx.Response:
+        for attempt in range(4):
+            try:
+                response = await client.get(INDEX_URL, params=params)
+                if response.status_code not in (429, 500, 502, 503, 504):
+                    return response
+                response.raise_for_status()
+            except (httpx.TransportError, httpx.HTTPStatusError):
+                if attempt == 3:
+                    raise
+            await asyncio.sleep(min(2**attempt, 8))
+        raise AssertionError("недостижимая ветка повторов")
 
     async def pages(self) -> AsyncIterator[ProductPage]:
         if self._client is None:

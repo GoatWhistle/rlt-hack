@@ -51,6 +51,17 @@ async def main() -> None:
         {"skip": 0, "take": 2, "withCount": True, "order": [{"field": "id", "desc": False}]}
     ]
 
+    attempts = 0
+
+    def transient(request: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        attempts += 1
+        return httpx.Response(503 if attempts == 1 else 200, json={"count": 0, "items": []})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(transient)) as client:
+        await _consume(MoscowProductProvider(uuid4(), client=client))
+    assert attempts == 2
+
     for responses, error_type in (
         ([{"count": 1, "items": [{"id": 1}]}], MoscowProductFormatError),
         (
