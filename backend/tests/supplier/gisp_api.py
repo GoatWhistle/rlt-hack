@@ -80,6 +80,37 @@ async def checks() -> None:
     assert first.offers[0].supplier_role == SupplierRole.MANUFACTURER
     assert first.offers[-1].supplier_role == SupplierRole.UNKNOWN
     assert first.offers[0].price is None
+    versions = [
+        PRODUCTS[0] | {"_res_scan_url": "https://gisp.gov.ru/document/1"},
+        PRODUCTS[0] | {"_res_scan_url": "https://gisp.gov.ru/document/2"},
+    ]
+
+    def version_response(request: httpx.Request) -> httpx.Response:
+        option = json.loads(request.content)["opt"]
+        rows = ORGANIZATIONS if "/org/" in request.url.path else versions
+        data = {"ok": True, "items": rows[option["skip"] : option["skip"] + option["take"]]}
+        if option["requireTotalCount"]:
+            data["total_count"] = len(rows)
+        return httpx.Response(200, json=data)
+
+    version_package = await GispRegistryProvider(
+        SOURCE, "", transport=httpx.MockTransport(version_response)
+    ).fetch()
+    assert len(version_package.offers) == 2
+    assert version_package.offers[0].offer_id != version_package.offers[1].offer_id
+    versions = [
+        PRODUCTS[0]
+        | {
+            "_res_scan_url": "https://gisp.gov.ru/document/1",
+            "_product_writeout_url": f"https://gisp.gov.ru/app/{index}/writeout",
+        }
+        for index in (1, 2)
+    ]
+    writeout_package = await GispRegistryProvider(
+        SOURCE, "", transport=httpx.MockTransport(version_response)
+    ).fetch()
+    assert len(writeout_package.offers) == 2
+    assert writeout_package.offers[0].offer_id != writeout_package.offers[1].offer_id
     try:
         await provider(fail_last=True).fetch()
     except ContentFormatError:

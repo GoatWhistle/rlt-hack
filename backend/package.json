@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "scripts": {
+    "gisp:export": "node src/adapter/supplier/gisp_registry/browser_export.cjs"
+  },
+  "dependencies": {
+    "playwright": "^1.55.0"
+  }
+}
