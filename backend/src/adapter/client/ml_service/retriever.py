@@ -23,6 +23,8 @@ logger = logging.getLogger(__name__)
 CHANNEL = "semantic"
 RECOMMENDATIONS_PATH = "/v1/recommendations"
 ATTEMPTS = 2
+MAX_RESPONSE_BYTES = 1024 * 1024
+CANDIDATE_OVERSAMPLING = 4
 
 
 def utc_now() -> datetime:
@@ -75,6 +77,8 @@ class MlServiceRetriever:
                 continue
             if response.is_error:
                 raise MlServiceError(response.status_code)
+            if len(response.content) > MAX_RESPONSE_BYTES:
+                raise MlProtocolError("response is too large")
             return _parse(response.content, wire.request_id)
         raise MlServiceUnavailableError(reason)
 
@@ -82,6 +86,7 @@ class MlServiceRetriever:
         self, candidates: Sequence[CandidateDto], request: SearchRequest, limit: int
     ) -> RetrievalHits:
         ordered = sorted(candidates, key=lambda candidate: candidate.rank)
+        ordered = ordered[: limit * CANDIDATE_OVERSAMPLING]
         identities = await self._identity.ids_by_inn([item.supplier_inn for item in ordered])
         known_items = set(request.item_ids)
         hits: list[ChannelHit] = []

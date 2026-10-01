@@ -163,7 +163,9 @@ class ApiContainer:
     def _semantic(self, gateway: SqlGateway) -> MlServiceRetriever:
         ml = self._config.ml_service
         if self._ml_client is None:
-            self._ml_client = httpx.AsyncClient(base_url=ml.base_url, timeout=ml.timeout_seconds)
+            self._ml_client = httpx.AsyncClient(
+                base_url=ml.base_url, timeout=ml.timeout_seconds, trust_env=False
+            )
         return MlServiceRetriever(
             self._ml_client,
             ClickHouseSupplierIdentity(gateway, self.database),
