@@ -76,6 +76,7 @@ describe("the search contract", () => {
     ["an unknown status", ["candidates", 0, "status"], "great"],
     ["an unknown item origin", ["items", 0, "origin"], "dream"],
     ["an unknown locale", ["query", "locale"], "de"],
+    ["a filter by an unknown item type", ["query", "filters", "itemType"], "unknown"],
     ["a score above one", ["candidates", 0, "score", "total"], 1.5],
     ["a score that is not a number", ["candidates", 0, "score", "fusion"], "high"],
     ["a fractional count", ["candidates", 0, "history", "wins"], 1.5],

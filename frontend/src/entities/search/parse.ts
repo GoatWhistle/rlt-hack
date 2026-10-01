@@ -24,6 +24,7 @@ import {
   type Candidate,
   type CandidateMatch,
   COMPANY_ROLES,
+  FILTER_ITEM_TYPES,
   ITEM_ORIGINS,
   ITEM_TYPES,
   MATCH_BASES,
@@ -60,7 +61,7 @@ function filters(value: unknown, path: string): SearchFilters {
         fields.regions === undefined || fields.regions === null
           ? undefined
           : list(fields, "regions", path, plainText),
-      itemType: optionalOneOf(ITEM_TYPES, fields, "itemType", path),
+      itemType: optionalOneOf(FILTER_ITEM_TYPES, fields, "itemType", path),
     },
   )
 }

@@ -42,9 +42,12 @@ export type ItemOrigin = (typeof ITEM_ORIGINS)[number]
 export const ITEM_TYPES = ["unknown", "goods", "work", "service"] as const
 export type ItemType = (typeof ITEM_TYPES)[number]
 
+export const FILTER_ITEM_TYPES = ["goods", "work", "service"] as const
+export type FilterItemType = (typeof FILTER_ITEM_TYPES)[number]
+
 export type SearchFilters = {
   readonly regions?: readonly string[]
-  readonly itemType?: ItemType
+  readonly itemType?: FilterItemType
 }
 
 export type SearchRequest = {
