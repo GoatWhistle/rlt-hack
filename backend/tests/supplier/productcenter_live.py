@@ -40,7 +40,9 @@ async def run() -> None:
     parser.add_argument(
         "--out", type=Path, default=Path(tempfile.gettempdir()) / "productcenter-report.json"
     )
-    parser.add_argument("--parallel", type=int, default=4)
+    parser.add_argument("--parallel", type=int, default=1)
+    parser.add_argument("--request-interval", type=float, default=1.0)
+    parser.add_argument("--connection-retries", type=int, default=180)
     parser.add_argument("--timeout", type=float, default=45)
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -57,6 +59,8 @@ async def run() -> None:
         source,
         max_concurrent=args.parallel,
         http_timeout=args.timeout,
+        request_interval=args.request_interval,
+        connection_retries=args.connection_retries,
         cache_dir=args.cache_dir,
     )
     started = time.monotonic()
@@ -64,6 +68,8 @@ async def run() -> None:
     report = {
         "started_at": datetime.now(UTC).isoformat(),
         "parallel": args.parallel,
+        "request_interval": args.request_interval,
+        "connection_retries": args.connection_retries,
         "revision": revision,
         "dirty_worktree": dirty,
     }

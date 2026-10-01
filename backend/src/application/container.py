@@ -193,9 +193,11 @@ class Container:
                         source_type=SourceType.DIRECTORY,
                         provider_name=PRODUCTCENTER,
                     ),
-                    max_concurrent=config.parallel_requests,
+                    max_concurrent=config.productcenter_parallel_requests,
                     http_timeout=config.request_timeout,
                     max_cards=config.productcenter_max_cards or None,
+                    connection_retries=config.productcenter_connection_retries,
+                    request_interval=config.productcenter_request_interval,
                     cache_dir=config.productcenter_cache_dir,
                 )
             )

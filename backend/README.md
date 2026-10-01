@@ -125,12 +125,20 @@ uv run --python 3.13 python main.py runs --source <UUID>
 `SUPPLIER_FEED_URLS`, `SUPPLIER_SITE_URLS`, флаги адаптеров из таблицы выше,
 `SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`,
 `SYNC_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `LOG_LEVEL`,
-`PRODUCTCENTER_WEB_PROVIDER`, `PRODUCTCENTER_MAX_CARDS`, `PRODUCTCENTER_CACHE_DIR`.
+`PRODUCTCENTER_WEB_PROVIDER`, `PRODUCTCENTER_MAX_CARDS`,
+`PRODUCTCENTER_PARALLEL_REQUESTS`, `PRODUCTCENTER_REQUEST_INTERVAL`,
+`PRODUCTCENTER_CONNECTION_RETRIES`, `PRODUCTCENTER_CACHE_DIR`.
 
 `PRODUCTCENTER_MAX_CARDS=0` означает полный обход. Положительный лимит
 останавливает обход ошибкой без сохранения неполного пакета и годится только
 для диагностики. ProductCenter выключен по умолчанию до полного живого прогона.
-Успешные страницы кешируются не дольше 24 часов; ошибки HTTP не сохраняются.
+По умолчанию ProductCenter делает один запрос за раз с интервалом не меньше
+секунды между началами запросов. После сетевого отказа он повторяет запрос с
+возрастающей паузой до 180 раз (около 90 минут); постоянный отказ завершает
+обход ошибкой без записи пакета. Эти ограничения задаются отдельными переменными
+`PRODUCTCENTER_PARALLEL_REQUESTS`, `PRODUCTCENTER_REQUEST_INTERVAL` и
+`PRODUCTCENTER_CONNECTION_RETRIES`, независимо от других источников.
+Успешные страницы кешируются не дольше 48 часов; ошибки HTTP не сохраняются.
 Docker Compose держит кеш в томе `productcenter-cache` вне Git. Пакет
 публикуется только после полного успешного обхода.
 
