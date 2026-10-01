@@ -116,9 +116,7 @@ describe("the not found page", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: en("notFound.title") }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByText(en("errorDetails.code").replace("{{code}}", "http_404")),
-    ).toBeInTheDocument()
+    expect(screen.queryByText(/http_404/)).not.toBeInTheDocument()
     expect(screen.getByRole("link", { name: en("action.home") })).toHaveAttribute("href", "/")
     expect(screen.queryByRole("button", { name: en("action.back") })).not.toBeInTheDocument()
     expect(screen.getByRole("link", { name: en("action.lots") })).toHaveAttribute(

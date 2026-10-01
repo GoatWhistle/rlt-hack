@@ -46,9 +46,13 @@
     "description": "We could not render the interface. Reload the page."
   },
   "errorDetails": {
-    "code": "Error code: {{code}}"
+    "code": "Code for support: {{code}}"
   },
   "notifications": {
     "label": "Notifications"
+  },
+  "recent": {
+    "title": "Recent",
+    "search": "last search"
   }
 }

@@ -28,7 +28,9 @@ function renderFailingRoute(failure: unknown, onReload = vi.fn()) {
   ])
   render(
     <LocaleProvider initialLocale="en">
-      <RouterProvider router={router} />
+      <QueryClientProvider client={createQueryClient()}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
     </LocaleProvider>,
   )
   return { loader, onReload, user: userEvent.setup() }
