@@ -22,11 +22,14 @@ start_workers() {
 
 compose_at() {
   local directory=$1
+  local override=${RLT_COMPOSE_OVERRIDE:-/etc/rlt-hack/compose.override.yml}
+  local extra=()
+  if [[ -f $override ]]; then extra=(--file "$override"); fi
   shift
   RLT_IMAGE_TAG=$(basename "$directory") docker compose \
     --project-name "$project" --env-file "$env_file" \
     --file "$directory/docker-compose.yml" \
-    --file "$directory/deploy/compose.production.yml" "$@"
+    --file "$directory/deploy/compose.production.yml" "${extra[@]}" "$@"
 }
 
 query() {
