@@ -9,6 +9,7 @@ import type { LotSummary, UploadDetail, UploadSummary } from "@/entities/upload/
 import { LotPage } from "@/pages/lot"
 import { LotsPage } from "@/pages/lots"
 import { LotsEntryPage } from "@/pages/lots-entry"
+import { ProcurementSourcePage } from "@/pages/procurement-source"
 import { UploadsPage } from "@/pages/uploads"
 import { createQueryClient } from "@/shared/api/query-client"
 import type { Locale } from "@/shared/i18n/locale"
@@ -74,6 +75,10 @@ const pageRoutes: RouteObject[] = [
   { path: "/uploads/:uploadId", Component: LotsPage },
   { path: "/uploads/:uploadId/lots/:lotId", Component: LotPage },
   { path: "/lots", Component: LotsEntryPage },
+  {
+    path: "/uploads/:uploadId/lots/:lotId/evidence/:inn/:purchaseId",
+    Component: ProcurementSourcePage,
+  },
 ]
 
 export type PageOptions = {

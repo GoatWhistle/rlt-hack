@@ -88,7 +88,7 @@ async def main():
             company = result(upload, upload.lots[0])["recommendation"]["companies"][0]
             assert company["status"] == "recommended"
             assert company["similarPurchases"] == 1
-            source = company["purchases"][0]["source"]["url"]
+            source = "/api" + company["purchases"][0]["source"]["url"]
             app.state.uploads = UploadService(object(), repository)
             async with httpx.AsyncClient(
                 transport=httpx.ASGITransport(app=app),

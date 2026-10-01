@@ -5,7 +5,7 @@ from src.models.upload import LotRecommendation, Upload
 
 
 def purchases(upload: Upload, lot: LotRecommendation, candidate: SupplierCandidate) -> list[dict]:
-    base = f"/api/uploads/{upload.upload_id}/lots/{quote(lot.notice.lot_id, safe='')}"
+    base = f"/uploads/{upload.upload_id}/lots/{quote(lot.notice.lot_id, safe='')}"
     return [
         {
             "title": item.title,

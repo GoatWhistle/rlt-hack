@@ -192,5 +192,19 @@
     "experience": "Procurement participation history",
     "category": "Experience in the relevant category",
     "recency": "More recent procurement history"
+  },
+  "archive": {
+    "back": "Back to recommendation",
+    "loading": "Loading archive record",
+    "title": "Procurement archive",
+    "published": "Publication date",
+    "supplier": "Supplier INN",
+    "customer": "Customer INN",
+    "category": "OKPD2 category",
+    "system": "Source system",
+    "identifier": "Archive record identifier",
+    "products": "Product and service examples in this category",
+    "unknown": "Not given in archive",
+    "noProducts": "This record does not contain product names."
   }
 }
