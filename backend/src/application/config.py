@@ -116,6 +116,9 @@ class AppConfig:
     eis_verify_tls: bool = True
     eis_proxy: str = ""
     eis_request_interval: float = 1.0
+    use_moscow_products_provider: bool = False
+    moscow_products_page_size: int = 500
+    moscow_products_retry_attempts: int = 12
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -176,4 +179,7 @@ class AppConfig:
             eis_verify_tls=_bool("EIS_VERIFY_TLS", True),
             eis_proxy=os.getenv("EIS_PROXY", ""),
             eis_request_interval=_float("EIS_REQUEST_INTERVAL", 1.0),
+            use_moscow_products_provider=_bool("MOSCOW_PRODUCTS_PROVIDER", False),
+            moscow_products_page_size=_int("MOSCOW_PRODUCTS_PAGE_SIZE", 500),
+            moscow_products_retry_attempts=_int("MOSCOW_PRODUCTS_RETRY_ATTEMPTS", 12),
         )

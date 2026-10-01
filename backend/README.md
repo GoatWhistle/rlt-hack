@@ -296,6 +296,31 @@ ProductCenter дополнительно реализует `StreamingSupplierPr
 
 ## Команды
 
+Каталог продуктов СТЕ хранится отдельно от компаний и оферт. Экспериментальный
+обход запускается `MOSCOW_PRODUCTS_PROVIDER=true ... python main.py sync-products`
+после миграций `0007_moscow_products.sql` и
+`0008_moscow_product_detail_status.sql`. В Docker Compose доступны
+`MOSCOW_PRODUCTS_PROVIDER` (по умолчанию `false`) и
+`MOSCOW_PRODUCTS_PAGE_SIZE` (по умолчанию 500, проверено живым запросом) и
+`MOSCOW_PRODUCTS_RETRY_ATTEMPTS` (по умолчанию 12 попыток для временных сетевых
+сбоев и HTTP 429/5xx). Промежуточные строки
+помечаются `run_id` и становятся видимы в `moscow_products_current` только
+после двух проходов с одинаковым составом ID и сверки числа записей.
+Публикуются карточки второго прохода; изменение названий отражает
+`names_changed` в результате команды. Недоступные по HTTP 403/404 карточки
+остаются позициями списка со статусом `summary_only`; их число выводится как
+`summary_only`. Полный живой обход ещё не выполнен, поэтому адаптер выключен.
+Для накопления страниц без публикации доступна команда
+`MOSCOW_PRODUCTS_PROVIDER=true python main.py collect-products --pages 1`.
+Она печатает `run`; следующий запуск с `--run-id <UUID>` продолжает партию
+после сверки последнего сохранённого ID с индексом. При сдвиге границы команда
+завершается ошибкой до записи следующей страницы. `--pages` ограничивает число
+страниц за запуск. Эти строки не видны в `moscow_products_current`, пока
+полный каталог не пройдёт отдельную проверку.
+`python main.py probe-products` делает один диагностический запрос без ClickHouse
+и выводит только счётчик, первый ID, названия полей ответа и структуру первой
+доступной карточки.
+
 Через Docker Compose из корня репозитория:
 
 ```sh
@@ -452,6 +477,9 @@ uv run --no-project --python 3.13 --with httpx \
   python tests/supplier/moscow_suppliers_smoke.py
 uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx \
   python tests/supplier/eis_registry_smoke.py
+uv run --no-project --python 3.13 --with httpx \
+  python tests/product/moscow_smoke.py
+uv run --no-project --python 3.13 python tests/product/worker_smoke.py
 uv run --no-project --python 3.13 python tests/supplier/worker_smoke.py
 uv run --no-project --python 3.13 --with httpx --with openpyxl \
   python tests/supplier/gisp_registry.py
