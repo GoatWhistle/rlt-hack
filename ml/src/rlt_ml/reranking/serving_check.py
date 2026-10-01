@@ -55,7 +55,10 @@ async def check(data, vectors, candidates, models, out, count):
                 "features": list(FEATURES),
                 "model": metadata["model"],
                 "cards_sha256": sha256(root / "cards.parquet"),
-                "history_before": "2024-12-01",
+                "history_before": {
+                    "validation": "2024-12-01",
+                    "test": "2025-06-01",
+                }[metadata["split"]],
                 "files": {
                     name: sha256(runtime / name)
                     for name in ("ranker.cbm", "supplier_stats.parquet", "category_stats.parquet")

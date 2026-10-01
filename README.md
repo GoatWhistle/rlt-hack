@@ -326,7 +326,7 @@ API. `RLT_HISTORY_DIR` (по умолчанию `/root/rlt/ready-v1`) содер
 python -m rlt_ml.reranking.candidates --data /data/ready --vectors /data/vectors --out /data/candidates --split train --customer-dropout 0.5
 python -m rlt_ml.reranking.train --train /data/train-candidates --validation /data/validation-candidates --text-validation /data/validation-text-candidates --out /data/models
 python -m rlt_ml.reranking.evaluate --models /data/models --candidates /data/test-candidates --out /data/models/test-report.json
-python -m rlt_ml.reranking.export --models /data/models --vectors /data/validation-vectors --data /data/ready --out /data/release-index
+python -m rlt_ml.reranking.export --models /data/models --vectors /data/test-vectors --data /data/ready --out /data/release-index
 ```
 
 Команды выполняются на сервере в окружении `ml`. В Git входят только код и
