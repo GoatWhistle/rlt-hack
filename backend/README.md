@@ -219,7 +219,8 @@ class OfferClassifying(Protocol):
 
 Каталог продуктов СТЕ хранится отдельно от компаний и оферт. Экспериментальный
 обход запускается `MOSCOW_PRODUCTS_PROVIDER=true ... python main.py sync-products`
-после миграции `0004_moscow_products.sql`. В Docker Compose доступны
+после миграций `0007_moscow_products.sql` и
+`0008_moscow_product_detail_status.sql`. В Docker Compose доступны
 `MOSCOW_PRODUCTS_PROVIDER` (по умолчанию `false`) и
 `MOSCOW_PRODUCTS_PAGE_SIZE` (по умолчанию 500, проверено живым запросом). Промежуточные строки
 помечаются `run_id` и становятся видимы в `moscow_products_current` только
