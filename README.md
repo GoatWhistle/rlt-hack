@@ -67,6 +67,13 @@ Compose читает их из `.env` в корне проекта и из ок�
 
 Назначение переменных джобы сбора подробнее описано в
 [backend/README.md](backend/README.md).
+ProductCenter включается флагом `PRODUCTCENTER_WEB_PROVIDER=true` только для
+полного обхода: `PRODUCTCENTER_MAX_CARDS=0`. Положительный лимит останавливает
+обход без записи неполного снимка.
+Успешные страницы ProductCenter хранятся в томе Docker `productcenter-cache`
+до 24 часов для продолжения обхода после обрыва сети.
+Для живой проверки без записи в ClickHouse используйте команду из
+[backend/README.md](backend/README.md); отчёт и кеш размещаются вне Git.
 
 ## Применение миграций без Docker
 
@@ -87,6 +94,7 @@ for file in backend/migration/*.sql; do clickhouse-client --multiquery < "$file"
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/clickhouse/schema_smoke.py
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' --with lxml --with cssselect --with httpx python backend/tests/supplier/job_smoke.py
 uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx python backend/tests/supplier/provider_smoke.py
+uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx python backend/tests/supplier/productcenter_smoke.py
 uv run --no-project --python 3.13 python backend/tests/supplier/worker_smoke.py
 ```
 

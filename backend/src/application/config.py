@@ -72,6 +72,9 @@ class AppConfig:
     use_optkatalog_provider: bool = False
     use_aboutpartner_provider: bool = False
     use_texzakaz_provider: bool = False
+    use_productcenter_provider: bool = False
+    productcenter_max_cards: int = 0
+    productcenter_cache_dir: Path | None = None
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -101,4 +104,9 @@ class AppConfig:
             use_optkatalog_provider=_bool("OPTKATALOG_WEB_PROVIDER", False),
             use_aboutpartner_provider=_bool("ABOUTPARTNER_WEB_PROVIDER", False),
             use_texzakaz_provider=_bool("TEXZAKAZ_WEB_PROVIDER", False),
+            use_productcenter_provider=_bool("PRODUCTCENTER_WEB_PROVIDER", False),
+            productcenter_max_cards=_int("PRODUCTCENTER_MAX_CARDS", 0),
+            productcenter_cache_dir=(
+                Path(value) if (value := os.getenv("PRODUCTCENTER_CACHE_DIR")) else None
+            ),
         )

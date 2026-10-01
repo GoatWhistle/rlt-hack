@@ -26,6 +26,8 @@ from src.adapter.supplier.aboutpartner_web import PROVIDER_NAME as ABOUTPARTNER
 from src.adapter.supplier.aboutpartner_web import AboutPartnerWebProvider
 from src.adapter.supplier.optkatalog_web import PROVIDER_NAME as OPTKATALOG
 from src.adapter.supplier.optkatalog_web import OptKatalogWebProvider
+from src.adapter.supplier.productcenter_web import PROVIDER_NAME as PRODUCTCENTER
+from src.adapter.supplier.productcenter_web import ProductCenterWebProvider
 from src.adapter.supplier.schema_org_web import PROVIDER_NAME as SCHEMA_ORG
 from src.adapter.supplier.schema_org_web import SchemaOrgWebProvider
 from src.adapter.supplier.supplier_dataset import PROVIDER_NAME as SUPPLIER_DATASET
@@ -179,6 +181,22 @@ class Container:
                     max_companies=config.max_cards_per_source,
                     max_concurrent=config.parallel_requests,
                     http_timeout=config.request_timeout,
+                )
+            )
+
+        if config.use_productcenter_provider:
+            providers.append(
+                ProductCenterWebProvider(
+                    source_defaults=_source(
+                        name="ПродуктЦентр",
+                        base_url="https://productcenter.ru/",
+                        source_type=SourceType.DIRECTORY,
+                        provider_name=PRODUCTCENTER,
+                    ),
+                    max_concurrent=config.parallel_requests,
+                    http_timeout=config.request_timeout,
+                    max_cards=config.productcenter_max_cards or None,
+                    cache_dir=config.productcenter_cache_dir,
                 )
             )
 
