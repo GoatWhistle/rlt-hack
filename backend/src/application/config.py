@@ -92,6 +92,9 @@ class AppConfig:
     gisp_export_location: str = ""
     use_productcenter_provider: bool = False
     productcenter_max_cards: int = 0
+    productcenter_parallel_requests: int = 1
+    productcenter_request_interval: float = 1.0
+    productcenter_connection_retries: int = 180
     productcenter_cache_dir: Path | None = None
     use_moscow_suppliers_provider: bool = False
     moscow_suppliers_export_url: str = ""
@@ -134,6 +137,9 @@ class AppConfig:
             gisp_export_location=os.getenv("GISP_EXPORT_LOCATION", ""),
             use_productcenter_provider=_bool("PRODUCTCENTER_WEB_PROVIDER", False),
             productcenter_max_cards=_int("PRODUCTCENTER_MAX_CARDS", 0),
+            productcenter_parallel_requests=_int("PRODUCTCENTER_PARALLEL_REQUESTS", 1),
+            productcenter_request_interval=_float("PRODUCTCENTER_REQUEST_INTERVAL", 1.0),
+            productcenter_connection_retries=_int("PRODUCTCENTER_CONNECTION_RETRIES", 180),
             productcenter_cache_dir=(
                 Path(value) if (value := os.getenv("PRODUCTCENTER_CACHE_DIR")) else None
             ),

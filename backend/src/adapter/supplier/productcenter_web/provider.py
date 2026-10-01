@@ -22,7 +22,7 @@ from src.adapter.supplier.productcenter_web.discovery import (
 )
 from src.adapter.supplier.productcenter_web.parse import product_card, supplier_card
 from src.adapter.supplier.productcenter_web.progress import CrawlProgress
-from src.adapter.supplier.productcenter_web.request import get
+from src.adapter.supplier.productcenter_web.request import RequestPacer, get
 from src.models.offer import Offer
 from src.models.package import SupplierPackage
 from src.models.source import Source
@@ -38,10 +38,12 @@ class ProductCenterWebProvider:
     def __init__(
         self,
         source_defaults: Source,
-        max_concurrent: int = 4,
+        max_concurrent: int = 1,
         http_timeout: float = 30.0,
         max_cards: int | None = None,
         retries: int = 5,
+        connection_retries: int = 180,
+        request_interval: float = 1.0,
         cache_dir: Path | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
@@ -50,6 +52,9 @@ class ProductCenterWebProvider:
         self._http_timeout = http_timeout
         self._max_cards = max_cards
         self._retries = retries
+        self._connection_retries = max(0, connection_retries)
+        self._request_interval = max(0.0, request_interval)
+        self._pacer = RequestPacer(self._request_interval)
         self._transport = transport
         self._cache = PageCache(cache_dir) if cache_dir is not None else None
         self.stats: dict[str, int] = {}
@@ -69,12 +74,23 @@ class ProductCenterWebProvider:
     async def complete(self) -> None:
         await self._progress.complete()
 
+    async def _get(self, http: httpx.AsyncClient, url: str) -> httpx.Response:
+        return await get(
+            http,
+            url,
+            self._retries,
+            self._cache,
+            connection_retries=self._connection_retries,
+            pacer=self._pacer,
+        )
+
     async def batches(self, batch_size: int) -> AsyncIterator[SupplierPackage]:
         if batch_size < 1:
             raise ValueError("batch_size must be positive")
         if self._max_cards is not None:
             raise ContentFormatError("Диагностический лимит запрещён для потоковой записи")
         self.stats = {}
+        self._pacer = RequestPacer(self._request_interval)
         suppliers: dict[str, Supplier] = {}
         seen = self._progress.products
         failures: list[str] = []
@@ -122,7 +138,13 @@ class ProductCenterWebProvider:
             async for urls in self._listing_pages(http, "products", progress=True):
                 async for package in packages(urls):
                     yield package
-            cards = await sitemap_cards(http, self._retries, self._cache)
+            cards = await sitemap_cards(
+                http,
+                self._retries,
+                self._cache,
+                connection_retries=self._connection_retries,
+                pacer=self._pacer,
+            )
             async for package in packages(cards["products"]):
                 yield package
             producers = {}
@@ -151,6 +173,7 @@ class ProductCenterWebProvider:
 
     async def fetch(self) -> SupplierPackage:
         self.stats = {}
+        self._pacer = RequestPacer(self._request_interval)
         if self._cache is not None:
             self._cache.hits = 0
             self._cache.writes = 0
@@ -160,7 +183,13 @@ class ProductCenterWebProvider:
             follow_redirects=True,
             transport=self._transport,
         ) as http:
-            cards = await sitemap_cards(http, self._retries, self._cache)
+            cards = await sitemap_cards(
+                http,
+                self._retries,
+                self._cache,
+                connection_retries=self._connection_retries,
+                pacer=self._pacer,
+            )
             self.stats["sitemap_producers"] = len(cards["producers"])
             self.stats["sitemap_products"] = len(cards["products"])
             for kind in ("producers", "products"):
@@ -234,7 +263,7 @@ class ProductCenterWebProvider:
             first = dict(saved["pages"]["1"])
             last_page = saved["last"]
         else:
-            first_response = await get(http, first_url, self._retries, self._cache)
+            first_response = await self._get(http, first_url)
             try:
                 first_tree = await asyncio.to_thread(page.parse, first_response.text, first_url)
                 first, last_page, current_page = listing_links(first_tree, kind)
@@ -254,7 +283,7 @@ class ProductCenterWebProvider:
         pages = (f"{first_url}/page-{number}" for number in range(2, last_page + 1))
 
         async def read_listing(url: str) -> tuple[dict[str, str], int, int]:
-            response = await get(http, url, self._retries, self._cache)
+            response = await self._get(http, url)
             try:
                 tree = await asyncio.to_thread(page.parse, response.text, url)
                 return listing_links(tree, kind)
@@ -320,7 +349,7 @@ class ProductCenterWebProvider:
         async def read_card(item: tuple[str, str]):
             key, url = item
             try:
-                response = await get(http, url, self._retries, self._cache)
+                response = await self._get(http, url)
                 parsed = await asyncio.to_thread(
                     parser, response.text, url, self._source.source_id, *args
                 )
