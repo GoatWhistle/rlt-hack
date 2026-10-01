@@ -1,22 +1,30 @@
 """Проверка адаптера Пульс цен на подготовленных документах без сети."""
 
 import asyncio
+import gzip
 import sys
 from decimal import Decimal
 from pathlib import Path
 
+import httpx
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from src.adapter.supplier import identity
 from src.adapter.supplier.errors import BotProtectionError, SourceUnavailableError
 from src.adapter.supplier.pulscen_web import PulscenWebProvider
-from src.models.enums import Availability, SourceType, SupplierRole
+from src.models.enums import Availability, ItemType, SourceType, SupplierRole
 from tests.supplier.fixtures import (
     PULSCEN_BOT_CHECK,
     PULSCEN_FIRMS_PAGE,
     PULSCEN_FIRMS_PAGE_2,
     PULSCEN_PRICE_PAGE,
-    PULSCEN_SITEMAP,
+    PULSCEN_PRODUCT_CARD,
+    PULSCEN_PRODUCT_CARD_NEW_SELLER,
+    PULSCEN_SITEMAP_FIRMS,
+    PULSCEN_SITEMAP_INDEX,
+    PULSCEN_SITEMAP_PRICE,
     SITEMAP_GOODS,
 )
 from tests.supplier.provider_smoke import source, transport
@@ -24,7 +32,11 @@ from tests.supplier.provider_smoke import source, transport
 BASE = "https://www.pulscen.ru"
 
 PAGES = {
-    f"{BASE}/sitemap.xml": PULSCEN_SITEMAP,
+    f"{BASE}/sitemap.xml": PULSCEN_SITEMAP_INDEX,
+    f"{BASE}/sitemap_firms_rubrics.xml.gz": PULSCEN_SITEMAP_FIRMS,
+    f"{BASE}/sitemap_price_1.xml.gz": PULSCEN_SITEMAP_PRICE,
+    "https://nsk.pulscen.ru/products/armatura_a3_14mm_185531520": PULSCEN_PRODUCT_CARD,
+    f"{BASE}/products/armatura_zapros_185531999": PULSCEN_PRODUCT_CARD_NEW_SELLER,
     f"{BASE}/firms/010301-armatura": PULSCEN_FIRMS_PAGE,
     f"{BASE}/firms/010301-armatura?page=2": PULSCEN_FIRMS_PAGE_2,
     f"{BASE}/price/010301-armatura": PULSCEN_PRICE_PAGE,
@@ -34,6 +46,20 @@ PAGES = {
 def provider(pages: dict[str, str], failing: tuple[str, ...] = ()) -> PulscenWebProvider:
     directory = source("Пульс цен", f"{BASE}/", SourceType.DIRECTORY, "pulscen_web")
     return PulscenWebProvider(directory, delay_seconds=0, transport=transport(pages, failing))
+
+
+def gzipped_transport(pages: dict[str, str]) -> httpx.MockTransport:
+    """Карты `.xml.gz` отдаются сжатыми байтами без заголовка Content-Encoding."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        url = str(request.url)
+        body = pages.get(url)
+        if body is None:
+            return httpx.Response(404, text="нет страницы")
+        content = gzip.compress(body.encode()) if url.endswith(".gz") else body.encode()
+        return httpx.Response(200, content=content)
+
+    return httpx.MockTransport(handler)
 
 
 async def expect(error: type[Exception], pages: dict[str, str], failing: tuple[str, ...] = ()):
@@ -47,7 +73,7 @@ async def expect(error: type[Exception], pages: dict[str, str], failing: tuple[s
 async def main() -> None:
     package = await provider(PAGES).fetch()
     names = sorted(supplier.name for supplier in package.suppliers)
-    assert names == ["АМК-Групп", "ПервоСтрой, ООО"], names
+    assert names == ["АМК-Групп", "ПервоСтрой, ООО", "Сталь-Опт"], names
     first = next(s for s in package.suppliers if s.name == "ПервоСтрой, ООО")
     assert first.website == "https://pervostroi.example"
     assert first.region == "г. Новосибирск, ул. Ватутина, 99"
@@ -56,9 +82,25 @@ async def main() -> None:
     priced = next(o for o in package.offers if o.external_id == "185531520")
     assert priced.price == Decimal("68.55") and priced.currency == "RUB"
     assert priced.availability == Availability.AVAILABLE
-    assert priced.supplier_role == SupplierRole.UNKNOWN and priced.supplier_id is None
+    assert priced.supplier_role == SupplierRole.UNKNOWN
+    assert priced.supplier_id == first.supplier_id
     unpriced = next(o for o in package.offers if o.external_id == "185531999")
     assert unpriced.price is None and unpriced.availability == Availability.UNKNOWN
+    new_seller = next(s for s in package.suppliers if s.name == "Сталь-Опт")
+    assert unpriced.supplier_id == new_seller.supplier_id
+    ids = {s.supplier_id for s in package.suppliers}
+    assert all(o.supplier_id in ids for o in package.offers)
+    expected = identity.offer_content_hash(
+        name=priced.name, item_type=str(ItemType.GOODS), attributes=priced.attributes
+    )
+    assert priced.content_hash == expected
+
+    pages = {**PAGES, f"{BASE}/sitemap_firms_rubrics.xml.gz": PULSCEN_SITEMAP_FIRMS}
+    directory = source("Пульс цен", f"{BASE}/", SourceType.DIRECTORY, "pulscen_web")
+    zipped = await PulscenWebProvider(
+        directory, delay_seconds=0, transport=gzipped_transport(pages)
+    ).fetch()
+    assert len(zipped.offers) == 2 and len(zipped.suppliers) == 3
 
     repeated = await provider(PAGES).fetch()
     assert sorted(o.offer_id for o in repeated.offers) == sorted(o.offer_id for o in package.offers)
@@ -67,6 +109,12 @@ async def main() -> None:
     )
 
     await expect(SourceUnavailableError, {f"{BASE}/sitemap.xml": SITEMAP_GOODS})
+    without_nested = {k: v for k, v in PAGES.items() if "sitemap_price_1" not in k}
+    await expect(SourceUnavailableError, without_nested)
+    maintenance = "<html><body>Maintenance</body></html>"
+    await expect(SourceUnavailableError, {**PAGES, f"{BASE}/sitemap_price_1.xml.gz": maintenance})
+    without_card = {k: v for k, v in PAGES.items() if "185531999" not in k}
+    await expect(SourceUnavailableError, without_card)
     await expect(SourceUnavailableError, {f"{BASE}/sitemap.xml": "не xml"})
     await expect(SourceUnavailableError, PAGES, failing=(f"{BASE}/price/010301-armatura",))
     await expect(

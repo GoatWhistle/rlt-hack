@@ -238,13 +238,33 @@ TEXZAKAZ_CARD = """<!doctype html>
 """
 
 
-PULSCEN_SITEMAP = """<?xml version="1.0" encoding="UTF-8"?>
+PULSCEN_SITEMAP_INDEX = """<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap><loc>https://www.pulscen.ru/sitemap_firms_rubrics.xml.gz</loc></sitemap>
+  <sitemap><loc>https://www.pulscen.ru/sitemap_price_1.xml.gz</loc></sitemap>
+  <sitemap><loc>https://www.pulscen.ru/sitemap_price_f_2.xml.gz</loc></sitemap>
+</sitemapindex>
+"""
+
+PULSCEN_SITEMAP_FIRMS = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://www.pulscen.ru/firms/010301-armatura</loc></url>
-  <url><loc>https://www.pulscen.ru/price/010301-armatura</loc></url>
-  <url><loc>https://www.pulscen.ru/price/010301-armatura/f:36_rossiia</loc></url>
 </urlset>
 """
+
+PULSCEN_SITEMAP_PRICE = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.pulscen.ru/price/010301-armatura</loc></url>
+</urlset>
+"""
+
+PULSCEN_PRODUCT_CARD = """<html><head>
+<title>Арматура А400 купить от компании ООО "ПервоСтрой"</title>
+</head><body><a href="https://nsk.pulscen.ru/companies/99418958/reviews">Отзывы</a></body></html>"""
+
+PULSCEN_PRODUCT_CARD_NEW_SELLER = """<html><head>
+<title>Арматура купить от компании Сталь-Опт</title>
+</head><body><a href="/companies/55500011/reviews">Отзывы</a></body></html>"""
 
 PULSCEN_FIRMS_PAGE = """<html><head><link rel="next" href="https://www.pulscen.ru/firms/010301-armatura?page=2"></head><body>
 <ul><li class="company-card js-company-card" data-id="99418958">

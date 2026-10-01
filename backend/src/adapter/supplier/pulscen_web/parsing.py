@@ -11,10 +11,14 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any
 
-from src.adapter.supplier import jsonld
+from src.adapter.supplier import jsonld, page
 from src.models.enums import Availability, SupplierRole
 
 _PRODUCT_ID = re.compile(r"_(\d+)/?$")
+
+_COMPANY_LINK = re.compile(r"/companies/(\d+)(?:/|$)")
+
+_COMPANY_IN_TITLE = re.compile(r"от компании\s+(.+?)\s*$")
 
 _ROLES = (
     ("Производитель", SupplierRole.MANUFACTURER),
@@ -101,6 +105,23 @@ def companies(tree: Any) -> list[ListedCompany]:
             )
         )
     return found
+
+
+@dataclass(frozen=True, slots=True)
+class ProductSeller:
+    company_id: str
+    name: str
+
+
+def product_seller(tree: Any) -> ProductSeller | None:
+    """Продавец товара: ID берётся из ссылки на компанию, название — из заголовка."""
+    for href in page.links(tree, "a[href*='/companies/']"):
+        match = _COMPANY_LINK.search(href.split("?")[0].split("#")[0])
+        if match:
+            title = page.first_text(tree, "title")
+            named = _COMPANY_IN_TITLE.search(title)
+            return ProductSeller(match.group(1), named.group(1) if named else "")
+    return None
 
 
 def has_next_page(tree: Any) -> bool:

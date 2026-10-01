@@ -19,9 +19,9 @@ from urllib.parse import urlsplit
 
 import httpx
 
-from src.adapter.supplier import identity, page, sitemap
+from src.adapter.supplier import identity, page
 from src.adapter.supplier.errors import BotProtectionError, SourceUnavailableError
-from src.adapter.supplier.pulscen_web import parsing
+from src.adapter.supplier.pulscen_web import parsing, sitemaps
 from src.models.enums import ItemType, SupplierRole, VerificationStatus
 from src.models.offer import Offer
 from src.models.package import SupplierPackage
@@ -45,6 +45,13 @@ USER_AGENT = "rlt-supplier-search/0.1 (+contact: see deployment configuration)"
 
 # robots.txt задаёт Crawl-delay: 10 секунд между запросами.
 DEFAULT_DELAY_SECONDS = 10.0
+
+
+def _wanted_sitemap(url: str) -> bool:
+    name = urlsplit(url).path.rsplit("/", 1)[-1]
+    return name.startswith("sitemap_firms_rubrics") or (
+        name.startswith("sitemap_price_") and "_f_" not in name and name != "sitemap_price_f.xml.gz"
+    )
 
 
 class PulscenWebProvider:
@@ -89,18 +96,44 @@ class PulscenWebProvider:
                 async for tree in self._pages(http, rubric):
                     for product in parsing.products(tree):
                         listed.setdefault(product.external_id, product)
+            sellers: dict[str, parsing.ProductSeller | None] = {}
+            for product in listed.values():
+                sellers[product.external_id] = await self._seller(http, product)
         if not companies and not listed:
             raise SourceUnavailableError(f"{self._sitemap_url}: рубрики не содержат данных")
         logger.info("Пульс цен: компаний — %d, товаров — %d", len(companies), len(listed))
-        suppliers = tuple(self._supplier(company) for company in companies.values())
+        suppliers = {company.company_id: self._supplier(company) for company in companies.values()}
+        for seller in sellers.values():
+            if seller is not None and seller.company_id not in suppliers:
+                suppliers[seller.company_id] = self._seller_supplier(seller)
         return SupplierPackage(
             source=self._source,
-            suppliers=suppliers,
-            offers=tuple(self._offer(product) for product in listed.values()),
+            suppliers=tuple(suppliers.values()),
+            offers=tuple(
+                self._offer(product, sellers[product.external_id]) for product in listed.values()
+            ),
         )
 
+    async def _seller(
+        self, http: httpx.AsyncClient, product: parsing.ListedProduct
+    ) -> parsing.ProductSeller | None:
+        text = await self._get(http, product.url)
+        tree = await asyncio.to_thread(page.parse, text, product.url)
+        seller = parsing.product_seller(tree)
+        if seller is None:
+            logger.warning("В карточке %s не найден продавец", product.url)
+        return seller
+
     async def _rubrics(self, http: httpx.AsyncClient) -> tuple[list[str], list[str]]:
-        urls = await sitemap.read_urls(http, self._sitemap_url)
+        async def read(url: str) -> bytes:
+            await self._wait_turn()
+            response = await http.get(url)
+            if parsing.is_bot_check(response.text):
+                raise BotProtectionError(f"{url}: сайт требует проверку на робота")
+            response.raise_for_status()
+            return response.content
+
+        urls = await sitemaps.read_tree(read, self._sitemap_url, _wanted_sitemap)
         firms: list[str] = []
         prices: list[str] = []
         for url in dict.fromkeys(urls):
@@ -150,10 +183,20 @@ class PulscenWebProvider:
                 await asyncio.sleep(pause)
             self._next_request_at = time.monotonic() + self._delay
 
-    def _supplier(self, company: parsing.ListedCompany) -> Supplier:
-        key = f"company:{company.company_id}"
+    def _seller_supplier(self, seller: parsing.ProductSeller) -> Supplier:
         return Supplier(
-            supplier_id=identity.supplier_id(None, self._source.source_id, key),
+            supplier_id=self._supplier_id(seller.company_id),
+            name=seller.name or f"Компания {seller.company_id}",
+            identity_status=VerificationStatus.UNVERIFIED,
+            identity_evidence_url=self._source.base_url,
+        )
+
+    def _supplier_id(self, company_id: str):
+        return identity.supplier_id(None, self._source.source_id, f"company:{company_id}")
+
+    def _supplier(self, company: parsing.ListedCompany) -> Supplier:
+        return Supplier(
+            supplier_id=self._supplier_id(company.company_id),
             name=company.name,
             region=company.address,
             website=company.website,
@@ -161,8 +204,9 @@ class PulscenWebProvider:
             identity_evidence_url=self._source.base_url,
         )
 
-    def _offer(self, product: parsing.ListedProduct) -> Offer:
+    def _offer(self, product: parsing.ListedProduct, seller: parsing.ProductSeller | None) -> Offer:
         observed_at = datetime.now(UTC)
+        attributes = {"price_kind": "listing"} if product.price is not None else {}
         return Offer(
             offer_id=identity.offer_id(self._source.source_id, product.external_id),
             source_id=self._source.source_id,
@@ -171,13 +215,16 @@ class PulscenWebProvider:
             name=product.name,
             first_seen_at=observed_at,
             last_seen_at=observed_at,
+            supplier_id=self._supplier_id(seller.company_id) if seller else None,
+            seller_status=VerificationStatus.UNVERIFIED,
+            seller_evidence_url=product.url if seller else "",
             item_type=ItemType.GOODS,
             price=product.price,
             currency=product.currency,
             availability=product.availability,
             supplier_role=SupplierRole.UNKNOWN,
-            attributes={"price_kind": "listing"} if product.price is not None else {},
+            attributes=attributes,
             content_hash=identity.offer_content_hash(
-                name=product.name, item_type=str(ItemType.GOODS)
+                name=product.name, item_type=str(ItemType.GOODS), attributes=attributes
             ),
         )
