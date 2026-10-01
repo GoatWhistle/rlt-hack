@@ -1,4 +1,6 @@
 import { useTranslation } from "react-i18next"
+import { Link } from "react-router"
+import { SEARCH_PATH } from "@/shared/config/paths"
 import { Icon } from "@/shared/ui/icon"
 import { PageTitle } from "@/shared/ui/page-title"
 import { Dropzone } from "../dropzone"
@@ -19,6 +21,10 @@ export function Intro({ onFile }: { readonly onFile: (file: File) => void }) {
           <Icon name="lock" size="sm" />
           {t("intro.privacy")}
         </p>
+        <Link to={SEARCH_PATH} className={styles.alternative}>
+          <Icon name="search" size="sm" />
+          {t("intro.searchInstead")}
+        </Link>
       </div>
       <div className={styles.format}>
         <FormatHelp />

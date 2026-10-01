@@ -89,6 +89,11 @@
   }
 }
 
+.side .panel {
+  min-height: 100%;
+  grid-template-rows: auto 1fr auto;
+}
+
 .side .footer {
   position: sticky;
   inset-block-end: 0;

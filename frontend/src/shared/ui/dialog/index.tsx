@@ -37,11 +37,16 @@ export function Dialog({
   const titleRef = useRef<HTMLHeadingElement>(null)
   const { isMounted, state, onAnimationEnd } = usePresence(open)
 
+  const trigger = useRef<HTMLElement | null>(null)
+
   useEffect(() => {
     if (!isMounted) return
-    const trigger = document.activeElement
+    const active = document.activeElement
+    if (active instanceof HTMLElement && !ref.current?.contains(active))
+      trigger.current = active
     return () => {
-      if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus()
+      const target = trigger.current
+      if (target?.isConnected) target.focus()
     }
   }, [isMounted])
 

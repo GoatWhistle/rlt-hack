@@ -11,6 +11,7 @@ import {
 import type { LotSummary } from "@/entities/upload/model"
 import { useLot, useUpload } from "@/entities/upload/queries"
 import { ExportDialog } from "@/features/export-results"
+import { RecentPlaces } from "@/features/recent-places"
 import { isApiError } from "@/shared/api/api-error"
 import { lotPath, UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
 import { useLocale } from "@/shared/i18n/locale-provider"
@@ -37,7 +38,9 @@ function LotMissing({ fileTo }: { readonly fileTo?: string }) {
           </ButtonLink>
         </>
       }
-    />
+    >
+      <RecentPlaces />
+    </EmptyState>
   )
 }
 

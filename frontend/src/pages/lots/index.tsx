@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams, useSearchParams } from "react-router"
 import { rememberUpload } from "@/entities/upload/last-upload"
@@ -42,6 +42,7 @@ export function LotsPage() {
   const [params, setParams] = useSearchParams()
   const upload = useUpload(uploadId)
   const { locale } = useLocale()
+  const pageToggle = useRef<HTMLInputElement>(null)
   const [selection, setSelection] = useState<Selection>({ uploadId, ids: NOTHING })
   const selected = selection.uploadId === uploadId ? selection.ids : NOTHING
   const setSelected = (change: (current: ReadonlySet<string>) => ReadonlySet<string>) =>
@@ -144,6 +145,7 @@ export function LotsPage() {
             selected={selected}
             onToggle={toggle}
             onTogglePage={togglePage}
+            pageToggle={pageToggle}
           />
           <Pagination
             page={page}
@@ -156,7 +158,10 @@ export function LotsPage() {
       <SelectionBar
         count={selected.size}
         onExport={() => openExport()}
-        onClear={() => setSelected(() => NOTHING)}
+        onClear={() => {
+          setSelected(() => NOTHING)
+          pageToggle.current?.focus()
+        }}
       />
       <ExportDialog
         key={exporting.session}

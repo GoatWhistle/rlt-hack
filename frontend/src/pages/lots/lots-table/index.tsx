@@ -1,5 +1,5 @@
 import { clsx } from "clsx"
-import { useEffect, useRef } from "react"
+import { type RefObject, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 import { LotStatusTag } from "@/entities/upload/lot-status"
@@ -17,6 +17,7 @@ export type LotsTableProps = {
   readonly selected: ReadonlySet<string>
   readonly onToggle: (lotId: string) => void
   readonly onTogglePage: (lotIds: readonly string[], checked: boolean) => void
+  readonly pageToggle: RefObject<HTMLInputElement | null>
 }
 
 type LotRowProps = {
@@ -95,11 +96,11 @@ export function LotsTable(props: LotsTableProps) {
   const { t } = useTranslation("lots")
   const pageIds = lots.map((lot) => lot.id)
   const chosen = pageIds.filter((id) => selected.has(id)).length
-  const all = useRef<HTMLInputElement>(null)
+  const all = props.pageToggle
 
   useEffect(() => {
     if (all.current) all.current.indeterminate = chosen > 0 && chosen < pageIds.length
-  }, [chosen, pageIds.length])
+  }, [all, chosen, pageIds.length])
 
   return (
     <table className={styles.table}>

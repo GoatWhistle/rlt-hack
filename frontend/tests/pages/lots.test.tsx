@@ -112,6 +112,7 @@ describe("the purchases of a file", () => {
     await screen.findByRole("table")
     await user.click(screen.getByRole("checkbox", { name: "Select lot 100" }))
     await user.click(screen.getByRole("button", { name: en("selection.clear", "lots") }))
+    expect(screen.getByRole("checkbox", { name: en("table.selectPage", "lots") })).toHaveFocus()
     await waitFor(() =>
       expect(screen.queryByRole("region", { name: en("selection.label", "lots") })).toBeNull(),
     )

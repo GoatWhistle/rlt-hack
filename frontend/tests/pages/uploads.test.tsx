@@ -31,6 +31,9 @@ describe("the first visit", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: en("intro.title", "uploads") }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole("link", { name: en("intro.searchInstead", "uploads") }),
+    ).toHaveAttribute("href", "/search")
     expect(screen.getByRole("link", { name: en("intro.sample", "uploads") })).toHaveAttribute(
       "href",
       SAMPLE_PATH,
