@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from src.adapter.repository.clickhouse.config import ClickHouseConfig
+from src.adapter.repository.reference import REFERENCE_DIR
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
@@ -50,6 +51,11 @@ class AppConfig:
     """Только данные: конфигурация передаётся в контейнер зависимостей целиком."""
 
     clickhouse: ClickHouseConfig = field(default_factory=ClickHouseConfig)
+    # Каталог справочников ОКПД2, рубрик, словаря, разделов каталогов и ОКЕИ.
+    reference_dir: Path = REFERENCE_DIR
+    # Канал переноса кода из архива закупок: без загруженного архива он пуст.
+    use_archive_channel: bool = True
+    archive_limit: int = 500_000
     dataset_path: Path = field(default_factory=_dataset_path)
     dataset_region: str = ""
     # Адреса фидов и сайтов поставщиков: по адаптеру на адрес.
@@ -84,6 +90,9 @@ class AppConfig:
                 database=os.getenv("CLICKHOUSE_DATABASE", "supplier_search"),
                 secure=_bool("CLICKHOUSE_SECURE", False),
             ),
+            reference_dir=Path(os.getenv("REFERENCE_DIR") or REFERENCE_DIR),
+            use_archive_channel=_bool("CLASSIFIER_ARCHIVE_CHANNEL", True),
+            archive_limit=_int("CLASSIFIER_ARCHIVE_LIMIT", 500_000),
             dataset_path=_dataset_path(),
             dataset_region=os.getenv("SUPPLIER_DATASET_REGION", ""),
             feed_urls=_urls("SUPPLIER_FEED_URLS"),

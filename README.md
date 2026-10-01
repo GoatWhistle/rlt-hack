@@ -15,19 +15,29 @@
 - [Источники поставщиков и ассортимента](context/supplier-sources.md)
 - [Схема ClickHouse и примеры запросов](context/clickhouse-schema.md)
 - [Схема таблиц и всех связей (PDF)](docs/schema-relations.pdf)
+- [Идея нормализатора и классификатора](context/normalization-and-classification.md) ([PDF](docs/normalization-and-classification.pdf))
 - [Миграции ClickHouse](backend/migration)
+- [Справочники ОКПД2, рубрик, словаря и ОКЕИ](backend/reference)
 - [Джоба сбора: контракт источника, адаптеры и команды](backend/README.md)
 - [Дизайн-система фронтенда](frontend/DESIGN.md)
 
-Нормализация и HTTP API ещё не реализованы: сейчас в репозитории фронтенд в
-демонстрационном режиме, хранилище и джоба сбора данных. Код backend
-асинхронный: сервисы сбора готовы к вызову из будущего API на FastAPI.
+HTTP API ещё не реализовано: сейчас в репозитории фронтенд в демонстрационном
+режиме, хранилище, джоба сбора данных, нормализатор и классификатор. Код
+backend асинхронный: сервисы готовы к вызову из будущего API на FastAPI.
 
-Для пересборки PDF по миграциям нужен Python, `reportlab==5.0.1` и шрифт
-Arial или DejaVu Sans с кириллицей:
+Нормализация и классификация подключены к джобе сбора через интерфейсы и
+вызываются сразу после обхода источника: сначала приведение позиции к единой
+форме, затем код ОКПД2, рубрика и тип. Классификатор не угадывает — позиция без
+сработавшего канала остаётся без кода, и это видно в отчёте о покрытии. Правила
+и замысел описаны в [отдельном документе](context/normalization-and-classification.md).
+
+Для пересборки PDF нужен Python, `reportlab==5.0.1` и шрифт Arial или
+DejaVu Sans с кириллицей. Первая команда рисует схему по миграциям, вторая
+собирает PDF из описания нормализатора в `context/`:
 
 ```sh
 uv run --no-project --with 'reportlab==5.0.1' python docs/generate_schema_pdf.py
+uv run --no-project --with 'reportlab==5.0.1' python docs/generate_normalization_pdf.py
 ```
 
 ## Требования
@@ -43,6 +53,9 @@ cp .env.example .env                         # переменные окруже
 docker compose up -d --build                 # фронтенд, ClickHouse с веб-интерфейсом и применение миграций
 docker compose run --rm sync-job providers   # подключённые адаптеры источников
 docker compose run --rm sync-job sync        # обход включённых источников
+docker compose run --rm sync-job normalize   # пересчёт нормализации и классификации
+docker compose run --rm sync-job coverage    # отчёт о покрытии
+docker compose run --rm sync-job reidentify  # перевод позиций на новое правило ключа
 ```
 
 Фронтенд будет доступен на `http://localhost:8080`, веб-интерфейс ClickHouse —
@@ -87,9 +100,15 @@ for file in backend/migration/*.sql; do clickhouse-client --multiquery < "$file"
 
 ```sh
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/clickhouse/schema_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/clickhouse/normalization_smoke.py
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' --with lxml --with cssselect --with httpx python backend/tests/supplier/job_smoke.py
 uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx python backend/tests/supplier/provider_smoke.py
 uv run --no-project --python 3.13 python backend/tests/supplier/worker_smoke.py
+uv run --no-project --python 3.13 python backend/tests/supplier/enrich_smoke.py
+uv run --no-project --python 3.13 python backend/tests/supplier/identity_smoke.py
+uv run --no-project --python 3.13 python backend/tests/supplier/reidentify_smoke.py
+uv run --no-project --python 3.13 python backend/tests/normalizer/normalizer_smoke.py
+uv run --no-project --python 3.13 python backend/tests/classifier/classifier_smoke.py
 ```
 
 Проверки используют временные каталоги, встроенный движок chDB и подготовленные

@@ -14,7 +14,8 @@ from uuid import UUID
 
 from src.application.config import AppConfig
 from src.application.container import Container
-from src.controller.job.dto import SyncCommand
+from src.controller.job.dto import NormalizeCommand, SyncCommand
+from src.models.coverage import CoverageReport
 from src.service.errors import ProviderNotConfiguredError, ServiceError
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,23 @@ def build_parser() -> argparse.ArgumentParser:
     runs = commands.add_parser("runs", help="последние обходы источника")
     runs.add_argument("--source", required=True, help="UUID источника")
     runs.add_argument("--limit", type=int, default=10)
+
+    normalize = commands.add_parser(
+        "normalize", help="пересчитать нормализацию и классификацию сохранённых позиций"
+    )
+    normalize.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="сколько позиций пересчитать: по умолчанию все",
+    )
+
+    commands.add_parser("coverage", help="отчёт о покрытии нормализации и классификации")
+
+    commands.add_parser(
+        "reidentify",
+        help="перевести сохранённые позиции на действующее правило ключа источника",
+    )
 
     sync = commands.add_parser("sync", help="обойти все подключённые источники")
     sync.add_argument(
@@ -90,6 +108,26 @@ async def _dispatch(arguments: argparse.Namespace, config: AppConfig) -> int:
             for source in await (await container.sources()).list_all():
                 print(f"{source.source_id}  {source.provider_name:18}  {source.name}")
             return 0
+        if arguments.command == "normalize":
+            command = NormalizeCommand.of(arguments)
+            result = await (await container.enrichment()).run(command.limit)
+            print(
+                f"Источников: {result.sources}  позиций: {result.offers}  "
+                f"с кодом: {result.classified}  "
+                f"правила: {result.normalizer_version} / {result.classifier_version}"
+            )
+            return 0
+        if arguments.command == "reidentify":
+            outcome = await (await container.reidentify()).run()
+            print(
+                f"Источников: {outcome.sources}  позиций: {outcome.offers}  "
+                f"сменили ключ: {outcome.changed}  слились: {outcome.merged}"
+            )
+            return 0
+        if arguments.command == "coverage":
+            # Контроллер ходит в сервис, а не в репозиторий напрямую.
+            _print_coverage(await (await container.enrichment()).coverage())
+            return 0
         if arguments.command == "runs":
             journal = await container.journal()
             for run in await journal.last_runs(UUID(arguments.source), arguments.limit):
@@ -100,6 +138,33 @@ async def _dispatch(arguments: argparse.Namespace, config: AppConfig) -> int:
                 )
             return 0
     raise ServiceError(f"неизвестная команда: {arguments.command}")
+
+
+def _print_coverage(report: CoverageReport) -> None:
+    """Покрытие показывается долями: пустые поля видно так же, как заполненные."""
+    total = report.offers or 1
+    print(f"Позиций: {report.offers}")
+    for title, value in (
+        ("нормализовано", report.normalized),
+        ("с кодом ОКПД2", report.classified),
+        ("с рубрикой", report.with_rubric),
+        ("с единицей ОКЕИ", report.with_unit),
+        ("с ценой за единицу", report.with_price_per_unit),
+        ("с брендом", report.with_brand),
+        ("с артикулом", report.with_article),
+        ("с характеристиками", report.with_attributes),
+    ):
+        print(f"  {title:22} {value:7}  {value / total:6.1%}")
+    for title, shares in (
+        ("Каналы классификации", report.by_method),
+        ("Тип позиции", report.by_item_type),
+        ("Уровень кода", report.by_level),
+        ("Рубрики", report.by_rubric),
+    ):
+        print(f"{title}:")
+        for share in shares:
+            name = share.name or "—"
+            print(f"  {name:22} {share.offers:7}  {share.offers / total:6.1%}")
 
 
 async def _sync(arguments: argparse.Namespace, config: AppConfig) -> int:
