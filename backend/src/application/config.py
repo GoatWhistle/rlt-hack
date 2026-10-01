@@ -98,6 +98,8 @@ class AppConfig:
     productcenter_cache_dir: Path | None = None
     use_moscow_suppliers_provider: bool = False
     moscow_suppliers_export_url: str = ""
+    use_supl_biz_provider: bool = False
+    supl_biz_max_cards: int = 0
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -145,4 +147,6 @@ class AppConfig:
             ),
             use_moscow_suppliers_provider=_bool("MOSCOW_SUPPLIERS_PROVIDER", False),
             moscow_suppliers_export_url=os.getenv("MOSCOW_SUPPLIERS_EXPORT_URL", ""),
+            use_supl_biz_provider=_bool("SUPL_BIZ_WEB_PROVIDER", False),
+            supl_biz_max_cards=_int("SUPL_BIZ_MAX_CARDS", 0),
         )
