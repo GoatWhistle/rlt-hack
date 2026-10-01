@@ -1,0 +1,2 @@
+class EmbeddingClientError(Exception):
+    pass

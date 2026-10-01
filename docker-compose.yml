@@ -109,7 +109,60 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  parser-worker:
+    extends:
+      service: sync-job
+    profiles: ["workers"]
+    restart: unless-stopped
+    command: ["sync", "--forever"]
+    mem_limit: 768m
+    cpus: 1
+
+  embedder:
+    image: ollama/ollama:0.34.2
+    profiles: ["ml"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${EMBEDDING_PORT:-11435}:11434"
+    environment:
+      OLLAMA_NO_CLOUD: "true"
+      OLLAMA_MAX_LOADED_MODELS: 1
+      OLLAMA_NUM_PARALLEL: 1
+      OLLAMA_CONTEXT_LENGTH: 512
+    volumes:
+      - embedding-models:/root/.ollama
+    mem_limit: 3500m
+    cpus: 2
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  embedding-worker:
+    build:
+      context: ./backend
+    profiles: ["ml"]
+    restart: unless-stopped
+    entrypoint: ["python", "-m", "src.controller.embedding.cli"]
+    command: ["index", "--forever"]
+    environment:
+      <<: *job-environment
+      EMBEDDING_URL: http://embedder:11434
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-qwen3-embedding:4b}
+      EMBEDDING_MODEL_DIGEST: ${EMBEDDING_MODEL_DIGEST:-}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-2560}
+      EMBEDDING_CONTEXT_LENGTH: ${EMBEDDING_CONTEXT_LENGTH:-512}
+    mem_limit: 256m
+    cpus: 0.5
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      embedder:
+        condition: service_healthy
+
 volumes:
   clickhouse-data:
   clickhouse-ui-data:
   productcenter-cache:
+  embedding-models:

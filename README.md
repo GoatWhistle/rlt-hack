@@ -88,6 +88,9 @@ for file in backend/migration/*.sql; do clickhouse-client --multiquery < "$file"
 
 ## CI/CD
 
+Запуск парсера и локального эмбеддера, ограничения ресурсов и команды поиска:
+[воркеры и векторизация](deploy/WORKERS.md).
+
 GitHub Actions проверяет frontend, backend и ML на искусственных данных,
 собирает контейнеры и после успешного push в `main` разворачивает проверенный
 выпуск на сервере. Production использует отдельный Compose-проект, резервную

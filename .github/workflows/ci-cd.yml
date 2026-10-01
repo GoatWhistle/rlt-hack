@@ -72,6 +72,7 @@ jobs:
       - run: python backend/tests/supplier/gisp_registry.py
       - run: python backend/tests/supplier/gisp_api.py
       - run: python backend/tests/supplier/moscow_suppliers_smoke.py
+      - run: python backend/tests/embedding/smoke.py
 
   ml:
     runs-on: ubuntu-24.04
