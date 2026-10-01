@@ -37,7 +37,7 @@ def prepare(database: Path, cards: Path, output: Path, before: date) -> str:
     writer = None
     try:
         with duckdb.connect(str(database), read_only=True) as connection:
-            connection.execute("SET memory_limit='512MB'")
+            connection.execute("SET memory_limit='1GB'")
             connection.execute("SET threads=1")
             connection.execute("SET preserve_insertion_order=false")
             connection.execute("SET temp_directory=?", [str(output.parent / "spill")])
@@ -47,7 +47,33 @@ def prepare(database: Path, cards: Path, output: Path, before: date) -> str:
                 [str(cards)],
             )
             for partition in range(32):
-                connection.execute("DROP TABLE IF EXISTS chunk_picks")
+                for table_name in (
+                    "chunk_picks",
+                    "chunk_lots",
+                    "chunk_participations",
+                    "chunk_cards",
+                ):
+                    connection.execute(f"DROP TABLE IF EXISTS {table_name}")
+                connection.execute(
+                    "CREATE TEMP TABLE chunk_cards AS SELECT * FROM selected_cards "
+                    "WHERE hash(supplier_inn) % 32 = ?",
+                    [partition],
+                )
+                connection.execute("""
+                    CREATE TEMP TABLE chunk_participations AS
+                    SELECT p.lot_id, p.supplier_inn, p.is_winner, p.label_conflict
+                    FROM participations p SEMI JOIN chunk_cards s USING (supplier_inn)
+                """)
+                connection.execute(
+                    """
+                    CREATE TEMP TABLE chunk_lots AS
+                    SELECT l.lot_id, l.publish_date, l.winner_count, l.procedure_name,
+                           l.query_text, l.customer_inn, l.source_system
+                    FROM lot_info l SEMI JOIN chunk_participations p USING (lot_id)
+                    WHERE l.publish_date < ? AND NOT l.notice_conflict
+                """,
+                    [before],
+                )
                 connection.execute(
                     """
                     CREATE TEMP TABLE chunk_picks AS
@@ -55,12 +81,10 @@ def prepare(database: Path, cards: Path, output: Path, before: date) -> str:
                         SELECT p.supplier_inn, c.category, l.lot_id, l.publish_date,
                                (p.is_winner AND NOT p.label_conflict AND l.winner_count=1)
                                    ::INTEGER is_winner
-                        FROM participations p JOIN lot_info l USING (lot_id)
+                        FROM chunk_participations p JOIN chunk_lots l USING (lot_id)
                         JOIN lot_categories c USING (lot_id)
-                        JOIN selected_cards s
+                        JOIN chunk_cards s
                           ON s.supplier_inn=p.supplier_inn AND s.category=c.category
-                        WHERE l.publish_date < ? AND NOT l.notice_conflict
-                          AND hash(s.supplier_inn) % 32 = ?
                     )
                     SELECT *, count(*) OVER w category_lots,
                            (sum(is_winner) OVER w)::BIGINT category_wins
@@ -70,7 +94,6 @@ def prepare(database: Path, cards: Path, output: Path, before: date) -> str:
                         ORDER BY is_winner DESC, publish_date DESC, lot_id
                     ) <= 5
                 """,
-                    [before, partition],
                 )
                 table = connection.execute("""
                     SELECT e.supplier_inn, e.category, e.lot_id,
@@ -81,13 +104,14 @@ def prepare(database: Path, cards: Path, output: Path, before: date) -> str:
                                ORDER BY p.product_name) FILTER (WHERE p.product_name IS NOT NULL),
                                1, 10), []) product_names,
                            e.is_winner, e.category_lots, e.category_wins
-                    FROM chunk_picks e JOIN lot_info l USING (lot_id)
+                    FROM chunk_picks e JOIN chunk_lots l USING (lot_id)
                     LEFT JOIN products p ON p.lot_id=e.lot_id AND p.category=e.category
                     GROUP BY ALL
                 """).to_arrow_table()
                 if writer is None:
                     writer = parquet.ParquetWriter(output, table.schema, compression="zstd")
                 writer.write_table(table)
+                print(f"Evidence partition {partition + 1}/32: {table.num_rows} rows", flush=True)
     finally:
         if writer is not None:
             writer.close()
