@@ -65,14 +65,19 @@ class FakeSupplierSearching:
 
     async def recent(self, limit: int) -> tuple[SearchSummary, ...]:
         self.limits.append(limit)
+        if self.error is not None:
+            raise self.error
         return self.summaries
 
 
 @dataclass
 class FakeSupplierProfiles:
     profile: SupplierProfile = field(default_factory=make_profile)
+    error: Exception | None = None
 
     async def get(self, supplier_id: UUID) -> SupplierProfile:
+        if self.error is not None:
+            raise self.error
         if supplier_id != self.profile.supplier.supplier_id:
             raise SupplierNotFoundError(supplier_id)
         return self.profile
@@ -101,6 +106,8 @@ class FakeProcurementUploads:
         return make_summary()
 
     async def recent(self, limit: int) -> tuple[UploadSummary, ...]:
+        if self.error is not None:
+            raise self.error
         return (self.detail.summary,)[:limit]
 
     async def get(self, upload_id: UUID) -> UploadDetail:
@@ -119,6 +126,8 @@ class FakeProcurementUploads:
         return UploadResults(self.detail.summary, (make_processed(),))
 
     def _known(self, upload_id: UUID) -> None:
+        if self.error is not None:
+            raise self.error
         if upload_id != UPLOAD_ID:
             raise UploadNotFoundError(upload_id)
 

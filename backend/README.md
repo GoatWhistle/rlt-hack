@@ -297,6 +297,7 @@ API получает пул такого размера, и каналы пои�
 | 404 | `not_found` | неизвестный маршрут |
 | 405 | `method_not_allowed` | метод не поддерживается маршрутом |
 | 503 | `search_unavailable` | недоступны все каналы поиска |
+| 503 | `storage_unavailable` | ClickHouse недоступен; заголовок `Retry-After: 5` |
 | 504 | `search_timeout` | превышен `SEARCH_TIMEOUT_SECONDS` |
 | 500 | `internal_error` | прочие ошибки, без деталей наружу |
 

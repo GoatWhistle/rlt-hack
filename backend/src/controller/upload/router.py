@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/uploads", tags=["uploads"])
 
 ERRORS: dict[int | str, dict[str, object]] = {
-    code: {"model": ApiErrorDto} for code in (400, 404, 413, 415, 422, 500)
+    code: {"model": ApiErrorDto} for code in (400, 404, 413, 415, 422, 500, 503)
 }
 
 

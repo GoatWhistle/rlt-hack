@@ -32,6 +32,7 @@ from src.service.errors import (
     SearchTimeoutError,
     SearchUnavailableError,
     ServiceError,
+    StorageUnavailableError,
     SupplierNotFoundError,
     UninterpretableQueryError,
     UploadNotFoundError,
@@ -54,7 +55,13 @@ class ApiErrorDto(CamelModel):
 class ErrorKind:
     status: int
     code: str
+    retry_after: int | None = None
 
+    def headers(self) -> dict[str, str]:
+        return {} if self.retry_after is None else {"Retry-After": str(self.retry_after)}
+
+
+RETRY_AFTER_SECONDS = 5
 
 INTERNAL = ErrorKind(HTTPStatus.INTERNAL_SERVER_ERROR, "internal_error")
 INVALID_REQUEST = ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "invalid_request")
@@ -83,6 +90,10 @@ KNOWN_ERRORS: tuple[tuple[type[Exception], ErrorKind], ...] = (
     (SearchNotFoundError, ErrorKind(HTTPStatus.NOT_FOUND, "search_not_found")),
     (SupplierNotFoundError, ErrorKind(HTTPStatus.NOT_FOUND, "supplier_not_found")),
     (SearchUnavailableError, ErrorKind(HTTPStatus.SERVICE_UNAVAILABLE, "search_unavailable")),
+    (
+        StorageUnavailableError,
+        ErrorKind(HTTPStatus.SERVICE_UNAVAILABLE, "storage_unavailable", RETRY_AFTER_SECONDS),
+    ),
     (SearchTimeoutError, ErrorKind(HTTPStatus.GATEWAY_TIMEOUT, "search_timeout")),
 )
 
@@ -128,7 +139,7 @@ async def handle_known(request: Request, error: Exception) -> JSONResponse:
         "request rejected",
         extra={"request_id": request_id_of(request), "code": kind.code, "status": kind.status},
     )
-    return error_response(request, kind, str(error))
+    return error_response(request, kind, str(error), kind.headers())
 
 
 async def handle_validation(request: Request, error: Exception) -> JSONResponse:

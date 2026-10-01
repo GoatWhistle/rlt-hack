@@ -10,7 +10,9 @@ from src.controller.supplier.protocols import SupplierProfiles
 
 router = APIRouter(prefix="/api/suppliers", tags=["suppliers"])
 
-ERRORS: dict[int | str, dict[str, object]] = {code: {"model": ApiErrorDto} for code in (404, 500)}
+ERRORS: dict[int | str, dict[str, object]] = {
+    code: {"model": ApiErrorDto} for code in (404, 500, 503)
+}
 
 
 async def profiles(found: Annotated[Services, Depends(services)]) -> SupplierProfiles:

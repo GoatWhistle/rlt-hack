@@ -2,13 +2,19 @@ import asyncio
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
 from typing import Any
+from uuid import uuid4
 
+import httpx
 import pytest
 
 from src.adapter.repository.clickhouse.protocols import SqlGateway
+from src.adapter.repository.errors import RepositoryError, RepositoryUnavailableError
 from src.application.api import ApiContainer
 from src.application.config import AppConfig, MlServiceConfig, SearchConfig
 from src.application.deferred_gateway import DeferredGateway
+from src.controller.http.app import create_app
+from src.controller.http.settings import ApiSettings
+from src.service.errors import StorageUnavailableError
 
 
 class RecordingGateway:
@@ -103,3 +109,47 @@ async def test_closing_releases_the_database_and_the_ml_client() -> None:
     await api.aclose()
     assert connector.released == 2
     await ApiContainer(AppConfig(), connector.connect).aclose()
+
+
+async def refuse() -> SqlGateway:
+    raise RepositoryUnavailableError("connection refused")
+
+
+async def test_deferred_gateway_reports_storage_outage_to_services() -> None:
+    gateway = DeferredGateway(refuse)
+    with pytest.raises(StorageUnavailableError):
+        await gateway.select("SELECT 1")
+    with pytest.raises(StorageUnavailableError):
+        await gateway.command("OPTIMIZE")
+    with pytest.raises(StorageUnavailableError):
+        await gateway.insert("t", ("a",), [(1,)])
+
+
+async def test_deferred_gateway_keeps_other_repository_errors() -> None:
+    async def broken() -> SqlGateway:
+        raise RepositoryError("bad sql")
+
+    with pytest.raises(RepositoryError):
+        await DeferredGateway(broken).select("SELECT 1")
+
+
+async def test_unreachable_clickhouse_returns_503() -> None:
+    app = create_app(ApiContainer(AppConfig(), refuse), ApiSettings())
+    async with app.router.lifespan_context(app):
+        transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as http:
+            for path in (
+                "/api/searches",
+                f"/api/searches/{uuid4()}",
+                f"/api/suppliers/{uuid4()}",
+                "/api/uploads",
+                f"/api/uploads/{uuid4()}",
+            ):
+                response = await http.get(path)
+                assert (response.status_code, response.json()["code"]) == (
+                    503,
+                    "storage_unavailable",
+                ), path
+            searched = await http.post("/api/searches", json={"text": "рис 5 кг"})
+            assert (searched.status_code, searched.json()["code"]) == (503, "search_unavailable")
+            assert (await http.get("/api/health/ready")).status_code == 503

@@ -40,6 +40,11 @@ class SearchNotFoundError(SearchError):
         self.search_id = search_id
 
 
+class StorageUnavailableError(ServiceError):
+    def __init__(self) -> None:
+        super().__init__("storage is temporarily unavailable")
+
+
 class SupplierNotFoundError(ServiceError):
     def __init__(self, supplier_id: object) -> None:
         super().__init__(f"supplier {supplier_id} not found")

@@ -6,7 +6,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import pytest
-from clickhouse_connect.driver.exceptions import DatabaseError
+from clickhouse_connect.driver.exceptions import DatabaseError, OperationalError
+from urllib3.exceptions import ProtocolError
 
 from src.adapter.repository.clickhouse.gateway import ConnectGateway
 from src.adapter.repository.clickhouse.pool.gateway import GatewayPool
@@ -89,6 +90,12 @@ class Driver:
         return ConnectGateway(driver)
 
 
+def transport_error() -> OperationalError:
+    error = OperationalError("Error executing HTTP request")
+    error.__cause__ = ProtocolError("connection reset")
+    return error
+
+
 async def select_many(pool: GatewayPool, count: int) -> list[list[tuple[Any, ...]]]:
     return await asyncio.gather(*(pool.select(f"SELECT {index}") for index in range(count)))
 
@@ -128,6 +135,8 @@ async def test_pool_runs_queries_in_parallel() -> None:
     ("failure", "expected"),
     [
         (OSError("reset"), RepositoryUnavailableError),
+        (transport_error(), RepositoryUnavailableError),
+        (OperationalError("Code: 159. TIMEOUT_EXCEEDED"), RepositoryError),
         (DatabaseError("bad sql"), RepositoryError),
         (ValueError("other"), ValueError),
     ],

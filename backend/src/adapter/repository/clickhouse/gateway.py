@@ -11,6 +11,9 @@ from collections.abc import Mapping, Sequence
 from types import TracebackType
 from typing import Any
 
+from clickhouse_connect.driver.exceptions import OperationalError
+from urllib3.exceptions import HTTPError as TransportError
+
 from src.adapter.repository.errors import RepositoryError, RepositoryUnavailableError
 
 
@@ -74,8 +77,12 @@ class _translated_errors:
     ) -> bool:
         if exc is None:
             return False
-        if isinstance(exc, OSError):
+        if isinstance(exc, OSError) or _transport_failure(exc):
             raise RepositoryUnavailableError(str(exc)) from exc
         if type(exc).__module__.startswith("clickhouse_connect"):
             raise RepositoryError(str(exc)) from exc
         return False
+
+
+def _transport_failure(exc: BaseException) -> bool:
+    return isinstance(exc, OperationalError) and isinstance(exc.__cause__, TransportError | OSError)
