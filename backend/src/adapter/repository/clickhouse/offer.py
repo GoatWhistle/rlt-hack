@@ -1,7 +1,7 @@
 """Репозиторий предложений."""
 
-from collections.abc import Iterable, Sequence
-from datetime import UTC, datetime
+from collections.abc import Sequence
+from datetime import datetime
 from uuid import UUID
 
 from src.adapter.repository.clickhouse.protocols import SqlGateway
@@ -43,12 +43,16 @@ COLUMNS = (
 
 # Предложения, которых нет в полном обходе, снимаются с продажи, а не удаляются:
 # данные и свидетельства сохраняются. Пишется полный снимок строки новой версией.
+# Отсутствующие отбираются по времени обхода: все строки пакета записаны с его
+# отметкой, поэтому более старая отметка означает, что предложение не встретилось.
+# Перечислять увиденные идентификаторы нельзя — пакет каталога их тысячи, а
+# параметры запроса уходят в HTTP-форму с ограниченной длиной поля.
 # Фильтр лежит во вложенном запросе: псевдоним availability из REPLACE иначе
 # перекрывает колонку в WHERE и условие становится всегда ложным.
 _ABSENT_CONDITION = (
     "WHERE source_id = {source_id:UUID} "
     "AND availability != 'unavailable' "
-    "AND NOT has({seen:Array(UUID)}, offer_id))"
+    "AND updated_at < {observed_at:DateTime64(3, 'UTC')})"
 )
 
 
@@ -63,8 +67,8 @@ class ClickHouseOfferRepository:
         self._versions = versions
         self._db = database
 
-    async def save_many(self, offers: Sequence[Offer]) -> None:
-        updated_at = datetime.now(UTC)
+    async def save_many(self, offers: Sequence[Offer], updated_at: datetime) -> None:
+        """Отметка обхода общая для всего пакета: по ней отбираются исчезнувшие."""
         await self._gateway.insert(
             f"{self._db}.offers",
             COLUMNS,
@@ -104,26 +108,19 @@ class ClickHouseOfferRepository:
             ],
         )
 
-    async def first_seen(self, offer_ids: Iterable[UUID]) -> dict[UUID, datetime]:
-        ids = [str(value) for value in offer_ids]
-        if not ids:
-            return {}
+    async def first_seen(self, source_id: UUID) -> dict[UUID, datetime]:
+        """Время первой встречи всех предложений источника: оно не теряется."""
         rows = await self._gateway.select(
             f"SELECT offer_id, min(first_seen_at) FROM {self._db}.offers "
-            "WHERE offer_id IN {offer_ids:Array(UUID)} GROUP BY offer_id",
-            {"offer_ids": ids},
+            "WHERE source_id = {source_id:UUID} GROUP BY offer_id",
+            {"source_id": str(source_id)},
         )
         return {to_uuid(row[0]): to_datetime(row[1]) for row in rows}
 
-    async def withdraw_absent(
-        self,
-        source_id: UUID,
-        seen_offer_ids: Iterable[UUID],
-        observed_at: datetime,
-    ) -> int:
+    async def withdraw_absent(self, source_id: UUID, observed_at: datetime) -> int:
         parameters = {
             "source_id": str(source_id),
-            "seen": [str(value) for value in seen_offer_ids],
+            "observed_at": observed_at,
             "withdrawn_at": observed_at,
             "version_floor": self._versions.next(),
         }

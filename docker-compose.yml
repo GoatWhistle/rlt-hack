@@ -1,16 +1,16 @@
-# Локальный запуск: фронтенд, хранилище ClickHouse, миграции и джоба сбора поставщиков.
+# Локальный запуск: фронтенд, хранилище ClickHouse с веб-интерфейсом, миграции и джоба сбора поставщиков.
 services:
-  frontend:
-    build:
-      context: .
-      dockerfile: deploy/frontend.Dockerfile
-      target: runtime
-      args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
-        VITE_DEMO_MODE: ${VITE_DEMO_MODE:-true}
-    ports:
-      - "${WEB_PORT:-8080}:8080"
-    restart: unless-stopped
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: deploy/frontend.Dockerfile
+  #     target: runtime
+  #     args:
+  #       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+  #       VITE_DEMO_MODE: ${VITE_DEMO_MODE:-true}
+  #   ports:
+  #     - "${WEB_PORT:-8080}:8080"
+  #   restart: unless-stopped
 
   clickhouse:
     image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server:26.9}
@@ -34,6 +34,22 @@ services:
       timeout: 3s
       retries: 20
 
+  # Веб-интерфейс ClickHouse: запросы и обзор таблиц в браузере.
+  clickhouse-ui:
+    image: ${CLICKHOUSE_UI_IMAGE:-ghcr.io/caioricciuti/ch-ui:v2.14.1}
+    environment:
+      # Доступ передаётся внутри URL: ch-ui ходит в ClickHouse сам, из контейнера.
+      CLICKHOUSE_URL: ${CLICKHOUSE_UI_URL:-http://${CLICKHOUSE_USER:-default}:${CLICKHOUSE_PASSWORD:-}@clickhouse:8123}
+      CONNECTION_NAME: ${CLICKHOUSE_DATABASE:-supplier_search}
+    ports:
+      - "${CLICKHOUSE_UI_PORT:-3488}:3488"
+    volumes:
+      - clickhouse-ui-data:/app/data
+    restart: unless-stopped
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+
   # Применяет миграции и завершается. Запускается при каждом `up`.
   migrate:
     build:
@@ -46,7 +62,9 @@ services:
       CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-}
       CLICKHOUSE_DATABASE: ${CLICKHOUSE_DATABASE:-supplier_search}
+      CLICKHOUSE_SECURE: ${CLICKHOUSE_SECURE:-false}
       TASK_DATA_DIR: /data/task
+      SUPPLIER_DATASET_PATH: ${SUPPLIER_DATASET_PATH:-}
       # Каждый адаптер источника включается своим флагом.
       SUPPLIER_DATASET_PROVIDER: ${SUPPLIER_DATASET_PROVIDER:-true}
       SUPPLIER_DATASET_REGION: ${SUPPLIER_DATASET_REGION:-}
@@ -54,11 +72,13 @@ services:
       SUPPLIER_FEED_URLS: ${SUPPLIER_FEED_URLS:-}
       SCHEMA_ORG_WEB_PROVIDER: ${SCHEMA_ORG_WEB_PROVIDER:-false}
       SUPPLIER_SITE_URLS: ${SUPPLIER_SITE_URLS:-}
-      OPTKATALOG_WEB_PROVIDER: ${OPTKATALOG_WEB_PROVIDER:-false}
-      ABOUTPARTNER_WEB_PROVIDER: ${ABOUTPARTNER_WEB_PROVIDER:-false}
-      TEXZAKAZ_WEB_PROVIDER: ${TEXZAKAZ_WEB_PROVIDER:-false}
+      OPTKATALOG_WEB_PROVIDER: ${OPTKATALOG_WEB_PROVIDER:-true}
+      ABOUTPARTNER_WEB_PROVIDER: ${ABOUTPARTNER_WEB_PROVIDER:-true}
+      TEXZAKAZ_WEB_PROVIDER: ${TEXZAKAZ_WEB_PROVIDER:-true}
       SYNC_PARALLEL_SOURCES: ${SYNC_PARALLEL_SOURCES:-4}
       SYNC_PARALLEL_REQUESTS: ${SYNC_PARALLEL_REQUESTS:-4}
+      SYNC_WRITE_BATCH: ${SYNC_WRITE_BATCH:-500}
+      SYNC_MAX_CARDS: ${SYNC_MAX_CARDS:-500}
       SYNC_INTERVAL_SECONDS: ${SYNC_INTERVAL_SECONDS:-3600}
       REQUEST_TIMEOUT: ${REQUEST_TIMEOUT:-30}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
@@ -83,3 +103,4 @@ services:
 
 volumes:
   clickhouse-data:
+  clickhouse-ui-data:

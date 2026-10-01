@@ -39,31 +39,36 @@ uv run --no-project --with 'reportlab==5.0.1' python docs/generate_schema_pdf.py
 ## Запуск через Docker Compose
 
 ```bash
-docker compose up -d --build                 # фронтенд, ClickHouse и применение миграций
+cp .env.example .env                         # переменные окружения, файл в Git не попадает
+docker compose up -d --build                 # фронтенд, ClickHouse с веб-интерфейсом и применение миграций
 docker compose run --rm sync-job providers   # подключённые адаптеры источников
 docker compose run --rm sync-job sync        # обход включённых источников
 ```
 
-Фронтенд будет доступен на `http://localhost:8080`.
+Фронтенд будет доступен на `http://localhost:8080`, веб-интерфейс ClickHouse —
+на `http://localhost:3488`. Вход в интерфейс выполняется пользователем самого
+ClickHouse (по умолчанию `default` с пустым паролем); сервис `clickhouse-ui`
+обращается к базе сам, из контейнера, поэтому порт 8123 наружу ему не нужен.
+Простой встроенный редактор запросов доступен и без него — на
+`http://localhost:8123/play`.
 
 Миграции применяются сервисом `migrate` при каждом `up`; повторный запуск
-ничего не меняет. Каждый источник включается своим флагом: адаптеры каталогов
-выключены, пока их селекторы не сверены с живыми страницами, а адаптер исходного
-CSV включён сразу и требует загруженных данных Git LFS.
+ничего не меняет. Каждый источник включается своим флагом. Каталоги компаний,
+YML-фиды и сайты с разметкой schema.org включены и обходятся по sitemap
+источника; адаптер исходного CSV выключен, потому что требует выгруженных данных
+Git LFS в `task/data` — на рабочем компьютере они не выгружаются.
 
-| Переменная | По умолчанию | Назначение |
-| --- | --- | --- |
-| `WEB_PORT` | `8080` | Порт фронтенда на хосте |
-| `VITE_API_BASE_URL` | `/api` | Базовый URL API при сборке |
-| `VITE_DEMO_MODE` | `true` | Показывать демонстрационный результат без backend; `false` — отправлять файл в `POST {VITE_API_BASE_URL}/recommendations` |
+### Переменные окружения
 
-Переменные окружения хранилища и джобы с значениями по умолчанию:
-`CLICKHOUSE_IMAGE`, `CLICKHOUSE_HTTP_PORT` (8123), `CLICKHOUSE_NATIVE_PORT`
-(9000), `CLICKHOUSE_USER` (default), `CLICKHOUSE_PASSWORD` (пусто),
-`CLICKHOUSE_DATABASE` (supplier_search), `SUPPLIER_DATASET_PROVIDER` (true),
-`SYNC_PARALLEL_SOURCES` (4), `SYNC_PARALLEL_REQUESTS` (4),
-`SYNC_INTERVAL_SECONDS` (3600), `REQUEST_TIMEOUT` (30), `LOG_LEVEL` (INFO).
-Полный список переменных джобы — в [backend/README.md](backend/README.md).
+Все переменные с значениями по умолчанию и пояснениями перечислены в
+[.env.example](.env.example): порты и режим фронтенда, образы и доступ к
+ClickHouse, адрес для веб-интерфейса, флаги источников и ограничения джобы.
+Compose читает их из `.env` в корне проекта и из окружения оболочки; без `.env`
+действуют значения по умолчанию, записанные в `docker-compose.yml`. Пустое
+значение в `.env` равносильно значению по умолчанию.
+
+Назначение переменных джобы сбора подробнее описано в
+[backend/README.md](backend/README.md).
 
 ## Применение миграций без Docker
 

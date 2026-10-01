@@ -122,9 +122,9 @@ async def main() -> None:
                 "yml_feed",
                 "supplier_dataset",
             }, stored_sources
-            assert (
-                await rows("SELECT count() FROM supplier_search.suppliers_current")
-            )[0][0] == 3, "компании датасета и владелец фида свёрнуты по ИНН"
+            assert (await rows("SELECT count() FROM supplier_search.suppliers_current"))[0][
+                0
+            ] == 3, "компании датасета и владелец фида свёрнуты по ИНН"
             offer_rows = await rows(
                 "SELECT external_id, name, price, availability, first_seen_at "
                 "FROM supplier_search.offers_current ORDER BY external_id"
@@ -154,8 +154,7 @@ async def main() -> None:
             assert third["yml_feed"].offers_extracted == 0, third
             assert third["yml_feed"].offers_withdrawn == 0, third
             remaining = await rows(
-                "SELECT availability FROM supplier_search.offers_current "
-                "WHERE external_id = 'A-1'"
+                "SELECT availability FROM supplier_search.offers_current WHERE external_id = 'A-1'"
             )
             assert remaining[0][0] == "available", remaining
 
