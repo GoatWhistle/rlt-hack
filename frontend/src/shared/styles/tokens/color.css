@@ -88,4 +88,5 @@
   --state-success: var(--success);
   --state-danger: var(--warning-text);
   --skeleton: var(--palette-empty);
+  --disabled-opacity: 0.55;
 }

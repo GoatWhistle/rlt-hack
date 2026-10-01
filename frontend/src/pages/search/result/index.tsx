@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router"
 import { useSearchResult } from "@/entities/search/queries"
-import { WarningNote } from "@/entities/search/ui/warning-note"
+import { WarningNote } from "@/entities/evidence/ui/warning-note"
 import { isApiError } from "@/shared/api/api-error"
 import { SEARCH_PATH } from "@/shared/config/paths"
 import { ButtonLink } from "@/shared/ui/button"

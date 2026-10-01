@@ -1,6 +1,5 @@
 :root {
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --dur-fast: 130ms;
@@ -11,6 +10,7 @@
   --motion-offset: 0.5rem;
   --motion-scale: 0.96;
   --press-scale: 0.97;
+  --press-scale-surface: 0.99;
   --pop-scale: 0.4;
   --transition-control:
     background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out),
@@ -18,22 +18,40 @@
     opacity var(--dur-fast) var(--ease-out);
   --motion-swap: fade-in var(--dur-fast) var(--ease-out) both;
   --motion-fade-in: fade-in var(--dur-enter) var(--ease-out) both;
-  --motion-fade-out: fade-out var(--dur-exit) var(--ease-in) both;
+  --motion-fade-out: fade-out var(--dur-exit) var(--ease-out) both;
   --motion-scale-in: scale-in var(--dur-enter) var(--ease-out) both;
-  --motion-scale-out: scale-out var(--dur-exit) var(--ease-in) both;
+  --motion-scale-out: scale-out var(--dur-exit) var(--ease-out) both;
   --motion-drawer-in: drawer-in var(--dur-drawer) var(--ease-drawer) both;
-  --motion-drawer-out: drawer-out var(--dur-exit) var(--ease-in) both;
+  --motion-drawer-out: drawer-out var(--dur-exit) var(--ease-out) both;
   --motion-pop-in: pop-in var(--dur-base) var(--ease-out) both;
   --motion-slide-in: slide-in var(--dur-enter) var(--ease-out) both;
-  --motion-slide-out: slide-out var(--dur-exit) var(--ease-in) both;
+  --motion-slide-out: slide-out var(--dur-exit) var(--ease-out) both;
   --motion-grow: grow-x var(--dur-enter) var(--ease-out) both;
-  --motion-collapse: collapse var(--dur-exit) var(--ease-in) both;
+  --motion-collapse: collapse var(--dur-exit) var(--ease-out) both;
   --dur-pulse: 900ms;
   --skeleton-dim: 0.5;
   --motion-pulse: pulse var(--dur-pulse) var(--ease-in-out) infinite alternate;
   --delay-skeleton: 300ms;
   --motion-skeleton-in: fade-in var(--dur-enter) var(--ease-out) var(--delay-skeleton) both;
   --transition-indicator: transform var(--dur-base) var(--ease-out);
+  --transition-surface: var(--transition-control), box-shadow var(--dur-fast) var(--ease-out);
+  --motion-expand: expand var(--dur-enter) var(--ease-out) both;
+  --motion-reveal: reveal-x var(--dur-drawer) var(--ease-out) both;
+  --dur-spin: 700ms;
+  --motion-spin: spin var(--dur-spin) linear infinite;
+  --dur-sweep: 1200ms;
+  --motion-sweep: sweep var(--dur-sweep) linear infinite;
+  --motion-slide-x-in: slide-x-in var(--dur-enter) var(--ease-out) both;
+  --stagger-step: 40ms;
+  --reveal-index: 0;
+  --stagger-offset: 60ms;
+  --dur-route-progress: 2000ms;
+  --motion-route-progress: route-progress var(--dur-route-progress) var(--ease-out) both;
+  --route-progress-max: 0.9;
+  --transition-segment: flex-grow var(--dur-drawer) var(--ease-out);
+  --vt-old: fade-out var(--dur-exit) var(--ease-out) both;
+  --vt-new: slide-in var(--dur-enter) var(--ease-out) both;
+  --vt-morph: var(--dur-drawer);
 }
 
 @keyframes fade-in {
@@ -103,6 +121,53 @@
   }
 }
 
+@keyframes expand {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transform: translateY(calc(var(--motion-offset) * -1));
+  }
+}
+
+@keyframes reveal-x {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes slide-x-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--motion-offset) * var(--slide-direction, 1)));
+  }
+}
+
+@keyframes route-progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(var(--route-progress-max));
+  }
+}
+
 @keyframes grow-x {
   from {
     transform: scaleX(0);
@@ -123,6 +188,10 @@
     --dur-exit: 1ms;
     --dur-drawer: 1ms;
     --dur-pulse: 1ms;
+    --dur-route-progress: 1ms;
+    --stagger-step: 0ms;
+    --stagger-offset: 0ms;
+    --vt-morph: 1ms;
     --motion-offset: 0;
     --motion-scale: 1;
     --pop-scale: 1;

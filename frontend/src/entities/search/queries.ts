@@ -46,7 +46,7 @@ export function useRunSearch() {
     meta: { silent: true },
     onSuccess: (result) => {
       client.setQueryData(searchKeys.detail(locale, result.searchId), result)
-      return client.invalidateQueries({
+      void client.invalidateQueries({
         queryKey: searchKeys.all,
         predicate: (query) => query.queryKey[2] === RECENT_PART,
       })

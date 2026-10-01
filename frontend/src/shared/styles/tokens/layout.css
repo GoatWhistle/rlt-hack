@@ -59,4 +59,10 @@
   --marker-size: 1.125rem;
   --skeleton-title: 1.75rem;
   --skeleton-hero: 12rem;
+  --meter-gap: 3px;
+  --dialog-offset: min(12dvh, 6rem);
+  --col-status: 13rem;
+  --score-width: 4ch;
+  --dock-offset: 0rem;
+  --dock-height: calc(var(--target-touch) + 2 * var(--space-2) + 2 * var(--line-width));
 }

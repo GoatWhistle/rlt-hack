@@ -49,14 +49,31 @@ function slide(group: HTMLElement, from: ThumbBox, to: ThumbBox): void {
   )
 }
 
+function visibleBox(group: HTMLElement): ThumbBox | null {
+  const thumb = group.querySelector<HTMLElement>(THUMB)
+  if (!thumb || typeof thumb.getAnimations !== "function") return null
+  const running = thumb.getAnimations()
+  if (running.length === 0) return null
+  const outer = group.getBoundingClientRect()
+  const inner = thumb.getBoundingClientRect()
+  for (const animation of running) animation.cancel()
+  return {
+    x: inner.left - outer.left - group.clientLeft + group.scrollLeft,
+    y: inner.top - outer.top - group.clientTop + group.scrollTop,
+    width: inner.width,
+    height: inner.height,
+  }
+}
+
 export function useThumb(ref: RefObject<HTMLElement | null>, value: string): void {
   const previous = useRef<ThumbBox | null>(null)
   // biome-ignore lint/correctness/useExhaustiveDependencies: the thumb moves when the checked value changes
   useLayoutEffect(() => {
     const group = ref.current
     if (!group) return
+    const from = visibleBox(group) ?? previous.current
     const box = placeThumb(group)
-    if (box && previous.current) slide(group, previous.current, box)
+    if (box && from) slide(group, from, box)
     previous.current = box
     if (typeof ResizeObserver === "undefined") return
     const observer = new ResizeObserver(() => {

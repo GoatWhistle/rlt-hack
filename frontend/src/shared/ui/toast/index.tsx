@@ -49,16 +49,33 @@ export function ToastProvider({ children }: ToastProviderProps) {
     [later],
   )
 
-  const show = useCallback(({ message, tone = "info", durationMs }: ToastInput) => {
-    nextId.current += 1
-    const id = nextId.current
-    const entry = { id, message, tone, open: true, durationMs: durationOf(tone, durationMs) }
-    setEntries((current) => [...current, entry].slice(-MAX_TOASTS))
-    setAnnouncement((current) =>
-      tone === "error" ? { ...current, assertive: message } : { ...current, polite: message },
-    )
-    return id
-  }, [])
+  const show = useCallback(
+    ({ message, tone = "info", durationMs }: ToastInput) => {
+      nextId.current += 1
+      const id = nextId.current
+      const entry = { id, message, tone, open: true, durationMs: durationOf(tone, durationMs) }
+      let overflow = new Set<number>()
+      setEntries((current) => {
+        const open = current.filter((item) => item.open)
+        overflow = new Set(
+          open.slice(0, Math.max(0, open.length + 1 - MAX_TOASTS)).map((item) => item.id),
+        )
+        return [
+          ...current.map((item) => (overflow.has(item.id) ? { ...item, open: false } : item)),
+          entry,
+        ]
+      })
+      later(
+        () => setEntries((current) => current.filter((item) => !overflow.has(item.id))),
+        EXIT_FALLBACK_MS,
+      )
+      setAnnouncement((current) =>
+        tone === "error" ? { ...current, assertive: message } : { ...current, polite: message },
+      )
+      return id
+    },
+    [later],
+  )
 
   useEffect(() => {
     const pending = timers.current

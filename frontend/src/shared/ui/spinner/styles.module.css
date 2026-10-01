@@ -1,0 +1,15 @@
+.spinner {
+  flex-shrink: 0;
+  width: var(--icon-md);
+  height: var(--icon-md);
+  border: var(--focus-ring-width) solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: var(--radius-pill);
+  animation: var(--motion-spin);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    display: none;
+  }
+}

@@ -28,7 +28,7 @@ import { LotsSkeleton } from "./lots-skeleton"
 import { LotsTable } from "./lots-table"
 import { Pagination } from "./pagination"
 import { ProcessingLine } from "./processing-line"
-import { SelectionBar } from "./selection-bar"
+import { SelectionBar } from "@/shared/ui/selection-bar"
 import styles from "./styles.module.css"
 
 type ExportState = { readonly open: boolean; readonly session: number }

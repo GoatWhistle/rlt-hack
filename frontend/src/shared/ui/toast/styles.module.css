@@ -20,7 +20,7 @@
 }
 
 .item[data-state="open"] {
-  animation: var(--motion-slide-in);
+  animation: var(--motion-expand);
 }
 
 .item[data-state="closed"] {
