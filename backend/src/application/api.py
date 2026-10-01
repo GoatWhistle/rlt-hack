@@ -117,6 +117,9 @@ class ApiContainer:
             offers=ClickHouseOfferCatalog(self._gateway, self.database),
         )
 
+    async def background(self) -> tuple[ProcurementUploadService, ...]:
+        return (await self.procurement_uploads(),)
+
     async def health(self) -> HealthService:
         return HealthService(probes=(ClickHouseProbe(self._control),))
 

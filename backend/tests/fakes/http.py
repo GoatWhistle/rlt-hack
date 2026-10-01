@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from uuid import UUID
 
+from src.controller.http.protocols import BackgroundTask
 from src.models.enums import CompanyRole, ComponentState
 from src.models.health import ComponentHealth, Readiness
 from src.models.search import SearchQuery
@@ -171,6 +172,9 @@ class FakeServiceProvider:
 
     async def health(self) -> FakeReadiness:
         return self.readiness
+
+    async def background(self) -> tuple[BackgroundTask, ...]:
+        return (self.uploads,)
 
     async def aclose(self) -> None:
         self.closed += 1

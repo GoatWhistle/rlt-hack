@@ -8,7 +8,7 @@ from src.controller.http.errors import install_error_handlers
 from src.controller.http.metrics import Metrics
 from src.controller.http.middleware import RequestContextMiddleware
 from src.controller.http.openapi import operation_id
-from src.controller.http.protocols import ServiceProvider
+from src.controller.http.protocols import BackgroundTask, ServiceProvider
 from src.controller.http.settings import ApiSettings
 from src.controller.http.state import Services
 from src.controller.metrics.router import router as metrics_router
@@ -22,17 +22,27 @@ OPENAPI_URL = "/api/openapi.json"
 Lifespan = Callable[[FastAPI], AbstractAsyncContextManager[None]]
 
 
+@asynccontextmanager
+async def running(tasks: tuple[BackgroundTask, ...]) -> AsyncIterator[None]:
+    started: list[BackgroundTask] = []
+    try:
+        for task in tasks:
+            await task.start()
+            started.append(task)
+        yield
+    finally:
+        for task in reversed(started):
+            await task.stop()
+
+
 def lifespan_for(provider: ServiceProvider) -> Lifespan:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         try:
             resolved = await Services.resolve(provider)
             app.state.services = resolved
-            await resolved.procurement_uploads.start()
-            try:
+            async with running(resolved.background):
                 yield
-            finally:
-                await resolved.procurement_uploads.stop()
         finally:
             await provider.aclose()
 

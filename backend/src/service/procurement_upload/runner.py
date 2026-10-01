@@ -6,7 +6,7 @@ from uuid import UUID
 
 from src.models.lot_result import LotResult
 from src.models.upload import PendingLot
-from src.service.procurement_upload.protocols import Clock, LotProcessing, UploadStore
+from src.service.procurement_upload.protocols import Clock, LotProcessing, PendingLots
 from src.service.procurement_upload.settings import UploadSettings
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ class LotRunner:
     def __init__(
         self,
         processor: LotProcessing,
-        store: UploadStore,
+        store: PendingLots,
         clock: Clock,
         settings: UploadSettings,
     ) -> None:

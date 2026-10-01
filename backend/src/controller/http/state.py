@@ -5,7 +5,7 @@ from fastapi import Request
 
 from src.controller.health.protocols import ReadinessChecking
 from src.controller.http.metrics import Metrics
-from src.controller.http.protocols import ServiceProvider
+from src.controller.http.protocols import BackgroundTask, ServiceProvider
 from src.controller.http.settings import ApiSettings
 from src.controller.search.protocols import SupplierSearching
 from src.controller.supplier.protocols import SupplierProfiles
@@ -18,6 +18,7 @@ class Services:
     supplier_profiles: SupplierProfiles
     procurement_uploads: ProcurementUploads
     health: ReadinessChecking
+    background: tuple[BackgroundTask, ...] = ()
 
     @classmethod
     async def resolve(cls, provider: ServiceProvider) -> "Services":
@@ -26,6 +27,7 @@ class Services:
             supplier_profiles=await provider.supplier_profiles(),
             procurement_uploads=await provider.procurement_uploads(),
             health=await provider.health(),
+            background=await provider.background(),
         )
 
 

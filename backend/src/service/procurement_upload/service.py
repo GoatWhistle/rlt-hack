@@ -16,10 +16,10 @@ from src.service.errors import LotNotFoundError, UploadNotFoundError, UploadQueu
 from src.service.procurement_upload.protocols import (
     Clock,
     IdGenerator,
+    LotQueue,
     NoticeReader,
     UploadStore,
 )
-from src.service.procurement_upload.runner import LotRunner
 from src.service.procurement_upload.settings import UploadSettings
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class ProcurementUploadService:
         self,
         reader: NoticeReader,
         store: UploadStore,
-        runner: LotRunner,
+        runner: LotQueue,
         clock: Clock,
         ids: IdGenerator,
         settings: UploadSettings,
