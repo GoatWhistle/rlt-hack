@@ -324,6 +324,7 @@ class Container:
             page_size=self._config.moscow_products_page_size,
             timeout=self._config.request_timeout,
             max_concurrent=self._config.parallel_requests,
+            retry_attempts=self._config.moscow_products_retry_attempts,
         )
 
     async def product_worker(self) -> ProductSyncWorker:

@@ -34,13 +34,15 @@ class MoscowProductProvider:
         page_size: int = 500,
         timeout: float = 30.0,
         max_concurrent: int = 4,
+        retry_attempts: int = 4,
         client: httpx.AsyncClient | None = None,
     ) -> None:
-        if page_size < 1 or max_concurrent < 1:
-            raise ValueError("page_size and max_concurrent must be positive")
+        if page_size < 1 or max_concurrent < 1 or retry_attempts < 1:
+            raise ValueError("page_size, max_concurrent and retry_attempts must be positive")
         self.source_id = source_id
         self.page_size = page_size
         self.timeout = timeout
+        self.retry_attempts = retry_attempts
         self._semaphore = asyncio.Semaphore(max_concurrent)
         self._categories: dict[str, tuple[str, ...]] = {}
         self._client = client
@@ -85,14 +87,14 @@ class MoscowProductProvider:
     async def _request(
         self, client: httpx.AsyncClient, url: str, params: dict[str, str]
     ) -> httpx.Response:
-        for attempt in range(4):
+        for attempt in range(self.retry_attempts):
             try:
                 response = await client.get(url, params=params)
                 if response.status_code not in (429, 500, 502, 503, 504):
                     return response
                 response.raise_for_status()
             except (httpx.TransportError, httpx.HTTPStatusError):
-                if attempt == 3:
+                if attempt == self.retry_attempts - 1:
                     raise
             await asyncio.sleep(min(2**attempt, 8))
         raise AssertionError("недостижимая ветка повторов")

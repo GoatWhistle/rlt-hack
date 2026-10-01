@@ -222,16 +222,21 @@ async def main() -> None:
         else:
             raise AssertionError(f"ожидалась {error_type.__name__}")
 
+    failed_requests = 0
+
     def network_failure(request: httpx.Request) -> httpx.Response:
+        nonlocal failed_requests
+        failed_requests += 1
         raise httpx.ConnectError("сеть недоступна", request=request)
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(network_failure)) as client:
         try:
-            await _consume(MoscowProductProvider(uuid4(), client=client))
+            await _consume(MoscowProductProvider(uuid4(), client=client, retry_attempts=2))
         except httpx.ConnectError:
             pass
         else:
             raise AssertionError("сетевой сбой был проигнорирован")
+    assert failed_requests == 2
 
 
 async def _consume(provider: MoscowProductProvider) -> None:
