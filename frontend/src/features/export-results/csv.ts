@@ -37,8 +37,11 @@ export const SUPPLIER_COLUMNS = [
 
 type Cell = string | number
 
+const FORMULA_START = /^[=+\-@\t\r]/
+
 function cell(value: Cell): string {
-  const raw = String(value)
+  const raw =
+    typeof value === "string" && FORMULA_START.test(value) ? `'${value}` : String(value)
   return /[",;\n\r]/.test(raw) ? `"${raw.replaceAll('"', '""')}"` : raw
 }
 

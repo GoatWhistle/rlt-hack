@@ -56,6 +56,18 @@ describe("the result files", () => {
     expect(chosen).toContain("West Trade")
   })
 
+  it("keeps spreadsheet formulas from running", () => {
+    expect(
+      toCsv(
+        ["a", "b"],
+        [
+          ["=HYPERLINK(1)", -5],
+          ["@cmd", "+1"],
+        ],
+      ),
+    ).toBe(`${CSV_BOM}a;b\r\n'=HYPERLINK(1);-5\r\n'@cmd;'+1\r\n`)
+  })
+
   it("quotes cells that need it and names the files after the upload", () => {
     expect(toCsv(["a"], [['say "hi"; ok']])).toBe(`${CSV_BOM}a\r\n"say ""hi""; ok"\r\n`)
     expect(exportFileNames("notices.csv")).toEqual({
