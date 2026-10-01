@@ -27,6 +27,9 @@ if [[ -n $(docker ps --quiet --filter "name=^${project}-parser-worker") ]]; then
   exit 1
 fi
 docker rm --force "$name" >/dev/null 2>&1 || true
+# Обход идёт с --no-deps, поэтому depends_on джобы не действует: база
+# поднимается и ожидается здесь, иначе обход упадёт на первой записи.
+compose up -d --no-deps --wait --wait-timeout 180 clickhouse
 compose run --detach --rm --no-deps --name "$name" sync-job sync
 echo "Parsing started in container $name (release $RLT_IMAGE_TAG)"
 echo "Logs: docker logs --follow $name"

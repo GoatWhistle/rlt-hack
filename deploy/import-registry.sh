@@ -93,4 +93,8 @@ else
   rm -rf "$parts"
 fi
 
+# ClickHouse поднимается и ожидается явно: импорт идёт с --no-deps, поэтому
+# depends_on джобы не действует, и на остановленной базе команда падала на
+# первой же записи с Connection refused.
+compose up -d --no-deps --wait --wait-timeout 180 clickhouse
 compose run --rm --no-deps sync-job registry-import
