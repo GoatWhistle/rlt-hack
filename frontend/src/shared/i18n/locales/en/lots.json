@@ -2,18 +2,18 @@
   "loading": "Loading purchases",
   "back": "Uploads",
   "uploaded": "Uploaded {{date}}",
-  "notices_one": "{{count, number}} notice",
-  "notices_other": "{{count, number}} notices",
+  "notices_one": "{{count, number}} notice",
+  "notices_other": "{{count, number}} notices",
   "download": "Download results",
   "processing": {
     "label": "Processing progress",
-    "running": "Processing: {{processed, number}} of {{total, number}} ready",
+    "running": "Processing: {{processed, number}} of {{total, number}} ready",
     "hint": "Finished purchases can be opened already.",
-    "done_one": "Processing finished: {{count, number}} purchase",
-    "done_other": "Processing finished: {{count, number}} purchases"
+    "done_one": "Processing finished: {{count, number}} purchase",
+    "done_other": "Processing finished: {{count, number}} purchases"
   },
-  "rejected_one": "{{count, number}} row was not processed because of errors",
-  "rejected_other": "{{count, number}} rows were not processed because of errors",
+  "rejected_one": "{{count, number}} row was not processed because of errors",
+  "rejected_other": "{{count, number}} rows were not processed because of errors",
   "rejectedNote": "Fix these rows in the source file and upload it again. Results already processed stay in this upload.",
   "search": {
     "label": "Search purchases",
@@ -46,10 +46,10 @@
     "noPrice": "not given",
     "pending": "—",
     "priceMissing": "price not given",
-    "productCount_one": "{{count, number}} product",
-    "productCount_other": "{{count, number}} products",
-    "candidateCount_one": "{{count, number}} candidate",
-    "candidateCount_other": "{{count, number}} candidates"
+    "productCount_one": "{{count, number}} product",
+    "productCount_other": "{{count, number}} products",
+    "candidateCount_one": "{{count, number}} candidate",
+    "candidateCount_other": "{{count, number}} candidates"
   },
   "status": {
     "queued": "Queued",
@@ -60,7 +60,7 @@
   },
   "pages": {
     "label": "Table pages",
-    "range": "{{from, number}}–{{to, number}} of {{total, number}}",
+    "range": "{{from, number}}–{{to, number}} of {{total, number}}",
     "page": "Page {{page, number}}",
     "gap": "…",
     "prev": "Previous page",
@@ -68,8 +68,8 @@
   },
   "selection": {
     "label": "Selected purchases",
-    "count_one": "{{count, number}} purchase selected",
-    "count_other": "{{count, number}} purchases selected",
+    "count_one": "{{count, number}} purchase selected",
+    "count_other": "{{count, number}} purchases selected",
     "export": "Download selected",
     "clear": "Clear selection"
   },

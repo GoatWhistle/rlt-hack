@@ -55,7 +55,7 @@ describe("the first visit", () => {
       within(dialog)
         .getAllByRole("button")
         .map((button) => button.textContent),
-    ).toEqual([en("action.close"), en("dialog.otherFile", "uploads"), "Process 2 purchases"])
+    ).toEqual([en("action.close"), en("dialog.otherFile", "uploads"), "Process 2\u00a0purchases"])
     const steps = within(dialog).getByRole("list", {
       name: en("dialog.steps.label", "uploads"),
     })
@@ -71,7 +71,7 @@ describe("the first visit", () => {
     expect(within(dialog).getByText("Row 3")).toBeInTheDocument()
     expect(within(dialog).getByText("start price “bad” is not a number")).toBeInTheDocument()
 
-    await user.click(within(dialog).getByRole("button", { name: "Process 2 purchases" }))
+    await user.click(within(dialog).getByRole("button", { name: "Process 2\u00a0purchases" }))
     await waitFor(() => expect(router.state.location.pathname).toBe("/uploads/u1"))
     const [created] = vi.mocked(gateway.create).mock.calls[0] ?? []
     expect(created?.check.ok && created.check.notices.map((notice) => notice.lotId)).toEqual([
@@ -111,7 +111,7 @@ describe("the first visit", () => {
     const { user, router } = renderPage("/uploads", stubGateway({ create }))
     await user.upload(await screen.findByLabelText(en("drop.choose", "uploads")), csv())
     const dialog = await screen.findByRole("dialog")
-    const start = await within(dialog).findByRole("button", { name: "Process 2 purchases" })
+    const start = await within(dialog).findByRole("button", { name: "Process 2\u00a0purchases" })
     await user.click(start)
     expect(await within(dialog).findByRole("alert")).toHaveTextContent(en("server", "errors"))
     expect(start).toBeEnabled()
