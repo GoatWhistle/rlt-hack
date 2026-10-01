@@ -141,8 +141,8 @@ uv run --python 3.13 python main.py runs --source <UUID>
 обязательны `id`, `supplier_id`, `sku_id`, `name`, `url`, `price`; допустимы
 `item_type`, `availability`, `currency`, `unit`, `article`,
 `delivery_regions`, `delivery_days_min`, `delivery_days_max`, `valid_from`,
-`valid_to`. Поставщик должен встретиться
-до своей оферты. Повтор страницы/ID, сбой запроса, неверный формат и
+`valid_to`. Поставщик может находиться на любой странице снимка.
+Повтор страницы/ID, сбой запроса, неверный формат и
 расхождение контрольных чисел прерывают обход без сохранения пакета. СТЕ без
 оферты в поток не включается.
 

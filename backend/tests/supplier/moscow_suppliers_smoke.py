@@ -110,6 +110,22 @@ async def run():
     assert len((await multi.fetch()).offers) == 2
     pages[URL + "?page=2"]["snapshot_id"] = "export-2"
     await expect_error(multi, ContentFormatError)
+    out_of_order = {
+        URL: {
+            **page("?page=2"),
+            "suppliers": [],
+        },
+        URL + "?page=2": {
+            **page(),
+            "offers": [],
+        },
+    }
+    unordered_transport = httpx.MockTransport(
+        lambda request: httpx.Response(200, json=out_of_order[str(request.url)])
+    )
+    unordered = MoscowSuppliersProvider(SOURCE, URL, transport=unordered_transport)
+    result = await unordered.fetch()
+    assert result.offers[0].supplier_id == result.suppliers[0].supplier_id
     print("moscow_suppliers_smoke: ok")
 
 

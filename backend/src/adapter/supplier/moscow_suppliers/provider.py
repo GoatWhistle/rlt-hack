@@ -46,6 +46,7 @@ class MoscowSuppliersProvider:
             raise SourceUnavailableError("Не задан MOSCOW_SUPPLIERS_EXPORT_URL")
         suppliers: dict[str, Supplier] = {}
         offers: dict[str, Offer] = {}
+        offer_rows: dict[str, dict[str, object]] = {}
         seen_pages: set[str] = set()
         expected_suppliers: int | None = None
         expected_offers: int | None = None
@@ -98,25 +99,24 @@ class MoscowSuppliersProvider:
                 for row in rows_offers:
                     if not isinstance(row, dict):
                         raise ContentFormatError("Неверная запись оферты")
-                    seller_key = _required(row, "supplier_id")
-                    seller = suppliers.get(seller_key)
-                    if seller is None:
-                        raise ContentFormatError(
-                            f"Поставщик {seller_key} отсутствует или идёт позже оферты"
-                        )
-                    offer = self._offer(row, seller)
-                    key = offer.external_id
-                    if key in offers:
+                    key = _required(row, "id")
+                    if key in offer_rows:
                         raise ContentFormatError(f"Повтор оферты: {key}")
-                    offers[key] = offer
+                    offer_rows[key] = row
                 link = page.get("next")
                 if link is not None and (not isinstance(link, str) or not link.strip()):
                     raise ContentFormatError("Неверная ссылка следующей страницы")
                 next_url = urljoin(next_url, link) if link else None
-        if len(suppliers) != expected_suppliers or len(offers) != expected_offers:
+        if len(suppliers) != expected_suppliers or len(offer_rows) != expected_offers:
             raise ContentFormatError("Число уникальных записей не совпало с контрольным")
-        if not suppliers or not offers:
+        if not suppliers or not offer_rows:
             raise ContentFormatError("Пустой экспорт не подтверждает исчезновение оферт")
+        for key, row in offer_rows.items():
+            seller_key = _required(row, "supplier_id")
+            seller = suppliers.get(seller_key)
+            if seller is None:
+                raise ContentFormatError(f"Поставщик {seller_key} отсутствует для оферты {key}")
+            offers[key] = self._offer(row, seller)
         return SupplierPackage(self._source, tuple(suppliers.values()), tuple(offers.values()))
 
     def _supplier(self, row: object) -> Supplier:
