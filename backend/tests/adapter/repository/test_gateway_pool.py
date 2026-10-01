@@ -1,103 +1,13 @@
 import asyncio
 import threading
 import time
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
-from typing import Any
 
 import pytest
 from clickhouse_connect.driver.exceptions import DatabaseError, OperationalError
-from urllib3.exceptions import ProtocolError
 
-from src.adapter.repository.clickhouse.gateway import ConnectGateway
 from src.adapter.repository.clickhouse.pool.gateway import GatewayPool
 from src.adapter.repository.errors import RepositoryError, RepositoryUnavailableError
-
-
-@dataclass(slots=True)
-class QueryResult:
-    result_rows: list[list[Any]]
-
-
-@dataclass(slots=True)
-class Activity:
-    delay: float = 0.02
-    active: int = 0
-    peak: int = 0
-    lock: threading.Lock = field(default_factory=threading.Lock)
-
-    def enter(self) -> None:
-        with self.lock:
-            self.active += 1
-            self.peak = max(self.peak, self.active)
-
-    def leave(self) -> None:
-        with self.lock:
-            self.active -= 1
-
-
-class FakeDriver:
-    def __init__(self, activity: Activity, number: int) -> None:
-        self.activity = activity
-        self.number = number
-        self.closed = False
-        self.close_failure: BaseException | None = None
-        self.failure: BaseException | None = None
-        self.gate: threading.Event | None = None
-        self.statements: list[str] = []
-
-    def query(self, statement: str, parameters: Mapping[str, Any]) -> QueryResult:
-        self._work(statement)
-        return QueryResult([[self.number, statement]])
-
-    def command(self, statement: str, parameters: Mapping[str, Any]) -> None:
-        self._work(statement)
-
-    def insert(self, table: str, rows: Sequence[Sequence[Any]], column_names: list[str]) -> None:
-        self._work(table)
-
-    def close(self) -> None:
-        if self.close_failure is not None:
-            raise self.close_failure
-        self.closed = True
-
-    def _work(self, statement: str) -> None:
-        self.activity.enter()
-        try:
-            if self.gate is not None:
-                self.gate.wait(5)
-            time.sleep(self.activity.delay)
-            self.statements.append(statement)
-            if self.failure is not None:
-                raise self.failure
-        finally:
-            self.activity.leave()
-
-
-class Driver:
-    def __init__(self) -> None:
-        self.activity = Activity()
-        self.drivers: list[FakeDriver] = []
-        self.refusals = 0
-
-    async def open(self) -> ConnectGateway:
-        await asyncio.sleep(0)
-        if self.refusals:
-            self.refusals -= 1
-            raise RepositoryUnavailableError("refused")
-        driver = FakeDriver(self.activity, len(self.drivers))
-        self.drivers.append(driver)
-        return ConnectGateway(driver)
-
-
-def transport_error() -> OperationalError:
-    error = OperationalError("Error executing HTTP request")
-    error.__cause__ = ProtocolError("connection reset")
-    return error
-
-
-async def select_many(pool: GatewayPool, count: int) -> list[list[tuple[Any, ...]]]:
-    return await asyncio.gather(*(pool.select(f"SELECT {index}") for index in range(count)))
+from tests.adapter.repository.pool_fakes import Driver, select_many, transport_error
 
 
 async def test_clients_open_lazily_and_are_reused_sequentially() -> None:

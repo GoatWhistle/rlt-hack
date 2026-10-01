@@ -10,6 +10,7 @@ import asyncio
 from collections.abc import Mapping, Sequence
 from types import TracebackType
 from typing import Any
+from uuid import uuid4
 
 from clickhouse_connect.driver.exceptions import OperationalError
 from urllib3.exceptions import HTTPError as TransportError
@@ -23,6 +24,11 @@ class ConnectGateway:
     def __init__(self, client: Any) -> None:
         self._client = client
         self._lock = asyncio.Lock()
+        self._query_id: str | None = None
+
+    @property
+    def active_query(self) -> str | None:
+        return self._query_id
 
     async def command(
         self,
@@ -59,8 +65,15 @@ class ConnectGateway:
 
     async def _run(self, call: Any, *args: Any, **kwargs: Any) -> Any:
         async with self._lock:
-            with _translated_errors():
-                return await asyncio.to_thread(call, *args, **kwargs)
+            query_id = uuid4().hex
+            self._query_id = query_id
+            try:
+                with _translated_errors():
+                    return await asyncio.to_thread(
+                        call, *args, settings={"query_id": query_id}, **kwargs
+                    )
+            finally:
+                self._query_id = None
 
 
 class _translated_errors:

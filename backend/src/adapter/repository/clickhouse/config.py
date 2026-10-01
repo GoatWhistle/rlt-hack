@@ -15,3 +15,5 @@ class ClickHouseConfig:
     query_timeout: int = 300
     pool_size: int = 4
     max_threads: int = 4
+    max_execution_time: int = 0
+    max_memory_usage: int = 0

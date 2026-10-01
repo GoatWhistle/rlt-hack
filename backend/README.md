@@ -245,6 +245,22 @@ ProductCenter дополнительно реализует `StreamingSupplierPr
 API получает пул такого размера, и каналы поиска с обогащением кандидатов
 выполняются параллельно; джоба сбора работает с одним клиентом, как и раньше.
 
+У API три независимых набора клиентов, чтобы фоновая работа не вытесняла
+интерактивную:
+
+- интерактивный пул (`CLICKHOUSE_POOL_SIZE`) — поиск, профили, чтение загрузок;
+- фоновый пул (`CLICKHOUSE_BACKGROUND_POOL_SIZE`, по умолчанию 2) — обработка
+  закупок из загруженных файлов;
+- управляющий клиент вне пулов — проба `/api/health/ready` и `KILL QUERY`.
+
+Каждый запрос API уходит со своим `query_id`. Если вызывающий отменён (например,
+сработал `SEARCH_TIMEOUT_SECONDS`), пул отправляет `KILL QUERY ... ASYNC` через
+управляющий клиент, и слот освобождается сразу после отмены запроса в ClickHouse.
+Клиенты API передают в сессии `max_execution_time` = бюджет + 2 с
+(`SEARCH_TIMEOUT_SECONDS` для интерактивного пула, `UPLOAD_LOT_TIMEOUT_SECONDS`
+для фонового) и `timeout_overflow_mode=throw`, а таймаут ответа HTTP берут из
+`CLICKHOUSE_API_QUERY_TIMEOUT`; у джобы ограничения нет, её таймаут — 300 с.
+
 ## HTTP API
 
 Все маршруты лежат под `/api`; документация OpenAPI — `/api/docs` и
@@ -331,10 +347,13 @@ curl -s http://localhost:8000/api/health/ready
 | `ML_SERVICE_TIMEOUT` | `5` | таймаут запроса к ML-сервису, секунды |
 | `CLICKHOUSE_POOL_SIZE` | `4` | сколько одновременных запросов API отправляет в ClickHouse |
 | `CLICKHOUSE_MAX_THREADS` | `4` | потоков ClickHouse на один запрос; `0` — значение сервера |
+| `CLICKHOUSE_BACKGROUND_POOL_SIZE` | `2` | клиентов ClickHouse для фоновой обработки закупок |
+| `CLICKHOUSE_API_QUERY_TIMEOUT` | `15` | таймаут ответа ClickHouse для API, секунды (не меньше бюджета + 4 с) |
+| `CLICKHOUSE_API_MAX_MEMORY_USAGE` | `0` | `max_memory_usage` запросов API в байтах; `0` — значение сервера |
 | `UPLOAD_MAX_BYTES` | `10485760` | наибольший размер CSV; nginx пропускает до 12 МБ |
 | `UPLOAD_MAX_ROWS` | `5000` | наибольшее число строк закупок в файле |
 | `UPLOAD_CANDIDATES` | `20` | сколько кандидатов подбирается на закупку |
-| `UPLOAD_CONCURRENCY` | `4` | сколько закупок обрабатывается одновременно |
+| `UPLOAD_CONCURRENCY` | `2` | сколько закупок обрабатывается одновременно |
 | `UPLOAD_ATTEMPTS` | `3` | попыток на закупку, затем статус `failed` |
 | `UPLOAD_LOT_TIMEOUT_SECONDS` | `30` | таймаут обработки одной закупки |
 

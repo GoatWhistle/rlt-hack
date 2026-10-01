@@ -18,8 +18,9 @@ from src.service.errors import StorageUnavailableError
 
 
 class RecordingGateway:
-    def __init__(self, failing: bool = False) -> None:
+    def __init__(self, failing: bool = False, rows: list[tuple[Any, ...]] | None = None) -> None:
         self.failing = failing
+        self.rows = [(1,)] if rows is None else rows
         self.statements: list[str] = []
 
     async def command(self, statement: str, parameters: Mapping[str, Any] | None = None) -> None:
@@ -31,7 +32,7 @@ class RecordingGateway:
         if self.failing:
             raise ConnectionError(statement)
         self.statements.append(statement)
-        return [(1,)]
+        return self.rows
 
     async def insert(
         self, table: str, column_names: Sequence[str], rows: Sequence[Sequence[Any]]
@@ -153,3 +154,30 @@ async def test_unreachable_clickhouse_returns_503() -> None:
             searched = await http.post("/api/searches", json={"text": "рис 5 кг"})
             assert (searched.status_code, searched.json()["code"]) == (503, "search_unavailable")
             assert (await http.get("/api/health/ready")).status_code == 503
+
+
+async def test_uploads_use_separate_gateway() -> None:
+    interactive = Connector(RecordingGateway(rows=[]))
+    background = Connector(RecordingGateway(rows=[]))
+    control = Connector(RecordingGateway())
+    api = ApiContainer(
+        AppConfig(),
+        interactive.connect,
+        background=background.connect,
+        control=control.connect,
+    )
+    uploads = await api.procurement_uploads()
+    await uploads.start()
+    try:
+        for _ in range(100):
+            if background.gateway.statements:
+                break
+            await asyncio.sleep(0.01)
+        await uploads.recent(5)
+    finally:
+        await uploads.stop()
+    assert "upload_lots" in background.gateway.statements[0]
+    assert len(interactive.gateway.statements) == 1
+    assert "uploads" in interactive.gateway.statements[0]
+    assert (await (await api.health()).readiness()).ready
+    assert len(control.gateway.statements) == 1

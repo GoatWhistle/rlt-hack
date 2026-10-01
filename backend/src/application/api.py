@@ -42,9 +42,19 @@ Release = Callable[[], Awaitable[None]]
 
 
 class ApiContainer:
-    def __init__(self, config: AppConfig, connect: Connect, release: Release | None = None) -> None:
+    def __init__(
+        self,
+        config: AppConfig,
+        connect: Connect,
+        release: Release | None = None,
+        *,
+        background: Connect | None = None,
+        control: Connect | None = None,
+    ) -> None:
         self._config = config
         self._gateway = DeferredGateway(connect)
+        self._background = self._gateway if background is None else DeferredGateway(background)
+        self._control = self._gateway if control is None else DeferredGateway(control)
         self._release = release
         self._analyzer = RussianAnalyzer()
         self._ml_client: httpx.AsyncClient | None = None
@@ -63,13 +73,14 @@ class ApiContainer:
     def database(self) -> str:
         return self._config.clickhouse.database
 
-    def matcher(self) -> SupplierMatcher:
+    def matcher(self, gateway: SqlGateway | None = None) -> SupplierMatcher:
         settings = self._settings
+        sql = gateway or self._gateway
         return SupplierMatcher(
-            retrievers=self.retrievers(),
-            directory=ClickHouseSupplierDirectory(self._gateway, self.database),
-            offers=ClickHouseOfferCatalog(self._gateway, self.database),
-            history=ClickHousePurchaseHistory(self._gateway, self._analyzer, self.database),
+            retrievers=self.retrievers(sql),
+            directory=ClickHouseSupplierDirectory(sql, self.database),
+            offers=ClickHouseOfferCatalog(sql, self.database),
+            history=ClickHousePurchaseHistory(sql, self._analyzer, self.database),
             fusion=ReciprocalRankFusion(settings.rrf_k),
             assembler=CandidateAssembler(RoleResolver(), MatchResolver(), HighlightComposer()),
             policy=CandidatePolicy.standard(settings.coverage_threshold),
@@ -100,21 +111,20 @@ class ApiContainer:
         )
 
     async def health(self) -> HealthService:
-        return HealthService(probes=(ClickHouseProbe(self._gateway),))
+        return HealthService(probes=(ClickHouseProbe(self._control),))
 
-    def retrievers(self) -> tuple[CandidateRetriever, ...]:
+    def retrievers(self, gateway: SqlGateway | None = None) -> tuple[CandidateRetriever, ...]:
         search = self._config.search
+        sql = gateway or self._gateway
         channels: list[CandidateRetriever] = [
             ClickHouseLexicalRetriever(
-                self._gateway, self._analyzer, self.database, candidate_pool=search.lexical_pool
+                sql, self._analyzer, self.database, candidate_pool=search.lexical_pool
             )
         ]
         if search.history_enabled:
-            channels.append(
-                ClickHouseHistoryRetriever(self._gateway, self._analyzer, self.database)
-            )
+            channels.append(ClickHouseHistoryRetriever(sql, self._analyzer, self.database))
         if self._config.ml_service.enabled:
-            channels.append(self._semantic())
+            channels.append(self._semantic(sql))
         return tuple(channels)
 
     async def aclose(self) -> None:
@@ -134,25 +144,26 @@ class ApiContainer:
             lot_timeout_seconds=upload.lot_timeout_seconds,
         )
         store = ClickHouseUploadStore(self._gateway, self.database)
+        background = ClickHouseUploadStore(self._background, self.database)
         clock = SystemClock()
         processor = LotProcessor(
-            RuleQueryInterpreter(self._analyzer), self.matcher(), clock, settings
+            RuleQueryInterpreter(self._analyzer), self.matcher(self._background), clock, settings
         )
         return ProcurementUploadService(
             reader=CsvNoticeReader(),
             store=store,
-            runner=LotRunner(processor, store, clock, settings),
+            runner=LotRunner(processor, background, clock, settings),
             clock=clock,
             ids=Uuid4Generator(),
             settings=settings,
         )
 
-    def _semantic(self) -> MlServiceRetriever:
+    def _semantic(self, gateway: SqlGateway) -> MlServiceRetriever:
         ml = self._config.ml_service
         if self._ml_client is None:
             self._ml_client = httpx.AsyncClient(base_url=ml.base_url, timeout=ml.timeout_seconds)
         return MlServiceRetriever(
             self._ml_client,
-            ClickHouseSupplierIdentity(self._gateway, self.database),
+            ClickHouseSupplierIdentity(gateway, self.database),
             timeout_seconds=ml.timeout_seconds,
         )

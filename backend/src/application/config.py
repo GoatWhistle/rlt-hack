@@ -5,8 +5,9 @@
 развёртывания — пути к данным, списки адресов и ограничения запуска.
 """
 
+import math
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from src.adapter.repository.clickhouse.config import ClickHouseConfig
@@ -75,11 +76,39 @@ class MlServiceConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class ApiStorageConfig:
+    query_timeout: int = 15
+    background_pool_size: int = 2
+    max_memory_usage: int = 0
+    execution_margin_seconds: int = 2
+
+
+def api_clickhouse(
+    base: ClickHouseConfig, storage: ApiStorageConfig, budget_seconds: float
+) -> ClickHouseConfig:
+    execution = math.ceil(budget_seconds) + storage.execution_margin_seconds
+    return replace(
+        base,
+        query_timeout=max(storage.query_timeout, execution + storage.execution_margin_seconds),
+        max_execution_time=execution,
+        max_memory_usage=storage.max_memory_usage,
+    )
+
+
+def _api_storage_config() -> ApiStorageConfig:
+    return ApiStorageConfig(
+        query_timeout=_int("CLICKHOUSE_API_QUERY_TIMEOUT", 15),
+        background_pool_size=_int("CLICKHOUSE_BACKGROUND_POOL_SIZE", 2),
+        max_memory_usage=_int("CLICKHOUSE_API_MAX_MEMORY_USAGE", 0),
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class UploadConfig:
     max_bytes: int = 10 * 1024 * 1024
     max_rows: int = 5000
     candidates_per_lot: int = 20
-    concurrency: int = 4
+    concurrency: int = 2
     attempts: int = 3
     lot_timeout_seconds: float = 30.0
 
@@ -89,7 +118,7 @@ def _upload_config() -> UploadConfig:
         max_bytes=_int("UPLOAD_MAX_BYTES", 10 * 1024 * 1024),
         max_rows=_int("UPLOAD_MAX_ROWS", 5000),
         candidates_per_lot=_int("UPLOAD_CANDIDATES", 20),
-        concurrency=_int("UPLOAD_CONCURRENCY", 4),
+        concurrency=_int("UPLOAD_CONCURRENCY", 2),
         attempts=_int("UPLOAD_ATTEMPTS", 3),
         lot_timeout_seconds=_float("UPLOAD_LOT_TIMEOUT_SECONDS", 30.0),
     )
@@ -172,6 +201,7 @@ class AppConfig:
     search: SearchConfig = field(default_factory=SearchConfig)
     ml_service: MlServiceConfig = field(default_factory=MlServiceConfig)
     upload: UploadConfig = field(default_factory=UploadConfig)
+    api_storage: ApiStorageConfig = field(default_factory=ApiStorageConfig)
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -225,4 +255,5 @@ class AppConfig:
             search=_search_config(),
             ml_service=_ml_service_config(),
             upload=_upload_config(),
+            api_storage=_api_storage_config(),
         )

@@ -9,15 +9,18 @@
 делят все конкурентные обходы. Для будущего HTTP API он создаётся один раз.
 """
 
+from functools import partial
 from types import TracebackType
 
 from src.adapter.repository.clickhouse.archive import ClickHouseArchiveRepository
 from src.adapter.repository.clickhouse.client import create_client
+from src.adapter.repository.clickhouse.config import ClickHouseConfig
 from src.adapter.repository.clickhouse.gateway import ConnectGateway
 from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepository
 from src.adapter.repository.clickhouse.migrator import Migrator
 from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
 from src.adapter.repository.clickhouse.package import ClickHousePackageRepository
+from src.adapter.repository.clickhouse.pool.control import ControlChannel
 from src.adapter.repository.clickhouse.pool.gateway import GatewayPool
 from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
 from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
@@ -50,7 +53,7 @@ from src.adapter.supplier.texzakaz_web import TexZakazWebProvider
 from src.adapter.supplier.yml_feed import PROVIDER_NAME as YML_FEED
 from src.adapter.supplier.yml_feed import YmlFeedProvider
 from src.adapter.system.clock import SystemClock
-from src.application.config import AppConfig
+from src.application.config import AppConfig, api_clickhouse
 from src.models.enums import SourceType
 from src.models.source import Source
 from src.service.classifier import OfferClassifier
@@ -79,6 +82,8 @@ class Container:
         self._versions = VersionSequencer()
         self._gateway: GatewayPool | None = None
         self._api_gateway: GatewayPool | None = None
+        self._background_gateway: GatewayPool | None = None
+        self._control: ControlChannel | None = None
         # Справочники читаются один раз на процесс: они не меняются на ходу.
         self._normalizer: OfferNormalizer | None = None
         self._classifier: OfferClassifier | None = None
@@ -94,11 +99,38 @@ class Container:
 
     async def api_gateway(self) -> GatewayPool:
         if self._api_gateway is None:
-            self._api_gateway = GatewayPool(self._open_gateway, self._config.clickhouse.pool_size)
+            config = self._api_clickhouse(self._config.search.timeout_seconds)
+            self._api_gateway = GatewayPool(
+                partial(self._open_with, config),
+                self._config.clickhouse.pool_size,
+                await self.control_gateway(),
+            )
         return self._api_gateway
 
+    async def background_gateway(self) -> GatewayPool:
+        if self._background_gateway is None:
+            config = self._api_clickhouse(self._config.upload.lot_timeout_seconds)
+            self._background_gateway = GatewayPool(
+                partial(self._open_with, config),
+                self._config.api_storage.background_pool_size,
+                await self.control_gateway(),
+            )
+        return self._background_gateway
+
+    async def control_gateway(self) -> ControlChannel:
+        if self._control is None:
+            config = self._api_clickhouse(self._config.search.timeout_seconds)
+            self._control = ControlChannel(partial(self._open_with, config))
+        return self._control
+
+    def _api_clickhouse(self, budget_seconds: float) -> ClickHouseConfig:
+        return api_clickhouse(self._config.clickhouse, self._config.api_storage, budget_seconds)
+
     async def _open_gateway(self) -> ConnectGateway:
-        return ConnectGateway(await create_client(self._config.clickhouse))
+        return await self._open_with(self._config.clickhouse)
+
+    async def _open_with(self, config: ClickHouseConfig) -> ConnectGateway:
+        return ConnectGateway(await create_client(config))
 
     async def migrator(self) -> Migrator:
         return Migrator(await self.gateway(), database=self._config.clickhouse.database)
@@ -360,11 +392,19 @@ class Container:
         )
 
     async def aclose(self) -> None:
-        pools = [pool for pool in (self._gateway, self._api_gateway) if pool is not None]
+        pools = [
+            pool
+            for pool in (self._gateway, self._api_gateway, self._background_gateway)
+            if pool is not None
+        ]
+        control, self._control = self._control, None
         self._gateway = None
         self._api_gateway = None
+        self._background_gateway = None
         for pool in pools:
             await pool.aclose()
+        if control is not None:
+            await control.aclose()
 
     async def __aenter__(self) -> "Container":
         return self

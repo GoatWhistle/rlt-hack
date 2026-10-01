@@ -23,7 +23,14 @@ def build_app() -> FastAPI:
         upload_max_bytes=config.upload.max_bytes,
     )
     container = Container(config)
-    return create_app(ApiContainer(config, container.api_gateway, container.aclose), settings)
+    api = ApiContainer(
+        config,
+        container.api_gateway,
+        container.aclose,
+        background=container.background_gateway,
+        control=container.control_gateway,
+    )
+    return create_app(api, settings)
 
 
 def run() -> None:

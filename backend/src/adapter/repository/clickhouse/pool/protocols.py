@@ -3,6 +3,9 @@ from typing import Any, Protocol
 
 
 class PooledGateway(Protocol):
+    @property
+    def active_query(self) -> str | None: ...
+
     async def command(
         self, statement: str, parameters: Mapping[str, Any] | None = None
     ) -> None: ...
@@ -16,3 +19,7 @@ class PooledGateway(Protocol):
     ) -> None: ...
 
     async def close(self) -> None: ...
+
+
+class QueryControl(Protocol):
+    async def kill(self, query_id: str) -> None: ...
