@@ -211,16 +211,16 @@ class ProductCenterWebProvider:
         return dict(await self._bounded(iter(urls.items()), read_card, parser.__name__))
 
     async def _bounded(self, items, read, stage: str):
-        iterator = iter(items)
-        results = []
+        iterator = enumerate(items)
+        results = {}
 
         async def worker():
             while True:
                 try:
-                    item = next(iterator)
+                    index, item = next(iterator)
                 except StopIteration:
                     return
-                results.append(await read(item))
+                results[index] = await read(item)
                 self.stats[f"read_{stage.replace(' ', '_')}"] = len(results)
                 if len(results) % 1000 == 0:
                     logger.info("ProductCenter %s: обработано %d", stage, len(results))
@@ -228,4 +228,4 @@ class ProductCenterWebProvider:
         async with asyncio.TaskGroup() as group:
             for _ in range(self._max_concurrent):
                 group.create_task(worker())
-        return results
+        return [results[index] for index in range(len(results))]

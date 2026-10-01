@@ -29,6 +29,7 @@ P3 = f"{BASE}/producers/13/without-products"
 P4 = f"{BASE}/producers/14/same-inn"
 G1 = f"{BASE}/products/21/one"
 G2 = f"{BASE}/products/22/two"
+G3 = f"{BASE}/products/23/three"
 MAPS = {
     "sitemap-producers.xml.gz": [P1, P2, P3, P4, P1],
     "sitemap-products.xml.gz": [G1],
@@ -101,8 +102,11 @@ def provider(
     data: dict[str, bytes],
     max_cards: int | None = None,
     cache_dir: Path | None = None,
+    delayed_url: str | None = None,
 ) -> ProductCenterWebProvider:
-    def handler(request: httpx.Request) -> httpx.Response:
+    async def handler(request: httpx.Request) -> httpx.Response:
+        if str(request.url) == delayed_url:
+            await asyncio.sleep(0.03)
         body = data.get(str(request.url))
         return httpx.Response(200, content=body) if body is not None else httpx.Response(503)
 
@@ -217,6 +221,27 @@ async def check() -> None:
         pass
     else:
         raise AssertionError("Повтор набора товаров был опубликован")
+    out_of_order = data.copy()
+    out_of_order[f"{BASE}/products"] = (
+        f"<html><div class='card_item product'><a href='{G1}'>one</a></div>"
+        "<div class='pagination'><ul class='page_links'>"
+        "<li><span class='pl_mark'>1</span></li>"
+        "<li><a href='/products/page-3'>3</a></li></ul></div></html>"
+    ).encode()
+    out_of_order[f"{BASE}/products/page-2"] = (
+        f"<html><div class='card_item product'><a href='{G2}'>two</a></div>"
+        "<div class='pagination'><ul class='page_links'>"
+        "<li><span class='pl_mark'>2</span></li>"
+        "<li><a href='/products/page-3'>3</a></li></ul></div></html>"
+    ).encode()
+    out_of_order[f"{BASE}/products/page-3"] = (
+        f"<html><div class='card_item product'><a href='{G3}'>three</a></div>"
+        "<div class='pagination'><ul class='page_links'>"
+        "<li><span class='pl_mark'>3</span></li></ul></div></html>"
+    ).encode()
+    out_of_order[G3] = data[G2]
+    result = await provider(out_of_order, delayed_url=f"{BASE}/products/page-2").fetch()
+    assert {offer.external_id for offer in result.offers} == {"21", "22", "23"}
     attempts = 0
 
     def throttled(request: httpx.Request) -> httpx.Response:
