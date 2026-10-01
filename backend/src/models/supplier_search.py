@@ -9,6 +9,17 @@ class SupplierCatalogOffer:
 
 
 @dataclass(frozen=True)
+class SupplierPurchase:
+    lot_id: str
+    title: str
+    publish_date: str
+    customer_inn: str
+    source_system: str
+    product_names: list[str]
+    is_winner: bool
+
+
+@dataclass(frozen=True)
 class SupplierCandidate:
     inn: str
     category: str
@@ -23,3 +34,6 @@ class SupplierCandidate:
     phone: str = ""
     identity_url: str = ""
     catalog: list[SupplierCatalogOffer] = field(default_factory=list)
+    purchases: list[SupplierPurchase] = field(default_factory=list)
+    category_lots: int | None = None
+    category_wins: int | None = None

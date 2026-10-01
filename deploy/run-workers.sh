@@ -18,5 +18,10 @@ compose up -d --no-deps --wait --wait-timeout 180 embedder
 compose run --rm --no-deps embedding-worker index --max-batches 1
 compose up -d --no-deps --wait --wait-timeout 120 parser-worker embedding-worker
 if grep -Eq '^RLT_RUN_SEARCH=true$' "${RLT_ENV_FILE:-/etc/rlt-hack/production.env}"; then
+  compose run --rm --no-deps --entrypoint python \
+    search-api -m src.controller.search.import_index /data/index
+  compose run --rm --no-deps --entrypoint python \
+    --volume "${RLT_HISTORY_DIR:-/root/rlt/ready-v1}:/data/history:ro" \
+    search-api -m src.controller.search.import_history /data/history/procurement.duckdb /data/index
   compose up -d --no-deps --wait --wait-timeout 180 search-api
 fi

@@ -1,11 +1,15 @@
 from urllib.parse import urlsplit
 
+from src.controller.uploads.evidence import explanation, purchases
 from src.models.upload import LotRecommendation, Upload
 
 
 def safe_url(value: str) -> str:
-    parsed = urlsplit(value)
-    return value if parsed.scheme in {"https", "http"} and parsed.hostname else ""
+    try:
+        parsed = urlsplit(value)
+        return value if parsed.scheme in {"https", "http"} and parsed.hostname else ""
+    except ValueError:
+        return ""
 
 
 def profile_summary(profile: str) -> str:
@@ -18,7 +22,7 @@ def lot_summary(lot: LotRecommendation) -> dict:
         "id": lot.notice.lot_id,
         "title": lot.notice.title,
         "subject": lot.notice.subject,
-        "status": "needsCheck" if lot.candidates else "noCandidates",
+        "status": "ready" if lot.candidates else "noCandidates",
         "products": 0,
         "candidates": len(lot.candidates),
     }
@@ -32,7 +36,7 @@ def summary(upload: Upload) -> dict:
         "createdAt": upload.created_at,
         "total": len(upload.lots),
         "processed": len(upload.lots),
-        "counts": {"ready": 0, "needsCheck": found, "noCandidates": len(upload.lots) - found},
+        "counts": {"ready": found, "needsCheck": 0, "noCandidates": len(upload.lots) - found},
         "rejected": 0,
         "stored": True,
     }
@@ -56,8 +60,9 @@ def result(upload: Upload, lot: LotRecommendation) -> dict:
                     "name": candidate.name or f"Поставщик ИНН {candidate.inn}",
                     "inn": candidate.inn,
                     "role": f"Исторический профиль: {candidate.category}",
-                    "status": "historical",
-                    "summary": profile_summary(
+                    "status": "recommended" if candidate.purchases else "historical",
+                    "summary": explanation(candidate)
+                    or profile_summary(
                         candidate.history_examples[0]
                         if candidate.history_examples
                         else candidate.profile
@@ -83,9 +88,9 @@ def result(upload: Upload, lot: LotRecommendation) -> dict:
                     ],
                     "identitySource": safe_url(candidate.identity_url),
                     "matches": [],
-                    "similarPurchases": None,
-                    "wins": None,
-                    "purchases": [],
+                    "similarPurchases": candidate.category_lots,
+                    "wins": candidate.category_wins,
+                    "purchases": purchases(upload, lot, candidate),
                     "clarify": [
                         "Уточните текущий ассортимент, наличие и условия поставки.",
                     ],

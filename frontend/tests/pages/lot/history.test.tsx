@@ -60,3 +60,43 @@ describe("historical supplier data", () => {
     expect(screen.queryByText(/Latest procurement/)).not.toBeInTheDocument()
   })
 })
+
+describe("grounded procurement recommendations", () => {
+  it("shows counts, products, dates, wins and source links", async () => {
+    const grounded: Company = {
+      ...company,
+      status: "recommended",
+      similarPurchases: 12,
+      wins: 4,
+      purchases: [
+        {
+          title: "Paper for offices",
+          year: 2024,
+          date: "2024-11-01",
+          customerInn: "2222222222",
+          products: ["Paper A4"],
+          outcome: "winner",
+          source: { kind: "purchase", title: "Archive", url: "/api/evidence/one" },
+        },
+        { title: "Printing supplies", year: 2023, outcome: "participant" },
+      ],
+    }
+    const data = { ...recommendation, companies: [grounded] }
+    expect(parseRecommendation(data)).toEqual(data)
+    await openLot(lotDetail({ recommendation: data }))
+    const panel = screen.getByRole("article", { name: company.name })
+    expect(
+      within(panel).getByRole("heading", { name: "Grounds for this recommendation" }),
+    ).toBeInTheDocument()
+    expect(within(panel).getByText("12")).toBeInTheDocument()
+    expect(within(panel).getByText("Paper A4")).toBeInTheDocument()
+    expect(within(panel).getByText("2024-11-01")).toBeInTheDocument()
+    expect(within(panel).getByText(/2222222222/)).toBeInTheDocument()
+    expect(within(panel).getByRole("link", { name: /Open archive record/ })).toHaveAttribute(
+      "href",
+      "/api/evidence/one",
+    )
+    expect(within(panel).getByRole("link", { name: "A4 paper" })).toBeInTheDocument()
+    expect(within(panel).queryByText("Key thing to clarify.")).not.toBeInTheDocument()
+  })
+})

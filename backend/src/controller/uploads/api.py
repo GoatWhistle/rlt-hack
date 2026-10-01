@@ -1,5 +1,6 @@
 import asyncio
 import re
+from dataclasses import asdict
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Request, Response, UploadFile
@@ -90,3 +91,30 @@ async def get_results(upload_id: str, body: SelectedLots, request: Request, resp
     return {
         "results": [result(upload, lot) for lot in upload.lots if lot.notice.lot_id in selected]
     }
+
+
+@router.get("/{upload_id}/lots/{lot_id}/evidence/{inn}/{purchase_id}")
+async def get_evidence(
+    upload_id: str,
+    lot_id: str,
+    inn: str,
+    purchase_id: str,
+    request: Request,
+    response: Response,
+):
+    upload = await get_upload(request, response, upload_id)
+    for lot in upload.lots:
+        if lot.notice.lot_id != lot_id:
+            continue
+        for candidate in lot.candidates:
+            if candidate.inn != inn:
+                continue
+            for purchase in candidate.purchases:
+                if purchase.lot_id == purchase_id:
+                    return {
+                        "supplier_inn": inn,
+                        "category": candidate.category,
+                        "provenance": "procurement_archive",
+                        **asdict(purchase),
+                    }
+    raise HTTPException(404)

@@ -39,7 +39,7 @@ export function Hero({ company, products }: HeroProps) {
       </div>
       <p className={styles.summary}>{company.summary}</p>
       <SegmentMeter company={company} products={products} size="lg" />
-      {main && company.status !== "historical" ? (
+      {main && company.status !== "historical" && !company.history ? (
         <p className={styles.callout}>
           <Icon name="warning" tone="warning" />
           <span>

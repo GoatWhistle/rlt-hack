@@ -85,7 +85,13 @@ function purchase(value: unknown, path: string): Purchase {
       year: count(fields, "year", path),
       outcome: oneOf(PURCHASE_OUTCOMES, fields, "outcome", path),
     },
-    { source: source(fields.source, `${path}.source`) },
+    {
+      source: source(fields.source, `${path}.source`),
+      date: optionalText(fields, "date", path),
+      customerInn: optionalText(fields, "customerInn", path),
+      products:
+        fields.products === undefined ? undefined : list(fields, "products", path, plainText),
+    },
   )
 }
 

@@ -31,6 +31,43 @@ export function StatusTag({ company }: { readonly company: Company }) {
   )
 }
 
+function CompanyFacts({
+  company,
+  products,
+}: {
+  readonly company: Company
+  readonly products: readonly Product[]
+}) {
+  const { t } = useTranslation("lot")
+  return (
+    <>
+      {company.similarPurchases !== null && company.history ? (
+        <span>
+          {t("grounds.cardFacts", {
+            count: company.similarPurchases,
+            wins: company.wins ?? 0,
+          })}
+        </span>
+      ) : company.history ? (
+        <span>{t("history.examples", { count: company.history.examples.length })}</span>
+      ) : (
+        <span>
+          {products.length === 0
+            ? t("compare.unknown")
+            : t("companies.matchCount", {
+                matched: company.matches.length,
+                total: products.length,
+              })}
+          {" · "}
+          {company.similarPurchases === null
+            ? t("compare.unknown")
+            : t("companies.purchases", { count: company.similarPurchases })}
+        </span>
+      )}
+    </>
+  )
+}
+
 export type CompanyListProps = {
   readonly companies: readonly Company[]
   readonly ranks: ReadonlyMap<string, number>
@@ -84,22 +121,7 @@ export function CompanyList(props: CompanyListProps) {
               {chosen.includes(company.id) ? (
                 <Tag tone="accent">{t("companies.chosen")}</Tag>
               ) : null}
-              {company.history ? (
-                <span>{t("history.examples", { count: company.history.examples.length })}</span>
-              ) : (
-                <span>
-                  {products.length === 0
-                    ? t("compare.unknown")
-                    : t("companies.matchCount", {
-                        matched: company.matches.length,
-                        total: products.length,
-                      })}
-                  {" · "}
-                  {company.similarPurchases === null
-                    ? t("compare.unknown")
-                    : t("companies.purchases", { count: company.similarPurchases })}
-                </span>
-              )}
+              <CompanyFacts company={company} products={products} />
             </span>
           </button>
         ))}

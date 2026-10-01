@@ -5,27 +5,35 @@ import { CollapsibleList } from "@/shared/ui/collapsible-list"
 import { Stack } from "@/shared/ui/stack"
 import { Block } from "../block"
 
-export function HistoryBlock({ company }: { readonly company: Company }) {
+export function HistoryBlock({
+  company,
+  showExamples = true,
+}: {
+  readonly company: Company
+  readonly showExamples?: boolean
+}) {
   const { t } = useTranslation("lot")
   const history = company.history
   if (!history) return null
   return (
     <>
-      <Block title={t("history.title")}>
-        <Stack>
-          <Caption>{t("history.source", { category: history.category })}</Caption>
-          {history.lastDate ? (
-            <Caption>{t("history.lastDate", { date: history.lastDate })}</Caption>
-          ) : null}
-          <CollapsibleList
-            items={history.examples}
-            limit={3}
-            itemKey={(example) => example}
-            renderItem={(example) => <p>{example}</p>}
-          />
-          <Caption>{t("history.note")}</Caption>
-        </Stack>
-      </Block>
+      {showExamples ? (
+        <Block title={t("history.title")}>
+          <Stack>
+            <Caption>{t("history.source", { category: history.category })}</Caption>
+            {history.lastDate ? (
+              <Caption>{t("history.lastDate", { date: history.lastDate })}</Caption>
+            ) : null}
+            <CollapsibleList
+              items={history.examples}
+              limit={3}
+              itemKey={(example) => example}
+              renderItem={(example) => <p>{example}</p>}
+            />
+            <Caption>{t("history.note")}</Caption>
+          </Stack>
+        </Block>
+      ) : null}
       {company.catalog?.length ? (
         <Block title={t("history.catalog")}>
           <Stack as="ul">

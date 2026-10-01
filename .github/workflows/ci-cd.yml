@@ -77,6 +77,8 @@ jobs:
       - run: python backend/tests/embedding/batching_smoke.py
       - run: python backend/tests/search/smoke.py
       - run: python backend/tests/search/clickhouse_smoke.py
+      - run: python backend/tests/search/history_smoke.py
+      - run: python backend/tests/search/ranker_smoke.py
 
   ml:
     runs-on: ubuntu-24.04

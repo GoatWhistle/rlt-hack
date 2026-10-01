@@ -10,7 +10,7 @@ import asyncio
 import json
 import re
 from collections.abc import Mapping, Sequence
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
@@ -102,6 +102,8 @@ def _json_value(value: Any) -> Any:
         return str(value)
     if isinstance(value, datetime):
         return _timestamp(value)
+    if isinstance(value, date):
+        return value.isoformat()
     if isinstance(value, Decimal):
         return float(value)
     if isinstance(value, bool):

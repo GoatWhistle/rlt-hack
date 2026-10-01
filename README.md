@@ -305,3 +305,28 @@ PYTHONPATH=src /root/rlt/.venv/bin/python -m rlt_ml.compare_cards \
 INSERT; после перезапуска незавершённая порция повторяется, подтверждённые
 карточки пропускаются. До завершения обхода сохраняется его исходная отметка
 времени. Не удаляйте этот том при обычном обновлении сервисов.
+
+### Архивные основания рекомендаций
+
+При `RLT_RUN_SEARCH=true` CD импортирует основания для текущего индекса перед запуском
+API. `RLT_HISTORY_DIR` (по умолчанию `/root/rlt/ready-v1`) содержит read-only
+`procurement.duckdb`; импорт ограничен историей до 2024-12-01 для validation-индекса.
+В ClickHouse сохраняются до пяти закупок на поставщика и категорию, точное число
+закупок и однозначных побед. Повторный запуск проверяет полноту и не дублирует данные.
+Ссылки в карточке открывают архивную запись в пределах сессии загрузки.
+Результат процедуры не трактуется как подтверждение исполнения или текущего наличия.
+
+Ранжировщик подключается автоматически, если рядом с индексом есть
+`ranker/runtime.json`, `ranker.cbm` и снимки статистики. Перед загрузкой проверяются
+хеши, список признаков и соответствие карточкам; без артефакта работает гибридный
+поиск. Артефакт экспортируется только после положительной оценки на закрытом test:
+
+```bash
+python -m rlt_ml.reranking.candidates --data /data/ready --vectors /data/vectors --out /data/candidates --split train --customer-dropout 0.5
+python -m rlt_ml.reranking.train --train /data/train-candidates --validation /data/validation-candidates --text-validation /data/validation-text-candidates --out /data/models
+python -m rlt_ml.reranking.evaluate --models /data/models --candidates /data/test-candidates --out /data/models/test-report.json
+python -m rlt_ml.reranking.export --models /data/models --vectors /data/validation-vectors --data /data/ready --out /data/release-index
+```
+
+Команды выполняются на сервере в окружении `ml`. В Git входят только код и
+агрегированные результаты; данные, векторы и веса остаются вне репозитория.

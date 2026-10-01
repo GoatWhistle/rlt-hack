@@ -35,6 +35,9 @@ export type ProductMatch = {
 }
 
 export type Purchase = {
+  readonly date?: string
+  readonly customerInn?: string
+  readonly products?: readonly string[]
   readonly title: string
   readonly year: number
   readonly outcome: PurchaseOutcome

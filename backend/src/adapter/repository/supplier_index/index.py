@@ -8,6 +8,7 @@ import numpy as np
 import pyarrow.parquet as parquet
 from sklearn.feature_extraction.text import CountVectorizer
 
+from src.adapter.repository.supplier_index.protocols import CandidateRanking
 from src.models.supplier_search import SupplierCandidate
 
 
@@ -16,6 +17,7 @@ class FileSupplierIndex:
         self.directory = directory
         self.dimensions = 0
         self.instruction = ""
+        self.ranker: CandidateRanking | None = None
 
     async def initialize(self) -> None:
         await asyncio.to_thread(self._load)
@@ -101,11 +103,18 @@ class FileSupplierIndex:
         lexical = (self.lexical @ self.vectorizer.transform([text]).sign().T).toarray().ravel()
         scores: dict[str, float] = {}
         positions: dict[str, int] = {}
-        for ranking in (self._ranking(dense), self._ranking(lexical, positive=True)):
+        dense_order = self._ranking(dense)
+        lexical_order = self._ranking(lexical, positive=True)
+        for ranking in (dense_order, lexical_order):
             for rank, (inn, position) in enumerate(ranking.items(), 1):
                 scores[inn] = scores.get(inn, 0) + 1 / (60 + rank)
                 positions.setdefault(inn, position)
         selected = sorted(scores, key=lambda inn: (-scores[inn], inn))[:limit]
+        if self.ranker is not None:
+            selected, positions, scores = self.ranker.rank(
+                text, self.cards, dense, lexical, scores, dense_order, lexical_order
+            )
+            selected = selected[:limit]
         return [
             self._metadata(
                 SupplierCandidate(

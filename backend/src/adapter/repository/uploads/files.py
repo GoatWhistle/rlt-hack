@@ -6,7 +6,7 @@ import re
 from dataclasses import asdict
 from pathlib import Path
 
-from src.models.supplier_search import SupplierCandidate, SupplierCatalogOffer
+from src.models.supplier_search import SupplierCandidate, SupplierCatalogOffer, SupplierPurchase
 from src.models.upload import LotRecommendation, Notice, Upload
 
 
@@ -39,6 +39,9 @@ class FileUploads:
                     SupplierCandidate(
                         **{
                             **candidate,
+                            "purchases": [
+                                SupplierPurchase(**item) for item in candidate.get("purchases", [])
+                            ],
                             "catalog": [
                                 SupplierCatalogOffer(**item)
                                 for item in candidate.get("catalog", [])

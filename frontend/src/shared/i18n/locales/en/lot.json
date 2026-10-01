@@ -167,5 +167,16 @@
     "requestNote": "“{{title}}”. Candidates match the procurement description as a whole. Individual product items have not yet been extracted.",
     "companySource": "Company details source",
     "openSource": "Company page"
+  },
+  "grounds": {
+    "title": "Grounds for this recommendation",
+    "categoryLots": "Purchases in category",
+    "wins": "Confirmed wins",
+    "category": "OKPD2 category",
+    "reason": "The request description matches the supplier profile. The records below document their procurement experience in this category.",
+    "customer": "Customer · INN {{inn}}",
+    "openSource": "Open archive record ↗",
+    "scope": "Source: procurement archive. A win confirms the procedure outcome; stock and terms for a new delivery are agreed separately.",
+    "cardFacts": "{{count}} purchases · {{wins}} wins"
   }
 }

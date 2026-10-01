@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
+from src.adapter.repository.supplier_index.history import enrich_history
 from src.adapter.repository.supplier_index.index import FileSupplierIndex
 from src.adapter.repository.supplier_index.protocols import SqlGateway
 from src.models.supplier_search import SupplierCandidate, SupplierCatalogOffer
@@ -81,7 +82,7 @@ class ClickHouseSupplierIndex(FileSupplierIndex):
                     catalog=catalog.get(candidate.inn, []),
                 )
             )
-        return result
+        return await enrich_history(self._gateway, self._database, self._index_id, result)
 
     def _combine(self, text: str, rows: list[tuple], limit: int) -> list[SupplierCandidate]:
         dense = np.zeros(len(self.cards), dtype=np.float32)

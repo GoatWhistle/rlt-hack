@@ -1,5 +1,7 @@
+import importlib.util
 import json
 from datetime import date
+from pathlib import Path
 
 import numpy as np
 import pyarrow.parquet as pq
@@ -66,3 +68,25 @@ def test_candidate_training_with_synthetic_temporal_data(prepared, tmp_path):
     train(*folders, tmp_path / "models", iterations=3)
     report = json.loads((tmp_path / "models/report.json").read_text())
     assert len(report["models"]) == 3
+
+
+def test_runtime_features_match_training():
+    source = (
+        Path(__file__).resolve().parents[2] / "backend/src/adapter/repository/ranker/features.py"
+    )
+    spec = importlib.util.spec_from_file_location("runtime_features", source)
+    runtime = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runtime)
+    assert runtime.FEATURES == FEATURES
+    for price in (None, 0, 15000):
+        args = (
+            {"query_text": "Поставка бумаги", "start_price": price},
+            {"profile_text": "Бумага для печати", "profile_last_date": "2024-01-01"},
+            {"participations": 12, "wins": 4, "mean_log_price": 8.0},
+            {"participations": 2.5, "wins": 0.5},
+            {},
+            [0.8, 2.0, 0.03, 2, 1, 301],
+            date(2024, 12, 1),
+            3,
+        )
+        np.testing.assert_allclose(runtime.feature_row(*args), feature_row(*args), equal_nan=True)
