@@ -84,7 +84,7 @@ async def sitemap_cards(
     return cards
 
 
-def listing_links(tree: object, kind: str) -> tuple[dict[str, str], int]:
+def listing_links(tree: object, kind: str) -> tuple[dict[str, str], int, int]:
     found: dict[str, str] = {}
     last = 1
     card_class = "firm" if kind == "producers" else "product"
@@ -98,6 +98,11 @@ def listing_links(tree: object, kind: str) -> tuple[dict[str, str], int]:
         match = _PAGE.fullmatch(urlsplit(url).path)
         if match and match.group(1) == kind:
             last = max(last, int(match.group(2)))
+    current = tree.cssselect(".pagination .page_links .pl_mark:not(a)")
+    if len(current) != 1 or not current[0].text_content().strip().isdecimal():
+        raise ContentFormatError(f"Список {kind} не содержит номера текущей страницы")
+    current_page = int(current[0].text_content().strip())
+    last = max(last, current_page)
     if not found:
         raise ContentFormatError(f"Список {kind} не содержит карточек")
-    return found, last
+    return found, last, current_page

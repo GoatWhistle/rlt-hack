@@ -52,10 +52,15 @@ def pages() -> dict[str, bytes]:
         card_class = "firm" if kind == "producers" else "product"
         maps[root] = (
             f"<html><div class='card_item {card_class}'><a href='{links[0]}'>one</a></div>"
-            f"<a href='/{kind}/page-2'>2</a></html>"
+            "<div class='pagination'><ul class='page_links'>"
+            "<li><span class='pl_mark'>1</span></li>"
+            f"<li><a href='/{kind}/page-2'>2</a></li></ul></div></html>"
         ).encode()
         maps[f"{root}/page-2"] = (
-            f"<html><div class='card_item {card_class}'><a href='{links[1]}'>two</a></div></html>"
+            f"<html><div class='card_item {card_class}'><a href='{links[1]}'>two</a></div>"
+            "<div class='pagination'><ul class='page_links'>"
+            "<li><span class='pl_mark'>2</span></li>"
+            f"<li><a href='/{kind}/page-2'>2</a></li></ul></div></html>"
         ).encode()
     for url, name, inn in (
         (P1, "Первый завод", "7804428656"),
@@ -177,6 +182,41 @@ async def check() -> None:
         pass
     else:
         raise AssertionError("Неверный формат товара был опубликован")
+    technical = data.copy()
+    technical[P1] = b"<html><h1>Checking browser</h1></html>"
+    try:
+        await provider(technical).fetch()
+    except ExceptionGroup:
+        pass
+    else:
+        raise AssertionError("Служебная страница была опубликована как компания")
+    repeated = data.copy()
+    repeated[f"{BASE}/products/page-2"] = data[f"{BASE}/products"]
+    try:
+        await provider(repeated).fetch()
+    except ContentFormatError:
+        pass
+    else:
+        raise AssertionError("Повтор первой страницы списка был опубликован")
+    with tempfile.TemporaryDirectory() as directory:
+        cache_dir = Path(directory)
+        try:
+            await provider(repeated, cache_dir=cache_dir).fetch()
+        except ContentFormatError:
+            pass
+        else:
+            raise AssertionError("Повтор страницы попал в кеш как полный список")
+        assert len((await provider(data, cache_dir=cache_dir).fetch()).offers) == 2
+    same_ids = data.copy()
+    same_ids[f"{BASE}/products/page-2"] = data[f"{BASE}/products/page-2"].replace(
+        G2.encode(), G1.encode()
+    )
+    try:
+        await provider(same_ids).fetch()
+    except ContentFormatError:
+        pass
+    else:
+        raise AssertionError("Повтор набора товаров был опубликован")
     attempts = 0
 
     def throttled(request: httpx.Request) -> httpx.Response:

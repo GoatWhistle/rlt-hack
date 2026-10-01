@@ -131,7 +131,9 @@ class ProductCenterWebProvider:
         first_response = await get(http, first_url, self._retries, self._cache)
         try:
             first_tree = await asyncio.to_thread(page.parse, first_response.text, first_url)
-            first, last_page = listing_links(first_tree, kind)
+            first, last_page, current_page = listing_links(first_tree, kind)
+            if current_page != 1:
+                raise ContentFormatError(f"{first_url}: получена страница {current_page} вместо 1")
         except Exception:
             if self._cache is not None:
                 await self._cache.invalidate(first_url)
@@ -142,7 +144,7 @@ class ProductCenterWebProvider:
         self.stats[f"listing_pages_{kind}"] = last_page
         pages = (f"{first_url}/page-{number}" for number in range(2, last_page + 1))
 
-        async def read_listing(url: str) -> tuple[dict[str, str], int]:
+        async def read_listing(url: str) -> tuple[dict[str, str], int, int]:
             response = await get(http, url, self._retries, self._cache)
             try:
                 tree = await asyncio.to_thread(page.parse, response.text, url)
@@ -153,9 +155,42 @@ class ProductCenterWebProvider:
                 raise
 
         results = await self._bounded(pages, read_listing, f"{kind} list")
-        for found, observed_last in results:
-            if observed_last > last_page:
+        seen_pages = {frozenset(first)}
+        page_size = len(first)
+        for expected_page, (found, observed_last, observed_page) in enumerate(results, start=2):
+            url = f"{first_url}/page-{expected_page}"
+            if observed_page != expected_page:
+                if self._cache is not None:
+                    await self._cache.invalidate(url)
+                raise ContentFormatError(
+                    f"{kind}: ожидалась страница {expected_page}, получена {observed_page}"
+                )
+            if observed_last != last_page:
+                if self._cache is not None:
+                    await self._cache.invalidate(url)
                 raise ContentFormatError(f"{kind}: пагинация изменилась во время обхода")
+            ids = frozenset(found)
+            if ids in seen_pages:
+                if self._cache is not None:
+                    await self._cache.invalidate(url)
+                raise ContentFormatError(
+                    f"{kind}: повторился набор карточек страницы {expected_page}"
+                )
+            if (expected_page < last_page and len(ids) != page_size) or (
+                expected_page == last_page and len(ids) > page_size
+            ):
+                if self._cache is not None:
+                    await self._cache.invalidate(url)
+                raise ContentFormatError(
+                    f"{kind}: неверное число карточек страницы {expected_page}"
+                )
+            if ids.intersection(first):
+                if self._cache is not None:
+                    await self._cache.invalidate(url)
+                raise ContentFormatError(
+                    f"{kind}: карточки повторились на странице {expected_page}"
+                )
+            seen_pages.add(ids)
             first.update(found)
         return first
 

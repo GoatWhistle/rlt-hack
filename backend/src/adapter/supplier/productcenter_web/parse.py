@@ -19,9 +19,9 @@ _FEATURE_LABELS = ("характеристики", "условия продаж�
 def supplier_card(content: str, url: str, source_id: UUID) -> Supplier:
     tree = page.parse(content, url)
     organization = jsonld.first_of_types(jsonld.nodes(tree), jsonld.ORGANIZATION_TYPES)
-    name = jsonld.text(organization.get("name")) or page.first_text(tree, "h1")
+    name = jsonld.text(organization.get("name"))
     if not name:
-        raise ContentFormatError(f"{url}: нет названия производителя")
+        raise ContentFormatError(f"{url}: нет карточки производителя с названием Organization")
     address = jsonld.first(organization.get("address"))
     document = page.document_text(tree)
     inn = normalize_inn(jsonld.text(organization.get("taxID"))) or find_inn(document)
