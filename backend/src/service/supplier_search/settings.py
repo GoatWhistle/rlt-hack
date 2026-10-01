@@ -22,6 +22,7 @@ class ScoreWeights:
 class SearchSettings:
     pipeline_version: str = "search-v1"
     timeout_seconds: float = 8.0
+    archive_timeout_seconds: float = 2.0
     retrieval_depth_factor: int = 3
     rrf_k: int = 60
     coverage_threshold: float = 0.5
@@ -30,8 +31,8 @@ class SearchSettings:
     weights: ScoreWeights = field(default_factory=ScoreWeights)
 
     def __post_init__(self) -> None:
-        if self.timeout_seconds <= 0:
-            raise ValueError("timeout must be positive")
+        if self.timeout_seconds <= 0 or self.archive_timeout_seconds <= 0:
+            raise ValueError("timeouts must be positive")
         if self.retrieval_depth_factor < 1 or self.rrf_k < 1:
             raise ValueError("retrieval depth and rrf k must be positive")
         if not 0 < self.coverage_threshold <= 1:

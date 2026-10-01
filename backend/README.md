@@ -357,7 +357,7 @@ curl -s http://localhost:8000/api/health/ready
 | `API_HOST` | `0.0.0.0` | адрес `uv run api` |
 | `API_PORT` | `8000` | порт `uv run api`; в Compose — порт на хосте |
 | `API_DOCS` | `true` | документация OpenAPI; в продакшне `false` |
-| `SEARCH_TIMEOUT_SECONDS` | `8` | таймаут сценария поиска |
+| `SEARCH_TIMEOUT_SECONDS` | `8` | таймаут сценария поиска; сохранение в архив идёт после него с отдельным таймаутом 2 с, при его срабатывании ответ получает предупреждение `archiveFailed` |
 | `SEARCH_RETRIEVAL_DEPTH` | `3` | во сколько раз каналы берут больше кандидатов, чем лимит |
 | `SEARCH_COVERAGE_THRESHOLD` | `0.5` | порог покрытия позиций для статуса `recommended` |
 | `SEARCH_LEXICAL_POOL` | `500` | сколько карточек отбирает лексический поиск |

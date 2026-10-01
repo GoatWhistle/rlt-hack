@@ -42,9 +42,10 @@ class SupplierSearchService:
     async def search(self, query: SearchQuery) -> SearchResult:
         try:
             async with asyncio.timeout(self._settings.timeout_seconds):
-                return await self._run(query)
+                result = await self._run(query)
         except TimeoutError as error:
             raise SearchTimeoutError(self._settings.timeout_seconds) from error
+        return await self._archived(result)
 
     async def get(self, search_id: UUID) -> SearchResult:
         result = await self._archive.get(search_id)
@@ -61,7 +62,7 @@ class SupplierSearchService:
         if not items:
             raise UninterpretableQueryError
         outcome = await self._matcher.match(SearchRequest(query=query, items=items))
-        result = SearchResult(
+        return SearchResult(
             search_id=self._ids.new(),
             query=query,
             items=items,
@@ -70,7 +71,6 @@ class SupplierSearchService:
             created_at=started_at,
             warnings=(*_item_warnings(items), *outcome.warnings),
         )
-        return await self._archived(result)
 
     def _pipeline(self, channels: tuple[str, ...], as_of: datetime) -> PipelineInfo:
         return PipelineInfo(
@@ -81,7 +81,8 @@ class SupplierSearchService:
 
     async def _archived(self, result: SearchResult) -> SearchResult:
         try:
-            await self._archive.save(result)
+            async with asyncio.timeout(self._settings.archive_timeout_seconds):
+                await self._archive.save(result)
         except Exception:
             logger.warning("search %s was not archived", result.search_id, exc_info=True)
             warning = SearchWarning(WarningCode.ARCHIVE_FAILED)

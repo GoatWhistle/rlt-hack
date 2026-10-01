@@ -109,8 +109,11 @@ class FakeHistory:
 class FakeArchive:
     stored: dict[UUID, SearchResult] = field(default_factory=dict)
     fails: bool = False
+    delay: float = 0.0
 
     async def save(self, result: SearchResult) -> None:
+        if self.delay:
+            await asyncio.sleep(self.delay)
         if self.fails:
             raise PortFailureError("archive")
         self.stored[result.search_id] = result

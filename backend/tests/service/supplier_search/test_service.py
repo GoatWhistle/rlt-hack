@@ -171,6 +171,16 @@ async def test_archive_failure_still_returns_the_result() -> None:
     assert len(result.candidates) == 2
 
 
+async def test_slow_archive_returns_result_with_warning() -> None:
+    harness = Harness(
+        archive=FakeArchive(delay=1.0),
+        settings=SearchSettings(timeout_seconds=0.5, archive_timeout_seconds=0.05),
+    )
+    result = await harness.service().search(make_query())
+    assert result.warnings == (SearchWarning(WarningCode.ARCHIVE_FAILED),)
+    assert harness.archive.stored == {}
+
+
 async def test_slow_search_times_out() -> None:
     harness = Harness(
         lexical=FakeRetriever("lexical", lexical_hits(), delay=1.0),
