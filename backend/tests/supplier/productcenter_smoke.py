@@ -6,6 +6,7 @@ import json
 import sys
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 import httpx
 
@@ -15,6 +16,7 @@ sys.path.insert(0, str(ROOT))
 from src.adapter.supplier import identity
 from src.adapter.supplier.errors import ContentFormatError, SourceUnavailableError
 from src.adapter.supplier.productcenter_web import ProductCenterWebProvider
+from src.adapter.supplier.productcenter_web.cache import PageCache
 from src.adapter.supplier.productcenter_web.request import get
 from src.models.enums import SourceType, SupplierRole, VerificationStatus
 from src.models.source import Source
@@ -183,6 +185,11 @@ async def check() -> None:
     async with httpx.AsyncClient(transport=httpx.MockTransport(throttled)) as http:
         assert (await get(http, f"{BASE}/retry", 1)).text == "ok"
     assert attempts == 2
+    with tempfile.TemporaryDirectory() as directory:
+        cache = PageCache(Path(directory))
+        with patch.object(cache, "write", side_effect=OSError("disk full")):
+            async with httpx.AsyncClient(transport=httpx.MockTransport(throttled)) as http:
+                assert (await get(http, f"{BASE}/cache-write", 0, cache)).status_code == 200
     print("ProductCenter: package, links, UUID, duplicates, failures, limit, format OK")
 
 

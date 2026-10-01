@@ -62,6 +62,8 @@ async def sitemap_cards(
     selected = [u for u in names if pattern.fullmatch(urlsplit(u).path.rsplit("/", 1)[-1])]
     selected_names = {urlsplit(u).path.rsplit("/", 1)[-1] for u in selected}
     if not {"sitemap-producers.xml.gz", "sitemap-products.xml.gz"} <= selected_names:
+        if cache is not None:
+            await cache.invalidate(SITEMAP_URL)
         raise ContentFormatError("В индексе отсутствует карта компаний или товаров")
     cards: dict[str, dict[str, str]] = {"producers": {}, "products": {}}
     for url in selected:

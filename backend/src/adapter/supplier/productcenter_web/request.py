@@ -1,6 +1,7 @@
 """HTTP-запросы ProductCenter с ограниченными повторами."""
 
 import asyncio
+import logging
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 
@@ -10,6 +11,7 @@ from src.adapter.supplier.errors import SourceUnavailableError
 from src.adapter.supplier.productcenter_web.cache import PageCache
 
 RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
+logger = logging.getLogger(__name__)
 
 
 async def get(
@@ -33,7 +35,10 @@ async def get(
             if response.status_code not in RETRY_STATUSES:
                 response.raise_for_status()
                 if cache is not None and response.status_code == 200 and response.content:
-                    await cache.write(url, response.content)
+                    try:
+                        await cache.write(url, response.content)
+                    except OSError as error:
+                        logger.warning("Кеш ProductCenter не записал %s: %s", url, error)
                 return response
             if attempt == retries:
                 response.raise_for_status()
