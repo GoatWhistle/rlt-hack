@@ -344,3 +344,22 @@ uv run --no-project --python 3.13 python tests/classifier/classifier_smoke.py
 uv run --no-project --python 3.13 --with 'ruff>=0.14' ruff check .
 uv run --no-project --python 3.13 --with 'ruff>=0.14' ruff format .
 ```
+
+## HTTP-поиск и импорт готового индекса
+
+`python -m uvicorn src.controller.search.api:app --host 0.0.0.0 --port 8080`
+запускает `/api/health`, `/api/suppliers/search` и `/api/uploads`.
+CSV содержит `lot_id,procedure_name,subject`; максимум 20 строк и 2 МБ.
+Результаты связаны с cookie сессии и сохраняются в `UPLOADS_DIR`.
+
+`python -m src.controller.search.import_index /data/index` применяет миграции,
+проверяет манифест и импортирует карточки/вектора в ClickHouse. Каталог должен
+содержать `cards.parquet`, `card_vectors.npy`, `report.json`, `manifest.json`.
+`SUPPLIER_INDEX_DIR` задаёт этот каталог для API, `SUPPLIER_INDEX_ID` — SHA-256
+массива векторов. При заданном ID косинусная близость считается в ClickHouse;
+BM25 и RRF объединяют результаты по ИНН. Незавершённый импорт не публикуется
+в реестре готовых индексов. Результаты не заменяются демонстрационными данными.
+
+Прокси задаётся только в окружении parser-worker через HTTP_PROXY/HTTPS_PROXY;
+внутренние сервисы исключаются через NO_PROXY. Поддерживается SOCKS5.
+Реквизиты хранятся в серверном env-файле вне Git.
