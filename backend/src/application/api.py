@@ -2,7 +2,7 @@ from collections.abc import Awaitable, Callable
 
 import httpx
 
-from src.adapter.client.ml_service.retriever import MlServiceRetriever
+from src.adapter.client.ml_service.retriever import MlServiceRetriever, no_correlation
 from src.adapter.file.notice_csv.reader import CsvNoticeReader
 from src.adapter.repository.clickhouse.history_search.retriever import ClickHouseHistoryRetriever
 from src.adapter.repository.clickhouse.offer_read.catalog import ClickHouseOfferCatalog
@@ -50,12 +50,14 @@ class ApiContainer:
         *,
         background: Connect | None = None,
         control: Connect | None = None,
+        correlation: Callable[[], str | None] | None = None,
     ) -> None:
         self._config = config
         self._gateway = DeferredGateway(connect)
         self._background = self._gateway if background is None else DeferredGateway(background)
         self._control = self._gateway if control is None else DeferredGateway(control)
         self._release = release
+        self._correlation = correlation
         self._analyzer = RussianAnalyzer()
         self._ml_client: httpx.AsyncClient | None = None
         self._uploads: ProcurementUploadService | None = None
@@ -173,4 +175,5 @@ class ApiContainer:
             self._ml_client,
             ClickHouseSupplierIdentity(gateway, self.database),
             timeout_seconds=ml.timeout_seconds,
+            correlation=self._correlation or no_correlation,
         )

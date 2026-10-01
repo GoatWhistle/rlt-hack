@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from src.controller.http.app import create_app
-from src.controller.http.errors import ApiErrorDto
+from src.controller.http.error_body import ApiErrorDto
 from src.controller.http.settings import ApiSettings
 from src.controller.upload.dto import (
     LotDetailDto,

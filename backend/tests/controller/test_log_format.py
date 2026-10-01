@@ -1,11 +1,16 @@
 import json
 import logging
+import logging.config
 import sys
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 
+from src.controller.http.correlation import RequestIdFilter
 from src.controller.http.log_format import JsonFormatter, configure_logging
+
+LOG_CONFIG = Path(__file__).resolve().parents[2] / "src" / "controller" / "api" / "logging.json"
 
 
 @pytest.fixture
@@ -43,6 +48,19 @@ def test_formatter_writes_json_with_extras() -> None:
 def test_formatter_includes_exception() -> None:
     payload = json.loads(JsonFormatter().format(make_record(exc_info=True)))
     assert "ValueError: boom" in payload["exception"]
+
+
+def test_uvicorn_log_config_writes_json_through_the_root(root_logger: logging.Logger) -> None:
+    config = json.loads(LOG_CONFIG.read_text(encoding="utf-8"))
+    logging.config.dictConfig(config)
+    [handler] = root_logger.handlers
+    assert isinstance(handler.formatter, JsonFormatter)
+    assert any(isinstance(item, RequestIdFilter) for item in handler.filters)
+    assert logging.getLogger("uvicorn.error").propagate
+    assert not logging.getLogger("uvicorn.error").handlers
+    configure_logging("info")
+    assert len(root_logger.handlers) == 1
+    assert logging.getLogger("urllib3").level == logging.ERROR
 
 
 def test_configure_logging_is_idempotent(root_logger: logging.Logger) -> None:

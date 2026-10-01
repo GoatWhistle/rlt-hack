@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request, Response, status
 
-from src.controller.http.errors import ApiErrorDto
+from src.controller.http.error_body import ApiErrorDto
 from src.controller.http.middleware import request_id_of
 from src.controller.http.settings import ApiSettings
 from src.controller.http.state import Services, api_settings, services

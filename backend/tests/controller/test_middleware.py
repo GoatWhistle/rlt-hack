@@ -5,7 +5,7 @@ import httpx
 import pytest
 from starlette.types import Message, Receive, Scope, Send
 
-from src.controller.http.middleware import RequestIdMiddleware, ServerTimingMiddleware
+from src.controller.http.middleware import RequestContextMiddleware
 
 TIMING = re.compile(r"^app;dur=\d+\.\d$")
 
@@ -41,10 +41,7 @@ async def test_error_responses_carry_server_timing(client: httpx.AsyncClient) ->
     assert TIMING.match(response.headers["server-timing"])
 
 
-@pytest.mark.parametrize("middleware", [RequestIdMiddleware, ServerTimingMiddleware])
-async def test_non_http_scopes_pass_through(
-    middleware: type[RequestIdMiddleware] | type[ServerTimingMiddleware],
-) -> None:
+async def test_non_http_scopes_pass_through() -> None:
     seen: list[str] = []
 
     async def inner(scope: Scope, receive: Receive, send: Send) -> None:
@@ -56,7 +53,7 @@ async def test_non_http_scopes_pass_through(
     async def send(message: Message) -> None:
         return None
 
-    await middleware(inner)({"type": "lifespan"}, receive, send)
+    await RequestContextMiddleware(inner)({"type": "lifespan"}, receive, send)
     assert seen == ["lifespan"]
 
 

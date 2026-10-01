@@ -42,6 +42,7 @@ CLEAN_ROOTS = (
     "src/controller/health",
     "src/controller/api",
     "src/controller/upload",
+    "src/controller/metrics",
     "src/controller/errors.py",
     "src/adapter/text",
     "src/adapter/system",

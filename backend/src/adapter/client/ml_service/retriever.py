@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 CHANNEL = "semantic"
 RECOMMENDATIONS_PATH = "/v1/recommendations"
+REQUEST_ID_HEADER = "X-Request-Id"
 ATTEMPTS = 2
 MAX_RESPONSE_BYTES = 1024 * 1024
 CANDIDATE_OVERSAMPLING = 4
@@ -29,6 +30,10 @@ CANDIDATE_OVERSAMPLING = 4
 
 def utc_now() -> datetime:
     return datetime.now(UTC)
+
+
+def no_correlation() -> str | None:
+    return None
 
 
 class MlServiceRetriever:
@@ -39,12 +44,14 @@ class MlServiceRetriever:
         timeout_seconds: float = 5.0,
         request_ids: Callable[[], UUID] = uuid4,
         clock: Callable[[], datetime] = utc_now,
+        correlation: Callable[[], str | None] = no_correlation,
     ) -> None:
         self._client = client
         self._identity = identity
         self._timeout = httpx.Timeout(timeout_seconds)
         self._request_ids = request_ids
         self._clock = clock
+        self._correlation = correlation
 
     @property
     def channel(self) -> str:
@@ -59,13 +66,17 @@ class MlServiceRetriever:
 
     async def _exchange(self, wire: RecommendationRequestDto) -> RecommendationResponseDto:
         body = wire.model_dump_json(by_alias=True)
+        headers = {"Content-Type": "application/json"}
+        correlation = self._correlation()
+        if correlation:
+            headers[REQUEST_ID_HEADER] = correlation
         reason = ""
         for attempt in range(1, ATTEMPTS + 1):
             try:
                 response = await self._client.post(
                     RECOMMENDATIONS_PATH,
                     content=body,
-                    headers={"Content-Type": "application/json"},
+                    headers=headers,
                     timeout=self._timeout,
                 )
             except httpx.TransportError as error:

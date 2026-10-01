@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from src.adapter.client.errors import MlProtocolError, MlServiceError, MlServiceUnavailableError
-from src.adapter.client.ml_service.retriever import MlServiceRetriever, utc_now
+from src.adapter.client.ml_service.retriever import MlServiceRetriever, no_correlation, utc_now
 from src.models.enums import ItemOrigin
 from src.models.query_item import QueryItem, SearchRequest
 from src.models.retrieval import ItemHit
@@ -198,3 +198,24 @@ async def test_inferred_items_are_marked_on_the_wire() -> None:
 def test_default_clock_is_utc_and_channel_is_semantic() -> None:
     assert utc_now().tzinfo is not None
     assert retriever(lambda request: httpx.Response(200)).channel == "semantic"
+
+
+async def test_request_id_header_is_forwarded() -> None:
+    seen: list[str | None] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request.headers.get("x-request-id"))
+        return httpx.Response(200, json=answer([{"supplierInn": "7801234564", "rank": 1}]))
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handler), base_url="http://ml.local")
+    correlated = MlServiceRetriever(
+        client,
+        FakeIdentity(),
+        request_ids=lambda: REQUEST_ID,
+        clock=lambda: MOMENT,
+        correlation=lambda: "trace-0001",
+    )
+    await correlated.retrieve(make_request(), 5)
+    await retriever(handler).retrieve(make_request(), 5)
+    assert seen == ["trace-0001", None]
+    assert no_correlation() is None

@@ -177,7 +177,7 @@ services:
       target: api
     restart: unless-stopped
     entrypoint: ["uvicorn"]
-    command: ["src.controller.api.main:build_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*", "--no-server-header", "--no-access-log"]
+    command: ["src.controller.api.main:build_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*", "--no-server-header", "--no-access-log", "--log-config", "src/controller/api/logging.json"]
     environment:
       <<: *job-environment
       API_HOST: 0.0.0.0

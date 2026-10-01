@@ -2,11 +2,14 @@ import json
 import logging
 from datetime import UTC, datetime
 
+from src.controller.http.correlation import RequestIdFilter
+
 RESERVED = frozenset(vars(logging.LogRecord("", 0, "", 0, "", None, None))) | {
     "message",
     "asctime",
     "taskName",
 }
+NOISY_LOGGERS = ("urllib3", "clickhouse_connect")
 
 
 class JsonFormatter(logging.Formatter):
@@ -23,11 +26,18 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(payload, ensure_ascii=False, default=str)
 
 
+def json_handler() -> logging.Handler:
+    handler = logging.StreamHandler()
+    handler.setFormatter(JsonFormatter())
+    handler.addFilter(RequestIdFilter())
+    return handler
+
+
 def configure_logging(level: str) -> None:
     root = logging.getLogger()
     root.setLevel(level.upper())
+    for name in NOISY_LOGGERS:
+        logging.getLogger(name).setLevel(logging.ERROR)
     if any(isinstance(handler.formatter, JsonFormatter) for handler in root.handlers):
         return
-    handler = logging.StreamHandler()
-    handler.setFormatter(JsonFormatter())
-    root.addHandler(handler)
+    root.addHandler(json_handler())

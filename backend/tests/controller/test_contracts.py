@@ -7,7 +7,7 @@ import httpx
 import pytest
 from pydantic import BaseModel
 
-from src.controller.http.errors import ApiErrorDto
+from src.controller.http.error_body import ApiErrorDto
 from src.controller.search.dto import RecentSearchesDto, SearchRequestDto, SearchResponseDto
 from src.controller.search.mapper import to_query
 from src.controller.supplier.dto import SupplierProfileDto

@@ -7,7 +7,7 @@
 """
 
 import asyncio
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from types import TracebackType
 from typing import Any
 from uuid import uuid4
@@ -21,8 +21,9 @@ from src.adapter.repository.errors import RepositoryError, RepositoryUnavailable
 class ConnectGateway:
     """Обёртка клиента clickhouse-connect под интерфейс SqlGateway."""
 
-    def __init__(self, client: Any) -> None:
+    def __init__(self, client: Any, comment: Callable[[], str | None] | None = None) -> None:
         self._client = client
+        self._comment = comment
         self._lock = asyncio.Lock()
         self._query_id: str | None = None
 
@@ -70,10 +71,17 @@ class ConnectGateway:
             try:
                 with _translated_errors():
                     return await asyncio.to_thread(
-                        call, *args, settings={"query_id": query_id}, **kwargs
+                        call, *args, settings=self._settings(query_id), **kwargs
                     )
             finally:
                 self._query_id = None
+
+    def _settings(self, query_id: str) -> dict[str, str]:
+        settings = {"query_id": query_id}
+        comment = self._comment() if self._comment is not None else None
+        if comment:
+            settings["log_comment"] = comment
+        return settings
 
 
 class _translated_errors:

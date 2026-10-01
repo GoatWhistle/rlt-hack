@@ -5,10 +5,12 @@ from fastapi import FastAPI
 
 from src.controller.health.router import router as health_router
 from src.controller.http.errors import install_error_handlers
-from src.controller.http.middleware import RequestIdMiddleware, ServerTimingMiddleware
+from src.controller.http.metrics import Metrics
+from src.controller.http.middleware import RequestContextMiddleware
 from src.controller.http.protocols import ServiceProvider
 from src.controller.http.settings import ApiSettings
 from src.controller.http.state import Services
+from src.controller.metrics.router import router as metrics_router
 from src.controller.search.router import router as search_router
 from src.controller.supplier.router import router as supplier_router
 from src.controller.upload.router import router as upload_router
@@ -46,9 +48,10 @@ def create_app(provider: ServiceProvider, settings: ApiSettings) -> FastAPI:
         openapi_url=OPENAPI_URL if settings.docs_enabled else None,
     )
     app.state.settings = settings
+    app.state.metrics = Metrics()
     install_error_handlers(app)
-    app.add_middleware(ServerTimingMiddleware)
-    app.add_middleware(RequestIdMiddleware)
-    for router in (search_router, supplier_router, upload_router, health_router):
+    app.add_middleware(RequestContextMiddleware, metrics=app.state.metrics)
+    routers = (search_router, supplier_router, upload_router, health_router, metrics_router)
+    for router in routers:
         app.include_router(router)
     return app

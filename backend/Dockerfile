@@ -33,7 +33,7 @@ USER api
 
 EXPOSE 8000
 
-CMD ["uvicorn", "src.controller.api.main:build_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--no-server-header", "--no-access-log"]
+CMD ["uvicorn", "src.controller.api.main:build_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--no-server-header", "--no-access-log", "--log-config", "src/controller/api/logging.json"]
 
 FROM base AS job
 

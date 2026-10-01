@@ -18,7 +18,9 @@ async def _attempt(
     try:
         return await retriever.retrieve(request, depth)
     except Exception:
-        logger.warning("retrieval channel %s failed", retriever.channel, exc_info=True)
+        logger.warning(
+            "retrieval channel failed", extra={"channel": retriever.channel}, exc_info=True
+        )
         return None
 
 

@@ -13,8 +13,13 @@ from src.controller.errors import (
     RequestFileError,
     UnsupportedFileTypeError,
 )
+from src.controller.http.error_body import (
+    INTERNAL_CODE,
+    INTERNAL_MESSAGE,
+    INTERNAL_STATUS,
+    error_body,
+)
 from src.controller.http.middleware import REQUEST_ID_HEADER, request_id_of
-from src.controller.http.schema import CamelModel
 from src.models.errors import (
     DomainError,
     EmptySearchTextError,
@@ -42,15 +47,8 @@ from src.service.errors import (
 
 logger = logging.getLogger(__name__)
 
-INTERNAL_MESSAGE = "internal error"
 VALIDATION_MESSAGE = "request does not match the schema"
 VALIDATION_DETAILS = 3
-
-
-class ApiErrorDto(CamelModel):
-    code: str
-    message: str
-    request_id: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,7 +64,7 @@ class ErrorKind:
 RETRY_AFTER_SECONDS = 5
 QUEUE_RETRY_AFTER_SECONDS = 60
 
-INTERNAL = ErrorKind(HTTPStatus.INTERNAL_SERVER_ERROR, "internal_error")
+INTERNAL = ErrorKind(INTERNAL_STATUS, INTERNAL_CODE)
 INVALID_REQUEST = ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "invalid_request")
 UNSUPPORTED_FILE = ErrorKind(HTTPStatus.UNSUPPORTED_MEDIA_TYPE, "unsupported_file_type")
 
@@ -121,10 +119,9 @@ def error_response(
     headers: dict[str, str] | None = None,
 ) -> JSONResponse:
     request_id = request_id_of(request)
-    body = ApiErrorDto(code=kind.code, message=message, request_id=request_id)
     return JSONResponse(
         status_code=kind.status,
-        content=body.model_dump(by_alias=True, mode="json"),
+        content=error_body(kind.code, message, request_id),
         headers={**(headers or {}), REQUEST_ID_HEADER: request_id},
     )
 
@@ -168,14 +165,9 @@ async def handle_http(request: Request, error: Exception) -> JSONResponse:
     return error_response(request, kind, str(error.detail), dict(error.headers or {}))
 
 
-async def handle_unexpected(request: Request, error: Exception) -> JSONResponse:
-    return internal_error(request, error)
-
-
 def install_error_handlers(app: FastAPI) -> None:
     app.add_exception_handler(DomainError, handle_known)
     app.add_exception_handler(ServiceError, handle_known)
     app.add_exception_handler(RequestFileError, handle_known)
     app.add_exception_handler(RequestValidationError, handle_validation)
     app.add_exception_handler(HTTPException, handle_http)
-    app.add_exception_handler(Exception, handle_unexpected)

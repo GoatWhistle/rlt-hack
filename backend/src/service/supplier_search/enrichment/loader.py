@@ -24,7 +24,7 @@ async def _attempt[K, V](source: str, call: Awaitable[Mapping[K, V]]) -> Mapping
     try:
         return await call
     except Exception:
-        logger.warning("enrichment source %s failed", source, exc_info=True)
+        logger.warning("enrichment source failed", extra={"source": source}, exc_info=True)
         return None
 
 

@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from src.controller.http.errors import ApiErrorDto
+from src.controller.http.error_body import ApiErrorDto
 from src.controller.http.state import Services, services
 from src.controller.supplier.dto import SupplierProfileDto
 from src.controller.supplier.mapper import parse_supplier_id, to_profile

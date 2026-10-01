@@ -56,3 +56,9 @@ def test_production_api_hides_docs_and_drops_privileges() -> None:
         "no-new-privileges:true",
     ):
         assert setting in api, setting
+
+
+@pytest.mark.parametrize("path", LAUNCHERS[:2], ids=lambda path: path.name)
+def test_api_command_uses_json_logging(path: Path) -> None:
+    assert '"--log-config", "src/controller/api/logging.json"' in read(path)
+    assert (BACKEND / "src" / "controller" / "api" / "logging.json").is_file()

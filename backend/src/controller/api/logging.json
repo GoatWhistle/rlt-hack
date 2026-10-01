@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "handlers": {
+    "json": {
+      "()": "src.controller.http.log_format.json_handler"
+    }
+  },
+  "loggers": {
+    "uvicorn": { "handlers": [], "propagate": true },
+    "uvicorn.error": { "handlers": [], "propagate": true },
+    "uvicorn.access": { "handlers": [], "propagate": true },
+    "urllib3": { "level": "ERROR" },
+    "clickhouse_connect": { "level": "ERROR" }
+  },
+  "root": { "level": "INFO", "handlers": ["json"] }
+}

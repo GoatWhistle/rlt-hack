@@ -9,6 +9,7 @@
 делят все конкурентные обходы. Для будущего HTTP API он создаётся один раз.
 """
 
+from collections.abc import Callable
 from functools import partial
 from types import TracebackType
 
@@ -76,9 +77,13 @@ def _source(name: str, base_url: str, source_type: SourceType, provider_name: st
     )
 
 
+Correlation = Callable[[], str | None]
+
+
 class Container:
-    def __init__(self, config: AppConfig) -> None:
+    def __init__(self, config: AppConfig, correlation: Correlation | None = None) -> None:
         self._config = config
+        self._correlation = correlation
         self._versions = VersionSequencer()
         self._gateway: GatewayPool | None = None
         self._api_gateway: GatewayPool | None = None
@@ -130,7 +135,7 @@ class Container:
         return await self._open_with(self._config.clickhouse)
 
     async def _open_with(self, config: ClickHouseConfig) -> ConnectGateway:
-        return ConnectGateway(await create_client(config))
+        return ConnectGateway(await create_client(config), self._correlation)
 
     async def migrator(self) -> Migrator:
         return Migrator(await self.gateway(), database=self._config.clickhouse.database)
