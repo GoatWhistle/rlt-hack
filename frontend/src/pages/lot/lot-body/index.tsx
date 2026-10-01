@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next"
+import { WarningNote } from "@/entities/search/ui/warning-note"
 import type { LotDetail } from "@/entities/upload/model"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { VisuallyHidden } from "@/shared/ui/visually-hidden"
@@ -39,6 +40,9 @@ export function LotBody({ uploadId, detail, switching }: LotBodyProps) {
         <span role="status">
           <VisuallyHidden>{t("loading")}</VisuallyHidden>
         </span>
+      ) : null}
+      {recommendation?.warnings?.length ? (
+        <WarningNote warnings={recommendation.warnings} />
       ) : null}
       {recommendation ? (
         <Workspace

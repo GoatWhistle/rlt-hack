@@ -63,6 +63,21 @@ export type Highlight = {
   readonly params: Readonly<Record<string, number>>
 }
 
+export const WARNING_CODES = [
+  "channelFailed",
+  "enrichmentFailed",
+  "archiveFailed",
+  "itemsInferred",
+] as const
+export type WarningCode = (typeof WARNING_CODES)[number]
+
+export const DEGRADING_WARNINGS: readonly WarningCode[] = ["channelFailed", "enrichmentFailed"]
+
+export type SearchWarning = {
+  readonly code: WarningCode
+  readonly subject: string
+}
+
 export type MatchCount = {
   readonly confirmed: number
   readonly assumed: number

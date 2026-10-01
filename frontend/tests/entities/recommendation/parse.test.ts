@@ -47,6 +47,27 @@ describe("parseRecommendation", () => {
     expect(south?.checkReasons).toEqual(["rangeUnconfirmed"])
   })
 
+  it("skips codes added by a newer backend", () => {
+    const payload = changed(
+      ["companies", 1, "checkReasons"],
+      ["rangeUnconfirmed", "taxDebt"],
+    ) as Node
+    const north = (payload.companies as Node[])[0] as Node
+    north.highlights = [{ code: "cheap", params: {} }, ...(north.highlights as Node[])]
+    payload.warnings = [{ code: "solarFlare" }, { code: "channelFailed", subject: "history" }]
+    const parsed = parseRecommendation(payload)
+    expect(parsed.companies[1]?.checkReasons).toEqual(["rangeUnconfirmed"])
+    expect(parsed.companies[0]?.highlights[0]?.code).toBe("coversItems")
+    expect(parsed.warnings).toEqual([{ code: "channelFailed", subject: "history" }])
+  })
+
+  it("treats absent warnings as an older backend", () => {
+    expect(parseRecommendation(structuredClone(recommendationFixture))).not.toHaveProperty(
+      "warnings",
+    )
+    expect(parseRecommendation(changed(["warnings"], null))).not.toHaveProperty("warnings")
+  })
+
   it.each([
     ["a non-object payload", null, "$"],
     ["an array payload", [], "$"],
@@ -78,9 +99,9 @@ describe("parseRecommendation", () => {
       "$.companies[0].role",
     ],
     [
-      "a free-text check reason",
-      changed(["companies", 1, "checkReasons"], ["Range not confirmed"]),
-      "$.companies[1].checkReasons[0].reason",
+      "a check reason that is not text",
+      changed(["companies", 1, "checkReasons"], [7]),
+      "$.companies[1].checkReasons[0]",
     ],
     [
       "check reasons that are not a list",
@@ -93,10 +114,11 @@ describe("parseRecommendation", () => {
       "$.companies[0].highlights",
     ],
     [
-      "an unknown highlight",
-      changed(["companies", 0, "highlights", 0, "code"], "cheap"),
+      "a highlight code that is not text",
+      changed(["companies", 0, "highlights", 0, "code"], 3),
       "$.companies[0].highlights[0].code",
     ],
+    ["warnings that are not a list", changed(["warnings"], "channelFailed"), "$.warnings"],
     [
       "a highlight parameter that is not a count",
       changed(["companies", 0, "highlights", 0, "params", "matched"], "five"),

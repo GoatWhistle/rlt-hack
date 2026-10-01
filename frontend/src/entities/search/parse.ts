@@ -3,6 +3,7 @@ import {
   parseContacts,
   parseHighlights,
   parseSource,
+  parseWarnings,
 } from "@/entities/evidence/parse"
 import {
   count,
@@ -35,7 +36,6 @@ import {
   type SearchQuery,
   type SearchResult,
   type SearchSummary,
-  WARNING_CODES,
 } from "./model"
 
 function fraction(fields: Fields, key: string, path: string): number {
@@ -185,13 +185,7 @@ export function parseSearchResult(value: unknown): SearchResult {
       channels: list(pipeline, "channels", "$.pipeline", plainText),
       asOf: text(pipeline, "asOf", "$.pipeline"),
     },
-    warnings: list(fields, "warnings", "$", (entry, at) => {
-      const warning = record(entry, at)
-      return {
-        code: oneOf(WARNING_CODES, warning, "code", at),
-        subject: optionalText(warning, "subject", at) ?? "",
-      }
-    }),
+    warnings: parseWarnings(fields, "$"),
     createdAt: text(fields, "createdAt", "$"),
   })
 }

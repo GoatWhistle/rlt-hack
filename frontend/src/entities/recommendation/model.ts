@@ -7,6 +7,7 @@ import {
   type Highlight,
   type MatchBasis,
   type PurchaseOutcome,
+  type SearchWarning,
   type Source,
 } from "@/entities/evidence/model"
 
@@ -85,4 +86,5 @@ export type Recommendation = {
   readonly lotLabel: string
   readonly products: readonly Product[]
   readonly companies: readonly Company[]
+  readonly warnings?: readonly SearchWarning[]
 }

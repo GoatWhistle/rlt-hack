@@ -1,3 +1,4 @@
+import { DEGRADING_WARNINGS } from "@/entities/evidence/model"
 import type { RowIssue } from "@/entities/notice/model"
 import type { Recommendation } from "@/entities/recommendation/model"
 
@@ -52,5 +53,8 @@ export function statusOf(recommendation: Recommendation): ResultStatus {
   if (recommendation.companies.length === 0) return "noCandidates"
   const assumed = recommendation.products.some((product) => product.origin === "inferred")
   const leaderToCheck = recommendation.companies[0]?.status === "check"
-  return assumed || leaderToCheck ? "needsCheck" : "ready"
+  const degraded = (recommendation.warnings ?? []).some((warning) =>
+    DEGRADING_WARNINGS.includes(warning.code),
+  )
+  return assumed || leaderToCheck || degraded ? "needsCheck" : "ready"
 }

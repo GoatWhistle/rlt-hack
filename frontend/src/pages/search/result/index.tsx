@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router"
 import { useSearchResult } from "@/entities/search/queries"
+import { WarningNote } from "@/entities/search/ui/warning-note"
 import { isApiError } from "@/shared/api/api-error"
 import { SEARCH_PATH } from "@/shared/config/paths"
 import { ButtonLink } from "@/shared/ui/button"
@@ -9,7 +10,6 @@ import { ErrorState } from "@/shared/ui/error-state"
 import { WorkspaceSkeleton } from "@/shared/ui/workspace-skeleton"
 import { ResultHeader } from "../result-header"
 import { SearchWorkspace } from "../search-workspace"
-import { WarningNote } from "../warning-note"
 import styles from "./styles.module.css"
 
 export function SearchResultPage() {

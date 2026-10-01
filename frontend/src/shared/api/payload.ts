@@ -77,6 +77,24 @@ export function optionalOneOf<T extends string>(
   return absent(fields[key]) ? undefined : oneOf(options, fields, key, path)
 }
 
+export function knownOf<T extends string>(
+  options: readonly T[],
+  value: unknown,
+  path: string,
+): T | undefined {
+  if (typeof value !== "string") throw new PayloadFormatError(path)
+  return options.find((option) => option === value)
+}
+
+export function knownList<T>(
+  fields: Fields,
+  key: string,
+  path: string,
+  item: (value: unknown, at: string) => T | undefined,
+): T[] {
+  return list(fields, key, path, item).filter((entry): entry is T => entry !== undefined)
+}
+
 export function plainText(value: unknown, path: string): string {
   if (typeof value !== "string") throw new PayloadFormatError(path)
   return value

@@ -1,5 +1,6 @@
 import { contract } from "@tests/support/search"
 import { describe, expect, it } from "vitest"
+import { statusOf } from "@/entities/upload/model"
 import {
   parseLotDetail,
   parseLotResults,
@@ -48,6 +49,14 @@ describe("the upload contract examples", () => {
       company.matches.map((match) => match.productId),
     )
     expect(linked?.every((id) => known.has(id))).toBe(true)
+  })
+
+  it("carry search warnings of a lot", () => {
+    const { recommendation } = parseLotDetail(contract("upload/lot.example.json"))
+    expect(recommendation?.warnings).toEqual([{ code: "channelFailed", subject: "history" }])
+    expect(recommendation && statusOf(recommendation)).toBe("needsCheck")
+    const [, empty] = parseLotResults(contract("upload/results.example.json"))
+    expect(empty?.recommendation?.warnings).toEqual([])
   })
 
   it("leave lots without candidates without companies", () => {

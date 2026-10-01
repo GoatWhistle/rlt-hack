@@ -3,6 +3,7 @@ import {
   parseContacts,
   parseHighlights,
   parseSource,
+  parseWarnings,
 } from "@/entities/evidence/parse"
 import {
   count,
@@ -108,11 +109,19 @@ function company(value: unknown, path: string): Company {
 
 export function parseRecommendation(value: unknown): Recommendation {
   const fields = record(value, "$")
-  return {
-    fileName: text(fields, "fileName", "$"),
-    requestTitle: text(fields, "requestTitle", "$"),
-    lotLabel: text(fields, "lotLabel", "$"),
-    products: list(fields, "products", "$", product),
-    companies: list(fields, "companies", "$", company),
-  }
+  return withOptional(
+    {
+      fileName: text(fields, "fileName", "$"),
+      requestTitle: text(fields, "requestTitle", "$"),
+      lotLabel: text(fields, "lotLabel", "$"),
+      products: list(fields, "products", "$", product),
+      companies: list(fields, "companies", "$", company),
+    },
+    {
+      warnings:
+        fields.warnings === undefined || fields.warnings === null
+          ? undefined
+          : parseWarnings(fields, "$"),
+    },
+  )
 }

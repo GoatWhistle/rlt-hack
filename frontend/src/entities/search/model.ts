@@ -6,6 +6,7 @@ import type {
   Highlight,
   MatchBasis,
   PurchaseOutcome,
+  SearchWarning,
   Source,
 } from "@/entities/evidence/model"
 import type { Locale } from "@/shared/i18n/locale"
@@ -24,21 +25,16 @@ export {
   type MatchBasis,
   PURCHASE_OUTCOMES,
   type PurchaseOutcome,
+  type SearchWarning,
   SOURCE_KINDS,
   type SourceKind,
+  WARNING_CODES,
+  type WarningCode,
 } from "@/entities/evidence/model"
 
 export const MAX_QUERY_LENGTH = 4000
 export const DEFAULT_LIMIT = 20
 export const RECENT_LIMIT = 8
-
-export const WARNING_CODES = [
-  "channelFailed",
-  "enrichmentFailed",
-  "archiveFailed",
-  "itemsInferred",
-] as const
-export type WarningCode = (typeof WARNING_CODES)[number]
 
 export const ITEM_ORIGINS = ["text", "inferred", "user"] as const
 export type ItemOrigin = (typeof ITEM_ORIGINS)[number]
@@ -120,11 +116,6 @@ export type Candidate = {
   readonly highlights: readonly Highlight[]
   readonly score: Score
   readonly contacts: Contacts
-}
-
-export type SearchWarning = {
-  readonly code: WarningCode
-  readonly subject: string
 }
 
 export type Pipeline = {

@@ -1,7 +1,8 @@
 import {
   count,
   type Fields,
-  list,
+  knownList,
+  knownOf,
   oneOf,
   optionalText,
   record,
@@ -14,8 +15,10 @@ import {
   type Contacts,
   HIGHLIGHT_CODES,
   type Highlight,
+  type SearchWarning,
   SOURCE_KINDS,
   type Source,
+  WARNING_CODES,
 } from "./model"
 
 export function parseSource(value: unknown, path: string): Source | undefined {
@@ -49,11 +52,13 @@ export function parseContacts(value: unknown, path: string): Contacts | undefine
   )
 }
 
-export function parseHighlight(value: unknown, path: string): Highlight {
+export function parseHighlight(value: unknown, path: string): Highlight | undefined {
   const fields = record(value, path)
   const params = record(fields.params, `${path}.params`)
+  const code = knownOf(HIGHLIGHT_CODES, fields.code, `${path}.code`)
+  if (code === undefined) return undefined
   return {
-    code: oneOf(HIGHLIGHT_CODES, fields, "code", path),
+    code,
     params: Object.fromEntries(
       Object.keys(params).map((key) => [key, count(params, key, `${path}.params`)]),
     ),
@@ -61,11 +66,21 @@ export function parseHighlight(value: unknown, path: string): Highlight {
 }
 
 export function parseHighlights(fields: Fields, path: string): Highlight[] {
-  return list(fields, "highlights", path, parseHighlight)
+  return knownList(fields, "highlights", path, parseHighlight)
 }
 
 export function parseCheckReasons(fields: Fields, path: string): CheckReason[] {
-  return list(fields, "checkReasons", path, (entry, at) =>
-    oneOf(CHECK_REASONS, { reason: entry }, "reason", at),
+  return knownList(fields, "checkReasons", path, (entry, at) =>
+    knownOf(CHECK_REASONS, entry, at),
   )
+}
+
+export function parseWarnings(fields: Fields, path: string): SearchWarning[] {
+  return knownList(fields, "warnings", path, (entry, at) => {
+    const warning = record(entry, at)
+    const code = knownOf(WARNING_CODES, warning.code, `${at}.code`)
+    return code === undefined
+      ? undefined
+      : { code, subject: optionalText(warning, "subject", at) ?? "" }
+  })
 }

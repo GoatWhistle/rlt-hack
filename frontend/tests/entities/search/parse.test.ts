@@ -68,8 +68,8 @@ describe("the search contract", () => {
   })
 
   it.each([
-    ["an unknown check reason", ["candidates", 1, "checkReasons", 0], "maybe"],
-    ["an unknown highlight", ["candidates", 0, "highlights", 0, "code"], "cheap"],
+    ["a check reason that is not text", ["candidates", 1, "checkReasons", 0], 5],
+    ["a highlight code that is not text", ["candidates", 0, "highlights", 0, "code"], 5],
     ["an unknown role", ["candidates", 0, "role"], "broker"],
     ["an unknown basis", ["candidates", 0, "matches", 0, "basis"], "rumour"],
     ["an unknown source kind", ["candidates", 0, "roleSource", "kind"], "blog"],
@@ -92,9 +92,17 @@ describe("the search contract", () => {
     expect(() => parseSearchResult(changed(path, value))).toThrow(PayloadFormatError)
   })
 
-  it("rejects an unknown warning and a broken recent list", () => {
+  it("skips codes added by a newer backend", () => {
+    const payload = changed(["candidates", 1, "checkReasons", 0], "taxDebt")
+    payload.warnings = [{ code: "solarFlare" }, { code: "archiveFailed" }]
+    const result = parseSearchResult(payload)
+    expect(result.warnings).toEqual([{ code: "archiveFailed", subject: "" }])
+    expect(result.candidates[1]?.checkReasons).not.toContain("taxDebt")
+  })
+
+  it("rejects a broken warning and a broken recent list", () => {
     const payload = response()
-    payload.warnings = [{ code: "solarFlare" }]
+    payload.warnings = [{ code: 5 }]
     expect(() => parseSearchResult(payload)).toThrow(PayloadFormatError)
     expect(() => parseRecentSearches({ searches: [{ searchId: 1 }] })).toThrow(
       PayloadFormatError,
