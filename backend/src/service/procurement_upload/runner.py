@@ -64,13 +64,21 @@ class LotRunner:
                 self._queue.put_nowait(lot)
 
     async def _resume(self) -> None:
+        failure: str | None = None
         while True:
             try:
                 pending = await self._store.pending()
-            except Exception:
-                logger.warning("unfinished lots could not be loaded", exc_info=True)
+            except Exception as error:
+                kind = type(error).__name__
+                logger.warning(
+                    "unfinished lots could not be loaded",
+                    extra={"error_type": kind, "repeated": kind == failure},
+                    exc_info=kind != failure,
+                )
+                failure = kind
                 await asyncio.sleep(self._settings.resume_delay_seconds)
                 continue
+            failure = None
             fresh = [lot for lot in pending if lot.key not in self._known]
             if fresh:
                 logger.info("resuming unfinished lots", extra={"lots": len(fresh)})
