@@ -4,8 +4,9 @@ from dataclasses import dataclass, field
 from uuid import UUID
 
 from src.models.lot_result import LotResult
+from src.models.match import MatchReport
 from src.models.procurement import NoticeFile, ProcurementLot
-from src.models.query_item import SearchRequest
+from src.models.search import SearchQuery
 from src.models.upload import (
     LotDetail,
     LotProgress,
@@ -16,7 +17,7 @@ from src.models.upload import (
     UploadDetail,
     UploadSummary,
 )
-from src.service.supplier_search.matcher import MatchOutcome
+from src.service.errors import UninterpretableQueryError
 from tests.fakes.domain import MOMENT
 from tests.fakes.ports import PortFailureError
 
@@ -35,16 +36,18 @@ class FakeReader:
 
 
 @dataclass(slots=True)
-class FakeMatcher:
-    outcome: MatchOutcome
+class FakeLotSearch:
+    report: MatchReport | None
     delay: float = 0.0
-    requests: list[SearchRequest] = field(default_factory=list)
+    queries: list[SearchQuery] = field(default_factory=list)
 
-    async def match(self, request: SearchRequest) -> MatchOutcome:
-        self.requests.append(request)
+    async def run(self, query: SearchQuery) -> MatchReport:
+        self.queries.append(query)
         if self.delay:
             await asyncio.sleep(self.delay)
-        return self.outcome
+        if self.report is None:
+            raise UninterpretableQueryError
+        return self.report
 
 
 @dataclass(slots=True)

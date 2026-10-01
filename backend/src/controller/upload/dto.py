@@ -4,7 +4,13 @@ from uuid import UUID
 from pydantic import ConfigDict, Field, StringConstraints
 
 from src.controller.http.schema import CamelModel, UtcDateTime
-from src.controller.search.dto import ContactsDto, HighlightDto, SourceDto
+from src.controller.search.dto import (
+    ContactsDto,
+    HighlightDto,
+    PipelineDto,
+    SourceDto,
+    WarningDto,
+)
 from src.models.enums import (
     CandidateStatus,
     CheckReason,
@@ -109,6 +115,8 @@ class RecommendationDto(CamelModel):
     lot_label: str
     products: list[ProductDto]
     companies: list[CompanyDto]
+    warnings: list[WarningDto]
+    pipeline: PipelineDto | None
 
 
 class LotResultDto(CamelModel):

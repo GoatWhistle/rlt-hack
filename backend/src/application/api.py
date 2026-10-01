@@ -31,6 +31,7 @@ from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver
 from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from src.service.supplier_search.matcher import SupplierMatcher
+from src.service.supplier_search.pipeline import SearchPipeline
 from src.service.supplier_search.policy.policy import CandidatePolicy
 from src.service.supplier_search.protocols import CandidateRetriever
 from src.service.supplier_search.ranking.ranker import CandidateRanker
@@ -87,12 +88,18 @@ class ApiContainer:
             settings=settings,
         )
 
+    def pipeline(self, gateway: SqlGateway | None = None) -> SearchPipeline:
+        return SearchPipeline(
+            interpreter=RuleQueryInterpreter(self._analyzer),
+            matcher=self.matcher(gateway),
+            clock=SystemClock(),
+            settings=self._settings,
+        )
+
     async def supplier_search(self) -> SupplierSearchService:
         return SupplierSearchService(
-            interpreter=RuleQueryInterpreter(self._analyzer),
-            matcher=self.matcher(),
+            pipeline=self.pipeline(),
             archive=ClickHouseSearchArchive(self._gateway, self.database),
-            clock=SystemClock(),
             ids=Uuid4Generator(),
             settings=self._settings,
         )
@@ -146,9 +153,7 @@ class ApiContainer:
         store = ClickHouseUploadStore(self._gateway, self.database)
         background = ClickHouseUploadStore(self._background, self.database)
         clock = SystemClock()
-        processor = LotProcessor(
-            RuleQueryInterpreter(self._analyzer), self.matcher(self._background), clock, settings
-        )
+        processor = LotProcessor(self.pipeline(self._background), clock, settings)
         return ProcurementUploadService(
             reader=CsvNoticeReader(),
             store=store,

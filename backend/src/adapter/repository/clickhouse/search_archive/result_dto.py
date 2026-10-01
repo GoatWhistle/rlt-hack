@@ -80,6 +80,17 @@ class PipelineDto(FrozenDto):
     channels: tuple[str, ...]
     as_of: datetime
 
+    @classmethod
+    def from_domain(cls, pipeline: PipelineInfo) -> Self:
+        return cls(version=pipeline.version, channels=pipeline.channels, as_of=pipeline.as_of)
+
+    @classmethod
+    def maybe(cls, pipeline: PipelineInfo | None) -> Self | None:
+        return None if pipeline is None else cls.from_domain(pipeline)
+
+    def to_domain(self) -> PipelineInfo:
+        return PipelineInfo(self.version, self.channels, self.as_of)
+
 
 class SearchResultDto(FrozenDto):
     payload_version: int = PAYLOAD_VERSION
@@ -93,15 +104,12 @@ class SearchResultDto(FrozenDto):
 
     @classmethod
     def from_domain(cls, result: SearchResult) -> Self:
-        pipeline = result.pipeline
         return cls(
             search_id=result.search_id,
             query=QueryDto.from_domain(result.query),
             items=tuple(QueryItemDto.from_domain(item) for item in result.items),
             candidates=tuple(CandidateDto.from_domain(item) for item in result.candidates),
-            pipeline=PipelineDto(
-                version=pipeline.version, channels=pipeline.channels, as_of=pipeline.as_of
-            ),
+            pipeline=PipelineDto.from_domain(result.pipeline),
             created_at=result.created_at,
             warnings=tuple(
                 WarningDto(code=item.code, subject=item.subject) for item in result.warnings
@@ -109,13 +117,12 @@ class SearchResultDto(FrozenDto):
         )
 
     def to_domain(self) -> SearchResult:
-        pipeline = self.pipeline
         return SearchResult(
             search_id=self.search_id,
             query=self.query.to_domain(),
             items=tuple(item.to_domain() for item in self.items),
             candidates=tuple(item.to_domain() for item in self.candidates),
-            pipeline=PipelineInfo(pipeline.version, pipeline.channels, pipeline.as_of),
+            pipeline=self.pipeline.to_domain(),
             created_at=self.created_at,
             warnings=tuple(SearchWarning(item.code, item.subject) for item in self.warnings),
         )

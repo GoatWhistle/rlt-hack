@@ -3,10 +3,12 @@ from datetime import datetime
 from typing import Self
 
 from src.models.candidate import SupplierCandidate
-from src.models.enums import CandidateStatus, ItemOrigin, LotStatus
+from src.models.enums import CandidateStatus, ItemOrigin, LotStatus, WarningCode
 from src.models.errors import InvalidLotResultError
 from src.models.query_item import QueryItem
-from src.models.search_result import SearchWarning
+from src.models.search_result import PipelineInfo, SearchWarning
+
+DEGRADING_WARNINGS = frozenset({WarningCode.CHANNEL_FAILED, WarningCode.ENRICHMENT_FAILED})
 
 
 @dataclass(frozen=True, slots=True)
@@ -17,6 +19,7 @@ class LotResult:
     candidates: tuple[SupplierCandidate, ...] = ()
     warnings: tuple[SearchWarning, ...] = ()
     failed: bool = False
+    pipeline: PipelineInfo | None = None
 
     def __post_init__(self) -> None:
         if not self.lot_id:
@@ -37,6 +40,10 @@ class LotResult:
         return cls(lot_id=lot_id, processed_at=processed_at, failed=True)
 
     @property
+    def degraded(self) -> bool:
+        return any(warning.code in DEGRADING_WARNINGS for warning in self.warnings)
+
+    @property
     def status(self) -> LotStatus:
         if self.failed:
             return LotStatus.FAILED
@@ -44,4 +51,6 @@ class LotResult:
             return LotStatus.NO_CANDIDATES
         assumed = any(item.origin == ItemOrigin.INFERRED for item in self.items)
         leader_checked = self.candidates[0].status == CandidateStatus.CHECK
-        return LotStatus.NEEDS_CHECK if assumed or leader_checked else LotStatus.READY
+        if assumed or leader_checked or self.degraded:
+            return LotStatus.NEEDS_CHECK
+        return LotStatus.READY

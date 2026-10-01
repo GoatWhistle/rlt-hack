@@ -2,22 +2,15 @@ import asyncio
 
 from src.models.lot_result import LotResult
 from src.models.procurement import ProcurementLot
-from src.models.query_item import SearchRequest
 from src.models.search import CandidateLimit, SearchQuery, SearchText
-from src.service.procurement_upload.protocols import Clock, ItemInterpreter, LotMatching
+from src.service.errors import UninterpretableQueryError
+from src.service.procurement_upload.protocols import Clock, LotSearching
 from src.service.procurement_upload.settings import UploadSettings
 
 
 class LotProcessor:
-    def __init__(
-        self,
-        interpreter: ItemInterpreter,
-        matcher: LotMatching,
-        clock: Clock,
-        settings: UploadSettings,
-    ) -> None:
-        self._interpreter = interpreter
-        self._matcher = matcher
+    def __init__(self, search: LotSearching, clock: Clock, settings: UploadSettings) -> None:
+        self._search = search
         self._clock = clock
         self._settings = settings
 
@@ -30,14 +23,15 @@ class LotProcessor:
             text=SearchText(lot.search_text),
             limit=CandidateLimit(self._settings.candidates_per_lot),
         )
-        items = await self._interpreter.interpret(query)
-        if not items:
+        try:
+            report = await self._search.run(query)
+        except UninterpretableQueryError:
             return LotResult(lot_id=lot.lot_id, processed_at=self._clock.now())
-        outcome = await self._matcher.match(SearchRequest(query=query, items=items))
         return LotResult(
             lot_id=lot.lot_id,
             processed_at=self._clock.now(),
-            items=items,
-            candidates=outcome.candidates,
-            warnings=outcome.warnings,
+            items=report.items,
+            candidates=report.candidates,
+            warnings=report.warnings,
+            pipeline=report.pipeline,
         )

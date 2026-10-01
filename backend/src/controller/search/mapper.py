@@ -30,7 +30,7 @@ from src.models.purchase import PurchaseRecord, PurchaseSummary
 from src.models.query_item import QueryItem
 from src.models.scoring import ScoreBreakdown
 from src.models.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
-from src.models.search_result import SearchResult, SearchSummary
+from src.models.search_result import PipelineInfo, SearchResult, SearchSummary, SearchWarning
 from src.models.supplier import Supplier
 from src.service.errors import SearchNotFoundError
 
@@ -182,20 +182,24 @@ def candidate_dto(candidate: SupplierCandidate) -> CandidateDto:
     )
 
 
+def pipeline_dto(pipeline: PipelineInfo) -> PipelineDto:
+    return PipelineDto(
+        version=pipeline.version, channels=list(pipeline.channels), as_of=pipeline.as_of
+    )
+
+
+def warning_dto(warning: SearchWarning) -> WarningDto:
+    return WarningDto(code=warning.code, subject=warning.subject)
+
+
 def to_response(result: SearchResult) -> SearchResponseDto:
     return SearchResponseDto(
         search_id=result.search_id,
         query=query_dto(result.query),
         items=[item_dto(item) for item in result.items],
         candidates=[candidate_dto(candidate) for candidate in result.candidates],
-        pipeline=PipelineDto(
-            version=result.pipeline.version,
-            channels=list(result.pipeline.channels),
-            as_of=result.pipeline.as_of,
-        ),
-        warnings=[
-            WarningDto(code=warning.code, subject=warning.subject) for warning in result.warnings
-        ],
+        pipeline=pipeline_dto(result.pipeline),
+        warnings=[warning_dto(warning) for warning in result.warnings],
         created_at=result.created_at,
     )
 

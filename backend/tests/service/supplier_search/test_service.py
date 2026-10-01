@@ -2,7 +2,13 @@ from dataclasses import dataclass, field, replace
 
 import pytest
 
-from src.models.enums import CandidateStatus, CheckReason, ItemOrigin, MatchBasis, WarningCode
+from src.models.enums import (
+    CandidateStatus,
+    CheckReason,
+    ItemOrigin,
+    MatchBasis,
+    WarningCode,
+)
 from src.models.offer_evidence import OfferEvidence
 from src.models.purchase import PurchaseSummary
 from src.models.retrieval import ChannelHit, ItemHit, RetrievalHits
@@ -18,6 +24,7 @@ from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver
 from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from src.service.supplier_search.matcher import SupplierMatcher
+from src.service.supplier_search.pipeline import SearchPipeline
 from src.service.supplier_search.policy.policy import CandidatePolicy
 from src.service.supplier_search.ranking.ranker import CandidateRanker
 from src.service.supplier_search.service import SupplierSearchService
@@ -84,7 +91,7 @@ class Harness:
     archive: FakeArchive = field(default_factory=FakeArchive)
     settings: SearchSettings = field(default_factory=SearchSettings)
 
-    def service(self) -> SupplierSearchService:
+    def pipeline(self) -> SearchPipeline:
         matcher = SupplierMatcher(
             retrievers=(self.lexical, self.history_channel),
             directory=self.directory,
@@ -96,11 +103,12 @@ class Harness:
             ranker=CandidateRanker(self.settings.weights),
             settings=self.settings,
         )
+        return SearchPipeline(self.interpreter, matcher, FixedClock(), self.settings)
+
+    def service(self) -> SupplierSearchService:
         return SupplierSearchService(
-            interpreter=self.interpreter,
-            matcher=matcher,
+            pipeline=self.pipeline(),
             archive=self.archive,
-            clock=FixedClock(),
             ids=SequentialIds(),
             settings=self.settings,
         )

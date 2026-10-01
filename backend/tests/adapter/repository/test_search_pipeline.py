@@ -19,6 +19,7 @@ from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver
 from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from src.service.supplier_search.matcher import SupplierMatcher
+from src.service.supplier_search.pipeline import SearchPipeline
 from src.service.supplier_search.policy.policy import CandidatePolicy
 from src.service.supplier_search.ranking.ranker import CandidateRanker
 from src.service.supplier_search.service import SupplierSearchService
@@ -52,10 +53,8 @@ def build_service(gateway: ChdbGateway) -> SupplierSearchService:
         settings=settings,
     )
     return SupplierSearchService(
-        interpreter=RuleQueryInterpreter(analyzer),
-        matcher=matcher,
+        pipeline=SearchPipeline(RuleQueryInterpreter(analyzer), matcher, SystemClock(), settings),
         archive=ClickHouseSearchArchive(gateway),
-        clock=SystemClock(),
         ids=Uuid4Generator(),
         settings=settings,
     )

@@ -93,7 +93,18 @@
         "wins": 0,
         "purchases": []
       }
-    ]
+    ],
+    "warnings": [
+      {
+        "code": "channelFailed",
+        "subject": "history"
+      }
+    ],
+    "pipeline": {
+      "version": "search-v1",
+      "channels": ["lexical"],
+      "asOf": "2026-10-01T12:00:05Z"
+    }
   },
   "upload": {
     "id": "3b7d1c2e-8f4a-4b6c-9d0e-1f2a3b4c5d6e",

@@ -1,6 +1,12 @@
 from uuid import UUID
 
-from src.controller.search.mapper import contacts_dto, highlight_dto, source_dto
+from src.controller.search.mapper import (
+    contacts_dto,
+    highlight_dto,
+    pipeline_dto,
+    source_dto,
+    warning_dto,
+)
 from src.controller.upload.dto import (
     CompanyDto,
     CountsDto,
@@ -144,6 +150,8 @@ def recommendation_dto(
         lot_label=progress.lot.lot_id,
         products=[product_dto(item) for item in result.items],
         companies=[company_dto(candidate) for candidate in result.candidates],
+        warnings=[warning_dto(warning) for warning in result.warnings],
+        pipeline=None if result.pipeline is None else pipeline_dto(result.pipeline),
     )
 
 

@@ -4,7 +4,11 @@ from typing import Self
 from pydantic import TypeAdapter, ValidationError
 
 from src.adapter.repository.clickhouse.search_archive.query_dto import FrozenDto, QueryItemDto
-from src.adapter.repository.clickhouse.search_archive.result_dto import CandidateDto, WarningDto
+from src.adapter.repository.clickhouse.search_archive.result_dto import (
+    CandidateDto,
+    PipelineDto,
+    WarningDto,
+)
 from src.adapter.repository.errors import CorruptRecordError
 from src.models.enums import IssueCode
 from src.models.errors import DomainError
@@ -12,8 +16,8 @@ from src.models.lot_result import LotResult
 from src.models.procurement import RowIssue
 from src.models.search_result import SearchWarning
 
-PAYLOAD_VERSION = 1
-READABLE_VERSIONS = frozenset({1})
+PAYLOAD_VERSION = 2
+READABLE_VERSIONS = frozenset({1, 2})
 
 
 class IssueDto(FrozenDto):
@@ -33,6 +37,7 @@ class LotResultDto(FrozenDto):
     candidates: tuple[CandidateDto, ...]
     warnings: tuple[WarningDto, ...]
     failed: bool
+    pipeline: PipelineDto | None = None
 
     @classmethod
     def from_domain(cls, result: LotResult) -> Self:
@@ -45,6 +50,7 @@ class LotResultDto(FrozenDto):
                 WarningDto(code=item.code, subject=item.subject) for item in result.warnings
             ),
             failed=result.failed,
+            pipeline=PipelineDto.maybe(result.pipeline),
         )
 
     def to_domain(self) -> LotResult:
@@ -55,6 +61,7 @@ class LotResultDto(FrozenDto):
             candidates=tuple(item.to_domain() for item in self.candidates),
             warnings=tuple(SearchWarning(item.code, item.subject) for item in self.warnings),
             failed=self.failed,
+            pipeline=None if self.pipeline is None else self.pipeline.to_domain(),
         )
 
 

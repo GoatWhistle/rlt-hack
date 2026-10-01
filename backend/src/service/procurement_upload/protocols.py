@@ -4,8 +4,8 @@ from typing import Protocol
 from uuid import UUID
 
 from src.models.lot_result import LotResult
+from src.models.match import MatchReport
 from src.models.procurement import NoticeFile, ProcurementLot
-from src.models.query_item import QueryItem, SearchRequest
 from src.models.search import SearchQuery
 from src.models.upload import (
     LotDetail,
@@ -15,19 +15,14 @@ from src.models.upload import (
     UploadDetail,
     UploadSummary,
 )
-from src.service.supplier_search.matcher import MatchOutcome
 
 
 class NoticeReader(Protocol):
     async def read(self, content: bytes, max_rows: int) -> NoticeFile: ...
 
 
-class ItemInterpreter(Protocol):
-    async def interpret(self, query: SearchQuery) -> tuple[QueryItem, ...]: ...
-
-
-class LotMatching(Protocol):
-    async def match(self, request: SearchRequest) -> MatchOutcome: ...
+class LotSearching(Protocol):
+    async def run(self, query: SearchQuery) -> MatchReport: ...
 
 
 class LotProcessing(Protocol):

@@ -119,3 +119,18 @@ def test_lot_payloads_are_checked_the_same_way() -> None:
         decode_lot_result(json.dumps(document))
     with pytest.raises(CorruptRecordError):
         decode_issues('[{"row": 0, "code": "badPrice", "value": ""}]')
+
+
+def test_lot_payload_keeps_the_pipeline_and_reads_version_one() -> None:
+    result = LotResult(
+        "L-1",
+        datetime(2026, 10, 1, tzinfo=UTC),
+        pipeline=rich_result().pipeline,
+        warnings=(SearchWarning(WarningCode.CHANNEL_FAILED, "history"),),
+    )
+    document = json.loads(encode_lot_result(result))
+    assert document["payload_version"] == 2
+    assert decode_lot_result(json.dumps(document)) == result
+    del document["pipeline"]
+    document["payload_version"] = 1
+    assert decode_lot_result(json.dumps(document)).pipeline is None

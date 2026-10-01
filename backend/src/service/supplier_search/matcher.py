@@ -1,7 +1,7 @@
 from collections.abc import Sequence
-from dataclasses import dataclass
 
 from src.models.candidate import SupplierCandidate
+from src.models.match import MatchOutcome
 from src.models.query_item import SearchRequest
 from src.models.search_result import SearchWarning
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
@@ -18,13 +18,6 @@ from src.service.supplier_search.protocols import (
 from src.service.supplier_search.ranking.ranker import CandidateRanker
 from src.service.supplier_search.retrieval.runner import ChannelRunner
 from src.service.supplier_search.settings import SearchSettings
-
-
-@dataclass(frozen=True, slots=True)
-class MatchOutcome:
-    candidates: tuple[SupplierCandidate, ...]
-    channels: tuple[str, ...]
-    warnings: tuple[SearchWarning, ...] = ()
 
 
 class SupplierMatcher:
