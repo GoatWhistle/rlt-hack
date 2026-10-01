@@ -1,5 +1,6 @@
 .dialog {
   width: min(var(--dialog-width), calc(100vw - 2 * var(--space-4)));
+  margin: auto;
   padding: 0;
   border: 1px solid var(--line-hairline);
   border-radius: var(--radius-md);
@@ -21,6 +22,26 @@
 
 .dialog[data-state="closed"]::backdrop {
   animation: var(--motion-fade-out);
+}
+
+.wide {
+  width: min(var(--dialog-wide-width), calc(100vw - 2 * var(--space-4)));
+}
+
+.side {
+  width: min(var(--drawer-width), 100vw);
+  max-height: none;
+  height: 100dvh;
+  margin: 0 0 0 auto;
+  border-radius: 0;
+}
+
+.side[data-state="open"] {
+  animation: var(--motion-drawer-in);
+}
+
+.side[data-state="closed"] {
+  animation: var(--motion-drawer-out);
 }
 
 .panel {

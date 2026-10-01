@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { parseRecommendation, RecommendationFormatError } from "@/entities/recommendation/parse"
+import { PayloadFormatError, parseRecommendation } from "@/entities/recommendation/parse"
 import { recommendationFixture } from "./fixture"
 
 type Node = Record<string | number, unknown>
@@ -85,8 +85,6 @@ describe("parseRecommendation", () => {
       "$.companies[0].clarify[0]",
     ],
   ])("rejects %s", (_, payload, path) => {
-    expect(() => parseRecommendation(payload)).toThrow(
-      new RecommendationFormatError(path).message,
-    )
+    expect(() => parseRecommendation(payload)).toThrow(new PayloadFormatError(path).message)
   })
 })

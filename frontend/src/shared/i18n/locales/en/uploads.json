@@ -1,0 +1,61 @@
+{
+  "intro": {
+    "title": "Find suppliers for your purchases",
+    "text": "Upload a CSV with procurement notices. For every purchase the system identifies the products, finds companies and shows what each conclusion rests on. The decision stays with you.",
+    "format": "Expected format",
+    "formatText": "CSV in UTF-8 or Windows-1251, separated by “;” or “,”. One row is one lot; the first row holds the column names.",
+    "required": "Required columns",
+    "optional": "Used when present",
+    "sample": "Download a sample CSV",
+    "privacy": "No external neural network APIs are used."
+  },
+  "drop": {
+    "title": "Drop the CSV here",
+    "hint": "or choose a file on your computer",
+    "choose": "Choose file"
+  },
+  "list": {
+    "title": "Uploads",
+    "caption": "Open a file to see its purchases and recommendations.",
+    "upload": "Upload CSV",
+    "date": "Uploaded {{date}}",
+    "notices_one": "{{count}} notice",
+    "notices_other": "{{count}} notices",
+    "processing": "Processed {{processed}} of {{total}}",
+    "progress": "Processing {{name}}",
+    "done": "Processing finished",
+    "ready": "ready: {{count}}",
+    "needsCheck": "need clarifying: {{count}}",
+    "noCandidates": "no candidates: {{count}}",
+    "rejected_one": "{{count}} row with errors was not processed",
+    "rejected_other": "{{count}} rows with errors were not processed",
+    "notStored": "Will be lost after a reload: the browser ran out of space."
+  },
+  "dialog": {
+    "title": "New upload",
+    "steps": {
+      "label": "Upload steps",
+      "file": "File",
+      "check": "Check",
+      "processing": "Processing"
+    },
+    "reading": "Reading the file",
+    "otherFile": "Choose another file",
+    "start_one": "Process {{count}} purchase",
+    "start_other": "Process {{count}} purchases",
+    "starting": "Starting…",
+    "total": "Rows in the file",
+    "valid": "Will be processed",
+    "invalid": "Need fixing",
+    "noValid": "The file has no rows that can be processed. Fix the errors and upload the file again.",
+    "columns": "Recognised columns",
+    "unknownColumn": "{{name}} — not used",
+    "preview_one": "First row of {{total}}",
+    "preview_other": "First {{count}} rows of {{total}}",
+    "previewRegion": "First rows of the file",
+    "issues_one": "Error in {{count}} row",
+    "issues_other": "Errors in {{count}} rows",
+    "issuesNote": "These rows will not be processed; the rest will. Fix the errors in the file and upload it again to add the skipped purchases.",
+    "rowNumber": "Row"
+  }
+}

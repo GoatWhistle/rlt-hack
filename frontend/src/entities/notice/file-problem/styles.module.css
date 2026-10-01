@@ -1,0 +1,18 @@
+.problem {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--line-width) solid var(--warning-soft);
+  border-radius: var(--radius-lg);
+  background: var(--warning-tint);
+}
+
+.text {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}

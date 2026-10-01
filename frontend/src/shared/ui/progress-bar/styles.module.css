@@ -1,0 +1,17 @@
+.track {
+  display: block;
+  width: 100%;
+  height: var(--meter-height);
+  border-radius: var(--radius-pill);
+  background: var(--meter-empty);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}

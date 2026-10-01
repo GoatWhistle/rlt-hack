@@ -1,0 +1,11 @@
+.region {
+  max-width: 100%;
+  overflow-x: auto;
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-md);
+}
+
+.region:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}

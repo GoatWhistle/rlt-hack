@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 import type { ReactNode, SyntheticEvent } from "react"
 import { useEffect, useId, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,13 +12,37 @@ export type DialogProps = {
   readonly onClose: () => void
   readonly children?: ReactNode
   readonly footer?: ReactNode
+  readonly size?: DialogSize
 }
 
-export function Dialog({ open, title, onClose, children, footer }: DialogProps) {
+export type DialogSize = "default" | "wide" | "side"
+
+const SIZES: Record<DialogSize, string | undefined> = {
+  default: undefined,
+  wide: styles.wide,
+  side: styles.side,
+}
+
+export function Dialog({
+  open,
+  title,
+  onClose,
+  children,
+  footer,
+  size = "default",
+}: DialogProps) {
   const { t } = useTranslation()
   const titleId = useId()
   const ref = useRef<HTMLDialogElement>(null)
   const { isMounted, state, onAnimationEnd } = usePresence(open)
+
+  useEffect(() => {
+    if (!isMounted) return
+    const trigger = document.activeElement
+    return () => {
+      if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus()
+    }
+  }, [isMounted])
 
   useEffect(() => {
     const dialog = ref.current
@@ -40,7 +65,7 @@ export function Dialog({ open, title, onClose, children, footer }: DialogProps) 
   return (
     <dialog
       ref={ref}
-      className={styles.dialog}
+      className={clsx(styles.dialog, SIZES[size])}
       data-state={state}
       aria-labelledby={titleId}
       onCancel={cancel}

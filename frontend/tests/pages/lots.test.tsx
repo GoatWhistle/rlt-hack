@@ -1,0 +1,164 @@
+import { screen, waitFor, within } from "@testing-library/react"
+import { en } from "@tests/support/dictionaries"
+import { lotSummary, renderPage, stubGateway, uploadDetail } from "@tests/support/gateway"
+import { describe, expect, it, vi } from "vitest"
+import { readLastUpload } from "@/entities/upload/last-upload"
+import { PAGE_SIZE } from "@/entities/upload/list-query"
+import { ApiError } from "@/shared/api/api-error"
+
+function manyLots() {
+  return Array.from({ length: PAGE_SIZE + 5 }, (_, index) =>
+    lotSummary(String(100 + index), {
+      title: index === 0 ? "Milk for schools" : `Purchase ${100 + index}`,
+      status: index % 3 === 0 ? "needsCheck" : "ready",
+    }),
+  )
+}
+
+function gatewayWith(lots = manyLots(), overrides = {}) {
+  return stubGateway({ get: vi.fn(async () => uploadDetail(lots, overrides)) })
+}
+
+describe("the purchases of a file", () => {
+  it("shows the file, its finished processing and a dense table", async () => {
+    renderPage("/uploads/u1", gatewayWith())
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "notices.csv" }),
+    ).toBeInTheDocument()
+    expect(screen.getByText("Processing finished: 25 purchases")).toBeInTheDocument()
+    const table = screen.getByRole("table", { name: "Purchases from notices.csv" })
+    const headers = within(table)
+      .getAllByRole("columnheader")
+      .map((cell) => cell.textContent)
+    expect(headers.slice(1)).toEqual([
+      "Purchase",
+      "Start price",
+      "Products",
+      "Candidates",
+      "Status",
+    ])
+    expect(within(table).getAllByRole("row")).toHaveLength(PAGE_SIZE + 1)
+    const milk = within(table).getByRole("link", { name: "Milk for schools" })
+    expect(milk).toHaveAttribute("href", "/uploads/u1/lots/100")
+    expect(screen.getByText(`1–${PAGE_SIZE} of 25`)).toBeInTheDocument()
+    expect(readLastUpload()).toBe("u1")
+  })
+
+  it("searches and filters the whole file and keeps the query in the address", async () => {
+    const { user, router } = renderPage("/uploads/u1", gatewayWith())
+    await screen.findByRole("table")
+    await user.click(screen.getByRole("link", { name: en("pages.next", "lots") }))
+    expect(router.state.location.search).toBe("?page=2")
+    expect(screen.getAllByRole("row")).toHaveLength(6)
+    await user.click(screen.getByRole("radio", { name: /Need clarifying/ }))
+    expect(router.state.location.search).toBe("?status=needsCheck")
+    expect(
+      screen.getByRole("radio", { name: /Need clarifying/ }).parentElement,
+    ).toHaveTextContent("9")
+    await user.type(screen.getByRole("searchbox", { name: en("search.label", "lots") }), "milk")
+    expect(router.state.location.search).toBe("?q=milk&status=needsCheck")
+    expect(screen.getByRole("link", { name: "Milk for schools" })).toHaveAttribute(
+      "href",
+      "/uploads/u1/lots/100?q=milk&status=needsCheck",
+    )
+    await user.type(screen.getByRole("searchbox"), "zzz")
+    expect(screen.getByRole("heading", { name: en("empty.title", "lots") })).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: en("empty.reset", "lots") }))
+    expect(router.state.location.search).toBe("")
+  })
+
+  it("selects purchases and offers to download the selection", async () => {
+    const { user } = renderPage("/uploads/u1", gatewayWith())
+    await screen.findByRole("table")
+    await user.click(screen.getByRole("checkbox", { name: "Select lot 100" }))
+    const pageBox = screen.getByRole("checkbox", { name: en("table.selectPage", "lots") })
+    expect(pageBox).toHaveProperty("indeterminate", true)
+    const bar = screen.getByRole("region", { name: en("selection.label", "lots") })
+    expect(within(bar).getByText("1 purchase selected")).toBeInTheDocument()
+    await user.click(pageBox)
+    expect(within(bar).getByText(`${PAGE_SIZE} purchases selected`)).toBeInTheDocument()
+    await user.click(within(bar).getByRole("button", { name: en("selection.export", "lots") }))
+    const dialog = await screen.findByRole("dialog", { name: en("title", "export") })
+    expect(within(dialog).getByRole("radio", { name: `Selected (${PAGE_SIZE})` })).toBeChecked()
+    await user.click(within(dialog).getByRole("button", { name: en("action.close") }))
+    await user.click(pageBox)
+    expect(screen.queryByRole("region", { name: en("selection.label", "lots") })).toBeNull()
+  })
+
+  it("clears the selection on request and opens the full export from the header", async () => {
+    const { user } = renderPage("/uploads/u1", gatewayWith())
+    await screen.findByRole("table")
+    await user.click(screen.getByRole("checkbox", { name: "Select lot 100" }))
+    await user.click(screen.getByRole("button", { name: en("selection.clear", "lots") }))
+    expect(screen.queryByRole("region", { name: en("selection.label", "lots") })).toBeNull()
+    await user.click(screen.getByRole("button", { name: en("download", "lots") }))
+    const dialog = await screen.findByRole("dialog")
+    expect(
+      within(dialog).getByRole("radio", { name: "All purchases in the file (25)" }),
+    ).toBeChecked()
+  })
+
+  it("shows running processing, queued rows and skipped rows separately", async () => {
+    const lots = [
+      lotSummary("1"),
+      lotSummary("2", { status: "queued", startPrice: undefined, customerInn: undefined }),
+    ]
+    const { user } = renderPage(
+      "/uploads/u1",
+      gatewayWith(lots, {
+        processed: 1,
+        rejected: 1,
+        issues: [{ row: 7, code: "missingTitle" }],
+      }),
+    )
+    expect(await screen.findByText(/Processing: 1 of 2 ready/)).toBeInTheDocument()
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuemax", "2")
+    const queued = screen.getByRole("row", { name: /Purchase 2/ })
+    expect(within(queued).getByText(en("status.queued", "lots"))).toBeInTheDocument()
+    expect(within(queued).getByText(en("table.noPrice", "lots"))).toBeInTheDocument()
+    expect(within(queued).getByText(/customer not given/)).toBeInTheDocument()
+    await user.click(screen.getByText("1 row was not processed because of errors"))
+    expect(screen.getByText("Row 7")).toBeVisible()
+  })
+
+  it("explains a missing upload and other failures", async () => {
+    renderPage(
+      "/uploads/x",
+      stubGateway({
+        get: vi.fn(async () => Promise.reject(new ApiError({ status: 404, code: "notFound" }))),
+      }),
+    )
+    expect(
+      await screen.findByRole("heading", { name: en("missing.title", "lots") }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: en("missing.action", "lots") })).toHaveAttribute(
+      "href",
+      "/uploads",
+    )
+  })
+
+  it("offers a retry when the file cannot load", async () => {
+    renderPage(
+      "/uploads/x",
+      stubGateway({
+        get: vi.fn(async () => Promise.reject(new ApiError({ status: 500, code: "server" }))),
+      }),
+    )
+    await waitFor(
+      () =>
+        expect(screen.getByRole("button", { name: en("action.retry") })).toBeInTheDocument(),
+      {
+        timeout: 6000,
+      },
+    )
+  })
+})
+
+describe("the purchases entry", () => {
+  it("asks to choose a file when none was opened", async () => {
+    renderPage("/lots", stubGateway())
+    expect(
+      await screen.findByRole("heading", { name: en("entry.title", "lots") }),
+    ).toBeInTheDocument()
+  })
+})

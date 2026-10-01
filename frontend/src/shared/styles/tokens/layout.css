@@ -36,6 +36,8 @@
   --measure-hero: 52rem;
   --toast-width: 24rem;
   --dialog-width: 32rem;
+  --dialog-wide-width: 64rem;
+  --drawer-width: 30rem;
   --z-toast: 500;
   --layout-gutter: var(--space-5);
   --z-skip-link: 600;

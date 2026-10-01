@@ -1,0 +1,40 @@
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 25fr) minmax(0, 30fr) minmax(0, 45fr);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.pane {
+  min-width: 0;
+}
+
+.products {
+  container-type: inline-size;
+}
+
+.stacked {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.empty {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+@media (max-width: 74.99rem) {
+  .columns {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  }
+
+  .products {
+    grid-column: 1 / -1;
+  }
+
+  .empty {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

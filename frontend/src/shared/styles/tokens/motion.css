@@ -2,10 +2,12 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --dur-fast: 130ms;
   --dur-base: 180ms;
   --dur-enter: 220ms;
   --dur-exit: 160ms;
+  --dur-drawer: 280ms;
   --motion-offset: 0.5rem;
   --motion-scale: 0.96;
   --press-scale: 0.97;
@@ -17,6 +19,8 @@
   --motion-fade-out: fade-out var(--dur-exit) var(--ease-in) both;
   --motion-scale-in: scale-in var(--dur-enter) var(--ease-out) both;
   --motion-scale-out: scale-out var(--dur-exit) var(--ease-in) both;
+  --motion-drawer-in: drawer-in var(--dur-drawer) var(--ease-drawer) both;
+  --motion-drawer-out: drawer-out var(--dur-exit) var(--ease-in) both;
   --motion-slide-in: slide-in var(--dur-enter) var(--ease-out) both;
   --motion-slide-out: slide-out var(--dur-exit) var(--ease-in) both;
 }
@@ -47,6 +51,18 @@
   }
 }
 
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes drawer-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+
 @keyframes slide-in {
   from {
     opacity: 0;
@@ -67,6 +83,7 @@
     --dur-base: 1ms;
     --dur-enter: 1ms;
     --dur-exit: 1ms;
+    --dur-drawer: 1ms;
     --motion-offset: 0;
     --motion-scale: 1;
   }

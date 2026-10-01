@@ -6,6 +6,7 @@ export type SegmentedOption<T extends string> = {
   readonly value: T
   readonly label: string
   readonly description?: string
+  readonly count?: number
 }
 
 export type SegmentedControlProps<T extends string> = {
@@ -36,6 +37,9 @@ export function SegmentedControl<T extends string>({
             onChange={() => onChange(option.value)}
           />
           <span aria-hidden={option.description ? true : undefined}>{option.label}</span>
+          {option.count === undefined ? null : (
+            <span className={styles.count}>{option.count}</span>
+          )}
           {option.description ? <VisuallyHidden>{option.description}</VisuallyHidden> : null}
         </label>
       ))}

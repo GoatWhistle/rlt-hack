@@ -1,0 +1,59 @@
+{
+  "id": "c5",
+  "name": "ООО «Ладожская бакалея»",
+  "inn": "7800000055",
+  "role": "Поставщик",
+  "status": "recommended",
+  "summary": "Каталог бакалеи покрывает крупы; две закупки питания для детских садов за 2025 год.",
+  "matches": [
+    {
+      "productId": "grechka",
+      "basis": "catalog",
+      "source": {
+        "kind": "catalog",
+        "title": "Каталог: крупы",
+        "url": "#",
+        "checkedAt": "2026-09-25"
+      }
+    },
+    {
+      "productId": "manka",
+      "basis": "catalog",
+      "source": {
+        "kind": "catalog",
+        "title": "Каталог: крупы",
+        "url": "#",
+        "checkedAt": "2026-09-25"
+      }
+    },
+    {
+      "productId": "perlovka",
+      "basis": "catalog",
+      "source": {
+        "kind": "catalog",
+        "title": "Каталог: крупы",
+        "url": "#",
+        "checkedAt": "2026-09-25"
+      }
+    },
+    {
+      "productId": "krahmal",
+      "basis": "inferred"
+    }
+  ],
+  "similarPurchases": 2,
+  "wins": 1,
+  "purchases": [
+    {
+      "title": "Лот 4801122 · Поставка бакалеи",
+      "year": 2025,
+      "outcome": "winner",
+      "source": {
+        "kind": "purchase",
+        "title": "Протокол итогов, ЭМ",
+        "url": "#"
+      }
+    }
+  ],
+  "clarify": ["Наличие крахмала: позиция предположена по профилю компании."]
+}

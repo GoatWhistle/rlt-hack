@@ -78,7 +78,7 @@ describe("i18n instance", () => {
   it("switches language when initialised again", async () => {
     initI18n("ru")
     await vi.waitFor(() => expect(currentLocale()).toBe("ru"))
-    expect(i18n.t("nav.home")).not.toBe("nav.home")
+    expect(i18n.t("nav.uploads")).not.toBe("nav.uploads")
     initI18n("en")
     await vi.waitFor(() => expect(currentLocale()).toBe("en"))
   })

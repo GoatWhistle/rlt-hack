@@ -41,11 +41,19 @@ export type Purchase = {
   readonly source?: Source
 }
 
+export type Contacts = {
+  readonly site?: string
+  readonly email?: string
+  readonly phone?: string
+}
+
 export type Company = {
   readonly id: string
   readonly name: string
   readonly inn: string
   readonly role: string
+  readonly roleSource?: Source
+  readonly contacts?: Contacts
   readonly status: CompanyStatus
   readonly checkReason?: string
   readonly summary: string

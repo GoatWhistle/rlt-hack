@@ -1,0 +1,156 @@
+{
+  "loading": "Loading the purchase",
+  "demoNote": "Demo data: companies, tax IDs, contacts and links are placeholders.",
+  "missing": {
+    "title": "Purchase not found",
+    "text": "This lot is not in the upload, or the upload is not available in this browser.",
+    "toFile": "Back to the file",
+    "toUploads": "Go to uploads"
+  },
+  "queued": {
+    "title": "This purchase is still processing",
+    "text": "The result will appear here automatically. Finished purchases from this file can already be opened from the list."
+  },
+  "noCandidates": {
+    "title": "No candidates found",
+    "text": "No suitable companies in the available records. Check the purchase contents: the products may have been identified imprecisely."
+  },
+  "views": {
+    "legend": "Review section",
+    "products": "Products",
+    "companies": "Companies",
+    "evidence": "Grounds"
+  },
+  "header": {
+    "back": "Purchases · {{file}}",
+    "neighbours": "Neighbouring purchases",
+    "prev": "Previous purchase",
+    "next": "Next purchase",
+    "position": "{{index}} of {{total}}",
+    "lot": "Lot {{id}}",
+    "customer": "Customer INN {{inn}}",
+    "noCustomer": "Customer not given",
+    "price": "Start price {{price}}",
+    "noPrice": "Start price not given",
+    "published": "Published {{date}}",
+    "export": "Download results"
+  },
+  "chain": {
+    "label": "Reasoning chain",
+    "request": "Request",
+    "products": "Products",
+    "companies": "Companies",
+    "evidence": "Grounds"
+  },
+  "products": {
+    "title": "Products",
+    "origin": {
+      "notice": "From the notice",
+      "inferred": "Needs confirming",
+      "user": "Confirmed by you"
+    },
+    "originNote": {
+      "notice": "The item and its OKPD2 code come from the procurement notice.",
+      "inferred": "The system added this item from similar purchases. Confirm it before contacting suppliers.",
+      "user": "The item was specified by the user."
+    },
+    "count_one": "{{count}} item",
+    "count_other": "{{count}} items",
+    "okpd2": "OKPD2 {{code}}",
+    "filter": "Show candidates with “{{name}}”"
+  },
+  "companies": {
+    "title": "Candidates",
+    "matchCount": "{{matched}} of {{total}}",
+    "purchases_one": "{{count}} purchase",
+    "purchases_other": "{{count}} purchases",
+    "status": {
+      "recommended": "Recommended",
+      "check": "Needs checking"
+    },
+    "order": "by relevance",
+    "filtered": "Candidates with “{{name}}”",
+    "resetFilter": "Reset",
+    "noMatch": "No candidate has records for this product.",
+    "chosen": "Chosen",
+    "showMore": "Show {{count}} more",
+    "showLess": "Show fewer",
+    "compare": "Compare chosen ({{count}})",
+    "compareHint": "Choose two or more candidates in the grounds to compare them."
+  },
+  "evidence": {
+    "inn": "Tax ID {{inn}}",
+    "summaryTitle": "Why we recommend it",
+    "checkTitle": "Why it needs checking",
+    "mainClarify": "Key thing to clarify.",
+    "matchesTitle": "Match for every product",
+    "matchesHint": "by records, not warehouse stock",
+    "basis": {
+      "stock": "Stock confirmed",
+      "catalog": "In the catalogue",
+      "inferred": "System assumption"
+    },
+    "notFound": "Not found",
+    "noSource": "No source given",
+    "checkedAt": "checked {{date}}",
+    "sourceKind": {
+      "catalog": "Catalogue",
+      "price": "Price list",
+      "purchase": "Purchase",
+      "registry": "Registry"
+    },
+    "purchasesTitle": "Purchase history",
+    "purchasesSummary_one": "{{count}} similar · wins: {{wins}}",
+    "purchasesSummary_other": "{{count}} similar · wins: {{wins}}",
+    "outcome": {
+      "winner": "Winner",
+      "participant": "Participant"
+    },
+    "purchasesNote": "Past participation and wins do not guarantee a future delivery.",
+    "noPurchases": "No purchase examples with a source.",
+    "clarifyTitle": "What to clarify with the company",
+    "noClarify": "Nothing significant to clarify.",
+    "confirmations": "Key confirmations",
+    "noConfirmations": "No confirming sources: the match rests on assumptions.",
+    "unmatched_one": "No records for {{count}} product: {{names}}",
+    "unmatched_other": "No records for {{count}} products: {{names}}",
+    "matchesAside": "{{matched}} of {{total}}",
+    "clarifyAside": "{{count}}",
+    "choose": "Choose candidate",
+    "chosen": "Remove from chosen",
+    "profile": "Company profile"
+  },
+  "meter": {
+    "label": "Match {{matched}} of {{total}}: stock confirmed — {{stock}}, in the catalogue — {{catalog}}, assumed — {{inferred}}"
+  },
+  "profile": {
+    "requisites": "Details",
+    "inn": "INN",
+    "role": "Role",
+    "roleBasis": "Role basis",
+    "noRoleBasis": "No basis given",
+    "contacts": "Contacts",
+    "site": "Website",
+    "email": "Email",
+    "phone": "Phone",
+    "noContacts": "No contacts found in the sources.",
+    "products": "Products and lines of business",
+    "history": "Purchase history",
+    "sources": "Sources",
+    "noSources": "No sources."
+  },
+  "compare": {
+    "title": "Compare candidates",
+    "criterion": "Criterion",
+    "match": "Product match",
+    "missing": "No records",
+    "none": "none",
+    "status": "Status",
+    "purchases": "Similar purchases",
+    "wins": "Wins in similar purchases",
+    "clarify": "Key thing to clarify",
+    "contacts": "Contacts",
+    "unknown": "No records",
+    "note": "Past wins do not guarantee a future delivery. Prices and ratings are not shown: there is no confirmed data on them."
+  }
+}

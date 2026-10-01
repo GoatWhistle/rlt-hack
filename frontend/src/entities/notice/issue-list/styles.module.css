@@ -1,0 +1,13 @@
+.issue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.row {
+  min-width: 6.5rem;
+  color: var(--warning-text);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}

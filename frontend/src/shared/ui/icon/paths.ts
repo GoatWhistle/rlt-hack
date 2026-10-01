@@ -28,6 +28,10 @@ export const ICON_PATHS = {
     "M14 3v5h5",
     "M9 14l2 2 4-4",
   ],
+  search: ["M4 11a7 7 0 1 0 14 0a7 7 0 1 0 -14 0", "M20 20l-4-4"],
+  filter: ["M4 5h16l-6 7.5V19l-4-2v-4.5z"],
+  arrowLeft: ["M19 12H5M11 6l-6 6 6 6"],
+  compare: ["M8 4v16M16 4v16", "M4 8h4M16 16h4"],
   upload: ["M12 15V4M7.5 8.5L12 4l4.5 4.5", "M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"],
 } as const
 

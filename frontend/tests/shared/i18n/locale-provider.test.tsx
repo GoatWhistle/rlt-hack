@@ -14,7 +14,7 @@ function Probe() {
   const { money } = useFormatters()
   return (
     <p data-testid="probe">
-      {t("nav.home")}|{locale}|{money(1500)}
+      {t("nav.uploads")}|{locale}|{money(1500)}
     </p>
   )
 }
@@ -27,7 +27,7 @@ describe("locale provider", () => {
         <Probe />
       </LocaleProvider>,
     )
-    expect(screen.getByTestId("probe")).toHaveTextContent(text("ru", "common", "nav.home"))
+    expect(screen.getByTestId("probe")).toHaveTextContent(text("ru", "common", "nav.uploads"))
     expect(document.documentElement.lang).toBe("ru")
   })
 
@@ -40,11 +40,11 @@ describe("locale provider", () => {
       </LocaleProvider>,
     )
     expect(screen.getByTestId("probe")).toHaveTextContent(
-      `${text("en", "common", "nav.home")}|en`,
+      `${text("en", "common", "nav.uploads")}|en`,
     )
     await user.click(screen.getByRole("radio", { name: text("en", "common", "language.ru") }))
     expect(await screen.findByTestId("probe")).toHaveTextContent(
-      `${text("ru", "common", "nav.home")}|ru`,
+      `${text("ru", "common", "nav.uploads")}|ru`,
     )
     expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe("ru")
     expect(document.documentElement.lang).toBe("ru")

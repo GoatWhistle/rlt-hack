@@ -7,10 +7,11 @@ import {
   record,
   text,
   withOptional,
-} from "./fields"
+} from "@/shared/api/payload"
 import {
   COMPANY_STATUSES,
   type Company,
+  type Contacts,
   MATCH_BASES,
   PRODUCT_ORIGINS,
   type Product,
@@ -22,7 +23,7 @@ import {
   type Source,
 } from "./model"
 
-export { RecommendationFormatError } from "./fields"
+export { PayloadFormatError } from "@/shared/api/payload"
 
 function source(value: unknown, path: string): Source | undefined {
   if (value === undefined || value === null) return undefined
@@ -34,6 +35,19 @@ function source(value: unknown, path: string): Source | undefined {
       url: text(fields, "url", path),
     },
     { checkedAt: optionalText(fields, "checkedAt", path) },
+  )
+}
+
+function contacts(value: unknown, path: string): Contacts | undefined {
+  if (value === undefined || value === null) return undefined
+  const fields = record(value, path)
+  return withOptional(
+    {},
+    {
+      site: optionalText(fields, "site", path),
+      email: optionalText(fields, "email", path),
+      phone: optionalText(fields, "phone", path),
+    },
   )
 }
 
@@ -89,7 +103,11 @@ function company(value: unknown, path: string): Company {
       purchases: list(fields, "purchases", path, purchase),
       clarify: list(fields, "clarify", path, plainText),
     },
-    { checkReason: optionalText(fields, "checkReason", path) },
+    {
+      checkReason: optionalText(fields, "checkReason", path),
+      roleSource: source(fields.roleSource, `${path}.roleSource`),
+      contacts: contacts(fields.contacts, `${path}.contacts`),
+    },
   )
 }
 

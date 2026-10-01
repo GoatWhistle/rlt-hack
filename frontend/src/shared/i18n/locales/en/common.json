@@ -5,15 +5,18 @@
     "mainNavigation": "Main navigation"
   },
   "nav": {
-    "home": "Search"
+    "uploads": "Uploads",
+    "lots": "Purchases"
   },
   "action": {
     "close": "Close",
     "dismiss": "Dismiss notification",
     "retry": "Try again",
     "reload": "Reload the page",
-    "home": "Go home",
-    "back": "Go back"
+    "home": "Go to uploads",
+    "back": "Go back",
+    "showAll": "Show all {{count}}",
+    "showLess": "Show less"
   },
   "language": {
     "legend": "Interface language",
@@ -25,7 +28,7 @@
   },
   "notFound": {
     "title": "Page not found",
-    "description": "The address is outdated or contains a typo. Check the link or go back home."
+    "description": "The address is outdated or contains a typo. Check the link or go back to uploads."
   },
   "routeError": {
     "title": "The page could not open",
@@ -45,138 +48,5 @@
   "notifications": {
     "label": "Notifications"
   },
-  "upload": {
-    "title": "From a procurement to a verifiable supplier list",
-    "subtitle": "Upload an Excel file. The system identifies the products, finds companies and shows what every conclusion rests on. The decision stays with you.",
-    "dropTitle": "Drop the Excel file here",
-    "dropHint": "or choose a file · .xlsx, .xls",
-    "chooseFile": "Choose file",
-    "fileSize": "{{size}} KB · ready to process",
-    "submit": "Find suppliers",
-    "submitting": "Searching…",
-    "stepsLabel": "How the system reaches a conclusion",
-    "steps": {
-      "request": {
-        "title": "Request",
-        "text": "Product names, OKPD2 codes and the customer from the file"
-      },
-      "products": {
-        "title": "Products",
-        "text": "Marked as from the notice, inferred or confirmed by you"
-      },
-      "companies": {
-        "title": "Companies",
-        "text": "Ranked, with a role and a product match"
-      },
-      "evidence": {
-        "title": "Grounds",
-        "text": "A source next to every claim"
-      }
-    },
-    "kicker": "AIS GZ · Saint Petersburg e-shop",
-    "removeFile": "Remove file",
-    "privacy": "The file is processed on the team's server; no external neural network APIs are used."
-  },
-  "results": {
-    "newFile": "Upload another file",
-    "demoNote": "Demo data: company names, tax IDs and links are placeholders.",
-    "empty": {
-      "title": "No search result yet",
-      "description": "Upload a procurement file to see the candidates.",
-      "action": "Upload a file"
-    },
-    "header": {
-      "downloadCsv": "Download CSV",
-      "products_one": "product",
-      "products_other": "products",
-      "companies_one": "candidate",
-      "companies_other": "candidates",
-      "toCheck_one": "needs checking",
-      "toCheck_other": "need checking"
-    },
-    "chain": {
-      "label": "Reasoning chain",
-      "request": "Request",
-      "products": "Products",
-      "companies": "Companies",
-      "evidence": "Grounds"
-    },
-    "products": {
-      "title": "Products",
-      "origin": {
-        "notice": "From the notice",
-        "inferred": "Needs confirming",
-        "user": "Confirmed by you"
-      },
-      "originNote": {
-        "notice": "The item and its OKPD2 code come from the procurement notice.",
-        "inferred": "The system added this item from similar purchases. Confirm it before contacting suppliers.",
-        "user": "The item was specified by the user."
-      },
-      "count_one": "{{count}} item",
-      "count_other": "{{count}} items"
-    },
-    "companies": {
-      "title": "Candidates",
-      "matchCount": "{{matched}} of {{total}}",
-      "purchases_one": "{{count}} purchase",
-      "purchases_other": "{{count}} purchases",
-      "status": {
-        "recommended": "Recommended",
-        "check": "Needs checking"
-      },
-      "order": "by relevance"
-    },
-    "evidence": {
-      "inn": "Tax ID {{inn}}",
-      "summaryTitle": "Why we recommend it",
-      "checkTitle": "Why it needs checking",
-      "mainClarify": "Key thing to clarify.",
-      "matchesTitle": "Product match",
-      "matchesHint": "by records, not warehouse stock",
-      "basis": {
-        "stock": "Stock confirmed",
-        "catalog": "In the catalogue",
-        "inferred": "System assumption"
-      },
-      "notFound": "Not found",
-      "noSource": "No source given",
-      "checkedAt": "checked {{date}}",
-      "sourceKind": {
-        "catalog": "Catalogue",
-        "price": "Price list",
-        "purchase": "Purchase",
-        "registry": "Registry"
-      },
-      "purchasesTitle": "Purchase history",
-      "purchasesSummary_one": "{{count}} similar · wins: {{wins}}",
-      "purchasesSummary_other": "{{count}} similar · wins: {{wins}}",
-      "outcome": {
-        "winner": "Winner",
-        "participant": "Participant"
-      },
-      "purchasesNote": "Past participation and wins do not guarantee a future delivery.",
-      "noPurchases": "No purchase examples with a source.",
-      "clarifyTitle": "What to clarify with the company",
-      "noClarify": "Nothing significant to clarify.",
-      "showAll": "Show all {{count}}",
-      "showLess": "Show less",
-      "shortlist": "Add to shortlist",
-      "exclude": "Exclude"
-    },
-    "csv": {
-      "rank": "Rank",
-      "company": "Company",
-      "inn": "Tax ID",
-      "role": "Role",
-      "status": "Status",
-      "matched": "Product match",
-      "purchases": "Similar purchases",
-      "wins": "Wins",
-      "summary": "Why recommended"
-    },
-    "meter": {
-      "label": "Match {{matched}} of {{total}}: stock confirmed — {{stock}}, in the catalogue — {{catalog}}, assumed — {{inferred}}"
-    }
-  }
+  "demoNote": "Demo mode: the file is processed in the browser, candidates and evidence are artificial."
 }

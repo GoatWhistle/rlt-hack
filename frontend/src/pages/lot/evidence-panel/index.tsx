@@ -1,0 +1,46 @@
+import { useTranslation } from "react-i18next"
+import type { Company, Product } from "@/entities/recommendation/model"
+import { Button } from "@/shared/ui/button"
+import { Icon } from "@/shared/ui/icon"
+import { ClarifyBlock } from "./clarify-block"
+import { Confirmations } from "./confirmations"
+import { Hero } from "./hero"
+import { MatchBlock } from "./match-block"
+import { PurchaseBlock } from "./purchase-block"
+import styles from "./styles.module.css"
+
+export type EvidencePanelProps = {
+  readonly company: Company
+  readonly products: readonly Product[]
+  readonly chosen: boolean
+  readonly onChoose: () => void
+  readonly onProfile: () => void
+}
+
+export function EvidencePanel({
+  company,
+  products,
+  chosen,
+  onChoose,
+  onProfile,
+}: EvidencePanelProps) {
+  const { t } = useTranslation("lot")
+  return (
+    <article className={styles.panel} aria-label={company.name}>
+      <Hero company={company} products={products} />
+      <Confirmations company={company} products={products} />
+      <MatchBlock company={company} products={products} />
+      <PurchaseBlock company={company} />
+      <ClarifyBlock items={company.clarify} />
+      <div className={styles.actions}>
+        <Button variant={chosen ? "secondary" : "strong"} onClick={onChoose}>
+          {chosen ? <Icon name="check" /> : null}
+          {chosen ? t("evidence.chosen") : t("evidence.choose")}
+        </Button>
+        <Button variant="secondary" onClick={onProfile}>
+          {t("evidence.profile")}
+        </Button>
+      </div>
+    </article>
+  )
+}

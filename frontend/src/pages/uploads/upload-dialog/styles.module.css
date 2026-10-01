@@ -1,0 +1,5 @@
+.body {
+  display: grid;
+  gap: var(--space-5);
+  min-height: 12rem;
+}

@@ -1,0 +1,78 @@
+{
+  "loading": "Loading purchases",
+  "back": "Uploads",
+  "uploaded": "Uploaded {{date}}",
+  "notices_one": "{{count}} notice",
+  "notices_other": "{{count}} notices",
+  "download": "Download results",
+  "processing": {
+    "label": "Processing progress",
+    "running": "Processing: {{processed}} of {{total}} ready. Finished purchases can be opened already.",
+    "done_one": "Processing finished: {{count}} purchase",
+    "done_other": "Processing finished: {{count}} purchases"
+  },
+  "rejected_one": "{{count}} row was not processed because of errors",
+  "rejected_other": "{{count}} rows were not processed because of errors",
+  "rejectedNote": "Fix these rows in the source file and upload it again. Results already processed stay in this upload.",
+  "search": {
+    "label": "Search purchases",
+    "placeholder": "Name, customer INN or lot number"
+  },
+  "filter": {
+    "legend": "Result",
+    "all": "All",
+    "ready": "Ready",
+    "needsCheck": "Need clarifying",
+    "noCandidates": "No candidates"
+  },
+  "table": {
+    "caption": "Purchases from {{name}}",
+    "selectPage": "Select all purchases on the page",
+    "selectLot": "Select lot {{id}}",
+    "title": "Purchase",
+    "price": "Start price",
+    "products": "Products",
+    "candidates": "Candidates",
+    "status": "Status",
+    "lot": "Lot {{id}}",
+    "customer": "customer INN {{inn}}",
+    "noCustomer": "customer not given",
+    "noPrice": "not given",
+    "pending": "—"
+  },
+  "status": {
+    "queued": "Queued",
+    "ready": "Ready",
+    "needsCheck": "Needs clarifying",
+    "noCandidates": "No candidates"
+  },
+  "pages": {
+    "label": "Table pages",
+    "range": "{{from}}–{{to}} of {{total}}",
+    "current": "Page {{page}} of {{pages}}",
+    "prev": "Previous page",
+    "next": "Next page"
+  },
+  "selection": {
+    "label": "Selected purchases",
+    "count_one": "{{count}} purchase selected",
+    "count_other": "{{count}} purchases selected",
+    "export": "Download selected",
+    "clear": "Clear selection"
+  },
+  "empty": {
+    "title": "Nothing found",
+    "text": "Change the query or reset the filters: the search covers the whole file.",
+    "reset": "Reset search and filters"
+  },
+  "missing": {
+    "title": "Upload not found",
+    "text": "The file may have been uploaded in another browser, or its data was removed. Go back to the list of uploads.",
+    "action": "Go to uploads"
+  },
+  "entry": {
+    "title": "Choose a file",
+    "text": "Purchases are shown per upload. Open a file from the list or upload a new one.",
+    "action": "Go to uploads"
+  }
+}

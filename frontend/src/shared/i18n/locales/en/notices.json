@@ -1,0 +1,30 @@
+{
+  "row": "Row {{row}}",
+  "issue": {
+    "missingLotId": "lot_id is missing",
+    "badLotId": "lot_id “{{value}}” is not valid",
+    "duplicateLot": "lot_id {{value}} already appears above",
+    "missingTitle": "the purchase has no name (procedure_name)",
+    "badPrice": "start price “{{value}}” is not a number",
+    "badDate": "date “{{value}}” is not in YYYY-MM-DD format",
+    "columnCount": "more values than columns in the header"
+  },
+  "problem": {
+    "unreadable": {
+      "title": "The file could not be read",
+      "text": "Make sure it is a plain-text CSV and choose the file again."
+    },
+    "empty": {
+      "title": "The file has no data",
+      "text": "It needs a header row and at least one row with a purchase."
+    },
+    "missingColumns": {
+      "title": "Required columns are missing",
+      "text": "Not found: {{columns}}. Check the header: the first row must hold the column names."
+    },
+    "tooManyRows": {
+      "title": "The file is too large",
+      "text": "Up to {{limit}} rows are processed at a time. Split the file and upload the parts one by one."
+    }
+  }
+}

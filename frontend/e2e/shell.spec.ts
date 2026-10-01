@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright"
 import { expect, test } from "@playwright/test"
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]
-const ROUTES = ["/", "/results", "/missing-page"]
+const ROUTES = ["/uploads", "/lots", "/missing-page"]
 
 test.describe("application shell", () => {
   for (const route of ROUTES) {
@@ -39,7 +39,7 @@ test.describe("application shell", () => {
 
   test("leads from an unknown address back home", async ({ page }) => {
     await page.goto("/missing-page")
-    await page.getByRole("link", { name: /(go home|на главную)/i }).click()
-    await expect(page).toHaveURL(/\/$/)
+    await page.getByRole("link", { name: /(go to uploads|к загрузкам)/i }).click()
+    await expect(page).toHaveURL(/\/uploads$/)
   })
 })

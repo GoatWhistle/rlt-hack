@@ -18,12 +18,12 @@ describe("the application shell", () => {
   it("lazy-loads the home page inside the shell", async () => {
     renderApp()
     expect(
-      await screen.findByRole("heading", { level: 1, name: en("upload.title") }),
+      await screen.findByRole("heading", { level: 1, name: en("intro.title", "uploads") }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole("navigation", { name: en("app.mainNavigation") }),
     ).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: en("nav.home") })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: en("nav.uploads") })).toHaveAttribute(
       "aria-current",
       "page",
     )
@@ -38,7 +38,7 @@ describe("the application shell", () => {
     await screen.findByRole("heading", { level: 1 })
     await user.click(screen.getByRole("radio", { name: en("language.ru") }))
     expect(
-      await screen.findByRole("link", { name: text("ru", "common", "nav.home") }),
+      await screen.findByRole("link", { name: text("ru", "common", "nav.uploads") }),
     ).toBeInTheDocument()
     expect(document.documentElement.lang).toBe("ru")
   })
@@ -63,8 +63,8 @@ describe("the not found page", () => {
   })
 
   it("offers to go back when there is history", async () => {
-    const { user, router } = renderApp(["/", "/missing"])
+    const { user, router } = renderApp(["/uploads", "/missing"])
     await user.click(await screen.findByRole("button", { name: en("action.back") }))
-    expect(router.state.location.pathname).toBe("/")
+    expect(router.state.location.pathname).toBe("/uploads")
   })
 })

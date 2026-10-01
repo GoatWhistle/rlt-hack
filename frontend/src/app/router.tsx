@@ -1,13 +1,20 @@
 import { useTranslation } from "react-i18next"
-import { createBrowserRouter, type RouteObject } from "react-router"
+import { createBrowserRouter, type RouteObject, redirect } from "react-router"
 import { AppShell } from "@/app/app-shell"
+import { readLastUpload } from "@/entities/upload/last-upload"
 import { NotFoundPage } from "@/pages/not-found"
 import { RouteErrorPage } from "@/pages/route-error"
+import { UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
 import { LoadingState } from "@/shared/ui/loading-state"
 
 export function RouteLoading() {
   const { t } = useTranslation()
   return <LoadingState label={t("state.loading")} />
+}
+
+export function lastUploadRedirect() {
+  const uploadId = readLastUpload()
+  return uploadId ? redirect(uploadPath(uploadId)) : null
 }
 
 export const routes: RouteObject[] = [
@@ -20,13 +27,25 @@ export const routes: RouteObject[] = [
       {
         ErrorBoundary: RouteErrorPage,
         children: [
+          { index: true, loader: () => redirect(UPLOADS_PATH) },
           {
-            index: true,
-            lazy: async () => ({ Component: (await import("@/pages/upload")).UploadPage }),
+            path: "uploads",
+            lazy: async () => ({ Component: (await import("@/pages/uploads")).UploadsPage }),
           },
           {
-            path: "results",
-            lazy: async () => ({ Component: (await import("@/pages/results")).ResultsPage }),
+            path: "uploads/:uploadId",
+            lazy: async () => ({ Component: (await import("@/pages/lots")).LotsPage }),
+          },
+          {
+            path: "uploads/:uploadId/lots/:lotId",
+            lazy: async () => ({ Component: (await import("@/pages/lot")).LotPage }),
+          },
+          {
+            path: "lots",
+            loader: lastUploadRedirect,
+            lazy: async () => ({
+              Component: (await import("@/pages/lots-entry")).LotsEntryPage,
+            }),
           },
           { path: "*", Component: NotFoundPage },
         ],
