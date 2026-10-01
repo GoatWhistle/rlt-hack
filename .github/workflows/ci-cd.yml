@@ -64,6 +64,7 @@ jobs:
       - run: uv pip install --system -r backend/pyproject.toml --extra test 'ruff>=0.14,<1'
       - run: ruff check backend
       - run: python backend/tests/clickhouse/schema_smoke.py
+      - run: python backend/tests/clickhouse/offer_batch_smoke.py
       - run: python backend/tests/supplier/job_smoke.py
       - run: python backend/tests/supplier/provider_smoke.py
       - run: python backend/tests/supplier/batching_smoke.py

@@ -77,6 +77,12 @@ COLUMNS = (
 STATE_COLUMNS = ("updated_at", "version", "is_deleted")
 READ_COLUMNS = tuple(name for name in COLUMNS if name not in STATE_COLUMNS)
 
+# Сколько идентификаторов помещается в один запрос. Предел задаёт max_query_size
+# ClickHouse (256 КиБ): UUID в тексте запроса занимает 38 байт, и около 6 800
+# штук его уже превышают. Значение взято с запасом, чтобы в запрос помещались и
+# остальные его части.
+ID_QUERY_LIMIT = 2000
+
 # Предложения, которых нет в полном обходе, снимаются с продажи, а не удаляются:
 # данные и свидетельства сохраняются. Пишется полный снимок строки новой версией.
 # Отсутствующие отбираются по времени обхода: все строки пакета записаны с его
@@ -153,14 +159,23 @@ class ClickHouseOfferRepository:
         return {to_uuid(row[0]): to_datetime(row[1]) for row in rows}
 
     async def first_seen_for(self, ids: Sequence[UUID]) -> dict[UUID, datetime]:
-        if not ids:
-            return {}
-        rows = await self._gateway.select(
-            f"SELECT offer_id, min(first_seen_at) FROM {self._db}.offers "
-            "WHERE offer_id IN {ids:Array(UUID)} GROUP BY offer_id",
-            {"ids": [str(value) for value in ids]},
-        )
-        return {to_uuid(row[0]): to_datetime(row[1]) for row in rows}
+        """Время первой встречи перечисленных предложений.
+
+        Идентификаторы уходят в запрос списком, а его длина ограничена
+        `max_query_size` (256 КиБ по умолчанию): на UUID уходит 38 байт, поэтому
+        около 6 800 штук уже не помещаются. Список делится на части здесь, чтобы
+        размер пачки записи не был ограничен длиной запроса.
+        """
+        found: dict[UUID, datetime] = {}
+        for offset in range(0, len(ids), ID_QUERY_LIMIT):
+            part = ids[offset : offset + ID_QUERY_LIMIT]
+            rows = await self._gateway.select(
+                f"SELECT offer_id, min(first_seen_at) FROM {self._db}.offers "
+                "WHERE offer_id IN {ids:Array(UUID)} GROUP BY offer_id",
+                {"ids": [str(value) for value in part]},
+            )
+            found.update({to_uuid(row[0]): to_datetime(row[1]) for row in rows})
+        return found
 
     async def withdraw_absent(self, source_id: UUID, observed_at: datetime) -> int:
         parameters = {

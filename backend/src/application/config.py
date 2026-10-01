@@ -77,7 +77,8 @@ class AppConfig:
     parallel_sources: int = 4
     # Сколько запросов к одному источнику выполняет его адаптер одновременно.
     parallel_requests: int = 4
-    write_batch_size: int = 500
+    # Пачка записи в ClickHouse: ограничена числом частей таблицы, не памятью.
+    write_batch_size: int = 5000
     # Порция обогащения, нормализации, классификации и записи за один шаг.
     sync_batch_size: int = 32
     sync_interval_seconds: float = 3600.0
@@ -143,7 +144,7 @@ class AppConfig:
             request_timeout=_float("REQUEST_TIMEOUT", 30.0),
             parallel_sources=_int("SYNC_PARALLEL_SOURCES", 4),
             parallel_requests=_int("SYNC_PARALLEL_REQUESTS", 4),
-            write_batch_size=_int("SYNC_WRITE_BATCH", 500),
+            write_batch_size=_int("SYNC_WRITE_BATCH", 5000),
             sync_batch_size=_int("SYNC_BATCH_SIZE", 32),
             max_cards_per_source=_int("SYNC_MAX_CARDS", 500),
             sync_interval_seconds=_float("SYNC_INTERVAL_SECONDS", 3600.0),
