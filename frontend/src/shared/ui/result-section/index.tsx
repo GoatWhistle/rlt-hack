@@ -14,7 +14,7 @@ export function ResultSection({ title, aside, framed = false, children }: Result
   return (
     <section aria-labelledby={id} className={clsx(styles.section, framed && styles.framed)}>
       <div className={styles.heading}>
-        <h2 id={id} className={styles.title}>
+        <h2 id={id} tabIndex={-1} className={styles.title}>
           {title}
         </h2>
         {aside ? <span className={styles.aside}>{aside}</span> : null}

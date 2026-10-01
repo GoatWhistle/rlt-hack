@@ -14,11 +14,7 @@ describe("the purchase header", () => {
     expect(screen.getByText("Customer INN 7800000001")).toBeInTheDocument()
     expect(screen.getByText(/Start price/)).toBeInTheDocument()
     expect(screen.getByText("Published Feb 3, 2025")).toBeInTheDocument()
-    const chain = screen.getByRole("list", { name: en("chain.label", "lot") })
-    expect(within(chain).getByText(en("chain.evidence", "lot"))).toHaveAttribute(
-      "aria-current",
-      "step",
-    )
+    expect(screen.queryByRole("list", { name: /chain/i })).toBeNull()
   })
 
   it("returns to the same list page and walks to neighbouring purchases", async () => {

@@ -5,8 +5,11 @@ import styles from "./styles.module.css"
 import { WORKSPACE_VIEWS, type WorkspaceView } from "./use-workspace-view"
 
 export {
+  DEFAULT_VIEW,
   NARROW_LAYOUT,
+  parseView,
   useWorkspaceView,
+  viewParam,
   WORKSPACE_VIEWS,
   type WorkspaceView,
 } from "./use-workspace-view"

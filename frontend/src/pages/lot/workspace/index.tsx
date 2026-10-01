@@ -2,9 +2,12 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Recommendation } from "@/entities/recommendation/model"
 import { useShortlist } from "@/entities/shortlist/store"
+import { useQueryState } from "@/shared/routing/use-query-state"
 import { EmptyState } from "@/shared/ui/empty-state"
 import {
+  parseView,
   useWorkspaceView,
+  viewParam,
   WorkspaceEmpty,
   WorkspaceLayout,
   type WorkspaceView,
@@ -17,6 +20,8 @@ import { ProfilePanel } from "../profile-panel"
 
 export { NARROW_LAYOUT } from "@/shared/ui/workspace-layout"
 
+export const LOT_PARAMS = ["company", "product", "view"] as const
+
 export type WorkspaceProps = {
   readonly uploadId: string
   readonly lotId: string
@@ -26,31 +31,39 @@ export type WorkspaceProps = {
 export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
   const { t } = useTranslation("lot")
   const { products, companies } = recommendation
-  const { narrow, view, show, stackRef } = useWorkspaceView()
+  const [params, update] = useQueryState(LOT_PARAMS)
+  const view = parseView(params.view)
+  const { narrow, stackRef, prepareSwitch } = useWorkspaceView(view)
   const shortlist = useShortlist(uploadId, lotId)
-  const [selectedId, setSelectedId] = useState(companies[0]?.id)
-  const [filterId, setFilterId] = useState<string | null>(null)
   const [profileOpen, setProfileOpen] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
 
   const ranks = new Map(companies.map((company, index) => [company.id, index + 1]))
-  const filterProduct = products.find((product) => product.id === filterId)
+  const filterProduct = products.find((product) => product.id === params.product)
+  const filterId = filterProduct?.id ?? null
   const shown = filterProduct
     ? companies.filter((company) => company.matches.some((m) => m.productId === filterId))
     : companies
   const selected =
-    shown.find((company) => company.id === selectedId) ??
+    shown.find((company) => company.id === params.company) ??
     shown[0] ??
-    companies.find((company) => company.id === selectedId)
+    companies.find((company) => company.id === params.company) ??
+    companies[0]
+
+  function show(next: WorkspaceView) {
+    prepareSwitch(false)
+    update({ view: viewParam(next) })
+  }
 
   function select(id: string) {
-    setSelectedId(id)
-    if (narrow) show("evidence")
+    if (narrow) prepareSwitch(true)
+    update({ company: id, ...(narrow ? { view: viewParam("evidence") } : {}) })
   }
 
   function filter(productId: string | null) {
-    setFilterId(productId)
-    if (narrow && productId) show("candidates")
+    const move = narrow && productId !== null
+    if (move) prepareSwitch(true)
+    update({ product: productId, ...(move ? { view: viewParam("candidates") } : {}) })
   }
 
   const productPane = <ProductList products={products} filterId={filterId} onFilter={filter} />
@@ -69,7 +82,7 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
 
   const labels: Record<WorkspaceView, string> = {
     list: t("views.products"),
-    candidates: t("views.companies"),
+    candidates: t("views.candidates"),
     evidence: t("views.evidence"),
   }
   return (

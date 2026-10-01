@@ -11,12 +11,17 @@
   transition: var(--transition-control);
 }
 
-.link:active {
+.disabled {
+  border-color: var(--line-subtle);
+  color: var(--text-disabled);
+}
+
+.link:not(.disabled):active {
   transform: scale(var(--press-scale));
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .link:hover {
+  .link:not(.disabled):hover {
     border-color: var(--accent);
     color: var(--accent-strong);
   }

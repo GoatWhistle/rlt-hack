@@ -3,8 +3,7 @@
   grid-template-areas:
     "back pager"
     "title actions"
-    "meta actions"
-    "trail trail";
+    "meta actions";
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-2) var(--space-5);
@@ -25,10 +24,6 @@
   color: var(--text-secondary);
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
-}
-
-.gap {
-  width: var(--target-touch);
 }
 
 .position {
@@ -76,11 +71,6 @@
   align-self: center;
 }
 
-.trail {
-  grid-area: trail;
-  margin-block-start: var(--space-2);
-}
-
 .short {
   display: none;
 }
@@ -113,7 +103,6 @@
     padding-inline: var(--space-1);
   }
 
-  .trail,
   .full {
     display: none;
   }

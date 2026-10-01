@@ -5,8 +5,8 @@ import { BackLink } from "@/shared/ui/back-link"
 import { Button } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
 import { IconLink } from "@/shared/ui/icon-link"
-import { StepTrail } from "@/shared/ui/step-trail"
 import styles from "./styles.module.css"
+import { NEXT_KEY, PREV_KEY, useNeighbourKeys } from "./use-neighbour-keys"
 
 export type Neighbours = {
   readonly prev?: string
@@ -26,6 +26,7 @@ export type LotHeaderProps = {
 export function LotHeader({ upload, lot, backTo, neighbours, onExport }: LotHeaderProps) {
   const { t } = useTranslation("lot")
   const { date, money } = useFormatters()
+  useNeighbourKeys(neighbours?.prev, neighbours?.next)
   const facts = [
     lot.customerInn ? t("header.customer", { inn: lot.customerInn }) : t("header.noCustomer"),
     lot.startPrice === undefined
@@ -40,19 +41,21 @@ export function LotHeader({ upload, lot, backTo, neighbours, onExport }: LotHead
       </div>
       {neighbours ? (
         <nav className={styles.neighbours} aria-label={t("header.neighbours")}>
-          {neighbours.prev ? (
-            <IconLink to={neighbours.prev} icon="arrowLeft" label={t("header.prev")} />
-          ) : (
-            <span className={styles.gap} />
-          )}
+          <IconLink
+            to={neighbours.prev}
+            icon="arrowLeft"
+            label={t("header.prev")}
+            shortcut={PREV_KEY}
+          />
           <span className={styles.position}>
             {t("header.position", { index: neighbours.index, total: neighbours.total })}
           </span>
-          {neighbours.next ? (
-            <IconLink to={neighbours.next} icon="arrowRight" label={t("header.next")} />
-          ) : (
-            <span className={styles.gap} />
-          )}
+          <IconLink
+            to={neighbours.next}
+            icon="arrowRight"
+            label={t("header.next")}
+            shortcut={NEXT_KEY}
+          />
         </nav>
       ) : null}
       <h1 className={styles.title}>{lot.title}</h1>
@@ -70,18 +73,6 @@ export function LotHeader({ upload, lot, backTo, neighbours, onExport }: LotHead
           <span className={styles.full}>{t("header.export")}</span>
           <span className={styles.short}>{t("header.exportShort")}</span>
         </Button>
-      </div>
-      <div className={styles.trail}>
-        <StepTrail
-          label={t("chain.label")}
-          steps={[
-            t("chain.request"),
-            ...(lot.products > 0 ? [t("chain.products")] : []),
-            t("chain.companies"),
-            t("chain.evidence"),
-          ]}
-          current={lot.products > 0 ? 3 : 2}
-        />
       </div>
     </header>
   )

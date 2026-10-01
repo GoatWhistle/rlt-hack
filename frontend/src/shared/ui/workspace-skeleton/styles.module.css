@@ -1,6 +1,7 @@
 .skeleton {
   display: grid;
   gap: var(--space-5);
+  animation: var(--motion-skeleton-in);
 }
 
 .bone {

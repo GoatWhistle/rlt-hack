@@ -4,7 +4,7 @@ import type { Locale } from "@/shared/i18n/locale"
 import { useLocale } from "@/shared/i18n/locale-provider"
 import type { NewUpload } from "./gateway"
 import { useUploadGateway } from "./gateway-context"
-import { isProcessing } from "./model"
+import { isProcessing, type LotDetail } from "./model"
 
 export { sameButLocale } from "@/shared/api/locale-keys"
 
@@ -45,13 +45,27 @@ export function useUpload(uploadId: string) {
   })
 }
 
+export const LOT_PART = 4
+
+export function sameUpload(
+  previous: readonly unknown[] | undefined,
+  next: readonly unknown[],
+): boolean {
+  if (!previous || previous.length !== next.length) return false
+  return previous.every((part, index) => index === LOT_PART || part === next[index])
+}
+
 export function useLot(uploadId: string, lotId: string) {
   const gateway = useUploadGateway()
   const { locale } = useLocale()
+  const key = uploadKeys.lot(locale, uploadId, lotId)
+  const acrossLocales = keptAcrossLocales<LotDetail>(key)
   return useQuery({
-    queryKey: uploadKeys.lot(locale, uploadId, lotId),
+    queryKey: key,
     queryFn: () => gateway.lot(uploadId, lotId),
-    placeholderData: keptAcrossLocales(uploadKeys.lot(locale, uploadId, lotId)),
+    placeholderData: (previous, query) =>
+      acrossLocales(previous, query) ??
+      (sameUpload(query?.queryKey, key) ? previous : undefined),
     refetchInterval: (query) => (query.state.data?.lot.status === "queued" ? POLL_MS : false),
   })
 }
