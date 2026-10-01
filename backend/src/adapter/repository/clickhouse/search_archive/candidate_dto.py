@@ -22,7 +22,6 @@ class SupplierDto(FrozenDto):
     name: str
     inn: str | None
     kpps: tuple[str, ...]
-    legal_status: str
     region: str
     website: str
     contacts: dict[str, str]
@@ -37,7 +36,6 @@ class SupplierDto(FrozenDto):
             name=supplier.name,
             inn=supplier.inn,
             kpps=supplier.kpps,
-            legal_status=supplier.legal_status,
             region=supplier.region,
             website=supplier.website,
             contacts=dict(supplier.contacts),
@@ -52,7 +50,6 @@ class SupplierDto(FrozenDto):
             name=self.name,
             inn=self.inn,
             kpps=self.kpps,
-            legal_status=self.legal_status,
             region=self.region,
             website=self.website,
             contacts=dict(self.contacts),

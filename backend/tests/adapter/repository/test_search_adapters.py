@@ -80,13 +80,10 @@ async def test_lexical_channel_ranks_suppliers_by_matched_items(gateway: ChdbGat
 
 
 async def test_lexical_channel_respects_regions_and_item_type(gateway: ChdbGateway) -> None:
-    offers = await seed_offers(gateway)
-    await Seeder(gateway).offers(replace(offers["rice"], delivery_regions=("47",)))
+    await seed_offers(gateway)
     retriever = ClickHouseLexicalRetriever(gateway, RussianAnalyzer())
     regional = await retriever.retrieve(request(regions=("47",)), 10)
-    assert {hit.supplier_id for hit in regional.hits} == {ALPHA.supplier_id, GAMMA.supplier_id}
-    alpha = next(hit for hit in regional.hits if hit.supplier_id == ALPHA.supplier_id)
-    assert alpha.item_ids == frozenset({"i2"})
+    assert {hit.supplier_id for hit in regional.hits} == {GAMMA.supplier_id}
     services = await retriever.retrieve(request(item_type=ItemType.SERVICE), 10)
     assert services.hits == ()
     goods = await retriever.retrieve(request(item_type=ItemType.GOODS), 10)

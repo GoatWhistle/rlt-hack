@@ -170,11 +170,14 @@ services:
         condition: service_healthy
       embedder:
         condition: service_healthy
+
   api:
     build:
       context: ./backend
       target: api
     restart: unless-stopped
+    entrypoint: ["uvicorn"]
+    command: ["src.controller.api.main:build_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*", "--no-server-header", "--no-access-log"]
     environment:
       <<: *job-environment
       API_HOST: 0.0.0.0

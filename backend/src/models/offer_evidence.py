@@ -5,6 +5,7 @@ from src.models.enums import (
     EvidenceKind,
     MatchStatus,
     SourceType,
+    SupplierRole,
     VerificationStatus,
 )
 from src.models.evidence import Evidence, is_web_url
@@ -69,11 +70,11 @@ class OfferEvidence:
 
     @property
     def role_evidence(self) -> Evidence | None:
-        if not is_web_url(self.offer.role_evidence_url):
+        if self.offer.supplier_role is SupplierRole.UNKNOWN or not is_web_url(self.offer.url):
             return None
         return Evidence(
             kind=SOURCE_EVIDENCE[self.source.source_type],
             title=self.offer.role_evidence_text or self.source.name,
-            url=self.offer.role_evidence_url,
+            url=self.offer.url,
             checked_at=self.offer.last_seen_at,
         )

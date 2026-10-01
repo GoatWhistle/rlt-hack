@@ -295,21 +295,11 @@ PYTHONPATH=src /root/rlt/.venv/bin/python -m rlt_ml.compare_cards \
 
 Тестовый файл: [`test-supplier-search.csv`](test-supplier-search.csv), пять
 искусственных закупок. Откройте https://rlt.goatwhistle.ru/, загрузите CSV,
-откройте результат закупки. Поиск использует исторические профили по ИНН;
-актуальный ассортимент, названия компаний и контакты требуют проверки.
+откройте результат закупки. Поиск по тексту — на главной странице.
 
-Тестовый HTTP режим принимает до 20 закупок и 2 МБ в одном CSV. Результаты
-сохраняются на сервере и доступны в том же браузере (cookie сессии).
-Прямой запрос: `POST /api/suppliers/search` с JSON
-`{"query":"Поставка офисной бумаги А4","limit":10}`.
-Проверка API: `GET /api/health`.
-
-Для локального запуска готовый индекс монтируется через `SUPPLIER_INDEX_PATH`
-(каталог с `card_vectors.npy`, `cards.parquet`, `report.json`, `manifest.json`),
-затем `docker compose --profile search --profile ml up -d search-api embedder`.
-Модель должна быть заранее загружена в кеш. API слушает `127.0.0.1:18082`.
-Проверки на искусственном индексе: `cd backend && uv run python tests/search/smoke.py`.
-
+Лимиты загрузки задают переменные `UPLOAD_*`. Эндпоинты и коды ошибок описаны
+в [backend/README.md](backend/README.md#http-api), примеры ответов — в
+[contracts](contracts). Проверка API: `GET /api/health/live`.
 
 Прогресс ProductCenter сохраняется в `crawl-progress.json` внутри постоянного
 тома `productcenter-cache`. Подтверждение порции записывается после успешного

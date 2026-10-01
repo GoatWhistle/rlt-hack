@@ -24,7 +24,7 @@ OFFER_FIELDS = (
     "o.external_id",
     "o.supplier_id",
     "o.seller_status",
-    "o.seller_evidence_url",
+    "o.evidence_url",
     "o.url",
     "o.name",
     "substringUTF8(o.description, 1, 1000)",
@@ -37,10 +37,8 @@ OFFER_FIELDS = (
     "o.price",
     "o.currency",
     "o.unit",
-    "o.delivery_regions",
     "o.availability",
     "o.supplier_role",
-    "o.role_evidence_url",
     "o.role_evidence_text",
     "o.content_hash",
     "o.first_seen_at",
@@ -65,10 +63,6 @@ SOURCE_START = len(OFFER_FIELDS)
 MATCH_POSITION = SOURCE_START + len(SOURCE_FIELDS)
 
 
-def _strings(value: object) -> tuple[str, ...]:
-    return tuple(str(item) for item in value) if isinstance(value, list | tuple) else ()
-
-
 def _mapping(value: object) -> dict[str, str]:
     if not isinstance(value, Mapping):
         return {}
@@ -82,7 +76,7 @@ def to_offer(row: Sequence[object]) -> Offer:
         external_id=str(row[2]),
         supplier_id=to_optional_uuid(row[3]),
         seller_status=VerificationStatus(str(row[4])),
-        seller_evidence_url=str(row[5]),
+        evidence_url=str(row[5]),
         url=str(row[6]),
         name=str(row[7]),
         description=str(row[8]),
@@ -95,14 +89,12 @@ def to_offer(row: Sequence[object]) -> Offer:
         price=to_decimal(row[15]),
         currency=str(row[16]),
         unit=str(row[17]),
-        delivery_regions=_strings(row[18]),
-        availability=Availability(str(row[19])),
-        supplier_role=SupplierRole(str(row[20])),
-        role_evidence_url=str(row[21]),
-        role_evidence_text=str(row[22]),
-        content_hash=str(row[23]),
-        first_seen_at=to_datetime(row[24]),
-        last_seen_at=to_datetime(row[25]),
+        availability=Availability(str(row[18])),
+        supplier_role=SupplierRole(str(row[19])),
+        role_evidence_text=str(row[20]),
+        content_hash=str(row[21]),
+        first_seen_at=to_datetime(row[22]),
+        last_seen_at=to_datetime(row[23]),
     )
 
 

@@ -10,7 +10,6 @@ def test_supplier_rows_tolerate_missing_collections() -> None:
         None,
         None,
         "ООО «Альфа»",
-        "active",
         "78",
         "",
         None,
@@ -43,19 +42,12 @@ def test_offer_rows_tolerate_missing_collections() -> None:
         None,
         "",
         "",
-        None,
         "unknown",
         "unknown",
-        "",
         "",
         "",
         "2026-09-29 08:00:00.000",
         "2026-09-29 08:00:00.000",
     ]
     offer = to_offer(row)
-    assert (offer.supplier_id, offer.price, offer.attributes, offer.delivery_regions) == (
-        None,
-        None,
-        {},
-        (),
-    )
+    assert (offer.supplier_id, offer.price, offer.attributes) == (None, None, {})

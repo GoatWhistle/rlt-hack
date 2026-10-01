@@ -76,7 +76,7 @@ def decompose(name: str, rules: TextRules, brand: str = "", article: str = "") -
     )
 
 
-def _take(text: str, pattern: re.Pattern[str], keep: Callable[[str], None]) -> str:
+def _take(text: str, pattern: re.Pattern[str], keep: Callable[[str], object]) -> str:
     """Вынимает совпадение из текста и отдаёт его обработчику."""
     match = pattern.search(text)
     if not match:

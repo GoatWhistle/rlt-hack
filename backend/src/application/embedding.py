@@ -1,4 +1,5 @@
 import os
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import httpx
@@ -12,7 +13,7 @@ from src.service.embedding.worker import EmbeddingWorker
 
 
 @asynccontextmanager
-async def embedding_worker():
+async def embedding_worker() -> AsyncIterator[EmbeddingWorker]:
     config = AppConfig.from_env()
     async with (
         Container(config) as container,

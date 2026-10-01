@@ -71,6 +71,7 @@ LAYER_IMPORTS = {
     "src.service": ("src.models", "src.service"),
     "src.controller.api": ENTRY_POINT_IMPORTS,
     "src.controller.job": ENTRY_POINT_IMPORTS,
+    "src.controller.embedding": ENTRY_POINT_IMPORTS,
     "src.controller": ("src.models", "src.controller", "src.service.errors"),
     "src.adapter": ("src.models", "src.adapter"),
 }

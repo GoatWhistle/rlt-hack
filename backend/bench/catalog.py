@@ -16,7 +16,7 @@ from bench.sql import (
 )
 
 SUPPLIERS = """
-INSERT INTO {db}.suppliers (supplier_id, inn, name, legal_status, region, website,
+INSERT INTO {db}.suppliers (supplier_id, inn, name, region, website,
     identity_status, identity_evidence_url, version)
 WITH {constants},
     cityHash64(number, 12) AS h,
@@ -25,7 +25,7 @@ WITH {constants},
 SELECT {supplier_id}, inn_value,
     concat(forms[1 + h % length(forms)], ' «', roots[1 + intDiv(h, 7) % length(roots)],
         tails[1 + intDiv(h, 97) % length(tails)], '»'),
-    'active', {region},
+    {region},
     if(h % 3 = 0, '', concat('https://supplier-', toString(number), '.example.ru')),
     multiIf(isNull(inn_value), 'unverified', roll < 4, 'conflict', roll < 70, 'verified',
         'unverified'),
@@ -58,7 +58,7 @@ WITH {constants},
 OFFERS = """
 INSERT INTO {db}.offers (offer_id, source_id, external_id, supplier_id, seller_status, url,
     name, description, item_type, brand, article, source_category, okpd2_code, price,
-    currency, unit, delivery_regions, availability, supplier_role, content_hash,
+    currency, unit, availability, supplier_role, content_hash,
     first_seen_at, last_seen_at, version)
 {scope}
 SELECT {offer_id}, {source_id}, toString(number), {supplier_id},
@@ -70,7 +70,7 @@ SELECT {offer_id}, {source_id}, toString(number), {supplier_id},
     item_types[category + 1], brand, upper(substring(hex(h), 1, 8)),
     category_names[category + 1], okpd2_codes[category + 1],
     if(intDiv(h, 5) % 5 = 0, NULL, toDecimal64(10 + (h % 5000000) / 100, 4)),
-    'RUB', units[category + 1], [{region}],
+    'RUB', units[category + 1],
     multiIf(h % 100 < 4, 'unavailable', h % 100 < 10, 'on_order', 'available'),
     if(item_types[category + 1] = 'service', 'service_provider',
         ['manufacturer', 'distributor', 'reseller', 'unknown'][1 + intDiv(h, 3) % 4]),

@@ -106,7 +106,6 @@ def make_offer(
         unit="кг",
         availability=availability,
         supplier_role=role,
-        role_evidence_url=f"https://catalog.example.org/companies/{owner.supplier_id}",
         role_evidence_text="Дистрибьютор",
     )
 

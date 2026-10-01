@@ -153,7 +153,7 @@ def test_offer_evidence_points_to_the_offer_and_its_role_source() -> None:
     role = priced.role_evidence
     assert role is not None
     assert role.title == "Дистрибьютор"
-    hidden = make_offer_evidence(replace(make_offer(), url="/local", role_evidence_url=""))
+    hidden = make_offer_evidence(replace(make_offer(), url="/local"))
     assert hidden.evidence is None
     assert hidden.role_evidence is None
     assert make_evidence().url.startswith("https://")

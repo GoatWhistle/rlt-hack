@@ -26,7 +26,7 @@ compose() {
 }
 
 cleanup() {
-  compose logs --tail 60 frontend clickhouse || true
+  compose logs --tail 60 api frontend clickhouse || true
   compose down --volumes || true
 }
 trap cleanup EXIT
@@ -36,6 +36,7 @@ trap cleanup EXIT
 )
 compose run --rm --no-deps migrate
 curl --fail --silent --show-error http://127.0.0.1:8081/nginx-health
+curl --fail --silent --show-error http://127.0.0.1:8081/api/health/live
 curl --fail --silent --show-error http://127.0.0.1:8081/ > "$scratch/index.html"
 grep -q 'type="module"' "$scratch/index.html"
 test -s "$RLT_DEPLOY_ROOT/current/backup-before.txt"

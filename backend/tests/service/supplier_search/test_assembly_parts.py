@@ -30,7 +30,7 @@ def card(
 ) -> OfferEvidence:
     offer = make_offer(name, role=role, availability=availability, seller_status=seller)
     if url is not None:
-        offer = replace(offer, url=url, role_evidence_url=url)
+        offer = replace(offer, url=url)
     return make_offer_evidence(offer, match_status=match)
 
 

@@ -64,7 +64,7 @@ _EXCEL_MONTH_LAST = re.compile(r"\b(\d+)\.([А-Яа-я]{3})\b")
 def clean(value: str) -> str:
     """Убирает невидимый мусор, выравнивает пробелы и форму символов."""
     text = unicodedata.normalize("NFKC", value or "")
-    text = text.replace(" ", " ").replace("​", "")
+    text = text.replace(" ", " ").replace("\u200b", "")
     return _SPACES.sub(" ", _CONTROL.sub(" ", text)).strip()
 
 

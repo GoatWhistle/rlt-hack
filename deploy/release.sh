@@ -43,7 +43,7 @@ failed() {
   trap - EXIT
   if (( status == 0 )); then return; fi
   if [[ $workers_changed == true ]]; then
-    compose_at "$release" --profile workers --profile ml --profile search stop parser-worker embedding-worker search-api || true
+    compose_at "$release" --profile workers --profile ml stop parser-worker embedding-worker || true
     if [[ -n $previous && -f $previous/deploy/run-workers.sh ]]; then
       start_workers "$previous" || echo "Worker rollback failed; inspect containers" >&2
     fi
@@ -71,7 +71,7 @@ if [[ -L $base/current ]]; then
   previous=$(readlink -f "$base/current")
 fi
 if [[ $previous == "$release" ]]; then
-  compose_at "$release" up -d --no-deps --wait --wait-timeout 120 frontend
+  compose_at "$release" up -d --no-deps --wait --wait-timeout 180 api frontend
   start_workers "$release"
   echo "Release $revision is already active"
   exit 0
@@ -104,12 +104,12 @@ query "BACKUP DATABASE $database TO Disk('backups', '$backup')"
 printf '%s\n' "$backup" > "$release/backup-before.txt"
 if grep -Eq '^RLT_RUN_WORKERS=true$' "$env_file"; then
   workers_changed=true
-  compose_at "$release" --profile workers --profile ml --profile search stop parser-worker embedding-worker search-api
+  compose_at "$release" --profile workers --profile ml stop parser-worker embedding-worker
 fi
 compose_at "$release" run --rm --no-deps migrate
 
 frontend_changed=true
-compose_at "$release" up -d --no-deps --wait --wait-timeout 120 frontend
+compose_at "$release" up -d --no-deps --wait --wait-timeout 180 api frontend
 compose_at "$release" exec -T frontend wget -qO- http://127.0.0.1:8080/ >/dev/null
 start_workers "$release"
 if [[ -n $previous ]]; then

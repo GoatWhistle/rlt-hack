@@ -15,10 +15,7 @@ SELECT_CANDIDATES = (
     "LIMIT {{pool:UInt32}}"
 )
 REGION_JOIN = "LEFT JOIN {db}.suppliers_current AS s ON s.supplier_id = o.supplier_id "
-REGION_CONDITION = (
-    "AND (has({regions:Array(String)}, s.region) "
-    "OR hasAny(o.delivery_regions, {regions:Array(String)})) "
-)
+REGION_CONDITION = "AND has({regions:Array(String)}, s.region) "
 TYPE_CONDITION = "AND o.item_type IN ({item_type:String}, 'unknown') "
 
 
