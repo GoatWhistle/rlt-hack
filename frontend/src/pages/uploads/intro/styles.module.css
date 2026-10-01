@@ -15,11 +15,6 @@
 
 .title {
   max-width: 22ch;
-  font-size: var(--text-page-title);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-  text-wrap: balance;
 }
 
 .lead {

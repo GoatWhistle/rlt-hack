@@ -7,10 +7,11 @@
     "required": "Required columns",
     "optional": "Used when present",
     "sample": "Download a sample CSV",
-    "privacy": "No external neural network APIs are used."
+    "privacy": "The file is processed on the LOTIVE server and is not passed on to anyone."
   },
   "drop": {
     "title": "Drop the CSV here",
+    "titleTouch": "Choose a CSV file",
     "hint": "or choose a file on your computer",
     "choose": "Choose file",
     "release": "Release to upload the file"

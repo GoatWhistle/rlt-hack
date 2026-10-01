@@ -118,12 +118,6 @@
   min-width: 0;
 }
 
-.chevron {
-  display: flex;
-  color: var(--text-faint);
-  transition: var(--transition-control);
-}
-
 .compact {
   display: none;
 }
@@ -132,11 +126,6 @@
   .row:hover {
     background: var(--surface-canvas);
     color: inherit;
-  }
-
-  .row:hover .chevron {
-    color: var(--accent);
-    transform: translateX(var(--space-1));
   }
 }
 

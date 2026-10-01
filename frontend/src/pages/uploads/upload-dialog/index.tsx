@@ -7,8 +7,10 @@ import type { FileCheck } from "@/entities/notice/model"
 import { useUploadGateway } from "@/entities/upload/gateway-context"
 import { useCreateUpload } from "@/entities/upload/queries"
 import { uploadPath } from "@/shared/config/paths"
+import { useErrorMessage } from "@/shared/errors/use-error-message"
 import { Button } from "@/shared/ui/button"
 import { Dialog } from "@/shared/ui/dialog"
+import { Icon } from "@/shared/ui/icon"
 import { StepTrail } from "@/shared/ui/step-trail"
 import { CheckSkeleton, CheckSummary } from "../check-summary"
 import { Dropzone } from "../dropzone"
@@ -62,6 +64,7 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
   const navigate = useNavigate()
   const gateway = useUploadGateway()
   const create = useCreateUpload()
+  const errorMessage = useErrorMessage()
   const [phase, setPhase] = useState<Phase>(
     initialFile ? { kind: "reading" } : { kind: "file" },
   )
@@ -101,7 +104,10 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
           <DialogActions
             check={checked.check}
             pending={create.isPending}
-            onOther={() => setPhase({ kind: "file" })}
+            onOther={() => {
+              create.reset()
+              setPhase({ kind: "file" })
+            }}
             onStart={() => start(checked.file, checked.check)}
           />
         ) : null
@@ -116,6 +122,12 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
         {phase.kind === "file" ? <Dropzone onSelect={(file) => void read(file)} /> : null}
         {phase.kind === "reading" ? <CheckSkeleton label={t("dialog.reading")} /> : null}
         {checked ? <CheckSummary check={checked.check} /> : null}
+        {checked && create.isError ? (
+          <p role="alert" className={styles.error}>
+            <Icon name="warning" size="sm" tone="warning" />
+            {errorMessage(create.error)}
+          </p>
+        ) : null}
       </div>
     </Dialog>
   )

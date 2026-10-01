@@ -88,7 +88,8 @@
   },
   "entry": {
     "title": "Choose a file",
-    "text": "Purchases are shown per upload. Open a file from the list or upload a new one.",
-    "action": "Go to uploads"
+    "text": "Purchases are reviewed file by file. Open one of the recent files.",
+    "recent": "Recent uploads",
+    "all": "All uploads"
   }
 }

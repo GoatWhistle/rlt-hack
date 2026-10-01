@@ -75,6 +75,20 @@
   margin-inline-start: auto;
 }
 
+@media (max-width: 29.99rem) {
+  .footer {
+    flex-direction: column-reverse;
+  }
+
+  .footer > * {
+    width: 100%;
+  }
+
+  .footer > :last-child {
+    margin-inline-start: 0;
+  }
+}
+
 .side .footer {
   position: sticky;
   inset-block-end: 0;

@@ -9,6 +9,7 @@ import {
 } from "@tests/support/gateway"
 import { describe, expect, it, vi } from "vitest"
 import { SAMPLE_PATH } from "@/pages/uploads/format-help"
+import { ApiError } from "@/shared/api/api-error"
 
 const CSV = [
   "lot_id;procedure_name;start_price;extra",
@@ -100,6 +101,22 @@ describe("the first visit", () => {
     expect(await within(dialog).findByRole("alert")).toHaveTextContent(
       en("dialog.noValid", "uploads"),
     )
+  })
+
+  it("keeps a failed start inside the dialog and lets the user retry", async () => {
+    const create = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiError({ status: 500, code: "server" }))
+      .mockResolvedValue(uploadSummary())
+    const { user, router } = renderPage("/uploads", stubGateway({ create }))
+    await user.upload(await screen.findByLabelText(en("drop.choose", "uploads")), csv())
+    const dialog = await screen.findByRole("dialog")
+    const start = await within(dialog).findByRole("button", { name: "Process 2 purchases" })
+    await user.click(start)
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent(en("server", "errors"))
+    expect(start).toBeEnabled()
+    await user.click(start)
+    await waitFor(() => expect(router.state.location.pathname).toBe("/uploads/u1"))
   })
 
   it("reports a file that cannot be read", async () => {

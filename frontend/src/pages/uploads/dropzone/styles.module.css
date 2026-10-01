@@ -6,6 +6,7 @@
   justify-content: center;
   gap: var(--space-4);
   min-height: 16rem;
+  max-height: 28rem;
   padding: var(--space-7) var(--space-5);
   border: var(--line-width-thick) dashed var(--accent-muted);
   border-radius: var(--radius-xl);
@@ -44,6 +45,20 @@
   font-size: var(--text-xl);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
+}
+
+.touch {
+  display: none;
+}
+
+@media (hover: none) {
+  .pointer {
+    display: none;
+  }
+
+  .touch {
+    display: inline;
+  }
 }
 
 .hint {

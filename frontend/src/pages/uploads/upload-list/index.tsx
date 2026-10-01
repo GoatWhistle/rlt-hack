@@ -10,6 +10,7 @@ import { Caption } from "@/shared/ui/caption"
 import { DoneNote } from "@/shared/ui/done-note"
 import { Icon } from "@/shared/ui/icon"
 import { PageTitle } from "@/shared/ui/page-title"
+import { RowChevron } from "@/shared/ui/row-chevron"
 import { SplitRow } from "@/shared/ui/split-row"
 import { VisuallyHidden } from "@/shared/ui/visually-hidden"
 import styles from "./styles.module.css"
@@ -56,9 +57,7 @@ function UploadRow({ upload }: { readonly upload: UploadSummary }) {
         <span className={styles.results}>
           <StatusStrip counts={upload.counts} total={upload.total} />
         </span>
-        <span className={styles.chevron} aria-hidden="true">
-          <Icon name="chevron" />
-        </span>
+        <RowChevron className={styles.chevron} />
       </Link>
     </li>
   )

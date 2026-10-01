@@ -48,7 +48,16 @@ export function Dropzone({ onSelect }: DropzoneProps) {
         <Icon name="upload" size="lg" tone="source" />
       </span>
       <span className={styles.copy}>
-        <span className={styles.title}>{dragging ? t("drop.release") : t("drop.title")}</span>
+        <span className={styles.title}>
+          {dragging ? (
+            t("drop.release")
+          ) : (
+            <>
+              <span className={styles.pointer}>{t("drop.title")}</span>
+              <span className={styles.touch}>{t("drop.titleTouch")}</span>
+            </>
+          )}
+        </span>
         <span className={styles.hint}>{t("drop.hint")}</span>
       </span>
       <label className={styles.picker}>

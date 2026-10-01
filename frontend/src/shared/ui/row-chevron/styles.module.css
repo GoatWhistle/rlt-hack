@@ -1,0 +1,12 @@
+.chevron {
+  display: flex;
+  color: var(--text-faint);
+  transition: var(--transition-control);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a:hover > .chevron {
+    color: var(--accent);
+    transform: translateX(var(--space-1));
+  }
+}

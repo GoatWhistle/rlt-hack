@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { Icon } from "@/shared/ui/icon"
+import { PageTitle } from "@/shared/ui/page-title"
 import { Dropzone } from "../dropzone"
 import { FormatHelp } from "../format-help"
 import styles from "./styles.module.css"
@@ -9,7 +10,7 @@ export function Intro({ onFile }: { readonly onFile: (file: File) => void }) {
   return (
     <div className={styles.intro}>
       <header className={styles.head}>
-        <h1 className={styles.title}>{t("intro.title")}</h1>
+        <PageTitle className={styles.title}>{t("intro.title")}</PageTitle>
         <p className={styles.lead}>{t("intro.text")}</p>
       </header>
       <div className={styles.drop}>

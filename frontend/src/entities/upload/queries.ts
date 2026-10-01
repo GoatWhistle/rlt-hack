@@ -76,5 +76,6 @@ export function useCreateUpload() {
   return useMutation({
     mutationFn: (upload: NewUpload) => gateway.create(upload),
     onSuccess: () => client.invalidateQueries({ queryKey: uploadKeys.all }),
+    meta: { silent: true },
   })
 }
