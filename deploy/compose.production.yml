@@ -1,0 +1,52 @@
+services:
+  frontend:
+    image: rlt/frontend:${RLT_IMAGE_TAG:?Set the release revision}
+    ports:
+      - "${WEB_BIND:-0.0.0.0}:${WEB_PORT:-8081}:8080"
+    restart: unless-stopped
+    mem_limit: 128m
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/nginx-health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+  clickhouse:
+    restart: unless-stopped
+    ports: !override
+      - "127.0.0.1:${CLICKHOUSE_HTTP_PORT:-18123}:8123"
+      - "127.0.0.1:${CLICKHOUSE_NATIVE_PORT:-19000}:9000"
+    mem_limit: 3g
+    cpus: 2
+    volumes:
+      - ./deploy/clickhouse-backup.xml:/etc/clickhouse-server/config.d/rlt-backup.xml:ro
+      - clickhouse-backups:/var/lib/clickhouse/backups
+
+  clickhouse-ui:
+    profiles: ["admin"]
+    ports: !override
+      - "127.0.0.1:${CLICKHOUSE_UI_PORT:-13488}:3488"
+
+  migrate:
+    image: rlt/backend:${RLT_IMAGE_TAG:?Set the release revision}
+    build: !reset null
+    environment:
+      SUPPLIER_DATASET_PROVIDER: ${SUPPLIER_DATASET_PROVIDER:-false}
+    volumes: &production-data !override
+      - type: bind
+        source: ${RLT_DATA_DIR:-/opt/rlt-hack/data}
+        target: /data/task
+        read_only: true
+        bind:
+          create_host_path: false
+
+  sync-job:
+    image: rlt/backend:${RLT_IMAGE_TAG:?Set the release revision}
+    build: !reset null
+    environment:
+      SUPPLIER_DATASET_PROVIDER: ${SUPPLIER_DATASET_PROVIDER:-false}
+    volumes: *production-data
+
+volumes:
+  clickhouse-backups:

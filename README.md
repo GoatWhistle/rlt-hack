@@ -79,6 +79,17 @@ for file in backend/migration/*.sql; do clickhouse-client --multiquery < "$file"
 миграций: его ведёт только команда `migrate` из джобы, которая пишет
 контрольные суммы в таблицу `supplier_search.schema_migrations`.
 
+## CI/CD
+
+GitHub Actions проверяет frontend, backend и ML на искусственных данных,
+собирает контейнеры и после успешного push в `main` разворачивает проверенный
+выпуск на сервере. Production использует отдельный Compose-проект, резервную
+копию ClickHouse перед миграциями и откат frontend при неуспешном запуске.
+Сайт работает на порту 8081 в демонстрационном режиме, пока HTTP API не реализован.
+
+Настройка GitHub Secrets, команды эксплуатации и ограничения отката описаны
+в [инструкции развёртывания](deploy/README.md).
+
 ## Проверки backend
 
 Без сервера ClickHouse, Docker и сети, через `uv`:

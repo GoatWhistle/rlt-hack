@@ -25,13 +25,16 @@ async function uploadSample(page: Page) {
   await expect(page.getByText(/processing finished/i)).toBeVisible({ timeout: 20_000 })
 }
 
-test("goes from a csv file to a reviewed purchase and two result files", async ({ page }) => {
+test("goes from a csv file to a reviewed purchase and two result files", async ({
+  page,
+  isMobile,
+}) => {
   await uploadSample(page)
   await expectAccessible(page)
-  await page.getByRole("searchbox").fill("school")
+  await page.getByRole("searchbox").fill("9200000")
   await expect(page.getByRole("table").getByRole("link")).toHaveCount(1)
   await page.getByRole("table").getByRole("link").click()
-  await expect(page).toHaveURL(/\/lots\/9200000\?q=school$/)
+  await expect(page).toHaveURL(/\/lots\/9200000\?q=9200000$/)
   await expect(page.getByRole("article")).toBeVisible()
   await expectAccessible(page)
 
@@ -39,6 +42,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
     .getByRole("article")
     .getByRole("button", { name: /choose candidate/i })
     .click()
+  if (isMobile) await page.getByRole("radio", { name: "Companies", exact: true }).check()
   await page
     .getByRole("region", { name: /candidates/i })
     .getByRole("button")
@@ -48,6 +52,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
     .getByRole("article")
     .getByRole("button", { name: /choose candidate/i })
     .click()
+  if (isMobile) await page.getByRole("radio", { name: "Companies", exact: true }).check()
   await page.getByRole("button", { name: /compare chosen \(2\)/i }).click()
   await expect(page.getByRole("dialog", { name: /compare/i }).getByRole("table")).toBeVisible()
   await expectAccessible(page)
@@ -66,7 +71,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
   await page.reload()
   await expect(page.getByRole("article")).toBeVisible()
   await page.getByRole("link", { name: /purchases · notices-sample\.csv/i }).click()
-  await expect(page.getByRole("searchbox")).toHaveValue("school")
+  await expect(page.getByRole("searchbox")).toHaveValue("9200000")
 })
 
 test("shows the choice, its reason, a source and the main caveat on a laptop screen", async ({

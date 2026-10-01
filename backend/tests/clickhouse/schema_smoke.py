@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import re
 import sys
 import tempfile
 from pathlib import Path
@@ -14,8 +13,7 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
 from tests.clickhouse.chdb_gateway import ChdbGateway
-
-DOC = ROOT / "context/clickhouse-schema.md"
+from tests.clickhouse.queries import NEAREST_ITEMS, SUPPLIERS_BY_ITEM
 
 
 async def main():
@@ -97,11 +95,10 @@ async def main():
             }
             insert("offer_matches", match)
 
-            examples = re.findall(r"```sql\n(.*?)```", DOC.read_text(), re.S)
-            supplier_query = examples[0]
-
             def find(item):
-                return rows(supplier_query.replace("{catalog_item_id:UUID}", f"toUUID('{item}')"))
+                return rows(
+                    SUPPLIERS_BY_ITEM.replace("{catalog_item_id:UUID}", f"toUUID('{item}')")
+                )
 
             assert len(find(first)) == 1
             insert("offer_matches", dict(match, catalog_item_id=second, version=2))
@@ -130,11 +127,9 @@ async def main():
                     assert "valid_vector" in str(exc), str(exc)
                 else:
                     raise AssertionError("Некорректный вектор принят")
-            vector_query = (
-                examples[1]
-                .replace("{query_vector:Array(Float32)}", "CAST([1, 0, 0], 'Array(Float32)')")
-                .replace("{model_key:String}", "'test-v1'")
-            )
+            vector_query = NEAREST_ITEMS.replace(
+                "{query_vector:Array(Float32)}", "CAST([1, 0, 0], 'Array(Float32)')"
+            ).replace("{model_key:String}", "'test-v1'")
             found = rows(vector_query)
             assert len(found) == 2 and found[0]["entity_id"] == first
             assert abs(found[0]["distance"]) < 1e-6
