@@ -15,12 +15,13 @@ from src.adapter.client.ml_service.dto import (
     RecommendationResponseDto,
 )
 from src.adapter.client.ml_service.protocols import SupplierIdentity
+from src.models.enums import RetrievalChannel
 from src.models.query_item import SearchRequest
 from src.models.retrieval import ChannelHit, ItemHit, RetrievalHits
 
 logger = logging.getLogger(__name__)
 
-CHANNEL = "semantic"
+CHANNEL = RetrievalChannel.SEMANTIC
 RECOMMENDATIONS_PATH = "/v1/recommendations"
 REQUEST_ID_HEADER = "X-Request-Id"
 ATTEMPTS = 2

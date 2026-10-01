@@ -136,6 +136,19 @@ class WarningCode(StrEnum):
     ITEMS_INFERRED = "itemsInferred"
 
 
+class RetrievalChannel(StrEnum):
+    LEXICAL = "lexical"
+    HISTORY = "history"
+    SEMANTIC = "semantic"
+
+
+class EnrichmentSource(StrEnum):
+    DIRECTORY = "directory"
+    OFFERS = "offers"
+    CURRENT_OFFERS = "currentOffers"
+    HISTORY = "history"
+
+
 class ComponentState(StrEnum):
     UP = "up"
     DOWN = "down"

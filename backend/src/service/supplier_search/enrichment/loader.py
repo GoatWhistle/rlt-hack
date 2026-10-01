@@ -3,7 +3,7 @@ import logging
 from collections.abc import Awaitable, Mapping, Sequence
 from uuid import UUID
 
-from src.models.enums import WarningCode
+from src.models.enums import EnrichmentSource, WarningCode
 from src.models.offer_evidence import OfferEvidence
 from src.models.query_item import QueryItem
 from src.models.search_result import SearchWarning
@@ -14,10 +14,10 @@ from src.service.supplier_search.settings import SearchSettings
 
 logger = logging.getLogger(__name__)
 
-DIRECTORY = "directory"
-OFFERS = "offers"
-CURRENT_OFFERS = "currentOffers"
-HISTORY = "history"
+DIRECTORY = EnrichmentSource.DIRECTORY
+OFFERS = EnrichmentSource.OFFERS
+CURRENT_OFFERS = EnrichmentSource.CURRENT_OFFERS
+HISTORY = EnrichmentSource.HISTORY
 
 
 async def _attempt[K, V](source: str, call: Awaitable[Mapping[K, V]]) -> Mapping[K, V] | None:

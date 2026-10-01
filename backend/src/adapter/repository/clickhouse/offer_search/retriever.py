@@ -9,10 +9,11 @@ from src.adapter.repository.clickhouse.protocols import SqlGateway
 from src.adapter.repository.clickhouse.retrieval.tally import HitTally
 from src.adapter.repository.clickhouse.retrieval.terms import needles_for, relevance
 from src.adapter.repository.clickhouse.rows import to_uuid
+from src.models.enums import RetrievalChannel
 from src.models.query_item import QueryItem, SearchRequest
 from src.models.retrieval import RetrievalHits
 
-CHANNEL = "lexical"
+CHANNEL = RetrievalChannel.LEXICAL
 
 
 @dataclass(frozen=True, slots=True)

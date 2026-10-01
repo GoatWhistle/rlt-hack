@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from src.controller.http.errors import HTTP_CODES, INTERNAL, INVALID_REQUEST, KNOWN_ERRORS
-from src.models.enums import WarningCode
+from src.models.enums import EnrichmentSource, RetrievalChannel, WarningCode
 
 CONTRACTS = Path(__file__).resolve().parents[3] / "contracts"
 PROXY_CODES = {"rate_limited": 429}
@@ -30,3 +30,18 @@ def test_warning_codes_in_examples_are_known() -> None:
         document = json.loads((CONTRACTS / name).read_text(encoding="utf-8"))
         holder = document if "warnings" in document else document["recommendation"]
         assert {warning["code"] for warning in holder["warnings"]} <= known
+
+
+def test_channels_and_warning_subjects_come_from_enumerations() -> None:
+    subjects = {
+        WarningCode.CHANNEL_FAILED: {channel.value for channel in RetrievalChannel},
+        WarningCode.ENRICHMENT_FAILED: {source.value for source in EnrichmentSource},
+    }
+    search = json.loads((CONTRACTS / "search/response.example.json").read_text(encoding="utf-8"))
+    lot = json.loads((CONTRACTS / "upload/lot.example.json").read_text(encoding="utf-8"))
+    pipelines = (search["pipeline"], lot["recommendation"]["pipeline"])
+    channels = {channel for pipeline in pipelines for channel in pipeline["channels"]}
+    assert channels <= {channel.value for channel in RetrievalChannel}
+    for warning in (*search["warnings"], *lot["recommendation"]["warnings"]):
+        allowed = subjects.get(WarningCode(warning["code"]))
+        assert allowed is None or warning["subject"] in allowed
