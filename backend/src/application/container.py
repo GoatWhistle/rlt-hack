@@ -53,7 +53,7 @@ from src.models.enums import SourceType
 from src.models.source import Source
 from src.service.classifier import OfferClassifier
 from src.service.normalizer import OfferNormalizer
-from src.service.product.worker import ProductSyncWorker
+from src.service.product.worker import ProductCollectionWorker, ProductSyncWorker
 from src.service.supplier.enrich import OfferEnrichmentService
 from src.service.supplier.protocols import SupplierProvider
 from src.service.supplier.reidentify import OfferReidentifyService
@@ -334,6 +334,14 @@ class Container:
             await self.gateway(), self._config.clickhouse.database
         )
         return ProductSyncWorker(provider, storage)
+
+    async def product_collection_worker(self) -> ProductCollectionWorker:
+        if not self._config.use_moscow_products_provider:
+            raise ValueError("MOSCOW_PRODUCTS_PROVIDER выключен")
+        storage = ClickHouseMoscowProductRepository(
+            await self.gateway(), self._config.clickhouse.database
+        )
+        return ProductCollectionWorker(self.product_provider(), storage)
 
     async def aclose(self) -> None:
         if self._gateway is not None:

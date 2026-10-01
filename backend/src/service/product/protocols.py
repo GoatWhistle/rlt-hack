@@ -23,8 +23,16 @@ class ProductProvider(Protocol):
 
     def listing_pages(self) -> AsyncIterator[ProductPage]: ...
 
+    def collect_pages(
+        self, offset: int, previous_id: int | None, max_pages: int
+    ) -> AsyncIterator[ProductPage]: ...
+
 
 class ProductStorage(Protocol):
     async def stage(self, run_id: UUID, products: Sequence[Product]) -> None: ...
 
     async def publish(self, run_id: UUID, source_id: UUID, expected: int) -> None: ...
+
+    async def collection_progress(
+        self, run_id: UUID, source_id: UUID
+    ) -> tuple[int, int | None]: ...

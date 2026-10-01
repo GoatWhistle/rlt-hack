@@ -115,6 +115,42 @@ class MoscowProductProvider:
             async for page in self._pages(self._client):
                 yield page
 
+    async def collect_pages(
+        self, offset: int, previous_id: int | None, max_pages: int
+    ) -> AsyncIterator[ProductPage]:
+        if offset < 0 or max_pages < 1 or (offset > 0 and previous_id is None):
+            raise ValueError("неверная позиция возобновления СТЕ")
+        if self._client is None:
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
+                async for page in self._collect_pages(client, offset, previous_id, max_pages):
+                    yield page
+        else:
+            async for page in self._collect_pages(self._client, offset, previous_id, max_pages):
+                yield page
+
+    async def _collect_pages(
+        self, client: httpx.AsyncClient, offset: int, previous_id: int | None, max_pages: int
+    ) -> AsyncIterator[ProductPage]:
+        for _ in range(max_pages):
+            if offset:
+                boundary = await self.fetch_page(offset - 1, client, take=1)
+                if len(boundary.items) != 1 or int(boundary.items[0].external_id) != previous_id:
+                    raise MoscowProductIncompleteError("граница сохранённой партии СТЕ изменилась")
+                total = boundary.total
+            else:
+                boundary = None
+                total = None
+            if total is not None and total <= offset:
+                return
+            take = self.page_size if total is None else min(self.page_size, total - offset)
+            page = await self.fetch_page(offset, client, take=take)
+            expected = min(take, page.total - offset)
+            if expected <= 0 or len(page.items) != expected:
+                raise MoscowProductIncompleteError("неполная страница СТЕ при накоплении")
+            previous_id = self._check_order(page.items, previous_id, descending=False)
+            offset += len(page.items)
+            yield await self._enrich(page, client)
+
     async def _enrich(self, page: ProductPage, client: httpx.AsyncClient) -> ProductPage:
         cards = await asyncio.gather(*(self._fetch_card(item, client) for item in page.items))
         return ProductPage(page.total, tuple(cards))

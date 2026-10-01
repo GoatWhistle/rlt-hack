@@ -67,6 +67,25 @@ class ClickHouseMoscowProductRepository:
             ],
         )
 
+    async def collection_progress(self, run_id: UUID, source_id: UUID) -> tuple[int, int | None]:
+        published = await self._gateway.select(
+            f"SELECT count() FROM {self._database}.moscow_product_publications "
+            "WHERE run_id = {run_id:UUID}",
+            {"run_id": str(run_id)},
+        )
+        if published and int(published[0][0]):
+            raise ValueError("опубликованный обход СТЕ нельзя продолжать")
+        rows = await self._gateway.select(
+            f"SELECT count(), uniqExact(product_id), max(toUInt64(external_id)) "
+            f"FROM {self._database}.moscow_products "
+            "WHERE run_id = {run_id:UUID} AND source_id = {source_id:UUID}",
+            {"run_id": str(run_id), "source_id": str(source_id)},
+        )
+        count, unique, maximum = map(int, rows[0])
+        if count != unique:
+            raise ValueError("партия СТЕ содержит повторные ID")
+        return count, maximum if count else None
+
     async def publish(self, run_id: UUID, source_id: UUID, expected: int) -> None:
         rows = await self._gateway.select(
             f"SELECT count(), uniqExact(product_id) FROM {self._database}.moscow_products "

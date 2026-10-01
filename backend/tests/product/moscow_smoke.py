@@ -167,6 +167,37 @@ async def main() -> None:
     assert restricted.image_urls[0].endswith("id=11")
     assert len(restricted.image_urls) == 1
 
+    collection_calls: list[tuple[int, int]] = []
+
+    def resumed_collection(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/GetSku"):
+            return httpx.Response(403)
+        query = json.loads(request.url.params["queryFilter"])
+        collection_calls.append((query["skip"], query["take"]))
+        ids = {(0, 2): (1, 2), (1, 1): (2,), (2, 2): (3, 4)}[(query["skip"], query["take"])]
+        return httpx.Response(
+            200, json={"count": 4, "items": [{"id": i, "name": "СТЕ"} for i in ids]}
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(resumed_collection)) as client:
+        provider = MoscowProductProvider(uuid4(), page_size=2, client=client)
+        first = [page async for page in provider.collect_pages(0, None, 1)]
+        second = [page async for page in provider.collect_pages(2, 2, 1)]
+    assert [[item.external_id for item in page.items] for page in first + second] == [
+        ["1", "2"],
+        ["3", "4"],
+    ]
+    assert collection_calls == [(0, 2), (1, 1), (2, 2)]
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(resumed_collection)) as client:
+        provider = MoscowProductProvider(uuid4(), page_size=2, client=client)
+        try:
+            _ = [page async for page in provider.collect_pages(2, 999, 1)]
+        except MoscowProductIncompleteError:
+            pass
+        else:
+            raise AssertionError("сдвинутая граница коллекции не обнаружена")
+
     for responses, error_type in (
         ([{"count": 1, "items": [{"id": 1}]}], MoscowProductFormatError),
         (

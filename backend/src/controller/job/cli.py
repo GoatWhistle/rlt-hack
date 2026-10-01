@@ -11,7 +11,7 @@ import json
 import logging
 import sys
 from collections.abc import Sequence
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from src.application.config import AppConfig
 from src.application.container import Container
@@ -34,6 +34,9 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("providers", help="показать подключённые адаптеры источников")
     commands.add_parser("sources", help="показать источники, уже записанные в хранилище")
     commands.add_parser("sync-products", help="обойти каталог продуктов СТЕ")
+    collect = commands.add_parser("collect-products", help="накопить страницы СТЕ без публикации")
+    collect.add_argument("--run-id", type=UUID, help="UUID предыдущей партии для продолжения")
+    collect.add_argument("--pages", type=int, default=1, help="число страниц за запуск")
     commands.add_parser("probe-products", help="проверить первую страницу СТЕ без записи")
 
     runs = commands.add_parser("runs", help="последние обходы источника")
@@ -100,6 +103,18 @@ async def _dispatch(arguments: argparse.Namespace, config: AppConfig) -> int:
                 f"run={result.run_id} products={result.product_count} "
                 f"pages={result.pages_fetched} names_changed={result.names_changed} "
                 f"summary_only={result.summary_only_count}"
+            )
+            return 0
+    if arguments.command == "collect-products":
+        if arguments.pages < 1:
+            raise ValueError("--pages должен быть положительным")
+        async with Container(config) as container:
+            worker = await container.product_collection_worker()
+            result = await worker.run_pages(arguments.run_id or uuid4(), arguments.pages)
+            print(
+                f"run={result.run_id} staged={result.staged_count} "
+                f"pages={result.pages_fetched} source_total={result.source_total} "
+                f"last_id={result.last_id}"
             )
             return 0
     if arguments.command == "probe-products":
