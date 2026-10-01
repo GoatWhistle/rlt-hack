@@ -6,7 +6,6 @@ import { useClarifyItems } from "../status"
 import { ClarifyBlock } from "./clarify-block"
 import { Confirmations } from "./confirmations"
 import { Hero } from "./hero"
-import { HistoryBlock } from "./history-block"
 import { MatchBlock } from "./match-block"
 import { PurchaseBlock } from "./purchase-block"
 
@@ -48,7 +47,6 @@ export function EvidencePanel({
       }
     >
       <Hero company={company} products={products} />
-      {company.history ? <HistoryBlock company={company} /> : null}
       {products.length > 0 ? <Confirmations company={company} products={products} /> : null}
       {products.length > 0 ? <MatchBlock company={company} products={products} /> : null}
       <PurchaseBlock company={company} />

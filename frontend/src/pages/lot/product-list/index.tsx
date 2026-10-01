@@ -1,7 +1,6 @@
 import { clsx } from "clsx"
 import { useTranslation } from "react-i18next"
 import type { Product, ProductOrigin } from "@/entities/recommendation/model"
-import { EmptyState } from "@/shared/ui/empty-state"
 import { Icon } from "@/shared/ui/icon"
 import { ResultSection } from "@/shared/ui/result-section"
 import { Tag } from "@/shared/ui/tag"
@@ -92,22 +91,12 @@ function ProductRow({ product, active, onFilter }: ProductRowProps) {
 
 export type ProductListProps = {
   readonly products: readonly Product[]
-  readonly requestTitle?: string
   readonly filterId: string | null
   readonly onFilter: (productId: string | null) => void
 }
 
-export function ProductList({ products, requestTitle, filterId, onFilter }: ProductListProps) {
+export function ProductList({ products, filterId, onFilter }: ProductListProps) {
   const { t } = useTranslation("lot")
-  if (products.length === 0) {
-    return (
-      <EmptyState
-        headingLevel={2}
-        title={t("history.requestTitle")}
-        description={t("history.requestNote", { title: requestTitle ?? "" })}
-      />
-    )
-  }
   return (
     <ResultSection
       framed

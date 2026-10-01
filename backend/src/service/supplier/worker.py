@@ -90,9 +90,10 @@ class SupplierSyncWorker:
                 observed_at = started_at
                 if isinstance(provider, ResumableSupplierProvider):
                     observed_at = await provider.resume(started_at)
-                async for package in provider.batches(32):
-                    package = await self._normalizer.normalize(package)
-                    package = await self._classifier.classify(package)
+                async for batch in provider.batches(32):
+                    package = await self._classifier.classify(
+                        await self._normalizer.normalize(batch)
+                    )
                     await self._storage.save_batch(package, observed_at)
                     supplier_ids.update(item.supplier_id for item in package.suppliers)
                     offer_ids.update(item.offer_id for item in package.offers)

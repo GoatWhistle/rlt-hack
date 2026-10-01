@@ -111,6 +111,7 @@ exclude = [
     '^tests/clickhouse/schema_smoke\.py$',
     '^tests/clickhouse/normalization_smoke\.py$',
     '^tests/(classifier|normalizer)/.*_smoke\.py$',
+    '^tests/embedding/batching_smoke\.py$',
 ]
 plugins = ["pydantic.mypy"]
 warn_unreachable = true

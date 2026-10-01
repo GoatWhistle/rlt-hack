@@ -53,14 +53,7 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
     if (narrow && productId) show("candidates")
   }
 
-  const productPane = (
-    <ProductList
-      requestTitle={recommendation.requestTitle}
-      products={products}
-      filterId={filterId}
-      onFilter={filter}
-    />
-  )
+  const productPane = <ProductList products={products} filterId={filterId} onFilter={filter} />
   if (!selected) {
     return (
       <WorkspaceEmpty list={productPane}>
