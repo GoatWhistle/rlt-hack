@@ -9,9 +9,11 @@ import {
   withOptional,
 } from "@/shared/api/payload"
 import {
+  type CatalogOffer,
   COMPANY_STATUSES,
   type Company,
   type Contacts,
+  type History,
   MATCH_BASES,
   PRODUCT_ORIGINS,
   type Product,
@@ -87,6 +89,25 @@ function purchase(value: unknown, path: string): Purchase {
   )
 }
 
+function history(value: unknown, path: string): History | undefined {
+  if (value === undefined || value === null) return undefined
+  const fields = record(value, path)
+  return {
+    category: text(fields, "category", path),
+    examples: list(fields, "examples", path, plainText),
+    lastDate: text(fields, "lastDate", path),
+  }
+}
+
+function catalogOffer(value: unknown, path: string): CatalogOffer {
+  const fields = record(value, path)
+  return {
+    name: text(fields, "name", path),
+    url: text(fields, "url", path),
+    checkedAt: text(fields, "checkedAt", path),
+  }
+}
+
 function company(value: unknown, path: string): Company {
   const fields = record(value, path)
   return withOptional(
@@ -105,6 +126,10 @@ function company(value: unknown, path: string): Company {
       clarify: list(fields, "clarify", path, plainText),
     },
     {
+      history: history(fields.history, `${path}.history`),
+      catalog:
+        fields.catalog === undefined ? undefined : list(fields, "catalog", path, catalogOffer),
+      identitySource: optionalText(fields, "identitySource", path),
       checkReason: optionalText(fields, "checkReason", path),
       roleSource: source(fields.roleSource, `${path}.roleSource`),
       contacts: contacts(fields.contacts, `${path}.contacts`),

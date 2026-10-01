@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from src.models.supplier_search import SupplierCandidate
 from src.models.upload import Upload
@@ -14,3 +14,8 @@ class UploadRepository(Protocol):
     async def get(self, owner: str, upload_id: str) -> Upload | None: ...
 
     async def list(self, owner: str) -> list[Upload]: ...
+
+
+@runtime_checkable
+class CandidateEnrichment(Protocol):
+    async def enrich(self, candidates: list[SupplierCandidate]) -> list[SupplierCandidate]: ...

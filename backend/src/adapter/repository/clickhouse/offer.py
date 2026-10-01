@@ -152,6 +152,16 @@ class ClickHouseOfferRepository:
         )
         return {to_uuid(row[0]): to_datetime(row[1]) for row in rows}
 
+    async def first_seen_for(self, ids: Sequence[UUID]) -> dict[UUID, datetime]:
+        if not ids:
+            return {}
+        rows = await self._gateway.select(
+            f"SELECT offer_id, min(first_seen_at) FROM {self._db}.offers "
+            "WHERE offer_id IN {ids:Array(UUID)} GROUP BY offer_id",
+            {"ids": [str(value) for value in ids]},
+        )
+        return {to_uuid(row[0]): to_datetime(row[1]) for row in rows}
+
     async def withdraw_absent(self, source_id: UUID, observed_at: datetime) -> int:
         parameters = {
             "source_id": str(source_id),

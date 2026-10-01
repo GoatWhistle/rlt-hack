@@ -1,9 +1,10 @@
+from dataclasses import replace
 from datetime import UTC, datetime
 from uuid import uuid4
 
 from src.models.upload import LotRecommendation, Notice, Upload
 from src.service.errors import ServiceError
-from src.service.upload.protocols import SearchEngine, UploadRepository
+from src.service.upload.protocols import CandidateEnrichment, SearchEngine, UploadRepository
 
 
 class UploadService:
@@ -24,7 +25,18 @@ class UploadService:
         return upload
 
     async def get(self, owner: str, upload_id: str) -> Upload | None:
-        return await self._repository.get(owner, upload_id)
+        upload = await self._repository.get(owner, upload_id)
+        if upload is None or not isinstance(self._search, CandidateEnrichment):
+            return upload
+        candidates = [candidate for lot in upload.lots for candidate in lot.candidates]
+        enriched = iter(await self._search.enrich(candidates))
+        return replace(
+            upload,
+            lots=[
+                replace(lot, candidates=[next(enriched) for _ in lot.candidates])
+                for lot in upload.lots
+            ],
+        )
 
     async def list(self, owner: str) -> list[Upload]:
         return await self._repository.list(owner)

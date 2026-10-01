@@ -1,4 +1,11 @@
+from urllib.parse import urlsplit
+
 from src.models.upload import LotRecommendation, Upload
+
+
+def safe_url(value: str) -> str:
+    parsed = urlsplit(value)
+    return value if parsed.scheme in {"https", "http"} and parsed.hostname else ""
 
 
 def profile_summary(profile: str) -> str:
@@ -46,19 +53,41 @@ def result(upload: Upload, lot: LotRecommendation) -> dict:
             "companies": [
                 {
                     "id": candidate.inn,
-                    "name": f"Поставщик ИНН {candidate.inn}",
+                    "name": candidate.name or f"Поставщик ИНН {candidate.inn}",
                     "inn": candidate.inn,
                     "role": f"Исторический профиль: {candidate.category}",
-                    "status": "check",
-                    "checkReason": "Нужна проверка",
-                    "summary": profile_summary(candidate.profile),
+                    "status": "historical",
+                    "summary": profile_summary(
+                        candidate.history_examples[0]
+                        if candidate.history_examples
+                        else candidate.profile
+                    ),
+                    "history": {
+                        "category": candidate.category,
+                        "examples": candidate.history_examples or candidate.profile.splitlines(),
+                        "lastDate": candidate.history_last_date,
+                    },
+                    "contacts": {
+                        "site": safe_url(candidate.website),
+                        "email": candidate.email,
+                        "phone": candidate.phone,
+                    },
+                    "catalog": [
+                        {
+                            "name": item.name,
+                            "url": safe_url(item.url),
+                            "checkedAt": item.observed_at,
+                        }
+                        for item in candidate.catalog
+                        if safe_url(item.url)
+                    ],
+                    "identitySource": safe_url(candidate.identity_url),
                     "matches": [],
                     "similarPurchases": None,
                     "wins": None,
                     "purchases": [],
                     "clarify": [
-                        "Подтвердите соответствие запросу: найден профиль из истории закупок.",
-                        "Контакты, наличие и статистика побед в этом поиске не проверялись.",
+                        "Уточните текущий ассортимент, наличие и условия поставки.",
                     ],
                 }
                 for candidate in lot.candidates

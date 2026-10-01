@@ -19,7 +19,9 @@ export function StatusTag({ company }: { readonly company: Company }) {
   const statusText = useStatusText()
   const recommended = company.status === "recommended"
   return (
-    <Tag tone={recommended ? "success" : "warning"}>
+    <Tag
+      tone={company.status === "historical" ? "accent" : recommended ? "success" : "warning"}
+    >
       <span
         aria-hidden="true"
         className={clsx(styles.dot, recommended ? styles.filled : styles.hollow)}
@@ -82,18 +84,22 @@ export function CompanyList(props: CompanyListProps) {
               {chosen.includes(company.id) ? (
                 <Tag tone="accent">{t("companies.chosen")}</Tag>
               ) : null}
-              <span>
-                {products.length === 0
-                  ? t("compare.unknown")
-                  : t("companies.matchCount", {
-                      matched: company.matches.length,
-                      total: products.length,
-                    })}
-                {" · "}
-                {company.similarPurchases === null
-                  ? t("compare.unknown")
-                  : t("companies.purchases", { count: company.similarPurchases })}
-              </span>
+              {company.history ? (
+                <span>{t("history.examples", { count: company.history.examples.length })}</span>
+              ) : (
+                <span>
+                  {products.length === 0
+                    ? t("compare.unknown")
+                    : t("companies.matchCount", {
+                        matched: company.matches.length,
+                        total: products.length,
+                      })}
+                  {" · "}
+                  {company.similarPurchases === null
+                    ? t("compare.unknown")
+                    : t("companies.purchases", { count: company.similarPurchases })}
+                </span>
+              )}
             </span>
           </button>
         ))}

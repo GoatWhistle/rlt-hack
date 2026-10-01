@@ -12,6 +12,9 @@ class SupplierSearch:
         self._encoder = encoder
         self._lock = asyncio.Lock()
 
+    async def enrich(self, candidates: list[SupplierCandidate]) -> list[SupplierCandidate]:
+        return await self._index.enrich(candidates)
+
     async def search(self, text: str, limit: int = 10) -> list[SupplierCandidate]:
         text = text.strip()
         if not text or len(text) > 4000 or not 1 <= limit <= 100:

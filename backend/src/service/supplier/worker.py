@@ -12,6 +12,9 @@ from src.service.supplier.protocols import (
     CrawlJournal,
     OfferClassifying,
     OfferNormalizing,
+    ResumableSupplierProvider,
+    StreamingSupplierProvider,
+    StreamingSupplierStorage,
     SupplierProvider,
     SupplierStorage,
 )
@@ -77,22 +80,46 @@ class SupplierSyncWorker:
         status = FetchStatus.SUCCESS
         error_message = ""
         package = SupplierPackage(source=source)
+        supplier_ids = set()
+        offer_ids = set()
+        streaming = isinstance(provider, StreamingSupplierProvider) and isinstance(
+            self._storage, StreamingSupplierStorage
+        )
         try:
-            package = await provider.fetch()
-            # Классификатору нужно нормализованное название, поэтому порядок
-            # шагов задан здесь, а не в реализациях.
-            package = await self._normalizer.normalize(package)
-            package = await self._classifier.classify(package)
-            withdrawn = await self._storage.save_package(package)
-            logger.info(
-                "Источник %s: компаний — %d, предложений — %d, снято с продажи — %d",
-                source.provider_name,
-                len(package.suppliers),
-                len(package.offers),
-                withdrawn,
-            )
+            if streaming:
+                observed_at = started_at
+                if isinstance(provider, ResumableSupplierProvider):
+                    observed_at = await provider.resume(started_at)
+                async for package in provider.batches(32):
+                    package = await self._normalizer.normalize(package)
+                    package = await self._classifier.classify(package)
+                    await self._storage.save_batch(package, observed_at)
+                    supplier_ids.update(item.supplier_id for item in package.suppliers)
+                    offer_ids.update(item.offer_id for item in package.offers)
+                    logger.info(
+                        "Источник %s: сохранён батч %d, всего предложений %d",
+                        source.provider_name,
+                        len(package.offers),
+                        len(offer_ids),
+                    )
+                saved = (
+                    provider.saved_offer_count
+                    if isinstance(provider, ResumableSupplierProvider)
+                    else 0
+                )
+                if offer_ids or saved:
+                    withdrawn = await self._storage.finish_snapshot(source.source_id, observed_at)
+                if isinstance(provider, ResumableSupplierProvider):
+                    await provider.complete()
+            else:
+                package = await provider.fetch()
+                package = await self._normalizer.normalize(package)
+                package = await self._classifier.classify(package)
+                withdrawn = await self._storage.save_package(package)
+                supplier_ids.update(item.supplier_id for item in package.suppliers)
+                offer_ids.update(item.offer_id for item in package.offers)
         except Exception as error:
-            status = FetchStatus.FAILED
+            status = FetchStatus.PARTIAL if supplier_ids or offer_ids else FetchStatus.FAILED
             error_message = f"{type(error).__name__}: {error}"
             logger.exception("Обход источника %s не удался", source.provider_name)
         run = CrawlRun(
@@ -101,8 +128,8 @@ class SupplierSyncWorker:
             started_at=started_at,
             finished_at=self._clock.now(),
             status=status,
-            suppliers_extracted=len(package.suppliers),
-            offers_extracted=len(package.offers),
+            suppliers_extracted=len(supplier_ids),
+            offers_extracted=len(offer_ids),
             provider_name=source.provider_name,
             error_message=error_message,
         )
@@ -115,8 +142,8 @@ class SupplierSyncWorker:
             provider_name=source.provider_name,
             status=status,
             source_id=source.source_id,
-            suppliers_extracted=len(package.suppliers),
-            offers_extracted=len(package.offers),
+            suppliers_extracted=len(supplier_ids),
+            offers_extracted=len(offer_ids),
             offers_withdrawn=withdrawn,
             error_message=error_message,
         )

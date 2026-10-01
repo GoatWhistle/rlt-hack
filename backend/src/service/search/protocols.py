@@ -11,6 +11,8 @@ class SupplierIndex(Protocol):
     dimensions: int
     instruction: str
 
+    async def enrich(self, candidates: list[SupplierCandidate]) -> list[SupplierCandidate]: ...
+
     async def search(
         self, text: str, vector: list[float], limit: int
     ) -> list[SupplierCandidate]: ...

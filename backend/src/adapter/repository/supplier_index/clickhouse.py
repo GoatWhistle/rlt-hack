@@ -1,11 +1,12 @@
 import asyncio
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
 
 from src.adapter.repository.supplier_index.index import FileSupplierIndex
 from src.adapter.repository.supplier_index.protocols import SqlGateway
-from src.models.supplier_search import SupplierCandidate
+from src.models.supplier_search import SupplierCandidate, SupplierCatalogOffer
 
 
 class ClickHouseSupplierIndex(FileSupplierIndex):
@@ -40,7 +41,47 @@ class ClickHouseSupplierIndex(FileSupplierIndex):
         )
         if len(rows) != len(self.cards):
             raise ValueError("ClickHouse supplier index changed")
-        return await asyncio.to_thread(self._combine, text, rows, limit)
+        candidates = await asyncio.to_thread(self._combine, text, rows, limit)
+        return await self.enrich(candidates)
+
+    async def enrich(self, candidates: list[SupplierCandidate]) -> list[SupplierCandidate]:
+        candidates = await super().enrich(candidates)
+        if not candidates:
+            return []
+        parameters = {"inns": list({candidate.inn for candidate in candidates})}
+        rows = await self._gateway.select(
+            f"SELECT inn, name, website, contacts, identity_evidence_url "
+            f"FROM {self._database}.suppliers_current WHERE inn IN {{inns:Array(String)}} "
+            "ORDER BY updated_at DESC LIMIT 1 BY inn",
+            parameters,
+        )
+        suppliers = {row[0]: row[1:] for row in rows}
+        rows = await self._gateway.select(
+            "SELECT s.inn, o.name, o.url, toString(o.last_seen_at) "
+            f"FROM {self._database}.offers_current o "
+            f"INNER JOIN {self._database}.suppliers_current s ON o.supplier_id = s.supplier_id "
+            "WHERE s.inn IN {inns:Array(String)} AND o.availability != 'unavailable' "
+            "ORDER BY o.last_seen_at DESC, o.offer_id LIMIT 3 BY s.inn",
+            parameters,
+        )
+        catalog: dict[str, list[SupplierCatalogOffer]] = {}
+        for inn, name, url, date in rows:
+            catalog.setdefault(inn, []).append(SupplierCatalogOffer(name, url, date[:10]))
+        result = []
+        for candidate in candidates:
+            name, website, contacts, url = suppliers.get(candidate.inn, ("", "", {}, ""))
+            result.append(
+                replace(
+                    candidate,
+                    name=name,
+                    website=website,
+                    email=contacts.get("email", ""),
+                    phone=contacts.get("phone", ""),
+                    identity_url=url,
+                    catalog=catalog.get(candidate.inn, []),
+                )
+            )
+        return result
 
     def _combine(self, text: str, rows: list[tuple], limit: int) -> list[SupplierCandidate]:
         dense = np.zeros(len(self.cards), dtype=np.float32)

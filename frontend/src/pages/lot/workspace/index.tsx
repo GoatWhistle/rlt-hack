@@ -54,7 +54,14 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
     if (narrow && productId) setView("companies")
   }
 
-  const productPane = <ProductList products={products} filterId={filterId} onFilter={filter} />
+  const productPane = (
+    <ProductList
+      requestTitle={recommendation.requestTitle}
+      products={products}
+      filterId={filterId}
+      onFilter={filter}
+    />
+  )
   if (!selected) {
     return (
       <div className={styles.empty}>

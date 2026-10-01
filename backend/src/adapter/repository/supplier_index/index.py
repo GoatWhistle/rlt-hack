@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -27,6 +28,7 @@ class FileSupplierIndex:
                 if hashlib.file_digest(stream, "sha256").hexdigest() != manifest["files"][name]:
                     raise ValueError("supplier index checksum mismatch")
         self.cards = parquet.read_table(self.directory / "cards.parquet").to_pylist()
+        self._cards_by_key = {(card["supplier_inn"], card["category"]): card for card in self.cards}
         self.vectors = np.load(
             self.directory / "card_vectors.npy", mmap_mode="r", allow_pickle=False
         )
@@ -61,6 +63,22 @@ class FileSupplierIndex:
     async def search(self, text: str, vector: list[float], limit: int) -> list[SupplierCandidate]:
         return await asyncio.to_thread(self._search, text, vector, limit)
 
+    async def enrich(self, candidates: list[SupplierCandidate]) -> list[SupplierCandidate]:
+        return [self._metadata(candidate) for candidate in candidates]
+
+    def _metadata(self, candidate: SupplierCandidate) -> SupplierCandidate:
+        card = self._cards_by_key.get((candidate.inn, candidate.category))
+        if card is None:
+            return candidate
+        date = card.get("profile_last_date")
+        return replace(
+            candidate,
+            history_examples=[
+                line.strip() for line in card["profile_text"].splitlines() if line.strip()
+            ],
+            history_last_date=str(date)[:10] if date else "",
+        )
+
     def _ranking(self, scores: np.ndarray, *, positive: bool = False) -> dict[str, int]:
         result = {}
         for position in np.argsort(-scores, kind="stable"):
@@ -89,12 +107,14 @@ class FileSupplierIndex:
                 positions.setdefault(inn, position)
         selected = sorted(scores, key=lambda inn: (-scores[inn], inn))[:limit]
         return [
-            SupplierCandidate(
-                inn=inn,
-                category=self.cards[positions[inn]]["category"],
-                profile=self.cards[positions[inn]]["profile_text"],
-                score=scores[inn],
-                similarity=float(dense[positions[inn]]),
+            self._metadata(
+                SupplierCandidate(
+                    inn=inn,
+                    category=self.cards[positions[inn]]["category"],
+                    profile=self.cards[positions[inn]]["profile_text"],
+                    score=scores[inn],
+                    similarity=float(dense[positions[inn]]),
+                )
             )
             for inn in selected
         ]

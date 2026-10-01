@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import math
+import time
 
 from src.models.embedding import EmbeddingDocument, OfferSearchHit
 from src.service.embedding.protocols import EmbeddingRepository, TextEmbedder
@@ -48,16 +49,33 @@ class EmbeddingWorker:
         return indexed
 
     async def run_forever(self, batch_size: int, interval: float) -> None:
-        if interval <= 0:
-            raise ServiceError("интервал должен быть положительным")
+        if interval <= 0 or not 1 <= batch_size <= 32:
+            raise ServiceError("неверный интервал или размер батча")
+        waiting_since = None
         while True:
             try:
-                count = await self.run_once(batch_size)
+                documents = await self._repository.pending(
+                    self._encoder.model_key, self._encoder.dimensions, batch_size
+                )
+                now = time.monotonic()
+                if not documents:
+                    waiting_since = None
+                else:
+                    if waiting_since is None:
+                        waiting_since = now
+                    if len(documents) >= batch_size or now - waiting_since >= interval:
+                        vectors = await self._encoder.encode(
+                            [document_text(item) for item in documents]
+                        )
+                        self._validate(vectors, len(documents))
+                        await self._repository.save(documents, vectors, self._encoder.model_key)
+                        logger.info("Indexed batch of %d offers", len(documents))
+                        waiting_since = None
+                        continue
             except Exception:
                 logger.exception("Embedding batch failed; will retry")
-                count = 0
-            if not count:
                 await asyncio.sleep(interval)
+            await asyncio.sleep(min(1.0, interval))
 
     async def search(self, text: str, limit: int = 5) -> list[OfferSearchHit]:
         if not text.strip() or len(text) > 12000 or not 1 <= limit <= 100:

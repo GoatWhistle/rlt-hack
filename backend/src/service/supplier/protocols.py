@@ -9,9 +9,9 @@
 обязателен — классификатор работает с нормализованным названием.
 """
 
-from collections.abc import Sequence
+from collections.abc import AsyncIterator, Sequence
 from datetime import datetime
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 from uuid import UUID
 
 from src.models.coverage import CoverageReport
@@ -103,3 +103,33 @@ class CrawlJournal(Protocol):
 
 class Clock(Protocol):
     def now(self) -> datetime: ...
+
+
+@runtime_checkable
+class StreamingSupplierProvider(Protocol):
+    def batches(self, batch_size: int) -> AsyncIterator[SupplierPackage]:
+        """Частичные пакеты; нормальное завершение означает полный обход."""
+        ...
+
+
+@runtime_checkable
+class StreamingSupplierStorage(Protocol):
+    async def save_batch(self, package: SupplierPackage, observed_at: datetime) -> None:
+        """Сохраняет порцию без снятия остальных товаров с продажи."""
+        ...
+
+    async def finish_snapshot(self, source_id: UUID, observed_at: datetime) -> int: ...
+
+
+@runtime_checkable
+class ResumableSupplierProvider(Protocol):
+    async def resume(self, started_at: datetime) -> datetime:
+        """Возвращает исходную отметку незавершённого обхода."""
+        ...
+
+    @property
+    def saved_offer_count(self) -> int: ...
+
+    async def complete(self) -> None:
+        """Очищает прогресс после завершения снимка в хранилище."""
+        ...

@@ -178,7 +178,7 @@ services:
     profiles: ["ml"]
     restart: unless-stopped
     entrypoint: ["python", "-m", "src.controller.embedding.cli"]
-    command: ["index", "--forever"]
+    command: ["index", "--forever", "--batch-size", "${EMBEDDING_BATCH_SIZE:-16}", "--interval", "${EMBEDDING_BATCH_WAIT_SECONDS:-5}"]
     environment:
       <<: *job-environment
       EMBEDDING_URL: http://embedder:11434

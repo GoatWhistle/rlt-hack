@@ -3,6 +3,7 @@ import type { Company, Product, Source } from "@/entities/recommendation/model"
 import { Caption } from "@/shared/ui/caption"
 import { Dialog } from "@/shared/ui/dialog"
 import { Stack } from "@/shared/ui/stack"
+import { HistoryBlock } from "../evidence-panel/history-block"
 import { SourceLine } from "../evidence-panel/source-line"
 import styles from "./styles.module.css"
 
@@ -75,6 +76,14 @@ function Profile({ company, products }: ProfileProps) {
         <dl className={styles.facts}>
           <dt>{t("profile.inn")}</dt>
           <dd className={styles.code}>{company.inn}</dd>
+          {company.identitySource ? (
+            <>
+              <dt>{t("history.companySource")}</dt>
+              <dd>
+                <a href={company.identitySource}>{t("history.openSource")}</a>
+              </dd>
+            </>
+          ) : null}
           <dt>{t("profile.role")}</dt>
           <dd>{company.role}</dd>
           <dt>{t("profile.roleBasis")}</dt>
@@ -102,18 +111,22 @@ function Profile({ company, products }: ProfileProps) {
           ))}
         </Stack>
       </section>
-      <section className={styles.section}>
-        <h3 className={styles.heading}>{t("profile.history")}</h3>
-        <p>
-          {company.similarPurchases === null || company.wins === null
-            ? t("compare.unknown")
-            : t("evidence.purchasesSummary", {
-                count: company.similarPurchases,
-                wins: company.wins,
-              })}
-        </p>
-        <Caption>{t("evidence.purchasesNote")}</Caption>
-      </section>
+      {company.history ? (
+        <HistoryBlock company={company} />
+      ) : (
+        <section className={styles.section}>
+          <h3 className={styles.heading}>{t("profile.history")}</h3>
+          <p>
+            {company.similarPurchases === null || company.wins === null
+              ? t("compare.unknown")
+              : t("evidence.purchasesSummary", {
+                  count: company.similarPurchases,
+                  wins: company.wins,
+                })}
+          </p>
+          <Caption>{t("evidence.purchasesNote")}</Caption>
+        </section>
+      )}
       <section className={styles.section}>
         <h3 className={styles.heading}>{t("profile.sources")}</h3>
         {sources.length > 0 ? (

@@ -69,7 +69,12 @@ async def main():
             assert response.json()["processed"] == 1
             assert len((await client.get("/api/uploads")).json()["uploads"]) == 1
             response = await client.get(f"/api/uploads/{identifier}/lots/test_1")
-            assert response.json()["recommendation"]["companies"][0]["inn"] == "1111111111"
+            candidate = response.json()["recommendation"]["companies"][0]
+            assert candidate["inn"] == "1111111111"
+            assert candidate["status"] == "historical"
+            assert candidate["history"]["examples"]
+            assert candidate["similarPurchases"] is None
+            assert candidate["wins"] is None
             response = await client.post(
                 f"/api/uploads/{identifier}/results", json={"lotIds": ["test_1"]}
             )

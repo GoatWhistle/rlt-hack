@@ -1,7 +1,7 @@
 export const PRODUCT_ORIGINS = ["notice", "inferred", "user"] as const
 export type ProductOrigin = (typeof PRODUCT_ORIGINS)[number]
 
-export const COMPANY_STATUSES = ["recommended", "check"] as const
+export const COMPANY_STATUSES = ["recommended", "check", "historical"] as const
 export type CompanyStatus = (typeof COMPANY_STATUSES)[number]
 
 export const MATCH_BASES = ["stock", "catalog", "inferred"] as const
@@ -47,6 +47,18 @@ export type Contacts = {
   readonly phone?: string
 }
 
+export type History = {
+  readonly category: string
+  readonly examples: readonly string[]
+  readonly lastDate: string
+}
+
+export type CatalogOffer = {
+  readonly name: string
+  readonly url: string
+  readonly checkedAt: string
+}
+
 export type Company = {
   readonly id: string
   readonly name: string
@@ -55,6 +67,9 @@ export type Company = {
   readonly roleSource?: Source
   readonly contacts?: Contacts
   readonly status: CompanyStatus
+  readonly history?: History
+  readonly catalog?: readonly CatalogOffer[]
+  readonly identitySource?: string
   readonly checkReason?: string
   readonly summary: string
   readonly matches: readonly ProductMatch[]
