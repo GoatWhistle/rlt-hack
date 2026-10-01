@@ -182,23 +182,23 @@ class AboutPartnerWebProvider:
         brand = jsonld.text(jsonld.first(product.get("brand")).get("name") or product.get("brand"))
         item_type = ItemType.SERVICE if "Service" in jsonld.type_names(product) else ItemType.GOODS
         observed_at = datetime.now(UTC)
+        external_id = identity.external_id(url=url)
         return Offer(
-            offer_id=identity.offer_id(self._source.source_id, url),
+            offer_id=identity.offer_id(self._source.source_id, external_id),
             source_id=self._source.source_id,
-            external_id=url,
+            external_id=external_id,
             url=url,
             name=name,
             first_seen_at=observed_at,
             last_seen_at=observed_at,
             supplier_id=supplier.supplier_id,
             seller_status=VerificationStatus.UNVERIFIED,
-            seller_evidence_url=card_url,
+            evidence_url=card_url,
             description=description,
             item_type=item_type,
             brand=brand,
             # Каталог ведёт реестр производителей: роль объявлена разделом источника.
             supplier_role=SupplierRole.MANUFACTURER,
-            role_evidence_url=card_url,
             content_hash=identity.offer_content_hash(
                 name=name,
                 description=description,

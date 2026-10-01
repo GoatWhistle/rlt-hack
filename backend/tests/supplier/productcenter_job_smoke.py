@@ -18,7 +18,10 @@ from src.adapter.repository.clickhouse.package import ClickHousePackageRepositor
 from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
 from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
 from src.adapter.repository.clickhouse.versions import VersionSequencer
+from src.adapter.repository.reference import load_classifier_reference, load_normalizer_reference
 from src.models.enums import FetchStatus
+from src.service.classifier import OfferClassifier
+from src.service.normalizer import OfferNormalizer
 from src.service.supplier.worker import SupplierSyncWorker
 from tests.clickhouse.chdb_gateway import ChdbGateway
 from tests.supplier.productcenter_smoke import G1, pages, provider
@@ -38,6 +41,18 @@ async def check() -> None:
                 offers=ClickHouseOfferRepository(gateway, versions),
                 batch_size=10,
             )
+            normalizer_reference = await load_normalizer_reference()
+            normalizer = OfferNormalizer(normalizer_reference.units, normalizer_reference.rules)
+            classifier_reference = await load_classifier_reference(
+                normalizer.name_key, normalizer.name_stems
+            )
+            classifier = OfferClassifier(
+                okpd2=classifier_reference.okpd2,
+                rubrics=classifier_reference.rubrics,
+                lexicon=classifier_reference.lexicon,
+                categories=classifier_reference.categories,
+                name_key=normalizer.name_key,
+            )
             data = pages()
 
             async def sync(snapshot: dict[str, bytes]):
@@ -47,6 +62,8 @@ async def check() -> None:
                     storage=storage,
                     journal=journal,
                     clock=SystemClock(),
+                    normalizer=normalizer,
+                    classifier=classifier,
                 )
                 return await worker.run_once(), adapter.source.source_id
 

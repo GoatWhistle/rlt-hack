@@ -94,9 +94,9 @@ class ProductCenterWebProvider:
             offers = await self._fetch_cards(http, cards["products"], product_card, now)
             missing: set[str] = set()
             for offer in offers.values():
-                match = _PRODUCER_KEY.match(urlsplit(offer.seller_evidence_url).path)
+                match = _PRODUCER_KEY.match(urlsplit(offer.evidence_url).path)
                 if match is None or match.group(1) not in supplier_by_key:
-                    missing.add(offer.seller_evidence_url)
+                    missing.add(offer.evidence_url)
             if missing:
                 extra = {card_key(url, "producers"): url for url in missing}
                 if None in extra:
@@ -104,7 +104,7 @@ class ProductCenterWebProvider:
                 supplier_by_key.update(await self._fetch_cards(http, extra, supplier_card))
             linked: list[Offer] = []
             for offer in offers.values():
-                match = _PRODUCER_KEY.match(urlsplit(offer.seller_evidence_url).path)
+                match = _PRODUCER_KEY.match(urlsplit(offer.evidence_url).path)
                 supplier = supplier_by_key.get(match.group(1)) if match else None
                 if supplier is None:
                     raise ContentFormatError(f"{offer.url}: не найдена карточка производителя")

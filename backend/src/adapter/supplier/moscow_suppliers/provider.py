@@ -169,7 +169,7 @@ class MoscowSuppliersProvider:
             last_seen_at=observed_at,
             supplier_id=seller.supplier_id,
             seller_status=VerificationStatus.UNVERIFIED,
-            seller_evidence_url=url,
+            evidence_url=url,
             item_type=kind,
             attributes=attributes,
             price=price,

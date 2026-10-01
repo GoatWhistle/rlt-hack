@@ -168,7 +168,9 @@ class TexZakazWebProvider:
         )
 
     def _offer(self, name: str, url: str, supplier: Supplier) -> Offer:
-        external_id = f"{url}#{name}"
+        # На странице компании перечислено много позиций, поэтому ключ —
+        # адрес с отпечатком названия, а не само название.
+        external_id = identity.external_id(url=url, name=name)
         observed_at = datetime.now(UTC)
         return Offer(
             offer_id=identity.offer_id(self._source.source_id, external_id),
@@ -180,10 +182,9 @@ class TexZakazWebProvider:
             last_seen_at=observed_at,
             supplier_id=supplier.supplier_id,
             seller_status=VerificationStatus.UNVERIFIED,
-            seller_evidence_url=url,
+            evidence_url=url,
             item_type=ItemType.GOODS,
             # Каталог ведёт реестр производителей: роль объявлена разделом источника.
             supplier_role=SupplierRole.MANUFACTURER,
-            role_evidence_url=url,
             content_hash=identity.offer_content_hash(name=name, item_type=str(ItemType.GOODS)),
         )

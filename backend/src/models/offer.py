@@ -5,7 +5,9 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
+from src.models.classification import Classification
 from src.models.enums import Availability, ItemType, SupplierRole, VerificationStatus
+from src.models.normalization import Normalization
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,7 +23,8 @@ class Offer:
     # Продавец известен не всегда: принадлежность подтверждается отдельно.
     supplier_id: UUID | None = None
     seller_status: VerificationStatus = VerificationStatus.UNVERIFIED
-    seller_evidence_url: str = ""
+    # Где подтверждено, что продавец — именно эта компания.
+    evidence_url: str = ""
     description: str = ""
     item_type: ItemType = ItemType.UNKNOWN
     brand: str = ""
@@ -32,10 +35,12 @@ class Offer:
     price: Decimal | None = None
     currency: str = ""
     unit: str = ""
-    delivery_regions: tuple[str, ...] = ()
     availability: Availability = Availability.UNKNOWN
     supplier_role: SupplierRole = SupplierRole.UNKNOWN
-    role_evidence_url: str = ""
     role_evidence_text: str = ""
     # Хеш полей, влияющих на смысл: цена в него не входит.
     content_hash: str = ""
+    # Производные значения: их считают нормализатор и классификатор, а не адаптер.
+    # На хеш содержимого они не влияют — исходник остаётся исходником.
+    normalization: Normalization | None = None
+    classification: Classification | None = None

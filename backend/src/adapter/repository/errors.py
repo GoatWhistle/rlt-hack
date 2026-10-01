@@ -11,3 +11,7 @@ class RepositoryUnavailableError(RepositoryError):
 
 class MigrationError(RepositoryError):
     """Миграция не применена: файл некорректен или запрос завершился ошибкой."""
+
+
+class ReferenceDataError(RepositoryError):
+    """Файл справочника отсутствует или описан неверно."""

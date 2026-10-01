@@ -104,7 +104,6 @@ def parse_product(
     external_id = registry_external_id(
         number, introduced, _value(item, "_basedondoc_num"), company_key, name
     )
-    evidence_url = _value(item, "_product_gisp_url") or _value(item, "_res_scan_url")
     offer = Offer(
         offer_id=identity.offer_id(source.source_id, external_id),
         source_id=source.source_id,
@@ -115,12 +114,11 @@ def parse_product(
         last_seen_at=observed_at,
         supplier_id=supplier_uuid,
         seller_status=VerificationStatus.UNVERIFIED,
-        seller_evidence_url=company_url or source.base_url,
+        evidence_url=company_url or source.base_url,
         item_type=ItemType.GOODS,
         okpd2_code=_value(item, "_product_okpd2"),
         attributes=attributes,
         supplier_role=SupplierRole.MANUFACTURER if active else SupplierRole.UNKNOWN,
-        role_evidence_url=evidence_url if active else "",
         role_evidence_text="Действующая запись реестра" if active else "",
         content_hash=identity.offer_content_hash(
             name=name,
