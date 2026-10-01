@@ -70,6 +70,7 @@ if [[ ! -d $release ]]; then
   tar -xzf "$bundle/release.tar.gz" --no-same-owner -C "$staging"
   mv "$staging" "$release"
 fi
+chmod 0644 "$release/deploy/clickhouse-backup.xml"
 compose_at "$release" config --quiet
 docker load --input "$bundle/images.tar.gz"
 for component in frontend backend; do
