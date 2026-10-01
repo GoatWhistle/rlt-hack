@@ -58,10 +58,9 @@ def pages() -> dict[str, bytes]:
             f"<li><a href='/{kind}/page-2'>2</a></li></ul></div></html>"
         ).encode()
         maps[f"{root}/page-2"] = (
-            f"<html><div class='card_item {card_class}'><a href='{links[1]}'>two</a></div>"
-            "<div class='pagination'><ul class='page_links'>"
-            "<li><span class='pl_mark'>2</span></li>"
-            f"<li><a href='/{kind}/page-2'>2</a></li></ul></div></html>"
+            f"<html><head><title>Список | Страница 2</title></head>"
+            f"<div class='card_item {card_class}'><a href='{links[1]}'>two</a></div>"
+            "</html>"
         ).encode()
     for url, name, inn in (
         (P1, "Первый завод", "7804428656"),
@@ -235,9 +234,8 @@ async def check() -> None:
         "<li><a href='/products/page-3'>3</a></li></ul></div></html>"
     ).encode()
     out_of_order[f"{BASE}/products/page-3"] = (
-        f"<html><div class='card_item product'><a href='{G3}'>three</a></div>"
-        "<div class='pagination'><ul class='page_links'>"
-        "<li><span class='pl_mark'>3</span></li></ul></div></html>"
+        "<html><head><title>Список | Страница 3</title></head>"
+        f"<div class='card_item product'><a href='{G3}'>three</a></div></html>"
     ).encode()
     out_of_order[G3] = data[G2]
     result = await provider(out_of_order, delayed_url=f"{BASE}/products/page-2").fetch()
