@@ -71,6 +71,22 @@ python3.12 -m venv /root/rlt/.venv312
   --config configs/data.toml
 ```
 
-Для baseline запустите `rlt-evaluate-retrieval --data /root/rlt/ready-v1 --out /root/rlt/runs/bm25-validation --split validation --model bm25 --config configs/compare_qwen.toml` на подготовленных валидационных данных. На GPU заранее закешируйте открытые веса командой `rlt-cache-models --model Qwen/Qwen3-Embedding-0.6B` (отдельно для 4B). После этого оценка может идти без сети, задайте `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1`.
+Для baseline запустите `rlt-evaluate-retrieval --data /root/rlt/ready-v1 --out /root/rlt/runs/bm25-validation --split validation --model bm25 --config configs/compare_qwen.toml` на подготовленных валидационных данных. На GPU заранее закешируйте открытые веса командой `rlt-cache-models --model Qwen/Qwen3-Embedding-0.6B --model Qwen/Qwen3-Embedding-4B --manifest /root/rlt/runs/models.json`. После этого оценка может идти без сети, задайте `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1`.
 
-Две сравниваемые модели и общая выборка задаются в `configs/compare_qwen.toml`; для каждого процесса нужен свой `--out`, модели должны видеть один набор `validation` файлов. 0.6B запускается с batch 4, 4B — с batch 1. Для гибрида BM25+dense добавьте `--hybrid`. GPU-проверка запускается через `rlt-gpu-check`. Замеры качества и ресурсов, ограничения метрик и фактические результаты ведутся в [журнале экспериментов](ml/EXPERIMENTS.md).
+Две сравниваемые модели и общая выборка задаются в `configs/compare_qwen.toml`; для каждого процесса нужен свой `--out`, модели должны видеть один набор `validation` файлов. После передачи производных validation таблиц на GPU перейдите в `/root/rlt/work/ml` и запустите команды в отдельных терминалах:
+
+```bash
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 rlt-evaluate-retrieval \
+  --data /root/rlt/data/ready-v1 --out /root/rlt/runs/qwen-06b \
+  --split validation --model Qwen/Qwen3-Embedding-0.6B --hybrid \
+  --config configs/compare_qwen.toml --batch-size 4 \
+  --gpu-memory-fraction 0.29 --cpu-threads 2
+
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 rlt-evaluate-retrieval \
+  --data /root/rlt/data/ready-v1 --out /root/rlt/runs/qwen-4b \
+  --split validation --model Qwen/Qwen3-Embedding-4B --hybrid \
+  --config configs/compare_qwen.toml --batch-size 1 \
+  --gpu-memory-fraction 0.68 --cpu-threads 2
+```
+
+GPU-проверка запускается через `rlt-gpu-check`. Замеры качества и ресурсов, ограничения метрик и фактические результаты ведутся в [журнале экспериментов](ml/EXPERIMENTS.md).
