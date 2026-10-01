@@ -110,6 +110,18 @@ async def main():
             assert hits[0].history_examples
             assert hits[0].catalog[0].name == "Office paper"
             assert hits[1].name == "" and hits[1].catalog == []
+            await gateway.insert(
+                "supplier_search.msp_companies",
+                ("inn", "name", "registry_date"),
+                [
+                    ("1111111111", "Registry Paper", now.date()),
+                    ("2222222222", "Synthetic Cable", now.date()),
+                ],
+            )
+            enriched = await index.enrich(hits)
+            assert enriched[0].name == "Synthetic Paper"
+            assert enriched[1].name == "Synthetic Cable"
+            assert enriched[1].website == "" and enriched[1].identity_url == ""
             print("ClickHouse import, repeat import, dimensions, supplier grouping and search: OK")
         finally:
             session.close()

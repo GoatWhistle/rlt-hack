@@ -171,7 +171,7 @@
   "grounds": {
     "title": "Grounds for this recommendation",
     "categoryLots": "Purchases in category",
-    "wins": "Confirmed wins",
+    "wins": "Archive wins",
     "category": "OKPD2 category",
     "reason": "The request description matches the supplier profile. The records below document their procurement experience in this category.",
     "customer": "Customer · INN {{inn}}",

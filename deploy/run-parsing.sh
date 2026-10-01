@@ -27,6 +27,6 @@ if [[ -n $(docker ps --quiet --filter "name=^${project}-parser-worker") ]]; then
   exit 1
 fi
 docker rm --force "$name" >/dev/null 2>&1 || true
-compose run --detach --rm --no-deps --name "$name" sync-job sync
+compose run --detach --no-deps --name "$name" sync-job sync
 echo "Parsing started in container $name (release $RLT_IMAGE_TAG)"
 echo "Logs: docker logs --follow $name"

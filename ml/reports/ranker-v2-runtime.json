@@ -1,0 +1,10 @@
+{
+  "startup_seconds": 10.33698253100738,
+  "query_seconds": 5.83123294590041,
+  "peak_rss_kib": 1421764,
+  "version": "78a94e50f0cb570fef0c06c5a7a04cc71aacdb3b23b8ebb75a5e226ab563adf3/cc79a0a0a751af3e602d149b3766df7e5c30f4f57a7b114b3f54bbbecd4ce49f",
+  "candidates": 10,
+  "grounded": 10,
+  "explained": 10,
+  "scope": "Single artificial query on production hardware; includes encoding, retrieval, ranking and evidence lookup. Not a quality evaluation."
+}

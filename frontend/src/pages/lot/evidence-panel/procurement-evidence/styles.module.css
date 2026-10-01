@@ -14,6 +14,7 @@
 .metrics dt {
   font-size: var(--text-xs);
   color: var(--text-secondary);
+  overflow-wrap: anywhere;
 }
 
 .metrics dd {
