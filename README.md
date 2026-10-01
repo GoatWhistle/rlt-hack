@@ -155,15 +155,6 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 rlt-evaluate-retrieval \
   --gpu-memory-fraction 0.68 --cpu-threads 2
 ```
 
-На RTX 5060 Ti BF16-веса 8B целиком не помещаются. После завершения прежних двух запусков можно отдельно попробовать Qwen3-Embedding-8B в 4-bit NF4: один процесс, batch 1, с config `configs/compare_qwen_8b.toml` и флагом `--quantization nf4`. Этот режим уже прошёл короткую проверку 4-bit CUDA слоя на RTX 5060 Ti; качество embedding модели ещё требует отдельного замера. Перед запуском кешируйте веса с `rlt-cache-models --model Qwen/Qwen3-Embedding-8B --manifest /root/rlt/runs/models-qwen8.json`.
-
-```bash
-BNB_CUDA_VERSION=128 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
-  rlt-evaluate-retrieval --data /root/rlt/data/ready-v1 \
-  --out /root/rlt/runs/qwen-8b-nf4 --split validation \
-  --model Qwen/Qwen3-Embedding-8B --hybrid \
-  --config configs/compare_qwen_8b.toml --quantization nf4 \
-  --gpu-memory-fraction 0.90 --batch-size 1
-```
+В текущем сравнении выбран Qwen3-Embedding-4B BF16 + BM25/RRF. Отдельный Qwen3-Embedding-8B NF4 прогон был остановлен до завершения индекса; качество не измерялось, поэтому 8B не входит в рабочий pipeline. Зафиксированный частичный запуск указан в [журнале экспериментов](ml/EXPERIMENTS.md).
 
 GPU-проверка запускается через `rlt-gpu-check`. Замеры качества и ресурсов, ограничения метрик и фактические результаты ведутся в [журнале экспериментов](ml/EXPERIMENTS.md).
