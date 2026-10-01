@@ -32,6 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("migrations", help="показать применённые миграции")
     commands.add_parser("providers", help="показать подключённые адаптеры источников")
     commands.add_parser("sources", help="показать источники, уже записанные в хранилище")
+    commands.add_parser("sync-products", help="обойти каталог продуктов СТЕ")
 
     runs = commands.add_parser("runs", help="последние обходы источника")
     runs.add_argument("--source", required=True, help="UUID источника")
@@ -90,6 +91,13 @@ def main(argv: Sequence[str] | None = None) -> int:
 async def _dispatch(arguments: argparse.Namespace, config: AppConfig) -> int:
     if arguments.command == "sync":
         return await _sync(arguments, config)
+    if arguments.command == "sync-products":
+        async with Container(config) as container:
+            result = await (await container.product_worker()).run_once()
+            print(
+                f"run={result.run_id} products={result.product_count} pages={result.pages_fetched}"
+            )
+            return 0
     async with Container(config) as container:
         if arguments.command == "providers":
             for provider in container.providers():

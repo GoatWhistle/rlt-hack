@@ -217,6 +217,15 @@ class OfferClassifying(Protocol):
 
 ## Команды
 
+Каталог продуктов СТЕ хранится отдельно от компаний и оферт. Экспериментальный
+обход запускается `MOSCOW_PRODUCTS_PROVIDER=true ... python main.py sync-products`
+после миграции `0004_moscow_products.sql`. В Docker Compose доступны
+`MOSCOW_PRODUCTS_PROVIDER` (по умолчанию `false`) и
+`MOSCOW_PRODUCTS_PAGE_SIZE` (по умолчанию 100). Промежуточные строки
+помечаются `run_id` и становятся видимы в `moscow_products_current` только
+после полного обхода и сверки числа записей. Живой контракт карточки и
+устойчивость пагинации ещё не подтверждены; адаптер оставлен выключенным.
+
 Через Docker Compose из корня репозитория:
 
 ```sh
@@ -323,6 +332,8 @@ uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0
   python tests/supplier/productcenter_job_smoke.py
 uv run --no-project --python 3.13 --with httpx \
   python tests/supplier/moscow_suppliers_smoke.py
+uv run --no-project --python 3.13 --with httpx \
+  python tests/product/moscow_smoke.py
 uv run --no-project --python 3.13 python tests/supplier/worker_smoke.py
 uv run --no-project --python 3.13 --with httpx --with openpyxl \
   python tests/supplier/gisp_registry.py

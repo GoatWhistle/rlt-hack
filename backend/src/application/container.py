@@ -12,11 +12,13 @@
 from types import TracebackType
 
 from src.adapter.clock import SystemClock
+from src.adapter.product.moscow.provider import MoscowProductProvider
 from src.adapter.repository.clickhouse.archive import ClickHouseArchiveRepository
 from src.adapter.repository.clickhouse.client import create_client
 from src.adapter.repository.clickhouse.gateway import ConnectGateway
 from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepository
 from src.adapter.repository.clickhouse.migrator import Migrator
+from src.adapter.repository.clickhouse.moscow_product import ClickHouseMoscowProductRepository
 from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
 from src.adapter.repository.clickhouse.package import ClickHousePackageRepository
 from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
@@ -51,6 +53,7 @@ from src.models.enums import SourceType
 from src.models.source import Source
 from src.service.classifier import OfferClassifier
 from src.service.normalizer import OfferNormalizer
+from src.service.product.worker import ProductSyncWorker
 from src.service.supplier.enrich import OfferEnrichmentService
 from src.service.supplier.protocols import SupplierProvider
 from src.service.supplier.reidentify import OfferReidentifyService
@@ -314,6 +317,19 @@ class Container:
             interval_seconds=self._config.sync_interval_seconds,
             max_parallel_sources=self._config.parallel_sources,
         )
+
+    async def product_worker(self) -> ProductSyncWorker:
+        if not self._config.use_moscow_products_provider:
+            raise ValueError("MOSCOW_PRODUCTS_PROVIDER выключен")
+        provider = MoscowProductProvider(
+            source_id=identity.source_id("https://zakupki.mos.ru/", "moscow_products"),
+            page_size=self._config.moscow_products_page_size,
+            timeout=self._config.request_timeout,
+        )
+        storage = ClickHouseMoscowProductRepository(
+            await self.gateway(), self._config.clickhouse.database
+        )
+        return ProductSyncWorker(provider, storage)
 
     async def aclose(self) -> None:
         if self._gateway is not None:
