@@ -1,24 +1,29 @@
 """Адаптер каталога компаний «О Партнёре» (aboutpartner.ru).
 
-Цепочка обхода: раздел `/catalog` → страницы разделов → карточки компаний
-`/company` → реквизиты компании. Разделы и селекторы заданы в адаптере.
+Адреса карточек берутся из `sitemap-producers.xml`, указанного в индексе
+источника: перебор списка `/producers` закрыт в `robots.txt` параметром `?page=`,
+как и раздел `/api/`. Поэтому машинным интерфейсом служат sitemap и разметка
+карточки.
 
-Ассортимент каталога не разбирается: разметка карточек товаров не сверена с
-живыми страницами, поэтому пакет содержит только компании.
+Карточка размечена JSON-LD: `Organization` даёт название, юридическое
+наименование, ИНН, контакты и регион, а `ItemList` с узлами `Product` —
+ассортимент компании. Страницы без `Organization` (карточки сервисов) в
+результат не попадают.
 """
 
 import asyncio
 import logging
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlsplit
 
 import httpx
-from lxml import html as lxml_html
 
-from src.adapter.supplier import identity
+from src.adapter.supplier import identity, jsonld, page, sitemap
 from src.adapter.supplier.errors import SourceUnavailableError
-from src.adapter.supplier.inn import find_inn, find_kpp
-from src.models.enums import VerificationStatus
+from src.adapter.supplier.inn import find_inn, find_kpp, normalize_inn
+from src.models.enums import ItemType, SupplierRole, VerificationStatus
+from src.models.offer import Offer
 from src.models.package import SupplierPackage
 from src.models.source import Source
 from src.models.supplier import Supplier
@@ -29,36 +34,34 @@ PROVIDER_NAME = "aboutpartner_web"
 
 BASE_URL = "https://aboutpartner.ru/"
 
-CATALOG_URL = "https://aboutpartner.ru/catalog/"
+SITEMAP_URL = "https://aboutpartner.ru/sitemap-producers.xml"
+
+# Карточки компаний лежат в разделе `/producer/`: он разрешён в robots.txt.
+CARD_PREFIX = "/producer/"
+
+# В том же разделе лежат карточки сервисов, и в sitemap они идут первыми. Карточки
+# компаний узнаются по началу адреса и обходятся раньше, иначе короткий обход
+# тратит все запросы на страницы без компании.
+COMPANY_SLUG = "pc-producer-"
 
 # Значение заголовка обязано быть ASCII: контакт указывается при развёртывании.
 USER_AGENT = "rlt-supplier-search/0.1 (+contact: see deployment configuration)"
 
-_SECTION_LINKS = "a[href*='/catalog/']"
-_COMPANY_LINKS = "a[href*='/company']"
-_NEXT_PAGE = "a.next, a[rel='next'], .pagination a[href*='page']"
-_COMPANY_NAME = "h1"
-_COMPANY_REGION = ".city, .region, .company-city"
-
 
 class AboutPartnerWebProvider:
-    """Обходит разделы каталога «О Партнёре» и собирает компании."""
+    """Обходит карточки компаний из sitemap и собирает их разметку."""
 
     def __init__(
         self,
         source_defaults: Source,
-        catalog_url: str = CATALOG_URL,
-        max_sections: int = 20,
-        max_pages_per_section: int = 5,
+        sitemap_url: str = SITEMAP_URL,
         max_companies: int = 500,
         max_concurrent: int = 4,
         http_timeout: float = 30.0,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         self._source = source_defaults
-        self._catalog_url = catalog_url
-        self._max_sections = max_sections
-        self._max_pages_per_section = max_pages_per_section
+        self._sitemap_url = sitemap_url
         self._max_companies = max_companies
         self._max_concurrent = max(1, max_concurrent)
         self._http_timeout = http_timeout
@@ -76,131 +79,151 @@ class AboutPartnerWebProvider:
             follow_redirects=True,
             transport=self._transport,
         ) as http:
-            sections = await self._sections(http)
-            company_urls = await self._company_urls(http, sections)
+            company_urls = await self._company_urls(http)
             limit = asyncio.Semaphore(self._max_concurrent)
             cards = await asyncio.gather(
-                *(self._company(http, url, limit) for url in company_urls),
+                *(self._card(http, url, limit) for url in company_urls),
                 return_exceptions=True,
             )
         suppliers: dict[str, Supplier] = {}
-        for url, supplier in zip(company_urls, cards, strict=True):
-            if isinstance(supplier, BaseException):
-                logger.warning("Карточка компании %s не прочитана: %s", url, supplier)
+        offers: list[Offer] = []
+        for url, card in zip(company_urls, cards, strict=True):
+            if isinstance(card, BaseException):
+                logger.warning("Карточка компании %s не прочитана: %s", url, card)
+                continue
+            supplier, products = card
+            if supplier is None:
                 continue
             suppliers[str(supplier.supplier_id)] = supplier
+            offers.extend(products)
         logger.info(
-            "О Партнёре: разделов — %d, карточек — %d, компаний — %d",
-            len(sections),
+            "О Партнёре: карточек — %d, компаний — %d, предложений — %d",
             len(company_urls),
             len(suppliers),
+            len(offers),
         )
-        return SupplierPackage(source=self._source, suppliers=tuple(suppliers.values()))
+        return SupplierPackage(
+            source=self._source,
+            suppliers=tuple(suppliers.values()),
+            offers=tuple(offers),
+        )
 
-    async def _sections(self, http: httpx.AsyncClient) -> list[str]:
-        """Со страницы каталога берутся разделы; сама страница тоже обходится."""
-        tree = await self._page(http, self._catalog_url)
-        sections = [self._catalog_url]
-        for url in _links(tree, _SECTION_LINKS):
-            if url not in sections:
-                sections.append(url)
-        if len(sections) == 1 and not _links(tree, _COMPANY_LINKS):
-            raise SourceUnavailableError(
-                f"{self._catalog_url}: на странице каталога нет ни разделов, ни компаний"
-            )
-        return sections[: self._max_sections]
+    async def _company_urls(self, http: httpx.AsyncClient) -> list[str]:
+        cards = [
+            url
+            for url in await sitemap.read_urls(http, self._sitemap_url)
+            if urlsplit(url).path.startswith(CARD_PREFIX)
+        ]
+        if not cards:
+            raise SourceUnavailableError(f"{self._sitemap_url}: в sitemap нет карточек компаний")
+        companies = [url for url in cards if COMPANY_SLUG in urlsplit(url).path]
+        others = [url for url in cards if COMPANY_SLUG not in urlsplit(url).path]
+        return (companies + others)[: self._max_companies]
 
-    async def _company_urls(self, http: httpx.AsyncClient, sections: list[str]) -> list[str]:
-        found: list[str] = []
-        for section in sections:
-            page_url = section
-            for _ in range(self._max_pages_per_section):
-                try:
-                    tree = await self._page(http, page_url)
-                except httpx.HTTPError as error:
-                    logger.warning("Страница раздела %s не прочитана: %s", page_url, error)
-                    break
-                for url in _links(tree, _COMPANY_LINKS):
-                    if url not in found:
-                        found.append(url)
-                if len(found) >= self._max_companies:
-                    return found[: self._max_companies]
-                next_page = _first_link(tree, _NEXT_PAGE)
-                if not next_page or next_page == page_url:
-                    break
-                page_url = next_page
-        return found[: self._max_companies]
-
-    async def _company(
+    async def _card(
         self,
         http: httpx.AsyncClient,
         url: str,
         limit: asyncio.Semaphore,
-    ) -> Supplier:
+    ) -> tuple[Supplier | None, tuple[Offer, ...]]:
         async with limit:
-            tree = await self._page(http, url)
-        page_text = _document_text(tree)
-        inn = find_inn(page_text)
-        kpp = find_kpp(page_text)
+            response = await http.get(url)
+            response.raise_for_status()
+        tree = await asyncio.to_thread(page.parse, response.text, str(response.url))
+        nodes = jsonld.nodes(tree)
+        organization = jsonld.first_of_types(nodes, jsonld.ORGANIZATION_TYPES)
+        if not organization:
+            # Раздел сервисов размечен SoftwareApplication: компании там нет.
+            return None, ()
+        supplier = self._supplier(tree, organization, url)
+        products = [
+            product
+            for node in jsonld.of_types(nodes, frozenset({"ItemList"}))
+            for product in _list_items(node)
+        ]
+        return supplier, tuple(self._offer(product, url, supplier) for product in products)
+
+    def _supplier(self, tree: Any, organization: dict[str, Any], url: str) -> Supplier:
+        document = page.document_text(tree)
+        inn = normalize_inn(jsonld.text(organization.get("taxID"))) or find_inn(document)
+        kpp = find_kpp(document)
+        address = jsonld.first(organization.get("address"))
+        region = jsonld.text(address.get("addressRegion"))
+        locality = jsonld.text(address.get("addressLocality"))
+        contacts = {
+            key: value
+            for key, value in (
+                ("legal_name", jsonld.text(organization.get("legalName"))),
+                ("phone", jsonld.text(organization.get("telephone"))),
+                ("email", jsonld.text(organization.get("email"))),
+                ("address", jsonld.text(address.get("streetAddress"))),
+            )
+            if value
+        }
         return Supplier(
             supplier_id=identity.supplier_id(inn, self._source.source_id, url),
-            name=_first_text(tree, _COMPANY_NAME) or self._source.name,
+            name=jsonld.text(organization.get("name")) or page.first_text(tree, "h1"),
             inn=inn,
             kpps=(kpp,) if kpp else (),
-            region=_first_text(tree, _COMPANY_REGION),
-            website=_external_link(tree, self._source.base_url),
+            region=region or locality,
+            website=_company_site(
+                jsonld.strings(organization.get("sameAs")), self._source.base_url
+            ),
+            contacts=contacts,
+            # Каталог не подтверждает реквизиты: статус проверяет отдельная джоба.
             identity_status=VerificationStatus.UNVERIFIED,
             identity_evidence_url=url,
         )
 
-    async def _page(self, http: httpx.AsyncClient, url: str) -> Any:
-        response = await http.get(url)
-        response.raise_for_status()
-        return await asyncio.to_thread(_parse_html, response.text, str(response.url))
+    def _offer(self, product: dict[str, Any], card_url: str, supplier: Supplier) -> Offer:
+        name = jsonld.text(product.get("name"))
+        url = jsonld.text(product.get("url")) or card_url
+        description = jsonld.text(product.get("description"))
+        brand = jsonld.text(jsonld.first(product.get("brand")).get("name") or product.get("brand"))
+        item_type = ItemType.SERVICE if "Service" in jsonld.type_names(product) else ItemType.GOODS
+        observed_at = datetime.now(UTC)
+        return Offer(
+            offer_id=identity.offer_id(self._source.source_id, url),
+            source_id=self._source.source_id,
+            external_id=url,
+            url=url,
+            name=name,
+            first_seen_at=observed_at,
+            last_seen_at=observed_at,
+            supplier_id=supplier.supplier_id,
+            seller_status=VerificationStatus.UNVERIFIED,
+            seller_evidence_url=card_url,
+            description=description,
+            item_type=item_type,
+            brand=brand,
+            # Каталог ведёт реестр производителей: роль объявлена разделом источника.
+            supplier_role=SupplierRole.MANUFACTURER,
+            role_evidence_url=card_url,
+            content_hash=identity.offer_content_hash(
+                name=name,
+                description=description,
+                item_type=str(item_type),
+                brand=brand,
+            ),
+        )
 
 
-def _parse_html(text: str, url: str) -> Any:
-    """Кодировку задаёт ответ сервера: иначе lxml читает кириллицу как latin-1."""
-    parser = lxml_html.HTMLParser(encoding="utf-8")
-    tree = lxml_html.fromstring(text.encode("utf-8"), base_url=url, parser=parser)
-    tree.make_links_absolute(url, resolve_base_href=True)
-    return tree
-
-
-def _links(tree: Any, selector: str) -> list[str]:
-    found: list[str] = []
-    for element in tree.cssselect(selector):
-        href = element.get("href")
-        if href and href not in found:
-            found.append(href)
+def _list_items(node: dict[str, Any]) -> list[dict[str, Any]]:
+    """Товары перечня: каждый элемент `ListItem` оборачивает узел `Product`."""
+    elements = node.get("itemListElement")
+    items = elements if isinstance(elements, list) else [elements]
+    found: list[dict[str, Any]] = []
+    for element in items:
+        if not isinstance(element, dict):
+            continue
+        product = jsonld.first(element.get("item")) or element
+        if jsonld.PRODUCT_TYPES & jsonld.type_names(product) and jsonld.text(product.get("name")):
+            found.append(product)
     return found
 
 
-def _first_link(tree: Any, selector: str) -> str:
-    links = _links(tree, selector)
-    return links[0] if links else ""
-
-
-def _first_text(tree: Any, selector: str) -> str:
-    for element in tree.cssselect(selector):
-        text = " ".join(element.text_content().split())
-        if text:
-            return text
+def _company_site(addresses: tuple[str, ...], base_url: str) -> str:
+    for address in addresses:
+        if page.is_company_site(address, base_url):
+            return address
     return ""
-
-
-def _external_link(tree: Any, base_url: str) -> str:
-    host = urlsplit(base_url).netloc
-    for element in tree.cssselect("a[href^='http']"):
-        href = element.get("href", "")
-        if host not in urlsplit(href).netloc:
-            return href
-    return ""
-
-
-def _document_text(tree: Any) -> str:
-    for element in list(tree.iter("script", "style", "noscript")):
-        parent = element.getparent()
-        if parent is not None:
-            parent.remove(element)
-    return " ".join(tree.text_content().split())

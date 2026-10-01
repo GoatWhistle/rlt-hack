@@ -2,7 +2,7 @@
 
 **Версия:** v1, целевой контракт для реализации.  
 **Статус:** спецификация интерфейса; HTTP endpoint, parsing upload и production inference пока не реализованы.  
-**Источники:** `task/ML_SPEC.md`, `context/decisions.md`, `context/organizers.md`, текущие модели backend, контракт фронтенда `frontend/src/entities/recommendation/model.ts` и измерения `ml/EXPERIMENTS.md`.
+**Источники:** `task/ML_SPEC.md`, текущие модели backend, контракт фронтенда `frontend/src/entities/recommendation/model.ts` и измерения `ml/EXPERIMENTS.md`.
 
 Документ фиксирует границу между backend, ML-компонентом, источниками сведений о поставщиках и фронтендом. Это контракт данных и поведения, а не утверждение, что весь описанный pipeline уже работает в production.
 

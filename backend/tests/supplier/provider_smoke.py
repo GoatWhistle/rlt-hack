@@ -17,26 +17,37 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from src.adapter.supplier import identity
+from src.adapter.supplier.aboutpartner_web import AboutPartnerWebProvider
 from src.adapter.supplier.errors import SourceUnavailableError
 from src.adapter.supplier.inn import is_valid_inn, normalize_inn
 from src.adapter.supplier.optkatalog_web import OptKatalogWebProvider
 from src.adapter.supplier.schema_org_web import SchemaOrgWebProvider
 from src.adapter.supplier.supplier_dataset import SupplierDatasetProvider
+from src.adapter.supplier.texzakaz_web import TexZakazWebProvider
 from src.adapter.supplier.yml_feed import YmlFeedProvider
-from src.models.enums import Availability, ItemType, SourceType, VerificationStatus
+from src.models.enums import (
+    Availability,
+    ItemType,
+    SourceType,
+    SupplierRole,
+    VerificationStatus,
+)
 from src.models.source import Source
 from tests.supplier.fixtures import (
-    COMPANY_PAGE,
-    COMPANY_PAGE_PAPIRUS,
-    DIRECTORY_HOME,
-    DIRECTORY_LISTING,
-    DIRECTORY_LISTING_PAGE_2,
+    ABOUTPARTNER_CARD,
+    ABOUTPARTNER_SERVICE,
+    ABOUTPARTNER_SITEMAP,
     FEED_FULL,
     FEED_WITHOUT_A3,
+    OPTKATALOG_CARD,
+    OPTKATALOG_CARD_INLINE,
+    OPTKATALOG_SITEMAP,
     PRODUCT_PAGE,
     SITEMAP_GOODS,
     SITEMAP_INDEX,
     SUPPLIERS_CSV,
+    TEXZAKAZ_CARD,
+    TEXZAKAZ_SITEMAP,
 )
 
 SHOP_INN = "7804428656"
@@ -153,7 +164,9 @@ async def check_supplier_dataset() -> None:
         assert all(
             item.identity_status == VerificationStatus.UNVERIFIED for item in package.suppliers
         )
-        assert all(item.identity_evidence_url == path.resolve().as_uri() for item in package.suppliers)
+        assert all(
+            item.identity_evidence_url == path.resolve().as_uri() for item in package.suppliers
+        )
 
         missing = SupplierDatasetProvider(dataset_source, Path(temporary) / "нет.csv")
         try:
@@ -217,44 +230,148 @@ async def check_optkatalog_directory() -> None:
         "optkatalog_web",
     )
     pages = {
-        "https://optkatalog.ru/": DIRECTORY_HOME,
-        "https://optkatalog.ru/katalog/bumaga": DIRECTORY_LISTING,
-        "https://optkatalog.ru/katalog/bumaga?page=2": DIRECTORY_LISTING_PAGE_2,
-        "https://optkatalog.ru/company/kanctorg": COMPANY_PAGE,
-        "https://optkatalog.ru/company/papirus": COMPANY_PAGE_PAPIRUS,
+        "https://optkatalog.ru/sitemap.xml": OPTKATALOG_SITEMAP,
+        "https://optkatalog.ru/postavschiki/bumaga/ofisnaya/kanctorg/": OPTKATALOG_CARD,
+        "https://optkatalog.ru/postavschiki/bumaga/ofisnaya/papirus/": OPTKATALOG_CARD_INLINE,
     }
-    provider = OptKatalogWebProvider(directory_source, transport=transport(pages))
-    package = await provider.fetch()
-    assert not package.offers, "каталог отдаёт только компании"
+    package = await OptKatalogWebProvider(directory_source, transport=transport(pages)).fetch()
     assert len(package.suppliers) == 2, package.suppliers
     kanctorg = next(item for item in package.suppliers if item.inn == SHOP_INN)
     assert kanctorg.name == "ООО «Канцторг»"
-    assert kanctorg.kpps == ("780601001",)
-    assert kanctorg.region == "Санкт-Петербург"
+    # Разделы каталога карточками не считаются: обходятся только листья дерева.
+    assert kanctorg.identity_evidence_url.endswith("/kanctorg/")
+    assert kanctorg.region == "Ленинградская обл."
     assert kanctorg.website == "https://kanctorg.test/"
+    assert kanctorg.contacts["legal_name"] == 'ООО "Канцторг"'
+    assert kanctorg.contacts["founded"] == "2001"
+    assert kanctorg.contacts["email"] == "sales@kanctorg.test"
     assert kanctorg.identity_status == VerificationStatus.UNVERIFIED
-    assert kanctorg.identity_evidence_url == "https://optkatalog.ru/company/kanctorg"
+    goods = sorted(
+        offer.name for offer in package.offers if offer.supplier_id == kanctorg.supplier_id
+    )
+    assert goods == ["Бумага А4 500 листов", "Ручка шариковая"], goods
+
+    # Реквизиты строкой «Метка: значение» читаются так же, как заголовком блока.
     papirus = next(item for item in package.suppliers if item.inn == "7707049388")
-    assert papirus.region == "Москва"
+    assert papirus.contacts["founded"] == "1996"
+    papirus_goods = [offer for offer in package.offers if offer.supplier_id == papirus.supplier_id]
+    # Длинный абзац описывает компанию, а не позицию номенклатуры.
+    assert [offer.name for offer in papirus_goods] == ["Картон переплётный"], papirus_goods
+    # Типов в свойстве несколько: роль выбирается по порядку значимости.
+    assert papirus_goods[0].supplier_role == SupplierRole.DISTRIBUTOR
+    assert papirus_goods[0].role_evidence_text == "Дистрибьютор, Оптовый поставщик"
 
     # Сбой одной карточки не отменяет остальные компании.
     partial = OptKatalogWebProvider(
         directory_source,
-        transport=transport(pages, failing=("https://optkatalog.ru/company/papirus",)),
+        transport=transport(
+            pages, failing=("https://optkatalog.ru/postavschiki/bumaga/ofisnaya/papirus/",)
+        ),
     )
     package = await partial.fetch()
     assert [item.inn for item in package.suppliers] == [SHOP_INN], package.suppliers
 
-    # Главная без ссылок на разделы — провал обхода.
+    # Sitemap без карточек компаний — провал обхода.
     broken = OptKatalogWebProvider(
-        directory_source, transport=transport({"https://optkatalog.ru/": "<html></html>"})
+        directory_source,
+        transport=transport({"https://optkatalog.ru/sitemap.xml": SITEMAP_GOODS}),
     )
     try:
         await broken.fetch()
     except SourceUnavailableError:
         pass
     else:
-        raise AssertionError("каталог без разделов должен поднимать ошибку источника")
+        raise AssertionError("каталог без карточек должен поднимать ошибку источника")
+
+
+async def check_aboutpartner_directory() -> None:
+    directory_source = source(
+        "О Партнёре",
+        "https://aboutpartner.ru/",
+        SourceType.DIRECTORY,
+        "aboutpartner_web",
+    )
+    pages = {
+        "https://aboutpartner.ru/sitemap-producers.xml": ABOUTPARTNER_SITEMAP,
+        "https://aboutpartner.ru/producer/pc-producer-1": ABOUTPARTNER_CARD,
+        "https://aboutpartner.ru/producer/crmindex-servicespbx": ABOUTPARTNER_SERVICE,
+    }
+    package = await AboutPartnerWebProvider(directory_source, transport=transport(pages)).fetch()
+    # Карточка сервиса размечена без Organization: компании из неё не берутся.
+    assert len(package.suppliers) == 1, package.suppliers
+    supplier = package.suppliers[0]
+    assert supplier.inn == SHOP_INN
+    assert supplier.region == "Ленинградская область"
+    # Профиль в соцсети сайтом компании не считается.
+    assert supplier.website == "https://kanctorg.test"
+    assert supplier.contacts["phone"] == "+7 (812) 000-00-00"
+    assert len(package.offers) == 2, package.offers
+    paper = next(offer for offer in package.offers if offer.name == "Бумага А4 500 листов")
+    assert paper.url == "https://aboutpartner.ru/product/pc-product-1"
+    assert paper.brand == "Светокопи"
+    assert paper.item_type == ItemType.GOODS
+    assert paper.supplier_role == SupplierRole.MANUFACTURER
+    assert paper.supplier_id == supplier.supplier_id
+
+    # Карточки сервисов идут в sitemap первыми, но короткий обход берёт компанию.
+    short = AboutPartnerWebProvider(directory_source, max_companies=1, transport=transport(pages))
+    package = await short.fetch()
+    assert [item.inn for item in package.suppliers] == [SHOP_INN], package.suppliers
+
+    broken = AboutPartnerWebProvider(
+        directory_source,
+        transport=transport({"https://aboutpartner.ru/sitemap-producers.xml": SITEMAP_GOODS}),
+    )
+    try:
+        await broken.fetch()
+    except SourceUnavailableError:
+        pass
+    else:
+        raise AssertionError("каталог без карточек должен поднимать ошибку источника")
+
+
+async def check_texzakaz_directory() -> None:
+    directory_source = source(
+        "ТехЗаказ",
+        "https://texzakaz.ru/",
+        SourceType.DIRECTORY,
+        "texzakaz_web",
+    )
+    pages = {
+        "https://texzakaz.ru/sitemap.xml": TEXZAKAZ_SITEMAP,
+        "https://texzakaz.ru/p/10": TEXZAKAZ_CARD,
+    }
+    package = await TexZakazWebProvider(directory_source, transport=transport(pages)).fetch()
+    assert len(package.suppliers) == 1, package.suppliers
+    supplier = package.suppliers[0]
+    assert supplier.name == "Канцторг"
+    assert supplier.inn == SHOP_INN
+    assert supplier.region == "Ленинградская область"
+    assert supplier.contacts["locality"] == "Всеволожск"
+    assert supplier.identity_evidence_url == "https://texzakaz.ru/p/10"
+    names = sorted(offer.name for offer in package.offers)
+    assert names == ["Бумага А4 500 листов", "Ручка шариковая"], names
+    assert all(offer.supplier_role == SupplierRole.MANUFACTURER for offer in package.offers)
+    assert all(offer.supplier_id == supplier.supplier_id for offer in package.offers)
+
+    # Повторный обход тех же данных даёт те же идентификаторы и хеши.
+    repeated = await TexZakazWebProvider(directory_source, transport=transport(pages)).fetch()
+    assert sorted(offer.offer_id for offer in repeated.offers) == sorted(
+        offer.offer_id for offer in package.offers
+    )
+    assert sorted(offer.content_hash for offer in repeated.offers) == sorted(
+        offer.content_hash for offer in package.offers
+    )
+
+    broken = TexZakazWebProvider(
+        directory_source, transport=transport({"https://texzakaz.ru/sitemap.xml": SITEMAP_GOODS})
+    )
+    try:
+        await broken.fetch()
+    except SourceUnavailableError:
+        pass
+    else:
+        raise AssertionError("каталог без карточек должен поднимать ошибку источника")
 
 
 async def main() -> None:
@@ -265,6 +382,8 @@ async def main() -> None:
     await check_supplier_dataset()
     await check_schema_org_site()
     await check_optkatalog_directory()
+    await check_aboutpartner_directory()
+    await check_texzakaz_directory()
     print("Проверка адаптеров источников пройдена")
 
 

@@ -131,6 +131,7 @@ class Container:
                             source_type=SourceType.WEBSITE,
                             provider_name=SCHEMA_ORG,
                         ),
+                        max_pages=config.max_cards_per_source,
                         max_concurrent=config.parallel_requests,
                         http_timeout=config.request_timeout,
                     )
@@ -145,6 +146,7 @@ class Container:
                         source_type=SourceType.DIRECTORY,
                         provider_name=OPTKATALOG,
                     ),
+                    max_companies=config.max_cards_per_source,
                     max_concurrent=config.parallel_requests,
                     http_timeout=config.request_timeout,
                 )
@@ -159,6 +161,7 @@ class Container:
                         source_type=SourceType.DIRECTORY,
                         provider_name=ABOUTPARTNER,
                     ),
+                    max_companies=config.max_cards_per_source,
                     max_concurrent=config.parallel_requests,
                     http_timeout=config.request_timeout,
                 )
@@ -169,10 +172,11 @@ class Container:
                 TexZakazWebProvider(
                     source_defaults=_source(
                         name="ТехЗаказ",
-                        base_url="https://texzakaz.ru/proizvoditeli",
+                        base_url="https://texzakaz.ru/",
                         source_type=SourceType.DIRECTORY,
                         provider_name=TEXZAKAZ,
                     ),
+                    max_companies=config.max_cards_per_source,
                     max_concurrent=config.parallel_requests,
                     http_timeout=config.request_timeout,
                 )

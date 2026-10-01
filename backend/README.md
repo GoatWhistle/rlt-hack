@@ -11,7 +11,8 @@
 - `src/adapter/supplier/` — вся реализация парсинга, по папке на источник:
   каждый адаптер сам знает свои адреса и разметку, сам ходит в сеть и сам
   собирает готовые модели. Общие для всех адаптеров правила — устойчивые UUID и
-  хеши в `identity.py`, реквизиты в `inn.py`, ошибки в `errors.py`.
+  хеши в `identity.py`, реквизиты в `inn.py`, чтение sitemap в `sitemap.py`,
+  разметка JSON-LD в `jsonld.py`, разбор HTML в `page.py`, ошибки в `errors.py`.
 - `src/adapter/repository/clickhouse/` — репозитории и раннер миграций.
 - `src/service/supplier/` — бизнес-логика: `SupplierSyncWorker` запускает
   адаптеры всех включённых источников конкурентно и сохраняет их пакеты;
@@ -43,13 +44,29 @@ class SupplierProvider(Protocol):
 | `SupplierDatasetProvider` | `supplier_dataset` | компании из `Поставщики_24-25.csv` | `SUPPLIER_DATASET_PROVIDER` (вкл.) |
 | `YmlFeedProvider` | `yml_feed` | YML-фид магазина: товары, цены, параметры | `YML_FEED_PROVIDER` |
 | `SchemaOrgWebProvider` | `schema_org_web` | сайт по sitemap и разметке `Product`/`Offer` | `SCHEMA_ORG_WEB_PROVIDER` |
-| `OptKatalogWebProvider` | `optkatalog_web` | компании каталога optkatalog.ru | `OPTKATALOG_WEB_PROVIDER` |
-| `AboutPartnerWebProvider` | `aboutpartner_web` | компании каталога aboutpartner.ru | `ABOUTPARTNER_WEB_PROVIDER` |
-| `TexZakazWebProvider` | `texzakaz_web` | производители texzakaz.ru | `TEXZAKAZ_WEB_PROVIDER` |
+| `OptKatalogWebProvider` | `optkatalog_web` | компании и номенклатуру optkatalog.ru | `OPTKATALOG_WEB_PROVIDER` |
+| `AboutPartnerWebProvider` | `aboutpartner_web` | компании и товары aboutpartner.ru | `ABOUTPARTNER_WEB_PROVIDER` |
+| `TexZakazWebProvider` | `texzakaz_web` | производителей и их продукцию texzakaz.ru | `TEXZAKAZ_WEB_PROVIDER` |
 
-Адаптеры каталогов по умолчанию выключены: их селекторы не сверены с живыми
-страницами. Адреса фидов и сайтов задаются списками `SUPPLIER_FEED_URLS` и
-`SUPPLIER_SITE_URLS` — на каждый адрес создаётся свой адаптер.
+Адреса фидов и сайтов задаются списками `SUPPLIER_FEED_URLS` и
+`SUPPLIER_SITE_URLS` — на каждый адрес создаётся свой адаптер. Сколько карточек
+берётся с источника за обход, ограничивает `SYNC_MAX_CARDS`.
+
+## Как читаются источники
+
+Публичного API ни один из каталогов не предоставляет: у `texzakaz.ru` и
+`aboutpartner.ru` раздел `/api/` закрыт в `robots.txt`, у `optkatalog.ru`
+закрыты поиск, сортировка и постраничная навигация. Поэтому машинным
+интерфейсом служат sitemap и разметка страниц:
+
+| Источник | Перечень карточек | Разбор карточки |
+| --- | --- | --- |
+| `texzakaz.ru` | `sitemap.xml`, раздел `/p/` | JSON-LD `Organization`: ИНН в `taxID`, продукция в `knowsAbout` |
+| `aboutpartner.ru` | `sitemap-producers.xml`, раздел `/producer/` | JSON-LD `Organization` и `ItemList` с `Product` |
+| `optkatalog.ru` | `sitemap.xml`, листья дерева `/postavschiki/` | заголовки блока описания и список `ty-product-feature` |
+
+Предложения каталогов идут без цены: источники публикуют номенклатуру, а не
+прайс. Цены приходят из YML-фидов и разметки `Offer` на сайтах поставщиков.
 
 Новый источник — новая папка в `src/adapter/supplier/<name>/` с классом,
 реализующим `source` и `fetch`, затем флаг в `src/application/config.py` и ветка
@@ -62,6 +79,12 @@ class SupplierProvider(Protocol):
 новой версией, время первой встречи предложения сохраняется, а предложения
 источника, которых в пакете нет, снимаются с продажи. Пустой пакет ничего не
 снимает: он чаще означает сломанный разбор, чем исчезновение ассортимента.
+
+Исчезнувшие предложения отбираются по отметке обхода: все строки пакета пишутся
+с одним `updated_at`, поэтому более старая отметка у предложения источника
+означает, что в этом обходе оно не встретилось. Перечислять увиденные
+идентификаторы в запросе нельзя — пакет каталога содержит их тысячи, а параметры
+запроса уходят в HTTP-форму ClickHouse с ограниченной длиной поля.
 
 ## Конкурентность
 
@@ -100,7 +123,7 @@ uv run --python 3.13 python main.py runs --source <UUID>
 `TASK_DATA_DIR`, `SUPPLIER_DATASET_PATH`, `SUPPLIER_DATASET_REGION`,
 `SUPPLIER_FEED_URLS`, `SUPPLIER_SITE_URLS`, флаги адаптеров из таблицы выше,
 `SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`,
-`SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `LOG_LEVEL`.
+`SYNC_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `LOG_LEVEL`.
 
 ## Проверки
 
