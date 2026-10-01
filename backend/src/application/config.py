@@ -74,6 +74,9 @@ class AppConfig:
     use_texzakaz_provider: bool = False
     use_gisp_registry_provider: bool = False
     gisp_export_location: str = ""
+    use_productcenter_provider: bool = False
+    productcenter_max_cards: int = 0
+    productcenter_cache_dir: Path | None = None
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -105,4 +108,9 @@ class AppConfig:
             use_texzakaz_provider=_bool("TEXZAKAZ_WEB_PROVIDER", False),
             use_gisp_registry_provider=_bool("GISP_REGISTRY_PROVIDER", False),
             gisp_export_location=os.getenv("GISP_EXPORT_LOCATION", ""),
+            use_productcenter_provider=_bool("PRODUCTCENTER_WEB_PROVIDER", False),
+            productcenter_max_cards=_int("PRODUCTCENTER_MAX_CARDS", 0),
+            productcenter_cache_dir=(
+                Path(value) if (value := os.getenv("PRODUCTCENTER_CACHE_DIR")) else None
+            ),
         )

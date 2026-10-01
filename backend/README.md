@@ -48,6 +48,7 @@ class SupplierProvider(Protocol):
 | `AboutPartnerWebProvider` | `aboutpartner_web` | компании и товары aboutpartner.ru | `ABOUTPARTNER_WEB_PROVIDER` |
 | `TexZakazWebProvider` | `texzakaz_web` | производителей и их продукцию texzakaz.ru | `TEXZAKAZ_WEB_PROVIDER` |
 | `GispRegistryProvider` | `gisp_registry` | записи полного XLSX-экспорта ПП 719 ГИСП | `GISP_REGISTRY_PROVIDER` |
+| `ProductCenterWebProvider` | `productcenter_web` | производителей и товары productcenter.ru | `PRODUCTCENTER_WEB_PROVIDER` (выкл.) |
 
 Адреса фидов и сайтов задаются списками `SUPPLIER_FEED_URLS` и
 `SUPPLIER_SITE_URLS` — на каждый адрес создаётся свой адаптер. Сколько карточек
@@ -125,7 +126,8 @@ uv run --python 3.13 python main.py runs --source <UUID>
 `SUPPLIER_FEED_URLS`, `SUPPLIER_SITE_URLS`, флаги адаптеров из таблицы выше,
 `SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`,
 `SYNC_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `LOG_LEVEL`,
-`GISP_REGISTRY_PROVIDER`, `GISP_EXPORT_LOCATION`.
+`GISP_REGISTRY_PROVIDER`, `GISP_EXPORT_LOCATION`,
+`PRODUCTCENTER_WEB_PROVIDER`, `PRODUCTCENTER_MAX_CARDS`, `PRODUCTCENTER_CACHE_DIR`.
 
 ГИСП выключен по умолчанию. С пустым `GISP_EXPORT_LOCATION` он обходит открытые
 JSON-страницы перечня производителей и реестра продукции через официальные
@@ -145,6 +147,19 @@ JSON-страницы перечня производителей и реест�
 JSON-интерфейса остановился на HTML-проверке доступа вместо JSON. Провайдер
 завершает такой ответ ошибкой без записи снимка. До полного обхода провайдер
 не включайте.
+`PRODUCTCENTER_MAX_CARDS=0` означает полный обход. Положительный лимит
+останавливает обход ошибкой без сохранения неполного пакета и годится только
+для диагностики. ProductCenter выключен по умолчанию до полного живого прогона.
+Успешные страницы кешируются не дольше 24 часов; ошибки HTTP не сохраняются.
+Docker Compose держит кеш в томе `productcenter-cache` вне Git. Пакет
+публикуется только после полного успешного обхода.
+
+Отдельный живой прогон с отчётом, без записи в ClickHouse:
+
+```sh
+uv run --python 3.13 python tests/supplier/productcenter_live.py \
+  --cache-dir /tmp/productcenter-cache --out /tmp/productcenter-report.json
+```
 
 ## Проверки
 
@@ -158,6 +173,11 @@ uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0
   python tests/supplier/job_smoke.py
 uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx \
   python tests/supplier/provider_smoke.py
+uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx \
+  python tests/supplier/productcenter_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
+  --with lxml --with cssselect --with httpx \
+  python tests/supplier/productcenter_job_smoke.py
 uv run --no-project --python 3.13 python tests/supplier/worker_smoke.py
 uv run --no-project --python 3.13 --with httpx --with openpyxl \
   python tests/supplier/gisp_registry.py
