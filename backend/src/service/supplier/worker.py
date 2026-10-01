@@ -49,6 +49,7 @@ class SupplierSyncWorker:
         interval_seconds: float = 3600.0,
         max_parallel_sources: int = 4,
         batch_size: int = 32,
+        package_batch_size: int = 500,
     ) -> None:
         self._providers = providers
         self._storage = storage
@@ -60,6 +61,7 @@ class SupplierSyncWorker:
         self._interval = interval_seconds
         self._max_parallel_sources = max(1, max_parallel_sources)
         self._batch_size = max(1, batch_size)
+        self._package_batch_size = max(1, package_batch_size)
 
     async def run_once(self) -> SyncResult:
         logger.info("Обход источников: подключено адаптеров — %d", len(self._providers))
@@ -163,16 +165,19 @@ class SupplierSyncWorker:
     async def _batches(self, provider: SupplierProvider) -> AsyncIterator[SupplierPackage]:
         """Порции источника: потоковый адаптер отдаёт их сам, остальные делятся здесь.
 
-        Деление собранного пакета не делает обход потоковым: адаптер всё равно
-        держит его в памяти целиком. Оно выравнивает порции разбора и записи,
-        чтобы все источники шли через хранилище одинаково.
+        Размеры порций разные, потому что разные и причины их ограничивать.
+        Потоковая порция мелкая: обход идёт медленно, с паузами между запросами,
+        и порция задаёт, как часто результат попадает в хранилище и как много
+        работы теряет обрыв. Собранный пакет уже лежит в памяти целиком, терять
+        в нём нечего, поэтому он делится крупными порциями размера записи: более
+        мелкое деление только умножает число INSERT и чтений first_seen.
         """
         if isinstance(provider, StreamingSupplierProvider):
             async for package in provider.batches(self._batch_size):
                 yield package
             return
         package = await provider.fetch()
-        for batch in package_batches(package, self._batch_size):
+        for batch in package_batches(package, self._package_batch_size):
             yield batch
 
     async def _sync_guarded(
