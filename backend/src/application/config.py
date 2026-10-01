@@ -72,6 +72,8 @@ class AppConfig:
     use_optkatalog_provider: bool = False
     use_aboutpartner_provider: bool = False
     use_texzakaz_provider: bool = False
+    use_gisp_registry_provider: bool = False
+    gisp_export_location: str = ""
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -101,4 +103,6 @@ class AppConfig:
             use_optkatalog_provider=_bool("OPTKATALOG_WEB_PROVIDER", False),
             use_aboutpartner_provider=_bool("ABOUTPARTNER_WEB_PROVIDER", False),
             use_texzakaz_provider=_bool("TEXZAKAZ_WEB_PROVIDER", False),
+            use_gisp_registry_provider=_bool("GISP_REGISTRY_PROVIDER", False),
+            gisp_export_location=os.getenv("GISP_EXPORT_LOCATION", ""),
         )

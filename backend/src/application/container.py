@@ -24,6 +24,8 @@ from src.adapter.repository.clickhouse.versions import VersionSequencer
 from src.adapter.supplier import identity
 from src.adapter.supplier.aboutpartner_web import PROVIDER_NAME as ABOUTPARTNER
 from src.adapter.supplier.aboutpartner_web import AboutPartnerWebProvider
+from src.adapter.supplier.gisp_registry import PROVIDER_NAME as GISP_REGISTRY
+from src.adapter.supplier.gisp_registry import GispRegistryProvider
 from src.adapter.supplier.optkatalog_web import PROVIDER_NAME as OPTKATALOG
 from src.adapter.supplier.optkatalog_web import OptKatalogWebProvider
 from src.adapter.supplier.schema_org_web import PROVIDER_NAME as SCHEMA_ORG
@@ -179,6 +181,21 @@ class Container:
                     max_companies=config.max_cards_per_source,
                     max_concurrent=config.parallel_requests,
                     http_timeout=config.request_timeout,
+                )
+            )
+
+        if config.use_gisp_registry_provider:
+            providers.append(
+                GispRegistryProvider(
+                    source_defaults=_source(
+                        name="Реестр российской промышленной продукции ГИСП",
+                        base_url="https://gisp.gov.ru/pp719v2/pub/prod/",
+                        source_type=SourceType.REGISTRY,
+                        provider_name=GISP_REGISTRY,
+                    ),
+                    export_location=config.gisp_export_location,
+                    http_timeout=config.request_timeout,
+                    max_concurrent=config.parallel_requests,
                 )
             )
 

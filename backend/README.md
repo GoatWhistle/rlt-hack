@@ -47,6 +47,7 @@ class SupplierProvider(Protocol):
 | `OptKatalogWebProvider` | `optkatalog_web` | компании и номенклатуру optkatalog.ru | `OPTKATALOG_WEB_PROVIDER` |
 | `AboutPartnerWebProvider` | `aboutpartner_web` | компании и товары aboutpartner.ru | `ABOUTPARTNER_WEB_PROVIDER` |
 | `TexZakazWebProvider` | `texzakaz_web` | производителей и их продукцию texzakaz.ru | `TEXZAKAZ_WEB_PROVIDER` |
+| `GispRegistryProvider` | `gisp_registry` | записи полного XLSX-экспорта ПП 719 ГИСП | `GISP_REGISTRY_PROVIDER` |
 
 Адреса фидов и сайтов задаются списками `SUPPLIER_FEED_URLS` и
 `SUPPLIER_SITE_URLS` — на каждый адрес создаётся свой адаптер. Сколько карточек
@@ -123,7 +124,27 @@ uv run --python 3.13 python main.py runs --source <UUID>
 `TASK_DATA_DIR`, `SUPPLIER_DATASET_PATH`, `SUPPLIER_DATASET_REGION`,
 `SUPPLIER_FEED_URLS`, `SUPPLIER_SITE_URLS`, флаги адаптеров из таблицы выше,
 `SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`,
-`SYNC_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `LOG_LEVEL`.
+`SYNC_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `LOG_LEVEL`,
+`GISP_REGISTRY_PROVIDER`, `GISP_EXPORT_LOCATION`.
+
+ГИСП выключен по умолчанию. С пустым `GISP_EXPORT_LOCATION` он обходит открытые
+JSON-страницы перечня производителей и реестра продукции через официальные
+`/pp719v2/pub/org/b/` и `/pp719v2/pub/prod/b/`. На момент проверки API
+сообщал 8 118 организаций и 1 084 900 записей продукции; ответ продукции
+ограничен 100 строками на страницу. Провайдер проверяет количество строк
+каждой страницы и повторно сверяет общий объём перед публикацией пакета.
+Вместо реестра продукции API можно задать полный XLSX-экспорт по HTTPS или
+`file:///...`; перечень организаций всё равно читается через API, включая
+организации без продукции. Если этот запрос закрыт проверкой доступа, весь
+обход завершается ошибкой.
+Для локального файла
+смонтируйте каталог вне Git в контейнер `sync-job` и задайте путь внутри
+контейнера. Пустая настройка или неполный/неизвестный формат завершает обход
+ошибкой без записи снимка. Начало официального XLSX и 22 000 реальных строк
+проверены, но полная передача XLSX с текущего адреса обрывается. Полный обход
+JSON-интерфейса остановился на HTML-проверке доступа вместо JSON. Провайдер
+завершает такой ответ ошибкой без записи снимка. До полного обхода провайдер
+не включайте.
 
 ## Проверки
 
@@ -133,10 +154,15 @@ uv run --python 3.13 python main.py runs --source <UUID>
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
   python tests/clickhouse/schema_smoke.py
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
-  --with lxml --with cssselect --with httpx python tests/supplier/job_smoke.py
+  --with lxml --with cssselect --with httpx --with openpyxl \
+  python tests/supplier/job_smoke.py
 uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx \
   python tests/supplier/provider_smoke.py
 uv run --no-project --python 3.13 python tests/supplier/worker_smoke.py
+uv run --no-project --python 3.13 --with httpx --with openpyxl \
+  python tests/supplier/gisp_registry.py
+uv run --no-project --python 3.13 --with httpx --with openpyxl \
+  python tests/supplier/gisp_api.py
 ```
 
 Линтер и форматтер:
