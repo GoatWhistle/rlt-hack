@@ -6,7 +6,7 @@ export type { IconName }
 import styles from "./styles.module.css"
 
 export type IconSize = "sm" | "md" | "lg"
-export type IconTone = "current" | "confirmed" | "source"
+export type IconTone = "current" | "confirmed" | "source" | "warning"
 
 const SIZES: Record<IconSize, string | undefined> = {
   sm: styles.sm,
@@ -18,6 +18,7 @@ const TONES: Record<IconTone, string | undefined> = {
   current: undefined,
   confirmed: styles.confirmed,
   source: styles.source,
+  warning: styles.warning,
 }
 
 export type IconProps = {

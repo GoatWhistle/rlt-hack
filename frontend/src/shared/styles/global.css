@@ -6,7 +6,7 @@
 
 body {
   min-height: 100dvh;
-  background: var(--surface-base);
+  background: var(--surface-canvas);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: var(--text-md);

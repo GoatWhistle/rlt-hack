@@ -13,16 +13,20 @@ export function AppShell() {
     <div className={styles.shell}>
       <SkipLink targetId={MAIN_CONTENT_ID} label={t("app.skipToContent")} />
       <header className={styles.header}>
-        <NavLink to="/" className={styles.brand}>
-          <Icon name="logo" />
-          {t("app.name")}
-        </NavLink>
-        <nav aria-label={t("app.mainNavigation")} className={styles.nav}>
-          <NavLink to="/" end className={styles.navLink}>
-            {t("nav.home")}
+        <div className={styles.bar}>
+          <NavLink to="/" className={styles.brand}>
+            <span className={styles.mark}>
+              <Icon name="logo" />
+            </span>
+            {t("app.name")}
           </NavLink>
-        </nav>
-        <LocaleSwitch />
+          <nav aria-label={t("app.mainNavigation")} className={styles.nav}>
+            <NavLink to="/" end className={styles.navLink}>
+              {t("nav.home")}
+            </NavLink>
+          </nav>
+          <LocaleSwitch />
+        </div>
       </header>
       <main id={MAIN_CONTENT_ID} tabIndex={-1} className={styles.main}>
         <Outlet />

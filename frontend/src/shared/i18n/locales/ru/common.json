@@ -46,10 +46,10 @@
     "label": "Уведомления"
   },
   "upload": {
-    "title": "Проверяемый список поставщиков из одной закупки",
-    "subtitle": "Загрузите Excel. Система определит товары, найдёт компании и покажет, на чём основан каждый вывод.",
-    "dropTitle": "Перетащите файл сюда",
-    "dropHint": ".xlsx или .xls · лоты, наименования, коды ОКПД2",
+    "title": "От закупки к проверяемому списку поставщиков",
+    "subtitle": "Загрузите Excel. Система определит товары, найдёт компании и покажет, на чём основан каждый вывод. Решение остаётся за вами.",
+    "dropTitle": "Перетащите Excel сюда",
+    "dropHint": "или выберите файл · .xlsx, .xls",
     "chooseFile": "Выбрать файл",
     "fileSize": "{{size}} КБ · готов к обработке",
     "submit": "Подобрать поставщиков",
@@ -58,21 +58,24 @@
     "steps": {
       "request": {
         "title": "Запрос",
-        "text": "Читаем файл: наименования, ОКПД2, заказчик."
+        "text": "Наименования, ОКПД2 и заказчик из файла"
       },
       "products": {
         "title": "Товары",
-        "text": "У каждого видно происхождение: из извещения, предположено или уточнено вами."
+        "text": "С пометкой: из извещения, предположено или уточнено вами"
       },
       "companies": {
         "title": "Компании",
-        "text": "Ранжированный список с ролью: поставщик, производитель, дистрибьютор."
+        "text": "Ранжированы, с ролью и совпадением по товарам"
       },
       "evidence": {
         "title": "Основания",
-        "text": "Почему подходит, чем подтверждено, что нужно уточнить."
+        "text": "Источник рядом с каждым утверждением"
       }
-    }
+    },
+    "kicker": "АИС ГЗ · электронный магазин Санкт-Петербурга",
+    "removeFile": "Убрать файл",
+    "privacy": "Файл обрабатывается на сервере команды, внешние нейросетевые API не используются."
   },
   "results": {
     "newFile": "Загрузить другой файл",
@@ -84,18 +87,18 @@
     },
     "header": {
       "downloadCsv": "Скачать CSV",
-      "productCount_one": "{{count}} товар",
-      "productCount_few": "{{count}} товара",
-      "productCount_many": "{{count}} товаров",
-      "productCount_other": "{{count}} товара",
-      "companyCount_one": "{{count}} кандидат",
-      "companyCount_few": "{{count}} кандидата",
-      "companyCount_many": "{{count}} кандидатов",
-      "companyCount_other": "{{count}} кандидата",
-      "checkCount_one": "{{count}} требует проверки",
-      "checkCount_few": "{{count}} требуют проверки",
-      "checkCount_many": "{{count}} требуют проверки",
-      "checkCount_other": "{{count}} требуют проверки"
+      "products_one": "товар",
+      "products_few": "товара",
+      "products_many": "товаров",
+      "products_other": "товара",
+      "companies_one": "кандидат",
+      "companies_few": "кандидата",
+      "companies_many": "кандидатов",
+      "companies_other": "кандидата",
+      "toCheck_one": "требует проверки",
+      "toCheck_few": "требуют проверки",
+      "toCheck_many": "требуют проверки",
+      "toCheck_other": "требуют проверки"
     },
     "chain": {
       "label": "Цепочка вывода",
@@ -115,29 +118,32 @@
         "notice": "Позиция и код ОКПД2 взяты из извещения.",
         "inferred": "Система добавила позицию по похожим закупкам. Подтвердите её перед запросом поставщикам.",
         "user": "Позицию уточнил пользователь."
-      }
+      },
+      "count_one": "{{count}} позиция",
+      "count_few": "{{count}} позиции",
+      "count_many": "{{count}} позиций",
+      "count_other": "{{count}} позиции"
     },
     "companies": {
       "title": "Кандидаты",
-      "matchCount": "{{matched}} из {{total}} товаров",
-      "purchases_one": "{{count}} похожая закупка",
-      "purchases_few": "{{count}} похожие закупки",
-      "purchases_many": "{{count}} похожих закупок",
-      "purchases_other": "{{count}} похожей закупки",
+      "matchCount": "{{matched}} из {{total}}",
+      "purchases_one": "{{count}} закупка",
+      "purchases_few": "{{count}} закупки",
+      "purchases_many": "{{count}} закупок",
       "status": {
         "recommended": "Рекомендуем",
         "check": "Требует проверки"
-      }
+      },
+      "order": "по релевантности",
+      "purchases_other": "{{count}} закупки"
     },
     "evidence": {
-      "title": "Основания",
       "inn": "ИНН {{inn}}",
       "summaryTitle": "Почему рекомендуем",
       "checkTitle": "Почему нужна проверка",
-      "mainClarify": "Главное уточнение",
+      "mainClarify": "Главное уточнение.",
       "matchesTitle": "Соответствие товарам",
-      "matchesCount": "{{matched}} из {{total}} позиций",
-      "matchesHint": "Совпадение по имеющимся сведениям, а не подтверждённое наличие на складе. Наличие подтверждено только там, где это указано.",
+      "matchesHint": "по сведениям, не остатки на складе",
       "basis": {
         "stock": "Наличие подтверждено",
         "catalog": "Есть в каталоге",
@@ -153,19 +159,19 @@
         "registry": "Реестр"
       },
       "purchasesTitle": "Опыт закупок",
-      "purchasesSummary_one": "{{count}} похожая закупка, побед: {{wins}}",
-      "purchasesSummary_few": "{{count}} похожие закупки, побед: {{wins}}",
-      "purchasesSummary_many": "{{count}} похожих закупок, побед: {{wins}}",
-      "purchasesSummary_other": "{{count}} похожей закупки, побед: {{wins}}",
+      "purchasesSummary_one": "{{count}} похожая · побед: {{wins}}",
+      "purchasesSummary_few": "{{count}} похожие · побед: {{wins}}",
+      "purchasesSummary_many": "{{count}} похожих · побед: {{wins}}",
+      "purchasesSummary_other": "{{count}} похожей · побед: {{wins}}",
       "outcome": {
         "winner": "Победитель",
         "participant": "Участник"
       },
-      "purchasesNote": "Прошлые участия и победы не гарантируют будущую поставку или победу.",
+      "purchasesNote": "Прошлые участия и победы не гарантируют будущую поставку.",
       "noPurchases": "Примеров закупок с источником нет.",
-      "clarifyTitle": "Что уточнить",
+      "clarifyTitle": "Что уточнить у компании",
       "noClarify": "Существенных уточнений нет.",
-      "showAll": "Показать все ({{count}})",
+      "showAll": "Показать все {{count}}",
       "showLess": "Свернуть",
       "shortlist": "Добавить в shortlist",
       "exclude": "Исключить"
@@ -180,6 +186,9 @@
       "purchases": "Похожих закупок",
       "wins": "Побед",
       "summary": "Почему рекомендуем"
+    },
+    "meter": {
+      "label": "Совпадение {{matched}} из {{total}}: наличие подтверждено — {{stock}}, в каталоге — {{catalog}}, предположение — {{inferred}}"
     }
   }
 }

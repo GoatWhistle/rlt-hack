@@ -46,10 +46,10 @@
     "label": "Notifications"
   },
   "upload": {
-    "title": "A verifiable supplier list from a single procurement",
-    "subtitle": "Upload an Excel file. The system identifies the products, finds companies and shows what every conclusion rests on.",
-    "dropTitle": "Drop the file here",
-    "dropHint": ".xlsx or .xls · lots, product names, OKPD2 codes",
+    "title": "From a procurement to a verifiable supplier list",
+    "subtitle": "Upload an Excel file. The system identifies the products, finds companies and shows what every conclusion rests on. The decision stays with you.",
+    "dropTitle": "Drop the Excel file here",
+    "dropHint": "or choose a file · .xlsx, .xls",
     "chooseFile": "Choose file",
     "fileSize": "{{size}} KB · ready to process",
     "submit": "Find suppliers",
@@ -58,21 +58,24 @@
     "steps": {
       "request": {
         "title": "Request",
-        "text": "We read the file: product names, OKPD2 codes, customer."
+        "text": "Product names, OKPD2 codes and the customer from the file"
       },
       "products": {
         "title": "Products",
-        "text": "Each one shows its origin: from the notice, inferred or confirmed by you."
+        "text": "Marked as from the notice, inferred or confirmed by you"
       },
       "companies": {
         "title": "Companies",
-        "text": "A ranked list with a role: supplier, manufacturer, distributor."
+        "text": "Ranked, with a role and a product match"
       },
       "evidence": {
         "title": "Grounds",
-        "text": "Why it fits, what confirms it, what still needs checking."
+        "text": "A source next to every claim"
       }
-    }
+    },
+    "kicker": "AIS GZ · Saint Petersburg e-shop",
+    "removeFile": "Remove file",
+    "privacy": "The file is processed on the team's server; no external neural network APIs are used."
   },
   "results": {
     "newFile": "Upload another file",
@@ -84,12 +87,12 @@
     },
     "header": {
       "downloadCsv": "Download CSV",
-      "productCount_one": "{{count}} product",
-      "productCount_other": "{{count}} products",
-      "companyCount_one": "{{count}} candidate",
-      "companyCount_other": "{{count}} candidates",
-      "checkCount_one": "{{count}} needs checking",
-      "checkCount_other": "{{count}} need checking"
+      "products_one": "product",
+      "products_other": "products",
+      "companies_one": "candidate",
+      "companies_other": "candidates",
+      "toCheck_one": "needs checking",
+      "toCheck_other": "need checking"
     },
     "chain": {
       "label": "Reasoning chain",
@@ -109,27 +112,28 @@
         "notice": "The item and its OKPD2 code come from the procurement notice.",
         "inferred": "The system added this item from similar purchases. Confirm it before contacting suppliers.",
         "user": "The item was specified by the user."
-      }
+      },
+      "count_one": "{{count}} item",
+      "count_other": "{{count}} items"
     },
     "companies": {
       "title": "Candidates",
-      "matchCount": "{{matched}} of {{total}} products",
-      "purchases_one": "{{count}} similar purchase",
-      "purchases_other": "{{count}} similar purchases",
+      "matchCount": "{{matched}} of {{total}}",
+      "purchases_one": "{{count}} purchase",
+      "purchases_other": "{{count}} purchases",
       "status": {
         "recommended": "Recommended",
         "check": "Needs checking"
-      }
+      },
+      "order": "by relevance"
     },
     "evidence": {
-      "title": "Grounds",
       "inn": "Tax ID {{inn}}",
       "summaryTitle": "Why we recommend it",
       "checkTitle": "Why it needs checking",
-      "mainClarify": "Key thing to clarify",
+      "mainClarify": "Key thing to clarify.",
       "matchesTitle": "Product match",
-      "matchesCount": "{{matched}} of {{total}} items",
-      "matchesHint": "A match by available records, not confirmed warehouse stock. Stock is confirmed only where stated.",
+      "matchesHint": "by records, not warehouse stock",
       "basis": {
         "stock": "Stock confirmed",
         "catalog": "In the catalogue",
@@ -145,17 +149,17 @@
         "registry": "Registry"
       },
       "purchasesTitle": "Purchase history",
-      "purchasesSummary_one": "{{count}} similar purchase, wins: {{wins}}",
-      "purchasesSummary_other": "{{count}} similar purchases, wins: {{wins}}",
+      "purchasesSummary_one": "{{count}} similar · wins: {{wins}}",
+      "purchasesSummary_other": "{{count}} similar · wins: {{wins}}",
       "outcome": {
         "winner": "Winner",
         "participant": "Participant"
       },
-      "purchasesNote": "Past participation and wins do not guarantee a future delivery or win.",
+      "purchasesNote": "Past participation and wins do not guarantee a future delivery.",
       "noPurchases": "No purchase examples with a source.",
-      "clarifyTitle": "What to clarify",
+      "clarifyTitle": "What to clarify with the company",
       "noClarify": "Nothing significant to clarify.",
-      "showAll": "Show all ({{count}})",
+      "showAll": "Show all {{count}}",
       "showLess": "Show less",
       "shortlist": "Add to shortlist",
       "exclude": "Exclude"
@@ -170,6 +174,9 @@
       "purchases": "Similar purchases",
       "wins": "Wins",
       "summary": "Why recommended"
+    },
+    "meter": {
+      "label": "Match {{matched}} of {{total}}: stock confirmed — {{stock}}, in the catalogue — {{catalog}}, assumed — {{inferred}}"
     }
   }
 }

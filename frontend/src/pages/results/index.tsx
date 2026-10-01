@@ -56,7 +56,7 @@ export function ResultsPage() {
         <ProductList products={recommendation.products} />
         <CompanyList
           companies={recommendation.companies}
-          totalProducts={recommendation.products.length}
+          products={recommendation.products}
           selectedId={selected.id}
           onSelect={select}
         />

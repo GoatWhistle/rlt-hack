@@ -1,22 +1,11 @@
 .card {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  width: 100%;
-  max-width: var(--measure-upload);
-  padding: var(--space-4) var(--space-5);
-  border: var(--line-width) solid var(--line-hairline);
-  border-radius: var(--radius-md);
-  animation: var(--motion-slide-in);
-}
-
-.info {
-  display: flex;
   align-items: center;
   gap: var(--space-3);
-  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-lg);
+  animation: var(--motion-slide-in);
 }
 
 .badge {
@@ -27,14 +16,39 @@
   width: var(--badge-size);
   height: var(--badge-size);
   border-radius: var(--radius-md);
-  background: var(--surface-accent);
+  background: var(--success-soft);
 }
 
 .text {
+  flex-grow: 1;
   min-width: 0;
 }
 
 .name {
   font-weight: var(--weight-semibold);
   overflow-wrap: anywhere;
+}
+
+.clear {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--target-touch);
+  height: var(--target-touch);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: var(--transition-control);
+}
+
+.clear:active {
+  transform: scale(var(--press-scale));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .clear:hover {
+    background: var(--surface-subtle);
+  }
 }

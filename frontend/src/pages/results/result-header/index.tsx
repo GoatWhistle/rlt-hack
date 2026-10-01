@@ -3,7 +3,6 @@ import { type CsvColumn, csvFileName, toCsv } from "@/entities/recommendation/cs
 import type { Recommendation } from "@/entities/recommendation/model"
 import { saveTextFile } from "@/shared/download/save-text-file"
 import { Button } from "@/shared/ui/button"
-import { Caption } from "@/shared/ui/caption"
 import { Icon } from "@/shared/ui/icon"
 import { ChainIndicator } from "../chain-indicator"
 import { statusText } from "../status"
@@ -38,9 +37,10 @@ export function ResultHeader({ recommendation }: { readonly recommendation: Reco
     <header className={styles.header}>
       <div className={styles.titleRow}>
         <div className={styles.titles}>
-          <Caption>
-            {recommendation.lotLabel} · {recommendation.fileName}
-          </Caption>
+          <p className={styles.chips}>
+            <span className={styles.chip}>{recommendation.lotLabel}</span>
+            <span className={styles.file}>{recommendation.fileName}</span>
+          </p>
           <h1 className={styles.title}>{recommendation.requestTitle}</h1>
         </div>
         <Button variant="secondary" onClick={download}>
@@ -48,11 +48,21 @@ export function ResultHeader({ recommendation }: { readonly recommendation: Reco
           {t("results.header.downloadCsv")}
         </Button>
       </div>
-      <div className={styles.meta}>
-        <p className={styles.summary}>
-          <span>{t("results.header.productCount", { count: products.length })}</span>
-          <span>{t("results.header.companyCount", { count: companies.length })}</span>
-          <span>{t("results.header.checkCount", { count: toCheck })}</span>
+      <div className={styles.strip}>
+        <p className={styles.counts}>
+          <span>
+            <b className={styles.number}>{products.length}</b>{" "}
+            {t("results.header.products", { count: products.length })}
+          </span>
+          <span>
+            <b className={styles.number}>{companies.length}</b>{" "}
+            {t("results.header.companies", { count: companies.length })}
+          </span>
+          <span className={styles.attention}>
+            <span className={styles.dot} aria-hidden="true" />
+            <b className={styles.number}>{toCheck}</b>{" "}
+            {t("results.header.toCheck", { count: toCheck })}
+          </span>
         </p>
         <ChainIndicator />
       </div>

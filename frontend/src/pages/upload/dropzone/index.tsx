@@ -7,10 +7,11 @@ import styles from "./styles.module.css"
 export const ACCEPTED_FILES = ".xlsx,.xls"
 
 export type DropzoneProps = {
+  readonly hasFile: boolean
   readonly onSelect: (file: File) => void
 }
 
-export function Dropzone({ onSelect }: DropzoneProps) {
+export function Dropzone({ hasFile, onSelect }: DropzoneProps) {
   const { t } = useTranslation()
   const [dragging, setDragging] = useState(false)
 
@@ -33,12 +34,14 @@ export function Dropzone({ onSelect }: DropzoneProps) {
   return (
     <section
       aria-label={t("upload.dropTitle")}
-      className={clsx(styles.zone, dragging && styles.active)}
+      className={clsx(styles.zone, hasFile && styles.filled, dragging && styles.active)}
       onDragOver={dragOver}
       onDragLeave={() => setDragging(false)}
       onDrop={drop}
     >
-      <Icon name="upload" size="lg" />
+      <span className={styles.tile}>
+        <Icon name="upload" size="lg" tone="source" />
+      </span>
       <p className={styles.title}>{t("upload.dropTitle")}</p>
       <p className={styles.hint}>{t("upload.dropHint")}</p>
       <label className={styles.picker}>

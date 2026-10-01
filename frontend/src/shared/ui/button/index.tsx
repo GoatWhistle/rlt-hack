@@ -3,11 +3,12 @@ import type { ButtonHTMLAttributes } from "react"
 import { Link, type LinkProps } from "react-router"
 import styles from "./styles.module.css"
 
-export type ButtonVariant = "primary" | "secondary"
+export type ButtonVariant = "primary" | "secondary" | "strong"
 
 const VARIANTS: Record<ButtonVariant, string | undefined> = {
   primary: styles.primary,
   secondary: styles.secondary,
+  strong: styles.strong,
 }
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {

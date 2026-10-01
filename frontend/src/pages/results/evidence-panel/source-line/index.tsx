@@ -1,13 +1,12 @@
 import { useTranslation } from "react-i18next"
 import type { Source } from "@/entities/recommendation/model"
 import { useFormatters } from "@/shared/i18n/formatters"
-import { Caption } from "@/shared/ui/caption"
 import styles from "./styles.module.css"
 
 export function SourceLine({ source }: { readonly source?: Source }) {
   const { t } = useTranslation()
   const { date } = useFormatters()
-  if (!source) return <Caption muted>{t("results.evidence.noSource")}</Caption>
+  if (!source) return <span className={styles.missing}>{t("results.evidence.noSource")}</span>
   return (
     <span className={styles.line}>
       <span className={styles.kind}>{t(`results.evidence.sourceKind.${source.kind}`)}</span>

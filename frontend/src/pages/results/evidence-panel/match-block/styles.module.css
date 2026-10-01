@@ -1,4 +1,61 @@
-.count {
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.swatch {
+  flex-shrink: 0;
+  width: var(--swatch-width);
+  height: var(--swatch-height);
+  border-radius: var(--radius-sm);
+  background: var(--meter-empty);
+}
+
+.stock {
+  background: var(--meter-stock);
+}
+
+.catalog {
+  background: var(--meter-catalog);
+}
+
+.inferred {
+  border: 1.5px dashed var(--meter-inferred-line);
+  background: var(--meter-inferred);
+}
+
+.body {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: var(--space-2);
+}
+
+.product {
   font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.basis {
+  color: var(--text-secondary);
+  font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
+}
+
+.stockLabel {
+  color: var(--accent-strong);
+}
+
+.inferredLabel {
+  color: var(--warning-text);
 }

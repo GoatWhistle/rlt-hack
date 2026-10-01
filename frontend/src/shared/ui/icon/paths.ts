@@ -17,6 +17,17 @@ export const ICON_PATHS = {
   warning: ["M12 3.5l9.5 16.5h-19z", "M12 10v4.5M12 17.5h.01"],
   chevron: ["M9 6l6 6-6 6"],
   download: ["M12 4v11M7.5 10.5L12 15l4.5-4.5", "M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"],
+  arrowRight: ["M5 12h14M13 6l6 6-6 6"],
+  close: ["M6 6l12 12M18 6L6 18"],
+  lock: [
+    "M7 11h10a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2z",
+    "M8 11V8a4 4 0 0 1 8 0v3",
+  ],
+  fileCheck: [
+    "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z",
+    "M14 3v5h5",
+    "M9 14l2 2 4-4",
+  ],
   upload: ["M12 15V4M7.5 8.5L12 4l4.5 4.5", "M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"],
 } as const
 

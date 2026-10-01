@@ -8,7 +8,7 @@
   display: grid;
   grid-template-columns: minmax(0, 25fr) minmax(0, 30fr) minmax(0, 45fr);
   align-items: start;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 .grounds {
@@ -22,8 +22,6 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding-block-start: var(--space-4);
-  border-block-start: var(--line-width) solid var(--line-hairline);
 }
 
 @media (max-width: 64rem) {

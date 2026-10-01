@@ -24,3 +24,7 @@
 .source {
   color: var(--accent-source);
 }
+
+.warning {
+  color: var(--warning-icon);
+}

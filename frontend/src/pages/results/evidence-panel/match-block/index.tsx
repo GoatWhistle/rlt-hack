@@ -1,20 +1,18 @@
+import { clsx } from "clsx"
 import { useTranslation } from "react-i18next"
 import type { Company, MatchBasis, Product, Source } from "@/entities/recommendation/model"
-import { Caption } from "@/shared/ui/caption"
-import { Tag, type TagTone } from "@/shared/ui/tag"
 import { Block } from "../block"
 import { CollapsibleList } from "../collapsible-list"
-import { FactRow } from "../fact-row"
 import { SourceLine } from "../source-line"
 import styles from "./styles.module.css"
 
 export const MATCH_LIMIT = 4
 
 const BASIS_ORDER: Record<MatchBasis, number> = { stock: 0, catalog: 1, inferred: 2 }
-const BASIS_TONE: Record<MatchBasis, TagTone> = {
-  stock: "accent",
-  catalog: "solid",
-  inferred: "tentative",
+const BASIS_STYLES: Record<MatchBasis, { swatch?: string; label?: string }> = {
+  stock: { swatch: styles.stock, label: styles.stockLabel },
+  catalog: { swatch: styles.catalog },
+  inferred: { swatch: styles.inferred, label: styles.inferredLabel },
 }
 
 type Row = {
@@ -35,20 +33,22 @@ function rows(company: Company, products: readonly Product[]): Row[] {
 
 function MatchRow({ row }: { readonly row: Row }) {
   const { t } = useTranslation()
+  const look = row.basis ? BASIS_STYLES[row.basis] : {}
   return (
-    <FactRow
-      emphasis
-      title={row.product.name}
-      tag={
-        <Tag tone={row.basis ? BASIS_TONE[row.basis] : "tentative"}>
-          {row.basis
-            ? t(`results.evidence.basis.${row.basis}`)
-            : t("results.evidence.notFound")}
-        </Tag>
-      }
-    >
-      {row.basis ? <SourceLine source={row.source} /> : null}
-    </FactRow>
+    <div className={styles.row}>
+      <span className={clsx(styles.swatch, look.swatch)} aria-hidden="true" />
+      <div className={styles.body}>
+        <div className={styles.head}>
+          <span className={styles.product}>{row.product.name}</span>
+          <span className={clsx(styles.basis, look.label)}>
+            {row.basis
+              ? t(`results.evidence.basis.${row.basis}`)
+              : t("results.evidence.notFound")}
+          </span>
+        </div>
+        {row.basis ? <SourceLine source={row.source} /> : null}
+      </div>
+    </div>
   )
 }
 
@@ -60,20 +60,7 @@ export type MatchBlockProps = {
 export function MatchBlock({ company, products }: MatchBlockProps) {
   const { t } = useTranslation()
   return (
-    <Block
-      title={t("results.evidence.matchesTitle")}
-      icon="link"
-      tone="source"
-      aside={
-        <span className={styles.count}>
-          {t("results.evidence.matchesCount", {
-            matched: company.matches.length,
-            total: products.length,
-          })}
-        </span>
-      }
-    >
-      <Caption>{t("results.evidence.matchesHint")}</Caption>
+    <Block title={t("results.evidence.matchesTitle")} aside={t("results.evidence.matchesHint")}>
       <CollapsibleList
         items={rows(company, products)}
         limit={MATCH_LIMIT}
