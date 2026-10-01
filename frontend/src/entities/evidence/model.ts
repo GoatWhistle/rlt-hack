@@ -62,3 +62,13 @@ export type Highlight = {
   readonly code: HighlightCode
   readonly params: Readonly<Record<string, number>>
 }
+
+export type MatchCount = {
+  readonly confirmed: number
+  readonly assumed: number
+}
+
+export function countMatches(matches: readonly { readonly basis: MatchBasis }[]): MatchCount {
+  const assumed = matches.filter((match) => match.basis === "inferred").length
+  return { confirmed: matches.length - assumed, assumed }
+}

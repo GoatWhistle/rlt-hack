@@ -21,11 +21,16 @@
   color: var(--accent-strong);
 }
 
+.assumed {
+  margin-inline-start: var(--space-1);
+  color: var(--warning-text);
+  font-size: var(--text-2xs);
+}
+
 .facts {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-2);
 }
 
@@ -38,6 +43,7 @@
 .history {
   color: var(--text-secondary);
   font-size: var(--text-xs);
+  white-space: nowrap;
 }
 
 .compare {

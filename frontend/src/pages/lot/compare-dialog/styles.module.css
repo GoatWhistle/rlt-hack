@@ -76,6 +76,34 @@
   gap: var(--space-2);
 }
 
+.note {
+  color: var(--warning-text);
+  font-size: var(--text-2xs);
+}
+
+.best {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  color: var(--accent-strong);
+  font-weight: var(--weight-semibold);
+}
+
+.missing {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+}
+
+.marker {
+  flex-shrink: 0;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  border: var(--line-width) dashed var(--line-tentative);
+  border-radius: var(--radius-pill);
+}
+
 @media (max-width: 30rem) {
   .criterion {
     width: 7.5rem;

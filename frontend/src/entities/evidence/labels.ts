@@ -1,5 +1,14 @@
 import { useTranslation } from "react-i18next"
-import type { CandidateStatus, CheckReason, CompanyRole, Highlight } from "./model"
+import { useFormatters } from "@/shared/i18n/formatters"
+import {
+  type CandidateStatus,
+  type CheckReason,
+  type CompanyRole,
+  countMatches,
+  type Highlight,
+  type MatchBasis,
+} from "./model"
+import { isRegionCode } from "./regions"
 
 export function useRoleLabel(): (role: CompanyRole) => string {
   const { t } = useTranslation("evidence")
@@ -33,4 +42,32 @@ export function useCheckReasonText(): (reason: CheckReason) => string {
 export function useInnText(): (inn: string) => string {
   const { t } = useTranslation("evidence")
   return (inn) => (inn ? t("inn", { inn }) : t("noInn"))
+}
+
+export type MatchFigure = {
+  readonly value: string
+  readonly note?: string
+}
+
+export function useMatchFigure(): (
+  matches: readonly { readonly basis: MatchBasis }[],
+  total: number,
+) => MatchFigure {
+  const { t } = useTranslation("evidence")
+  const { number } = useFormatters()
+  return (matches, total) => {
+    const { confirmed, assumed } = countMatches(matches)
+    return {
+      value: `${number(confirmed)}/${number(total)}`,
+      note: assumed > 0 ? t("assumed", { count: assumed }) : undefined,
+    }
+  }
+}
+
+export function useRegionText(): (code: string) => string {
+  const { t } = useTranslation("evidence")
+  return (code) =>
+    isRegionCode(code)
+      ? t("region.named", { name: t(`regionName.${code}`), code })
+      : t("region.code", { code })
 }

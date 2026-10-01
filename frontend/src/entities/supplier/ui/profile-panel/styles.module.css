@@ -1,3 +1,25 @@
 .profile {
   display: grid;
 }
+
+.skeleton {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.block {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.heading {
+  width: 7rem;
+}
+
+.wide {
+  width: 85%;
+}
+
+.short {
+  width: 55%;
+}

@@ -1,13 +1,17 @@
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import type { MatchBasis } from "@/entities/evidence/model"
+import { useMatchFigure } from "@/entities/evidence/labels"
+import { countMatches, type MatchBasis } from "@/entities/evidence/model"
 import { SegmentMeter } from "@/entities/evidence/ui/segment-meter"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { Caption } from "@/shared/ui/caption"
 import { Dialog } from "@/shared/ui/dialog"
+import { Icon } from "@/shared/ui/icon"
 import { ScrollRegion } from "@/shared/ui/scroll-region"
-import { companySegments, useClarifyItems, useRoleText, useStatusText } from "../status"
+import { VisuallyHidden } from "@/shared/ui/visually-hidden"
+import { CompanyStatus } from "../company-list"
+import { companySegments, useClarifyItems, useRoleText } from "../status"
 import styles from "./styles.module.css"
 
 export type CompareDialogProps = {
@@ -21,21 +25,40 @@ type Criterion = {
   readonly id: string
   readonly label: string
   readonly value: (company: Company) => ReactNode
+  readonly score?: (company: Company) => number
+}
+
+export function bestOf(
+  companies: readonly Company[],
+  score: ((company: Company) => number) | undefined,
+): string | undefined {
+  if (!score || companies.length < 2) return undefined
+  const ranked = companies.map((company) => ({ id: company.id, value: score(company) }))
+  const top = Math.max(...ranked.map((item) => item.value))
+  const leaders = ranked.filter((item) => item.value === top)
+  return leaders.length === 1 && top > 0 ? leaders[0]?.id : undefined
 }
 
 export function CompareDialog({ open, companies, products, onClose }: CompareDialogProps) {
   const { t } = useTranslation("lot")
   const { t: label } = useTranslation("evidence")
-  const statusText = useStatusText()
+  const figureOf = useMatchFigure()
   const roleText = useRoleText()
   const clarifyItems = useClarifyItems()
   const { list, number } = useFormatters()
-  const count = (company: Company, basis: MatchBasis) =>
-    number(company.matches.filter((match) => match.basis === basis).length)
+  const amount = (company: Company, basis: MatchBasis) =>
+    company.matches.filter((match) => match.basis === basis).length
+  const count = (company: Company, basis: MatchBasis) => number(amount(company, basis))
   const unmatched = (company: Company) => {
     const found = new Set(company.matches.map((match) => match.productId))
     const names = products.filter((product) => !found.has(product.id)).map((p) => p.name)
-    return names.length > 0 ? list(names) : t("compare.none")
+    if (names.length === 0) return t("compare.none")
+    return (
+      <span className={styles.missing}>
+        <span className={styles.marker} aria-hidden="true" />
+        {list(names)}
+      </span>
+    )
   }
   const contacts = (company: Company) => {
     const { site, email, phone } = company.contacts ?? {}
@@ -46,27 +69,51 @@ export function CompareDialog({ open, companies, products, onClose }: CompareDia
     {
       id: "match",
       label: t("compare.match"),
-      value: (company) => (
-        <span className={styles.match}>
-          {t("companies.matchCount", {
-            matched: company.matches.length,
-            total: products.length,
-          })}
-          <SegmentMeter segments={companySegments(company, products)} />
-        </span>
-      ),
+      value: (company) => {
+        const figure = figureOf(company.matches, products.length)
+        return (
+          <span className={styles.match}>
+            <span>
+              {figure.value}
+              {figure.note ? <span className={styles.note}> {figure.note}</span> : null}
+            </span>
+            <SegmentMeter segments={companySegments(company, products)} />
+          </span>
+        )
+      },
+      score: (c) => countMatches(c.matches).confirmed,
     },
-    { id: "stock", label: label("basis.stock"), value: (c) => count(c, "stock") },
-    { id: "catalog", label: label("basis.catalog"), value: (c) => count(c, "catalog") },
+    {
+      id: "stock",
+      label: label("basis.stock"),
+      value: (c) => count(c, "stock"),
+      score: (c) => amount(c, "stock"),
+    },
+    {
+      id: "catalog",
+      label: label("basis.catalog"),
+      value: (c) => count(c, "catalog"),
+      score: (c) => amount(c, "catalog"),
+    },
     { id: "inferred", label: label("basis.inferred"), value: (c) => count(c, "inferred") },
     { id: "missing", label: t("compare.missing"), value: unmatched },
-    { id: "status", label: t("compare.status"), value: statusText },
+    {
+      id: "status",
+      label: t("compare.status"),
+      value: (c) => <CompanyStatus company={c} />,
+    },
     {
       id: "purchases",
       label: t("compare.purchases"),
       value: (c) => number(c.similarPurchases),
+      score: (c) => c.similarPurchases,
     },
-    { id: "wins", label: t("compare.wins"), value: (c) => number(c.wins) },
+    {
+      id: "wins",
+      label: t("compare.wins"),
+      value: (c) => number(c.wins),
+      score: (c) => c.wins,
+    },
     {
       id: "clarify",
       label: t("compare.clarify"),
@@ -93,18 +140,29 @@ export function CompareDialog({ open, companies, products, onClose }: CompareDia
             </tr>
           </thead>
           <tbody>
-            {criteria.map((criterion) => (
-              <tr key={criterion.id}>
-                <th scope="row" className={styles.criterion}>
-                  {criterion.label}
-                </th>
-                {companies.map((company) => (
-                  <td key={company.id} className={styles.cell}>
-                    {criterion.value(company)}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {criteria.map((criterion) => {
+              const best = bestOf(companies, criterion.score)
+              return (
+                <tr key={criterion.id}>
+                  <th scope="row" className={styles.criterion}>
+                    {criterion.label}
+                  </th>
+                  {companies.map((company) => (
+                    <td key={company.id} className={styles.cell}>
+                      {company.id === best ? (
+                        <span className={styles.best}>
+                          <Icon name="check" size="sm" />
+                          {criterion.value(company)}{" "}
+                          <VisuallyHidden>{t("compare.best")}</VisuallyHidden>
+                        </span>
+                      ) : (
+                        criterion.value(company)
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </ScrollRegion>

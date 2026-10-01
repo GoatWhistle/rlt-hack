@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { countMatches } from "@/entities/evidence/model"
 import { SegmentMeter } from "@/entities/evidence/ui/segment-meter"
 import { StatusTag } from "@/entities/evidence/ui/status-tag"
 import type { Company, Product } from "@/entities/recommendation/model"
@@ -23,6 +24,17 @@ export function CompanyStatus({ company }: { readonly company: Company }) {
   return <StatusTag status={company.status}>{statusText(company)}</StatusTag>
 }
 
+function MatchScore({ company, total }: { readonly company: Company; readonly total: number }) {
+  const { number } = useFormatters()
+  const { confirmed, assumed } = countMatches(company.matches)
+  return (
+    <span className={styles.score} aria-hidden="true">
+      {number(confirmed)}/{number(total)}
+      {assumed > 0 ? <span className={styles.assumed}>+{number(assumed)}</span> : null}
+    </span>
+  )
+}
+
 export type CompanyListProps = {
   readonly companies: readonly Company[]
   readonly ranks: ReadonlyMap<string, number>
@@ -38,7 +50,6 @@ export function CompanyList(props: CompanyListProps) {
   const { companies, ranks, products, selectedId, chosen, filter, onSelect, onCompare } = props
   const { t } = useTranslation("lot")
   const roleText = useRoleText()
-  const { number } = useFormatters()
   const [expanded, setExpanded] = useState(false)
   const hidden = companies.length - VISIBLE_COMPANIES
   const visible = expanded || hidden <= 0 ? companies : companies.slice(0, VISIBLE_COMPANIES)
@@ -64,9 +75,7 @@ export function CompanyList(props: CompanyListProps) {
           >
             <span className={styles.match}>
               <SegmentMeter segments={companySegments(company, products)} />
-              <span className={styles.score} aria-hidden="true">
-                {number(company.matches.length)}/{number(products.length)}
-              </span>
+              <MatchScore company={company} total={products.length} />
             </span>
             <span className={styles.facts}>
               <span className={styles.tags}>

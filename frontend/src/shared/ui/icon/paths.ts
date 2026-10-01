@@ -33,6 +33,7 @@ export const ICON_PATHS = {
   compare: ["M8 4v16M16 4v16", "M4 8h4M16 16h4"],
   upload: ["M12 15V4M7.5 8.5L12 4l4.5 4.5", "M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"],
   compass: ["M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0", "M15.5 8.5l-2 5-5 2 2-5z"],
+  external: ["M14 4h6v6M20 4l-9 9", "M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"],
   clock: ["M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0", "M12 7.5V12l3 2"],
 } as const
 

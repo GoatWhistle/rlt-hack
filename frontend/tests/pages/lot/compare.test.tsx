@@ -80,8 +80,12 @@ describe("choosing, comparing and the profile", () => {
       "href",
       "tel:+78121",
     )
-    expect(within(profile).getAllByRole("link", { name: "Registry card" })).toHaveLength(2)
-    expect(within(profile).getByRole("link", { name: "Price list" })).toBeInTheDocument()
+    expect(
+      within(profile).getAllByRole("link", { name: "Registry card (opens in a new tab)" }),
+    ).toHaveLength(2)
+    expect(
+      within(profile).getByRole("link", { name: "Price list (opens in a new tab)" }),
+    ).toBeInTheDocument()
     expect(within(profile).getByText("11 similar · wins: 4")).toBeInTheDocument()
   })
 

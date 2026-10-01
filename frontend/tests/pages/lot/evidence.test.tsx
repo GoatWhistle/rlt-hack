@@ -35,7 +35,9 @@ describe("the candidates column", () => {
     const north = within(companies).getByRole("button", { name: /North Foods/ })
     expect(north).toHaveAttribute("aria-pressed", "true")
     expect(within(north).getByText("11 purchases")).toBeInTheDocument()
-    expect(within(north).getByText("5/5")).toHaveAttribute("aria-hidden", "true")
+    const score = within(north).getByText("4/5")
+    expect(score).toHaveAttribute("aria-hidden", "true")
+    expect(score).toHaveTextContent("4/5+1")
     expect(
       within(north).getByRole("img", {
         name: "Match 5 of 5: stock confirmed — 1, in the catalog — 3, assumed — 1",
@@ -71,7 +73,8 @@ describe("the grounds panel", () => {
     await openLot()
     const grounds = panel("North Foods")
     expect(within(grounds).getByText("INN 7800000011")).toBeInTheDocument()
-    expect(within(grounds).getByText("5/5")).toBeInTheDocument()
+    expect(within(grounds).getByText("4/5")).toBeInTheDocument()
+    expect(within(grounds).getByText("+1 assumption")).toBeInTheDocument()
     expect(
       within(grounds).getByRole("heading", {
         level: 3,
@@ -95,10 +98,11 @@ describe("the grounds panel", () => {
     expect(
       within(rows[0] as HTMLElement).getByText(en("basis.stock", "evidence")),
     ).toBeInTheDocument()
-    expect(within(confirmations).getByRole("link", { name: "Price list" })).toHaveAttribute(
-      "href",
-      "#price",
-    )
+    const price = within(confirmations).getByRole("link", { name: /^Price list/ })
+    expect(price).toHaveAttribute("href", "#price")
+    expect(price).toHaveAttribute("target", "_blank")
+    expect(price).toHaveAttribute("rel", "noopener noreferrer")
+    expect(price).toHaveAccessibleName("Price list (opens in a new tab)")
     expect(within(confirmations).getByText("checked Sep 28, 2026")).toBeInTheDocument()
   })
 
@@ -115,14 +119,20 @@ describe("the grounds panel", () => {
     )
     expect(within(grounds).getByText(en("evidence.purchasesNote", "lot"))).toBeVisible()
     await user.click(within(grounds).getByText(en("evidence.clarifyTitle", "lot")))
-    const clarify = within(grounds).getAllByRole("checkbox")
-    expect(clarify.map((box) => box.closest("label")?.textContent)).toEqual([
+    expect(within(grounds).queryByRole("checkbox")).toBeNull()
+    const clarify = within(grounds)
+      .getByText(en("evidence.clarifyTitle", "lot"))
+      .closest("details") as HTMLElement
+    expect(
+      within(clarify)
+        .getAllByRole("listitem")
+        .map((item) => item.textContent),
+    ).toEqual([
       "Confirm availability and price: Rice",
       "Confirm availability and price: Sugar",
       "Confirm availability and price: Salt",
       "Confirm availability and price: Oil",
     ])
-    expect(clarify[0]).not.toBeChecked()
   })
 
   it("does not hide missing records or missing sources", async () => {
@@ -145,14 +155,13 @@ describe("the grounds panel", () => {
     await user.click(within(grounds).getByText(en("evidence.purchasesTitle", "lot")))
     expect(within(grounds).getByText(en("evidence.noPurchases", "lot"))).toBeVisible()
     await user.click(within(grounds).getByText(en("evidence.clarifyTitle", "lot")))
+    const clarify = within(grounds)
+      .getByText(en("evidence.clarifyTitle", "lot"))
+      .closest("details") as HTMLElement
     expect(
-      within(grounds).getByRole("checkbox", {
-        name: en("clarify.reason.rangeUnconfirmed", "lot"),
-      }),
+      within(clarify).getByText(en("clarify.reason.rangeUnconfirmed", "lot")),
     ).toBeVisible()
-    expect(
-      within(grounds).getByRole("checkbox", { name: "Confirm availability and price: Tea" }),
-    ).toBeVisible()
+    expect(within(clarify).getByText("Confirm availability and price: Tea")).toBeVisible()
   })
 
   it("says when there is nothing to report or clarify", async () => {
@@ -198,9 +207,14 @@ describe("on a narrow screen", () => {
     vi.spyOn(stack, "getBoundingClientRect").mockReturnValue({ top: -120 } as DOMRect)
     await user.click(screen.getByRole("radio", { name: en("views.products", "lot") }))
     expect(scrollBy).toHaveBeenCalledWith({ top: -120 })
+    expect(screen.getByRole("radio", { name: en("views.products", "lot") })).toHaveFocus()
     await user.click(screen.getByRole("button", { name: "Show candidates with “Tea”" }))
-    expect(screen.getByRole("radio", { name: en("views.companies", "lot") })).toBeChecked()
+    expect(screen.getByRole("radio", { name: en("views.candidates", "lot") })).toBeChecked()
+    expect(
+      screen.getByRole("heading", { level: 2, name: en("companies.title", "lot") }),
+    ).toHaveFocus()
     await user.click(screen.getByRole("button", { name: new RegExp(LONG_NAME) }))
     expect(screen.getByRole("article", { name: LONG_NAME })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { level: 2, name: LONG_NAME })).toHaveFocus()
   })
 })

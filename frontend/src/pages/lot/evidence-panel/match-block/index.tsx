@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next"
+import { useMatchFigure } from "@/entities/evidence/labels"
 import type { MatchBasis, Source } from "@/entities/evidence/model"
 import { BASIS_ORDER, MatchRow } from "@/entities/evidence/ui/match-row"
 import type { Company, Product } from "@/entities/recommendation/model"
@@ -33,13 +34,11 @@ export type MatchBlockProps = {
 
 export function MatchBlock({ company, products }: MatchBlockProps) {
   const { t } = useTranslation("lot")
+  const figure = useMatchFigure()(company.matches, products.length)
   return (
     <Fold
       title={t("evidence.matchesTitle")}
-      aside={t("evidence.matchesAside", {
-        matched: company.matches.length,
-        total: products.length,
-      })}
+      aside={figure.note ? `${figure.value} ${figure.note}` : figure.value}
     >
       <Stack as="ul">
         {matchRows(company, products).map((row) => (

@@ -14,6 +14,15 @@ const BASIS_STYLES: Record<MatchBasis, { marker?: string; label?: string }> = {
   inferred: { marker: styles.inferred, label: styles.inferredLabel },
 }
 
+export function BasisMarker({ basis }: { readonly basis?: MatchBasis }) {
+  const look = basis ? BASIS_STYLES[basis] : {}
+  return (
+    <span className={clsx(styles.marker, look.marker)} aria-hidden="true">
+      {basis === "stock" ? <Icon name="check" size="sm" /> : null}
+    </span>
+  )
+}
+
 export type MatchRowProps = {
   readonly name: string
   readonly basis?: MatchBasis
@@ -26,9 +35,7 @@ export function MatchRow({ name, basis, source, note }: MatchRowProps) {
   const look = basis ? BASIS_STYLES[basis] : {}
   return (
     <div className={styles.row}>
-      <span className={clsx(styles.marker, look.marker)} aria-hidden="true">
-        {basis === "stock" ? <Icon name="check" size="sm" /> : null}
-      </span>
+      <BasisMarker basis={basis} />
       <div className={styles.body}>
         <div className={styles.head}>
           <span className={styles.product}>{name}</span>

@@ -168,17 +168,16 @@
     height: var(--tool-size);
     border: var(--line-width) solid var(--line-hairline);
     background: var(--surface-base);
-    opacity: 0;
+    color: var(--text-faint);
   }
 
-  .active .summary {
+  .summary {
     padding-inline-end: calc(var(--tool-size) + var(--space-3));
   }
 
-  .item:hover .filter,
-  .item:focus-within .filter,
-  .filter[aria-pressed="true"] {
-    opacity: 1;
+  .item:hover .filter:not([aria-pressed="true"]) {
+    border-color: var(--accent-muted);
+    color: var(--accent-strong);
   }
 
   .filter:not([aria-pressed="true"]):hover {
