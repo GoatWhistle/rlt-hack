@@ -77,8 +77,11 @@
   --meter-stock: var(--palette-indigo);
   --meter-catalog: var(--palette-indigo-mid);
   --meter-inferred: var(--palette-amber-soft);
-  --meter-inferred-line: var(--palette-amber);
+  --meter-catalog-fill: var(--palette-indigo-soft);
+  --meter-catalog-line: var(--palette-indigo);
+  --meter-inferred-line: var(--palette-amber-icon);
   --meter-empty: var(--palette-empty);
+  --meter-empty-line: var(--palette-haze);
 
   --accent-confirmed: var(--success);
   --accent-source: var(--accent);

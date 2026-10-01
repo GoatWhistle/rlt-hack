@@ -1,8 +1,7 @@
-import { clsx } from "clsx"
 import type { ReactNode } from "react"
 import type { CandidateStatus } from "@/entities/evidence/model"
+import { Dot } from "@/shared/ui/dot"
 import { Tag } from "@/shared/ui/tag"
-import styles from "./styles.module.css"
 
 export type StatusTagProps = {
   readonly status: CandidateStatus
@@ -12,10 +11,10 @@ export type StatusTagProps = {
 export function StatusTag({ status, children }: StatusTagProps) {
   const recommended = status === "recommended"
   return (
-    <Tag tone={recommended ? "success" : "warning"}>
-      <span
-        aria-hidden="true"
-        className={clsx(styles.dot, recommended ? styles.filled : styles.hollow)}
+    <Tag tone={recommended ? "accent" : "warning"}>
+      <Dot
+        shape={recommended ? "filled" : "hollow"}
+        tone={recommended ? "accent" : "warning"}
       />
       {children}
     </Tag>

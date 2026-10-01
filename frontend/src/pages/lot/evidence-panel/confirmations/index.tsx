@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { useFormatters } from "@/shared/i18n/formatters"
+import { Dot } from "@/shared/ui/dot"
 import { Icon } from "@/shared/ui/icon"
 import { PanelBlock } from "@/shared/ui/panel-block"
 import { Stack } from "@/shared/ui/stack"
@@ -37,8 +38,8 @@ export function Confirmations({ company, products }: ConfirmationsProps) {
         </p>
       )}
       {missing.length > 0 ? (
-        <p className={styles.warning}>
-          <Icon name="warning" size="sm" tone="warning" />
+        <p className={styles.missing}>
+          <Dot shape="dashed" tone="muted" size="md" />
           {t("evidence.unmatched", { count: missing.length, names: list(missing) })}
         </p>
       ) : null}

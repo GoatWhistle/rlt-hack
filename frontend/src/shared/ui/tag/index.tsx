@@ -2,7 +2,7 @@ import { clsx } from "clsx"
 import type { ReactNode } from "react"
 import styles from "./styles.module.css"
 
-export type TagTone = "solid" | "tentative" | "accent" | "warning" | "success"
+export type TagTone = "solid" | "tentative" | "accent" | "warning" | "success" | "danger"
 
 const TONES: Record<TagTone, string | undefined> = {
   solid: undefined,
@@ -10,6 +10,7 @@ const TONES: Record<TagTone, string | undefined> = {
   accent: styles.accent,
   warning: styles.warning,
   success: styles.success,
+  danger: styles.danger,
 }
 
 export type TagProps = {

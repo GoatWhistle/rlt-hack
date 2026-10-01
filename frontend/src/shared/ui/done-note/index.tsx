@@ -5,7 +5,7 @@ import styles from "./styles.module.css"
 export function DoneNote({ children }: { readonly children: ReactNode }) {
   return (
     <span className={styles.note}>
-      <Icon name="check" size="sm" tone="confirmed" />
+      <Icon name="check" size="sm" />
       {children}
     </span>
   )
