@@ -52,7 +52,22 @@ services:
     build: !reset null
     environment:
       SUPPLIER_DATASET_PROVIDER: ${SUPPLIER_DATASET_PROVIDER:-false}
-    volumes: *production-data
+    volumes: !override
+      - type: bind
+        source: ${RLT_DATA_DIR:-/opt/rlt-hack/data}
+        target: /data/task
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: volume
+        source: productcenter-cache
+        target: ${PRODUCTCENTER_CACHE_DIR:-/data/productcenter-cache}
+      - type: bind
+        source: ${RLT_MSP_DIR:-/opt/rlt-hack/msp}
+        target: /data/msp
+        read_only: true
+        bind:
+          create_host_path: true
 
   parser-worker:
     image: rlt/backend:${RLT_IMAGE_TAG:?Set the release revision}

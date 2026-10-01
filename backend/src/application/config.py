@@ -98,6 +98,8 @@ class AppConfig:
     productcenter_cache_dir: Path | None = None
     use_moscow_suppliers_provider: bool = False
     moscow_suppliers_export_url: str = ""
+    # ZIP-выгрузка реестра МСП ФНС для команды registry-import.
+    msp_registry_path: Path | None = None
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -145,4 +147,7 @@ class AppConfig:
             ),
             use_moscow_suppliers_provider=_bool("MOSCOW_SUPPLIERS_PROVIDER", False),
             moscow_suppliers_export_url=os.getenv("MOSCOW_SUPPLIERS_EXPORT_URL", ""),
+            msp_registry_path=(
+                Path(value).expanduser() if (value := os.getenv("MSP_REGISTRY_PATH")) else None
+            ),
         )

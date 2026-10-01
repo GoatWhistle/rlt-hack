@@ -14,9 +14,13 @@ from uuid import UUID
 
 from src.application.config import AppConfig
 from src.application.container import Container
-from src.controller.job.dto import NormalizeCommand, SyncCommand
+from src.controller.job.dto import NormalizeCommand, RegistryImportCommand, SyncCommand
 from src.models.coverage import CoverageReport
-from src.service.errors import ProviderNotConfiguredError, ServiceError
+from src.service.errors import (
+    ProviderNotConfiguredError,
+    RegistryNotConfiguredError,
+    ServiceError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +56,15 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser(
         "reidentify",
         help="перевести сохранённые позиции на действующее правило ключа источника",
+    )
+
+    registry = commands.add_parser(
+        "registry-import", help="загрузить выгрузку реестра МСП ФНС для ролей компаний"
+    )
+    registry.add_argument(
+        "--path",
+        default=None,
+        help="ZIP-выгрузка реестра: по умолчанию MSP_REGISTRY_PATH",
     )
 
     sync = commands.add_parser("sync", help="обойти все подключённые источники")
@@ -123,6 +136,15 @@ async def _dispatch(arguments: argparse.Namespace, config: AppConfig) -> int:
                 f"Источников: {outcome.sources}  позиций: {outcome.offers}  "
                 f"сменили ключ: {outcome.changed}  слились: {outcome.merged}"
             )
+            return 0
+        if arguments.command == "registry-import":
+            command = RegistryImportCommand.of(arguments, config.msp_registry_path)
+            if command.path is None:
+                raise RegistryNotConfiguredError(
+                    "не задан путь к выгрузке: MSP_REGISTRY_PATH или --path"
+                )
+            outcome = await (await container.registry_import(command.path)).run()
+            print(f"Реестр МСП на {outcome.registry_date}: компаний {outcome.companies}")
             return 0
         if arguments.command == "coverage":
             # Контроллер ходит в сервис, а не в репозиторий напрямую.

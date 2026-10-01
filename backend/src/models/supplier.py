@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from uuid import UUID
 
-from src.models.enums import VerificationStatus
+from src.models.enums import SupplierRole, VerificationStatus
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,3 +19,6 @@ class Supplier:
     okved_codes: tuple[str, ...] = ()
     identity_status: VerificationStatus = VerificationStatus.UNVERIFIED
     identity_evidence_url: str = ""
+    # Роль компании на рынке и её основание: заполняет обогащение по реестру.
+    role: SupplierRole = SupplierRole.UNKNOWN
+    role_evidence: str = ""

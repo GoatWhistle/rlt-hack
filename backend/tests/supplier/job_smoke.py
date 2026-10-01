@@ -2,7 +2,8 @@
 
 Покрыты: применение миграций, сохранение пакета источника, время первой
 встречи, снятие с продажи исчезнувших предложений, отсутствие снятия при пустом
-пакете, импорт компаний из датасета и журнал обхода. Нормализатор и
+пакете, импорт компаний из датасета, роль компании по реестру МСП и журнал
+обхода. Нормализатор и
 классификатор подключены настоящие, со справочниками репозитория: проверяется
 вся цепочка от разбора фида до производных колонок в хранилище. Сеть не
 используется: HTTP-клиент адаптера работает через httpx.MockTransport.
@@ -11,6 +12,7 @@
 import asyncio
 import sys
 import tempfile
+from datetime import date
 from pathlib import Path
 
 import httpx
@@ -24,20 +26,30 @@ from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepositor
 from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
 from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
 from src.adapter.repository.clickhouse.package import ClickHousePackageRepository
+from src.adapter.repository.clickhouse.registry import ClickHouseMspRegistryRepository
 from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
 from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
 from src.adapter.repository.clickhouse.versions import VersionSequencer
 from src.adapter.repository.reference import (
     load_classifier_reference,
     load_normalizer_reference,
+    load_okved_roles,
 )
 from src.adapter.supplier import identity
 from src.adapter.supplier.supplier_dataset import SupplierDatasetProvider
 from src.adapter.supplier.yml_feed import YmlFeedProvider
-from src.models.enums import ClassificationMethod, FetchStatus, SourceType, VerificationStatus
+from src.models.enums import (
+    ClassificationMethod,
+    FetchStatus,
+    SourceType,
+    SupplierRole,
+    VerificationStatus,
+)
+from src.models.registry import MspCompany
 from src.models.source import Source
 from src.service.classifier import OfferClassifier
 from src.service.normalizer import OfferNormalizer
+from src.service.registry import SupplierRegistryEnricher
 from src.service.supplier.worker import SupplierSyncWorker
 from tests.clickhouse.chdb_gateway import ChdbGateway
 from tests.supplier.fixtures import FEED_EMPTY, FEED_FULL, FEED_WITHOUT_A3, SUPPLIERS_CSV
@@ -76,6 +88,21 @@ async def main() -> None:
                 categories=classifier_reference.categories,
                 name_key=normalizer.name_key,
             )
+
+            registry = ClickHouseMspRegistryRepository(gateway)
+            await registry.save_many(
+                [
+                    MspCompany(
+                        inn=SHOP_INN,
+                        name="ООО «КАНЦТОРГ»",
+                        registry_date=date(2026, 9, 10),
+                        okved_main="46.49.3",
+                        okved_main_name="Торговля оптовая канцелярскими товарами",
+                        okved_extra=("47.62",),
+                    )
+                ]
+            )
+            enricher = SupplierRegistryEnricher(registry, await load_okved_roles())
 
             versions = VersionSequencer()
             sources = ClickHouseSourceRepository(gateway, versions)
@@ -123,6 +150,7 @@ async def main() -> None:
                     storage=storage,
                     journal=journal,
                     clock=SystemClock(),
+                    enricher=enricher,
                     normalizer=normalizer,
                     classifier=classifier,
                     max_parallel_sources=2,
@@ -139,6 +167,17 @@ async def main() -> None:
             assert first["yml_feed"].offers_extracted == 2, first
             assert first["yml_feed"].offers_withdrawn == 0, first
             assert first["supplier_dataset"].suppliers_extracted == 3, first
+
+            # Роль по ОКВЭД пришла из реестра; компания вне реестра осталась без неё.
+            roles = await rows(
+                "SELECT inn, role, role_evidence, okved_codes "
+                "FROM supplier_search.suppliers_current ORDER BY inn"
+            )
+            by_inn = {row[0]: row[1:] for row in roles}
+            assert by_inn[SHOP_INN][0] == str(SupplierRole.DISTRIBUTOR), roles
+            assert "46.49.3" in by_inn[SHOP_INN][1], roles
+            assert list(by_inn[SHOP_INN][2]) == ["46.49.3", "47.62"], roles
+            assert by_inn["7707049388"][0] == str(SupplierRole.UNKNOWN), roles
 
             stored_sources = await sources.list_all()
             assert {source.provider_name for source in stored_sources} == {

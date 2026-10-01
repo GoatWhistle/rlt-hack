@@ -15,6 +15,7 @@ from src.service.supplier.protocols import (
     ResumableSupplierProvider,
     StreamingSupplierProvider,
     StreamingSupplierStorage,
+    SupplierEnriching,
     SupplierProvider,
     SupplierStorage,
 )
@@ -29,8 +30,9 @@ class SupplierSyncWorker:
     а сбой одного источника не отменяет чужие результаты. Число одновременных
     обходов ограничено, чтобы не упираться в сеть и запись в хранилище.
 
-    Собранный пакет перед записью проходит нормализацию и классификацию: обе
-    вызываются через интерфейс, их реализации сервису неизвестны.
+    Собранный пакет перед записью проходит обогащение компаний, нормализацию и
+    классификацию: все три вызываются через интерфейс, их реализации сервису
+    неизвестны.
     """
 
     def __init__(
@@ -39,6 +41,7 @@ class SupplierSyncWorker:
         storage: SupplierStorage,
         journal: CrawlJournal,
         clock: Clock,
+        enricher: SupplierEnriching,
         normalizer: OfferNormalizing,
         classifier: OfferClassifying,
         interval_seconds: float = 3600.0,
@@ -48,6 +51,7 @@ class SupplierSyncWorker:
         self._storage = storage
         self._journal = journal
         self._clock = clock
+        self._enricher = enricher
         self._normalizer = normalizer
         self._classifier = classifier
         self._interval = interval_seconds
@@ -91,6 +95,8 @@ class SupplierSyncWorker:
                 if isinstance(provider, ResumableSupplierProvider):
                     observed_at = await provider.resume(started_at)
                 async for package in provider.batches(32):
+                    # Обогащение дополняет данные самого источника, поэтому идёт первым.
+                    package = await self._enricher.enrich(package)
                     package = await self._normalizer.normalize(package)
                     package = await self._classifier.classify(package)
                     await self._storage.save_batch(package, observed_at)
@@ -113,6 +119,7 @@ class SupplierSyncWorker:
                     await provider.complete()
             else:
                 package = await provider.fetch()
+                package = await self._enricher.enrich(package)
                 package = await self._normalizer.normalize(package)
                 package = await self._classifier.classify(package)
                 withdrawn = await self._storage.save_package(package)

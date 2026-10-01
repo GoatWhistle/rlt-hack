@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from src.models.classification import Classification
-from src.models.enums import FetchStatus, SourceType
+from src.models.enums import FetchStatus, SourceType, SupplierRole
 from src.models.journal import CrawlRun
 from src.models.normalization import Normalization
 from src.models.offer import Offer
@@ -111,6 +111,21 @@ class FakeClock:
         return datetime.now(UTC)
 
 
+class FakeEnricher:
+    """Проставляет компаниям роль и записывает порядок вызова."""
+
+    def __init__(self, calls: list[str]) -> None:
+        self._calls = calls
+
+    async def enrich(self, package: SupplierPackage) -> SupplierPackage:
+        self._calls.append("enrich")
+        suppliers = tuple(
+            dataclasses.replace(supplier, role=SupplierRole.DISTRIBUTOR)
+            for supplier in package.suppliers
+        )
+        return dataclasses.replace(package, suppliers=suppliers)
+
+
 class FakeNormalizer:
     """Отмечает позиции нормализацией и записывает порядок вызова."""
 
@@ -161,6 +176,7 @@ def worker(
         storage=storage,
         journal=journal,
         clock=FakeClock(),
+        enricher=FakeEnricher(recorded),
         normalizer=FakeNormalizer(recorded),
         classifier=FakeClassifier(recorded),
         max_parallel_sources=max_parallel,
@@ -227,11 +243,13 @@ async def check_journal_failure_keeps_data() -> None:
 async def check_enrichment_before_save() -> None:
     calls: list[str] = []
     storage = FakeStorage()
-    provider = FakeProvider("enriched", offers=2)
+    provider = FakeProvider("enriched", suppliers=2, offers=2)
     await worker([provider], storage, FakeJournal(), calls=calls).run_once()
 
-    # Классификатору нужно нормализованное название, поэтому порядок обязателен.
-    assert calls == ["normalize", "classify"], calls
+    # Обогащение идёт сразу после обхода, а классификатору нужно нормализованное
+    # название, поэтому порядок обязателен.
+    assert calls == ["enrich", "normalize", "classify"], calls
+    assert all(s.role == SupplierRole.DISTRIBUTOR for s in storage.packages[0].suppliers)
     saved = storage.packages[0].offers
     assert len(saved) == 2, saved
     assert all(offer.normalization is not None for offer in saved), saved

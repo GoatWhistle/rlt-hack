@@ -1,0 +1,50 @@
+name: MSP registry import
+
+on:
+  workflow_dispatch:
+    inputs:
+      dump_url:
+        description: "URL выгрузки реестра МСП ФНС; пусто — самая свежая со страницы открытых данных"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: msp-registry
+  cancel-in-progress: false
+
+jobs:
+  import:
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    environment:
+      name: production
+      url: ${{ vars.DEPLOY_URL }}
+    steps:
+      - name: Download dump and import on the server
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DUMP_URL: ${{ inputs.dump_url }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_HOST"
+          test -n "$DEPLOY_USER"
+          test -n "$DEPLOY_SSH_KEY"
+          if [[ -n $DUMP_URL && ! $DUMP_URL =~ ^https://file\.nalog\.ru/opendata/7707329152-rsmp/[A-Za-z0-9._-]+\.zip$ ]]; then
+            echo "dump_url must point to file.nalog.ru/opendata/7707329152-rsmp" >&2
+            exit 2
+          fi
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          trap 'rm -f "$HOME/.ssh/id_ed25519"' EXIT
+          options=(-o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=60)
+          ssh "${options[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "bash /opt/rlt-hack/current/deploy/import-registry.sh '$DUMP_URL'"
