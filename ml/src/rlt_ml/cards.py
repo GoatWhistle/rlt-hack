@@ -13,7 +13,7 @@ import duckdb
 import pyarrow as arrow
 import pyarrow.parquet as parquet
 
-from rlt_ml.common import read_config, sha256, sql_string, write_json
+from rlt_ml.common import read_config, revision, sha256, sql_string, write_json
 
 CARD_EXAMPLES_SQL = r"""
 WITH product_names AS (
@@ -357,6 +357,8 @@ def build_variants(data: Path, database: Path, out: Path, config_path: Path) -> 
         parquet.write_table(arrow.Table.from_pylist(mentions), mention_path, compression="zstd")
         manifest = {
             "schema_version": 1,
+            "generator_source_revision": revision(),
+            "config_sha256": sha256(config_path),
             "variant": name,
             "representation": representation,
             "card_max_length": card_max_length,

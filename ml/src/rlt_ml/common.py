@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import os
 import subprocess
 import tomllib
 from datetime import date
@@ -61,6 +62,9 @@ def sha256(path: Path) -> str:
 
 
 def revision() -> str | None:
+    recorded = os.environ.get("RLT_SOURCE_REVISION")
+    if recorded:
+        return recorded
     result = subprocess.run(
         ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=False
     )
