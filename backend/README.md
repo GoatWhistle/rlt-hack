@@ -30,11 +30,17 @@
   детерминированным каналам; таксономия и каналы разнесены по модулям.
 - `src/adapter/file/notice_csv/` — разбор CSV извещений о закупках.
 - `src/service/supplier_search/` — подбор поставщиков: `SupplierMatcher` (каналы,
-  слияние, обогащение, политика, ранжирование) и тонкая обёртка
-  `SupplierSearchService` для поиска по тексту.
+  слияние, обогащение, политика, ранжирование), общий сценарий
+  `SearchPipeline` (разбор текста → совпадения → предупреждения и версия
+  конвейера) и тонкая обёртка `SupplierSearchService` для поиска по тексту.
 - `src/service/procurement_upload/` — загрузка файла закупок: деление на
-  закупки, фоновая обработка через тот же `SupplierMatcher`, повторы и
-  дообработка после перезапуска.
+  закупки, фоновая обработка через тот же `SearchPipeline` (порт
+  `LotSearching`), повторы и дообработка после перезапуска.
+- Правила, общие для контекстов, живут в `src/models/`: роль компании по
+  предложениям с подтверждённым продавцом (`company_role.py`), правило ИНН с
+  контрольной суммой (`inn.py`), итог сопоставления (`match.py`). Контекст
+  сервиса импортирует только себя, `src.service.errors` и `src.models`; это
+  проверяет `tests/architecture/test_placement.py`.
 - `src/service/supplier/` — бизнес-логика: `SupplierSyncWorker` запускает
   адаптеры всех включённых источников конкурентно, прогоняет собранный пакет
   через нормализатор и классификатор и сохраняет результат;
@@ -50,6 +56,36 @@
   источники и подключены их адаптеры.
 - `migration/` — SQL-миграции ClickHouse.
 - `reference/` — файлы справочников: правятся глазами, в коде не дублируются.
+
+## Глоссарий
+
+| Понятие | В коде | В контракте |
+| --- | --- | --- |
+| позиция запроса | `QueryItem` | поиск: `items`, `itemId`; закупка: `products`, `productId` |
+| кандидат | `SupplierCandidate` | поиск: `candidates`; закупка: `companies` |
+| предложение и его источник | `OfferEvidence` (в сборке — `cards`) | `source` у совпадения |
+| совпадение | `ProductMatch`, основание `MatchBasis` | `matches`, `basis` |
+| роль продавца в предложении | `SupplierRole` | — |
+| роль компании | `CompanyRole`, `RoleAssessment` | `role`, `roleSource` |
+| причина проверки | `CheckReason` | `checkReasons` |
+| факты о кандидатах | `Enrichment` | — |
+| пересчёт сохранённых позиций | `OfferEnrichmentService` | — |
+
+Имена в контракте загрузки выровняются с поиском при следующей несовместимой
+версии контракта.
+
+## Правила рекомендации
+
+Статус `recommended` выдаётся, только когда не сработало ни одно правило
+`CandidatePolicy` (§7 `ml_contr.md`). Совпадения `stock` и `catalog` и
+основание роли компании берутся только у предложений, продавец которых
+подтверждён и без конфликта (`OfferEvidence.backs_supplier`); `catalog` —
+только при действующем `accepted`, когда хеш сопоставления совпадает с хешем
+предложения (`catalog_confirmed`). Предложение неподтверждённого продавца даёт
+лишь `inferred`, а `noCurrentOffer` проверяется по предложениям, на которых
+держатся совпадения, а не по любым текущим предложениям компании. ИНН
+проверяется контрольной суммой (`src/models/inn.py`), заполнители вроде
+`0000000000` дают `innMissing`.
 
 ## Единый контракт источника
 
@@ -271,16 +307,18 @@ API получает пул такого размера, и каналы пои�
 | Метод | Путь | Ответ |
 | --- | --- | --- |
 | `POST` | `/api/searches` | 201, результат поиска и `Location: /api/searches/{id}` |
-| `GET` | `/api/searches/{searchId}` | 200, сохранённый результат |
+| `GET` | `/api/searches/{searchId}` | 200 или 304, сохранённый результат |
 | `GET` | `/api/searches?limit=1..50` | 200, последние поиски (по умолчанию 10) |
 | `GET` | `/api/suppliers/{supplierId}` | 200, профиль поставщика и его карточки |
 | `GET` | `/api/uploads?limit=1..50` | 200, последние загрузки с прогрессом (по умолчанию 20) |
 | `POST` | `/api/uploads` | 201, загрузка принята, `Location: /api/uploads/{id}` |
-| `GET` | `/api/uploads/{uploadId}` | 200, загрузка, закупки со статусами и отклонённые строки |
+| `GET` | `/api/uploads/{uploadId}` | 200 или 304, загрузка, закупки со статусами и отклонённые строки |
+| `GET` | `/api/uploads/{uploadId}/summary` | 200 или 304, только прогресс загрузки — для частого опроса |
 | `GET` | `/api/uploads/{uploadId}/lots/{lotId}` | 200, закупка, её рекомендация и прогресс загрузки |
 | `POST` | `/api/uploads/{uploadId}/results` | 200, рекомендации выбранных закупок (`{"lotIds": [...]}`) |
-| `GET` | `/api/health/live` | 200, `{"status":"ok"}` |
+| `GET`, `HEAD` | `/api/health/live` | 200, `{"status":"ok"}` |
 | `GET` | `/api/health/ready` | 200 или 503, `{"ready", "components":[{"name","state"}]}` |
+| `GET` | `/api/metrics` | 200, счётчики в текстовом формате Prometheus; снаружи nginx отвечает 404 |
 
 Тело поиска: `text` (обязательно), `limit` (1..50, по умолчанию 20) и
 `filters` с `regions` (до 100 значений по 100 символов) и `itemType` (`goods`,
@@ -318,13 +356,58 @@ API получает пул такого размера, и каналы пои�
 | 429 | `rate_limited` | ограничение частоты nginx; `Retry-After: 1` |
 | 404 | `not_found` | неизвестный маршрут |
 | 405 | `method_not_allowed` | метод не поддерживается маршрутом |
-| 503 | `search_unavailable` | недоступны все каналы поиска |
+| 503 | `search_unavailable` | недоступны все каналы поиска; `Retry-After: 5` |
 | 503 | `storage_unavailable` | ClickHouse недоступен; заголовок `Retry-After: 5` |
-| 504 | `search_timeout` | превышен `SEARCH_TIMEOUT_SECONDS` |
-| 500 | `internal_error` | прочие ошибки, без деталей наружу |
+| 504 | `search_timeout` | превышен `SEARCH_TIMEOUT_SECONDS`; `Retry-After: 5` |
+| 500 | `internal_error` | прочие ошибки и нарушения инвариантов модели на сервере, без деталей наружу |
 
-Логи пишутся в JSON; текст поискового запроса в них не попадает — только его
-длина и SHA-256.
+Полный список кодов с HTTP-статусами — [`contracts/error-codes.json`](../contracts/error-codes.json),
+правила совместимости контракта — [`contracts/README.md`](../contracts/README.md).
+На 422 отображаются только ошибки ввода (`InvalidInputError`: пустой или
+слишком длинный текст, неверный `limit`, ошибки файла извещений). Остальные
+ошибки модели означают дефект или устаревшую запись и отдаются как 500 с
+записью стека в лог. Сохранённый поиск или результат закупки, который текущий
+код не читает (неизвестная `payload_version` или нарушенный инвариант), даёт
+ошибку адаптера `CorruptRecordError` и тоже 500.
+
+`POST /api/searches` отвечает 201 с `Location`; если результат не удалось
+сохранить (`archiveFailed`), ответ — 200 без `Location`.
+`GET /api/searches/{id}` и `GET /api/uploads/{id}` отдают слабый `ETag` и
+`Cache-Control: private, no-cache`; повтор с `If-None-Match` даёт 304 без тела.
+Тег загрузки строится по прогрессу (`processed` и счётчики статусов), поэтому
+304 отвечается по одной лёгкой выборке сводки, без чтения закупок. Списки
+отдаются с `Cache-Control: no-store`. Фронтенд опрашивает
+`/api/uploads/{id}/summary` раз в секунду, а полную деталь перечитывает раз в
+5 секунд и сразу после окончания обработки.
+
+### Наблюдаемость
+
+Логи пишутся в JSON в stdout. API запускается командой uvicorn с
+`--log-config src/controller/api/logging.json`: логгеры uvicorn передают записи
+в корневой JSON-обработчик, многострочных текстовых трассировок нет. Текст
+поискового запроса в лог не попадает — только его длина и SHA-256.
+
+- Каждый запрос завершается одной записью `request completed` с `method`,
+  `path`, `route`, `status` и `duration_ms`, в том числе при 500. Ответ всегда
+  содержит `X-Request-Id` и `Server-Timing`.
+- `requestId` хранится в `contextvars` и попадает во все записи сервиса и
+  адаптеров (фильтр `RequestIdFilter`), уходит в ML-сервис заголовком
+  `X-Request-Id`, а в ClickHouse — настройкой `log_comment`: запросы одного
+  поиска находятся в `system.query_log` по `log_comment`.
+- Поиск пишет итоговое событие `search completed`: `search_id`, число позиций и
+  кандидатов, `recommended`, `check`, `empty`, коды предупреждений, каналы и
+  версия конвейера. Отказы каналов и источников обогащения пишутся полями
+  `channel` и `source`.
+- `/api/metrics` отдаёт счётчики Prometheus: `http_requests_total`,
+  `http_request_duration_seconds_sum/_count` по маршруту, `search_requests_total`,
+  `search_empty_total`, `search_candidates_total{status}`,
+  `search_warnings_total{code,subject}`. Снаружи маршрут закрыт в nginx, внутри
+  сети Compose он доступен по `http://api:8000/api/metrics`.
+- Повторяющийся сбой пробы готовности и дообработки закупок пишет стек один
+  раз, следующие записи — без стека, с полями `error_type` и `repeated`.
+- Healthcheck контейнера `api` и приёмка релиза опираются на
+  `/api/health/ready`: релиз, который не может прочитать ClickHouse, не
+  активируется.
 
 nginx фронтенда (`deploy/nginx.conf`) ограничивает частоту с одного адреса:
 `POST /api/searches` — 2 запроса в секунду с запасом 10, `POST /api/uploads` —
@@ -413,8 +496,14 @@ UTF-8 (с BOM или без) либо Windows-1251, обязательные к�
 процессом uvicorn без `--workers` и одной репликой; это проверяет
 `tests/architecture/test_deployment.py`.
 
+Закупка проходит тот же `SearchPipeline`, что и поиск по тексту, поэтому её
+результат хранит предупреждения поиска (`itemsInferred`, `channelFailed`,
+`enrichmentFailed`) и версию конвейера; рекомендация закупки отдаёт их полями
+`warnings` и `pipeline` (`null` у результатов, сохранённых до payload версии 2).
+
 Статус закупки: `queued` — ждёт обработки, `ready` — лидер рекомендован,
-`needsCheck` — лидер требует проверки или есть предполагаемые позиции,
+`needsCheck` — лидер требует проверки, есть предполагаемые позиции или отказал
+канал поиска либо источник обогащения,
 `noCandidates` — кандидатов нет, `failed` — обработать не удалось. Рекомендация
 содержит только коды (`checkReasons`, `highlights`, `basis`, `role`), текст для
 людей строит фронтенд на языке интерфейса. Примеры ответов — в
@@ -556,14 +645,21 @@ docker compose -p rlt-bench stop
 Тесты, линтер, форматтер и типы из `backend/`:
 
 ```sh
-uv run pytest --cov=src/controller --cov=src.application.config --cov-report=term-missing
+uv run pytest --cov=src --cov-report=term:skip-covered
 uv run ruff check .
 uv run ruff format --check .
 uv run mypy
 ```
 
-Тесты с chDB работают только в Linux. Полный прогон в контейнере — из корня
-репозитория `docker compose --profile tests run --rm backend-tests` или
+Порог покрытия (`fail_under = 90`) проверяется при запуске с `--cov=src`.
+`tests/test_smoke_scripts.py` прогоняет смоуки нормализатора, классификатора,
+пересчёта и идентичности внутри pytest, `tests/properties/` — свойства
+разбора текста и моделей на `hypothesis`, `tests/architecture/` — слои, чистоту
+нового кода и размещение протоколов, ошибок и контекстов сервиса во всём `src`.
+
+Тесты с chDB работают только в Linux. С `REQUIRE_CHDB=1` (так запускает CI)
+пропуск любого chDB-теста делает прогон неуспешным. Полный прогон в контейнере —
+из корня репозитория `docker compose --profile tests run --rm backend-tests` или
 напрямую:
 
 ```sh
