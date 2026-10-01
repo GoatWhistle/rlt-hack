@@ -40,6 +40,9 @@ services:
         read_only: true
         bind:
           create_host_path: false
+      - type: volume
+        source: productcenter-cache
+        target: ${PRODUCTCENTER_CACHE_DIR:-/data/productcenter-cache}
 
   sync-job:
     image: rlt/backend:${RLT_IMAGE_TAG:?Set the release revision}

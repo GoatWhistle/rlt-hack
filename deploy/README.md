@@ -10,8 +10,8 @@ Workflow `.github/workflows/ci-cd.yml` запускается для pull reques
 
 - Frontend: Node.js 24, `npm ci`, `npm run verify`, production-сборка,
   Playwright для desktop/mobile и axe.
-- Backend: Python 3.13, Ruff, четыре проверки хранилища и джобы на искусственных
-  данных, без обращения к внешним каталогам.
+- Backend: Python 3.13, Ruff, девять проверок хранилища, джобы и адаптеров
+  на искусственных данных, без обращения к внешним каталогам.
 - ML: Python 3.12, Ruff и pytest на искусственных данных. GPU-зависимости
   не устанавливаются; GPU-тест пропускается. Датасет LFS не загружается.
 - Контейнеры: ShellCheck, сборка frontend/backend, запуск отдельной тестовой БД,
