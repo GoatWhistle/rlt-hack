@@ -61,7 +61,7 @@ def pool(frame, graded):
     )
 
 
-def train(train_dir, validation_dir, out, iterations=600):
+def train(train_dir, validation_dir, out, iterations=600, text_validation_dir=None):
     out.mkdir(parents=True, exist_ok=False)
     training = (
         pq.read_table(train_dir / "features.parquet").to_pandas().sort_values(["lot_id", "rank"])
@@ -87,7 +87,23 @@ def train(train_dir, validation_dir, out, iterations=600):
             "Validation selects the model; final test remains separate.",
         ],
     }
-    best = report["baseline"]["winner_mrr"]
+    text_frame, text_rows = None, None
+    if text_validation_dir:
+        text_frame = (
+            pq.read_table(text_validation_dir / "features.parquet")
+            .to_pandas()
+            .sort_values(["lot_id", "rank"])
+        )
+        text_rows = [
+            json.loads(line)
+            for line in (text_validation_dir / "predictions.jsonl").read_text().splitlines()
+        ]
+        if [row["lot_id"] for row in text_rows] != [row["lot_id"] for row in rows]:
+            raise ValueError("Text and full validation must use the same queries")
+        report["text_baseline"] = metrics(
+            text_rows, {row["lot_id"]: row["candidate_inns"] for row in text_rows}
+        )
+    best = report.get("text_baseline", report["baseline"])["winner_mrr"]
     chosen = None
     for name, loss, graded in [
         ("softmax_winner", "QuerySoftMax", False),
@@ -124,12 +140,22 @@ def train(train_dir, validation_dir, out, iterations=600):
         score["importance"] = {
             key: float(value) for key, value in zip(FEATURES, importance, strict=True)
         }
+        selection_score = score
+        selection_baseline = report["baseline"]
+        if text_frame is not None:
+            score["text_only"] = metrics(
+                text_rows, orders(text_frame, model.predict(text_frame[list(FEATURES)]))
+            )
+            selection_score = score["text_only"]
+            selection_baseline = report["text_baseline"]
         report["models"][name] = score
         if (
-            score["winner_mrr"] > best
+            selection_score["winner_mrr"] > best
+            and selection_score["bidder_hit_10"] >= selection_baseline["bidder_hit_10"] - 0.01
+            and score["winner_mrr"] >= report["baseline"]["winner_mrr"]
             and score["bidder_hit_10"] >= report["baseline"]["bidder_hit_10"] - 0.01
         ):
-            best, chosen = score["winner_mrr"], name
+            best, chosen = selection_score["winner_mrr"], name
         write_json(out / "report.json", report)
     report["selected"] = chosen
     if chosen:
@@ -156,10 +182,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--train", type=Path, required=True)
     parser.add_argument("--validation", type=Path, required=True)
+    parser.add_argument("--text-validation", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--iterations", type=int, default=600)
     args = parser.parse_args()
-    train(args.train, args.validation, args.out, args.iterations)
+    train(args.train, args.validation, args.out, args.iterations, args.text_validation)
 
 
 if __name__ == "__main__":
