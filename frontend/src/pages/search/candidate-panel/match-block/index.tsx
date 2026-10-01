@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next"
+import { useMatchFigure } from "@/entities/evidence/labels"
 import { BASIS_ORDER, MatchRow } from "@/entities/evidence/ui/match-row"
 import { type Candidate, matchOf, type QueryItem } from "@/entities/search/model"
 import { Caption } from "@/shared/ui/caption"
@@ -14,6 +15,7 @@ export type MatchBlockProps = {
 
 export function MatchBlock({ candidate, items }: MatchBlockProps) {
   const { t } = useTranslation("search")
+  const figure = useMatchFigure()(candidate.matches, items.length)
   const rows = items
     .map((item) => ({ item, match: matchOf(candidate, item.id) }))
     .sort(
@@ -24,10 +26,7 @@ export function MatchBlock({ candidate, items }: MatchBlockProps) {
   return (
     <PanelBlock
       title={t("evidence.matchesTitle")}
-      aside={t("evidence.matchesAside", {
-        matched: candidate.matches.length,
-        total: items.length,
-      })}
+      aside={figure.note ? `${figure.value} ${figure.note}` : figure.value}
     >
       <Stack as="ul">
         {rows.map(({ item, match }) => (

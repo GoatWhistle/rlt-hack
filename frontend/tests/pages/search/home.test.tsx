@@ -15,7 +15,9 @@ describe("the search page", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: en("home.title", "search") }),
     ).toBeInTheDocument()
-    expect(await within(recentRegion()).findByText(en("recent.empty", "search"))).toBeVisible()
+    const guide = await screen.findByRole("region", { name: en("guide.title", "search") })
+    expect(within(guide).getByText(en("guide.inferred", "search"))).toBeVisible()
+    expect(screen.queryByRole("region", { name: en("recent.title", "search") })).toBeNull()
   })
 
   it("lists recent searches as links to their results", async () => {
@@ -37,7 +39,9 @@ describe("the search page", () => {
     const alert = await within(recentRegion()).findByRole("alert")
     expect(alert).toHaveTextContent(en("invalid_limit", "errors"))
     await user.click(within(alert).getByRole("button", { name: en("recent.retry", "search") }))
-    expect(await within(recentRegion()).findByText(en("recent.empty", "search"))).toBeVisible()
+    expect(
+      await screen.findByRole("region", { name: en("guide.title", "search") }),
+    ).toBeVisible()
   })
 
   it("prefills a query from the address and opens the result after the search", async () => {

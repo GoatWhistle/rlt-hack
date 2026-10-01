@@ -2,7 +2,7 @@
   "loading": "Loading the purchase",
   "missing": {
     "title": "Purchase not found",
-    "text": "This lot is not in the upload, or the upload is not available in this browser.",
+    "text": "There is no such purchase in this file. Open the file and pick a purchase from the list.",
     "toFile": "Back to the file",
     "toUploads": "Go to uploads"
   },
@@ -21,8 +21,8 @@
   "views": {
     "legend": "Review section",
     "products": "Products",
-    "companies": "Companies",
-    "evidence": "Grounds"
+    "candidates": "Candidates",
+    "evidence": "Evidence"
   },
   "header": {
     "back": "Purchases · {{file}}",
@@ -39,19 +39,12 @@
     "export": "Download results",
     "exportShort": "Download"
   },
-  "chain": {
-    "label": "Reasoning chain",
-    "request": "Request",
-    "products": "Products",
-    "companies": "Companies",
-    "evidence": "Grounds"
-  },
   "products": {
     "title": "Products",
     "origin": {
       "notice": "From the notice",
       "inferred": "Needs confirming",
-      "user": "Confirmed by you"
+      "user": "Specified by you"
     },
     "originNote": {
       "notice": "The item and its OKPD2 code come from the procurement notice.",
@@ -71,7 +64,6 @@
   },
   "companies": {
     "title": "Candidates",
-    "matchCount": "{{matched, number}} of {{total, number}}",
     "purchases_one": "{{count, number}} purchase",
     "purchases_other": "{{count, number}} purchases",
     "checkReason": {
@@ -90,14 +82,14 @@
     "showMore": "Show {{count, number}} more",
     "showLess": "Show fewer",
     "compare": "Compare chosen ({{count, number}})",
-    "compareHint": "Choose two or more candidates in the grounds to compare them."
+    "compareHint": "Press “Choose candidate” for two companies to compare them."
   },
   "evidence": {
     "summaryTitle": "Why we recommend it",
     "checkTitle": "Why it needs checking",
     "mainClarify": "Key thing to clarify.",
-    "matchesTitle": "Match for every product",
-    "matchesHint": "by records, not warehouse stock",
+    "matchesTitle": "Match by product",
+    "matchesHint": "The match comes from catalogs and price lists, not from warehouse stock.",
     "purchasesTitle": "Purchase history",
     "purchaseLot": "Lot {{id}} · {{title}}",
     "purchasesSummary_one": "{{count, number}} similar · wins: {{wins, number}}",
@@ -110,7 +102,6 @@
     "noConfirmations": "No confirming sources: the match rests on assumptions.",
     "unmatched_one": "No records for {{count, number}} product: {{names}}",
     "unmatched_other": "No records for {{count, number}} products: {{names}}",
-    "matchesAside": "{{matched, number}} of {{total, number}}",
     "clarifyAside": "{{count, number}}",
     "choose": "Choose candidate",
     "chosen": "Remove from chosen",
@@ -142,7 +133,8 @@
     "clarify": "Key thing to clarify",
     "contacts": "Contacts",
     "unknown": "No records",
-    "note": "Past wins do not guarantee a future delivery. Prices and ratings are not shown: there is no confirmed data on them."
+    "note": "Past wins do not guarantee a future delivery. Prices and ratings are not shown: there is no confirmed data on them.",
+    "best": "(best value)"
   },
   "clarify": {
     "reason": {

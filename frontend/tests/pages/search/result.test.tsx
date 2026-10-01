@@ -57,11 +57,10 @@ describe("a search result", () => {
   it("grounds the chosen candidate in sources, history and contacts", async () => {
     const { user } = await openContract()
     const grounds = screen.getByRole("article", { name: /Северный Провиант/ })
-    expect(within(grounds).getByText("2/2")).toBeVisible()
-    expect(within(grounds).getByRole("link", { name: "Прайс-лист компании" })).toHaveAttribute(
-      "href",
-      "https://severny-proviant.example.org/price/grechka",
-    )
+    expect(within(grounds).getAllByText("2/2")).toHaveLength(2)
+    expect(
+      within(grounds).getByRole("link", { name: "Прайс-лист компании (opens in a new tab)" }),
+    ).toHaveAttribute("href", "https://severny-proviant.example.org/price/grechka")
     expect(within(grounds).getByText("checked Sep 29, 2026")).toBeInTheDocument()
     expect(within(grounds).getByText(en("basis.catalog", "evidence"))).toBeInTheDocument()
     expect(within(grounds).getByText("11 similar · wins: 4")).toBeInTheDocument()
@@ -73,7 +72,7 @@ describe("a search result", () => {
     )
     await user.click(screen.getByRole("button", { name: /Зерновой Двор/ }))
     const check = screen.getByRole("article", { name: /Зерновой Двор/ })
-    expect(within(check).getByText(en("checkReason.innMissing", "evidence"))).toBeVisible()
+    expect(check).toHaveTextContent(en("checkReason.innMissing", "evidence"))
     expect(within(check).getByText(en("evidence.noRoleBasis", "search"))).toBeVisible()
     expect(within(check).getByText(en("contacts.none", "evidence"))).toBeVisible()
     expect(within(check).getByText(en("noSource", "evidence"))).toBeVisible()

@@ -17,9 +17,19 @@
   "pending_one": "{{count, number}} more is still processing and is not included — download later.",
   "pending_other": "{{count, number}} more are still processing and are not included — download later.",
   "nothing": "No finished results in the chosen scope yet.",
-  "noShortlist": "You have not chosen candidates in these purchases yet, so the supplier file will be empty. Candidates are chosen in the purchase review.",
+  "noShortlist": "Nobody is chosen yet: press “Choose candidate” in the purchase review.",
   "files": "Two CSV files: products and suppliers. Rows link back to the source lot through lot_id.",
   "submit": "Download 2 CSV files",
   "submitting": "Preparing files…",
-  "failed": "The files could not be prepared. Please try again."
+  "failed": "The files could not be prepared. Please try again.",
+  "done": "Files downloaded: products and suppliers.",
+  "search": {
+    "title": "Download candidates",
+    "noShortlist": "Nobody is chosen yet: press “Choose candidate” in the evidence.",
+    "scope_one": "{{count, number}} candidate is included.",
+    "scope_other": "{{count, number}} candidates are included.",
+    "files": "One CSV file: role, status, match by item, reasons to check and contacts.",
+    "submit": "Download CSV",
+    "done": "File downloaded: {{name}}"
+  }
 }

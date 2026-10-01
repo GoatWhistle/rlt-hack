@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 import type { SearchSummary } from "@/entities/search/model"
@@ -5,7 +6,6 @@ import { useRecentSearches } from "@/entities/search/queries"
 import { searchPath } from "@/shared/config/paths"
 import { useErrorMessage } from "@/shared/errors/use-error-message"
 import { useFormatters } from "@/shared/i18n/formatters"
-import { Caption } from "@/shared/ui/caption"
 import { Icon } from "@/shared/ui/icon"
 import { LoadingState } from "@/shared/ui/loading-state"
 import { ResultSection } from "@/shared/ui/result-section"
@@ -18,7 +18,7 @@ function RecentRow({ search }: { readonly search: SearchSummary }) {
   const facts = [
     t("recent.items", { count: search.items }),
     t("recent.candidates", { count: search.candidates }),
-    t("recent.recommended", { count: search.recommended }),
+    ...(search.recommended > 0 ? [t("recent.recommended", { count: search.recommended })] : []),
   ]
   return (
     <Link to={searchPath(search.searchId)} className={styles.row}>
@@ -34,10 +34,9 @@ function RecentRow({ search }: { readonly search: SearchSummary }) {
   )
 }
 
-function RecentBody() {
+function RecentBody({ recent }: { readonly recent: ReturnType<typeof useRecentSearches> }) {
   const { t } = useTranslation("search")
   const errorMessage = useErrorMessage()
-  const recent = useRecentSearches()
   if (recent.isPending) return <LoadingState label={t("loading")} />
   if (recent.isError) {
     return (
@@ -45,13 +44,6 @@ function RecentBody() {
         <span>{errorMessage(recent.error)}</span>
         <TextButton onClick={() => recent.refetch()}>{t("recent.retry")}</TextButton>
       </div>
-    )
-  }
-  if (recent.data.length === 0) {
-    return (
-      <p className={styles.empty}>
-        <Caption>{t("recent.empty")}</Caption>
-      </p>
     )
   }
   return (
@@ -65,11 +57,13 @@ function RecentBody() {
   )
 }
 
-export function RecentList() {
+export function RecentList({ empty }: { readonly empty: ReactNode }) {
   const { t } = useTranslation("search")
+  const recent = useRecentSearches()
+  if (recent.isSuccess && recent.data.length === 0) return empty
   return (
     <ResultSection framed title={t("recent.title")}>
-      <RecentBody />
+      <RecentBody recent={recent} />
     </ResultSection>
   )
 }

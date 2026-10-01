@@ -32,6 +32,19 @@
   background: var(--accent-tint);
 }
 
+.option:has(:disabled) {
+  border-color: var(--line-subtle);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.hint {
+  padding-inline: var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
 .input {
   width: var(--checkbox-size);
   height: var(--checkbox-size);

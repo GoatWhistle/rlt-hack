@@ -10,6 +10,12 @@
   gap: var(--space-1) var(--space-3);
 }
 
+.tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
 .highlights {
   flex: 1 1 12rem;
   min-width: 0;

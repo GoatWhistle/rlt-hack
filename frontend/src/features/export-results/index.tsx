@@ -9,11 +9,14 @@ import { Button } from "@/shared/ui/button"
 import { Caption } from "@/shared/ui/caption"
 import { Dialog } from "@/shared/ui/dialog"
 import { RadioGroup } from "@/shared/ui/radio-group"
+import { useToast } from "@/shared/ui/toast/toast-context"
+import { type CandidateScope, useCandidateChoice } from "./candidate-choice"
 import { CSV_TYPE, exportFileNames, productsCsv, suppliersCsv } from "./csv"
 import styles from "./styles.module.css"
 
+export { SearchExportDialog } from "./search-dialog"
+
 type LotScope = "lot" | "selected" | "file"
-type CandidateScope = "all" | "shortlist"
 
 export type ExportDialogProps = {
   readonly open: boolean
@@ -25,16 +28,23 @@ export type ExportDialogProps = {
   readonly currentLotId?: string
 }
 
+function initialScope(currentLotId: string | undefined, selected: number): LotScope {
+  if (currentLotId) return "lot"
+  return selected > 0 ? "selected" : "file"
+}
+
 export function ExportDialog(props: ExportDialogProps) {
   const { open, onClose, uploadId, fileName, lots, selectedIds = [], currentLotId } = props
   const { t } = useTranslation("export")
   const gateway = useUploadGateway()
+  const toast = useToast()
   const labels = { checkReason: useCheckReasonText(), highlight: useHighlightText() }
-  const initial: LotScope = currentLotId ? "lot" : selectedIds.length > 0 ? "selected" : "file"
-  const [lotScope, setLotScope] = useState<LotScope>(initial)
-  const [candidates, setCandidates] = useState<CandidateScope>("all")
+  const [lotScope, setLotScope] = useState<LotScope>(() =>
+    initialScope(currentLotId, selectedIds.length),
+  )
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [wasOpen, setWasOpen] = useState(open)
 
   const scopes: { value: LotScope; label: string; ids: readonly string[] }[] = [
     ...(currentLotId
@@ -61,8 +71,18 @@ export function ExportDialog(props: ExportDialogProps) {
   const pending = inScope.filter((lot) => lot.status === "queued").length
   const shortlists = shortlistsOf(uploadId)
   const chosen = ready.reduce((sum, lot) => sum + (shortlists[lot.id]?.length ?? 0), 0)
+  const choice = useCandidateChoice(chosen, t("noShortlist"))
 
-  async function download() {
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setLotScope(initialScope(currentLotId, selectedIds.length))
+      setFailed(false)
+      choice.reset()
+    }
+  }
+
+  async function download(scope: CandidateScope) {
     setBusy(true)
     setFailed(false)
     try {
@@ -74,9 +94,10 @@ export function ExportDialog(props: ExportDialogProps) {
       saveTextFile(names.products, productsCsv(results), CSV_TYPE)
       saveTextFile(
         names.suppliers,
-        suppliersCsv(results, labels, candidates === "shortlist" ? shortlists : undefined),
+        suppliersCsv(results, labels, scope === "shortlist" ? shortlists : undefined),
         CSV_TYPE,
       )
+      toast.show({ tone: "success", message: t("done") })
       onClose()
     } catch {
       setFailed(true)
@@ -91,7 +112,10 @@ export function ExportDialog(props: ExportDialogProps) {
       title={t("title")}
       onClose={onClose}
       footer={
-        <Button disabled={busy || ready.length === 0} onClick={() => void download()}>
+        <Button
+          disabled={busy || ready.length === 0}
+          onClick={() => void download(choice.scope)}
+        >
           {busy ? t("submitting") : t("submit")}
         </Button>
       }
@@ -103,21 +127,12 @@ export function ExportDialog(props: ExportDialogProps) {
           value={lotScope}
           onChange={setLotScope}
         />
-        <RadioGroup
-          legend={t("candidates.legend")}
-          options={[
-            { value: "all", label: t("candidates.all") },
-            { value: "shortlist", label: t("candidates.shortlist", { count: chosen }) },
-          ]}
-          value={candidates}
-          onChange={setCandidates}
-        />
+        {choice.field}
         <div className={styles.summary} aria-live="polite">
           <p>
             {ready.length > 0 ? t("scope", { count: ready.length }) : t("nothing")}
             {pending > 0 ? ` ${t("pending", { count: pending })}` : ""}
           </p>
-          {candidates === "shortlist" && chosen === 0 ? <p>{t("noShortlist")}</p> : null}
           <Caption>{t("files")}</Caption>
         </div>
         {failed ? (

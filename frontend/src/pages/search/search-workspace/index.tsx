@@ -1,12 +1,16 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { matchOf, type SearchResult } from "@/entities/search/model"
+import { useSearchShortlist } from "@/entities/shortlist/store"
 import { SupplierProfilePanel } from "@/entities/supplier/ui/profile-panel"
 import { searchDraftPath } from "@/shared/config/paths"
+import { useQueryState } from "@/shared/routing/use-query-state"
 import { ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
 import {
+  parseView,
   useWorkspaceView,
+  viewParam,
   WorkspaceEmpty,
   WorkspaceLayout,
   type WorkspaceView,
@@ -15,35 +19,50 @@ import { CandidateList } from "../candidate-list"
 import { CandidatePanel } from "../candidate-panel"
 import { ItemList } from "../item-list"
 
+export const SEARCH_PARAMS = ["candidate", "item", "view"] as const
+
 export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
   const { t } = useTranslation("search")
   const { items, candidates } = result
-  const { narrow, view, show, stackRef } = useWorkspaceView()
-  const [selectedId, setSelectedId] = useState(candidates[0]?.id)
-  const [itemId, setItemId] = useState<string | null>(null)
+  const [params, update] = useQueryState(SEARCH_PARAMS)
+  const view = parseView(params.view)
+  const { narrow, stackRef, prepareSwitch } = useWorkspaceView(view)
+  const shortlist = useSearchShortlist(result.searchId)
   const [profileOpen, setProfileOpen] = useState(false)
 
-  const focusItem = items.find((item) => item.id === itemId)
+  const focusItem = items.find((item) => item.id === params.item)
   const shown = focusItem
     ? candidates.filter((candidate) => matchOf(candidate, focusItem.id))
     : candidates
   const selected =
-    shown.find((candidate) => candidate.id === selectedId) ??
+    shown.find((candidate) => candidate.id === params.candidate) ??
     shown[0] ??
-    candidates.find((candidate) => candidate.id === selectedId)
+    candidates.find((candidate) => candidate.id === params.candidate) ??
+    candidates[0]
+
+  function show(next: WorkspaceView) {
+    prepareSwitch(false)
+    update({ view: viewParam(next) })
+  }
 
   function select(id: string) {
-    setSelectedId(id)
-    if (narrow) show("evidence")
+    if (narrow) prepareSwitch(true)
+    update({ candidate: id, ...(narrow ? { view: viewParam("evidence") } : {}) })
   }
 
   function filter(next: string | null) {
-    setItemId(next)
-    if (narrow && next) show("candidates")
+    const move = narrow && next !== null
+    if (move) prepareSwitch(true)
+    update({ item: next, ...(move ? { view: viewParam("candidates") } : {}) })
   }
 
   const itemPane = (
-    <ItemList items={items} candidates={candidates} activeId={itemId} onFilter={filter} />
+    <ItemList
+      items={items}
+      candidates={candidates}
+      activeId={focusItem?.id ?? null}
+      onFilter={filter}
+    />
   )
   if (!selected) {
     return (
@@ -81,6 +100,7 @@ export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
             <CandidateList
               candidates={shown}
               selectedId={selected.id}
+              chosen={shortlist.ids}
               filter={
                 focusItem ? { name: focusItem.name, onReset: () => filter(null) } : undefined
               }
@@ -92,6 +112,8 @@ export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
               key={selected.id}
               candidate={selected}
               items={items}
+              chosen={shortlist.ids.includes(selected.id)}
+              onChoose={() => shortlist.toggle(selected.id)}
               onProfile={() => setProfileOpen(true)}
             />
           ),

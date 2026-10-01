@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { useRoleLabel } from "@/entities/evidence/labels"
+import { useRegionText, useRoleLabel } from "@/entities/evidence/labels"
 import { ContactList } from "@/entities/evidence/ui/contact-list"
 import { SourceLine } from "@/entities/evidence/ui/source-line"
 import type { Candidate } from "@/entities/search/model"
@@ -10,6 +10,7 @@ import styles from "./styles.module.css"
 export function CompanyBlock({ candidate }: { readonly candidate: Candidate }) {
   const { t } = useTranslation("search")
   const roleLabel = useRoleLabel()
+  const regionText = useRegionText()
   const facts: Fact[] = [
     { key: "role", term: t("evidence.role"), value: roleLabel(candidate.role) },
     {
@@ -22,7 +23,7 @@ export function CompanyBlock({ candidate }: { readonly candidate: Candidate }) {
       ),
     },
     ...(candidate.region
-      ? [{ key: "region", term: t("evidence.region"), value: candidate.region, mono: true }]
+      ? [{ key: "region", term: t("evidence.region"), value: regionText(candidate.region) }]
       : []),
   ]
   return (

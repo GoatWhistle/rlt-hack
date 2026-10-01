@@ -8,19 +8,18 @@
     "label": "Опишите, что нужно",
     "placeholder": "Например: крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
     "hint": "Enter — искать, Shift+Enter — новая строка",
-    "submit": "Найти поставщиков",
-    "pending": "Ищем",
+    "submit": "Найти",
     "counter": "{{count, number}} из {{limit, number}} символов",
     "examples": "Попробуйте пример",
     "example": {
       "groats": "Крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
       "office": "Бумага офисная А4 80 г/м², 300 пачек; ручки шариковые синие, 500 шт",
       "medical": "Перчатки нитриловые смотровые M, 2000 пар; маски медицинские трёхслойные, 5000 шт"
-    }
+    },
+    "progress": "Выделяем позиции и ищем компании…"
   },
   "recent": {
     "title": "Недавние поиски",
-    "empty": "Поисков пока нет. Они появятся здесь, чтобы можно было вернуться к результатам.",
     "items_one": "{{count, number}} позиция",
     "items_few": "{{count, number}} позиции",
     "items_many": "{{count, number}} позиций",
@@ -29,17 +28,18 @@
     "candidates_few": "{{count, number}} кандидата",
     "candidates_many": "{{count, number}} кандидатов",
     "candidates_other": "{{count, number}} кандидата",
-    "recommended_one": "{{count, number}} рекомендуем",
-    "recommended_few": "{{count, number}} рекомендуем",
-    "recommended_many": "{{count, number}} рекомендуем",
-    "recommended_other": "{{count, number}} рекомендуем",
+    "recommended_one": "рекомендуем: {{count, number}}",
+    "recommended_few": "рекомендуем: {{count, number}}",
+    "recommended_many": "рекомендуем: {{count, number}}",
+    "recommended_other": "рекомендуем: {{count, number}}",
     "retry": "Повторить"
   },
   "header": {
     "back": "Новый поиск",
     "edit": "Изменить запрос",
     "label": "Поисковый запрос",
-    "created": "Поиск от {{date}}"
+    "created": "Поиск от {{date}}",
+    "export": "Скачать CSV"
   },
   "views": {
     "legend": "Раздел результата",
@@ -76,7 +76,8 @@
     "score": "Релевантность",
     "scoreValue": "{{value}} из 1",
     "showMore": "Показать ещё {{count, number}}",
-    "showLess": "Свернуть"
+    "showLess": "Свернуть",
+    "chosen": "Выбран"
   },
   "warning": {
     "title": "Результат может быть неполным",
@@ -86,11 +87,9 @@
     "itemsInferred": "Часть позиций добавлена системой. Подтвердите их, прежде чем обращаться к поставщикам."
   },
   "evidence": {
-    "highlightsTitle": "Что говорит в пользу",
-    "checkTitle": "Что проверить перед обращением",
+    "checkTitle": "Почему нужна проверка",
     "matchesTitle": "Совпадение по каждой позиции",
-    "matchesAside": "{{matched, number}} из {{total, number}}",
-    "matchesHint": "по сведениям, а не по складу",
+    "matchesHint": "Совпадение — по каталогам и прайсам, не по остаткам на складе.",
     "historyTitle": "Опыт закупок",
     "historyAside_one": "{{count, number}} похожая · побед: {{wins, number}}",
     "historyAside_few": "{{count, number}} похожие · побед: {{wins, number}}",
@@ -106,7 +105,12 @@
     "noRoleBasis": "Роль не подтверждена источником",
     "region": "Регион",
     "profile": "Профиль компании",
-    "profileShort": "Профиль"
+    "profileShort": "Профиль",
+    "summaryTitle": "Почему рекомендуем",
+    "noHighlights": "Подтверждающих сведений нет.",
+    "figure": "Совпадение по позициям",
+    "choose": "Выбрать кандидата",
+    "chosen": "Убрать из выбранных"
   },
   "empty": {
     "title": "Поставщики не найдены",
@@ -117,5 +121,13 @@
     "title": "Поиск не найден",
     "text": "Ссылка устарела или поиск выполнялся в другом браузере.",
     "action": "Новый поиск"
+  },
+  "guide": {
+    "title": "Как читать результат",
+    "stock": "Есть прайс или остаток с источником и датой проверки.",
+    "catalog": "Товар есть в каталоге компании, наличие нужно уточнить.",
+    "inferred": "Прямого источника нет, система сделала вывод сама — проверьте перед обращением.",
+    "none": "Сведений о позиции у компании нет.",
+    "decision": "Решение остаётся за вами: отметьте подходящих кандидатов и скачайте их файлом CSV."
   }
 }

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router"
 import { SearchBox } from "@/features/search-box"
 import { SEARCH_TEXT_PARAM, searchPath } from "@/shared/config/paths"
+import { ReadingGuide } from "../reading-guide"
 import { RecentList } from "../recent-list"
 import styles from "./styles.module.css"
 
@@ -27,7 +28,7 @@ export function SearchPage() {
           onFound={(result) => navigate(searchPath(result.searchId))}
         />
       </section>
-      <RecentList />
+      <RecentList empty={<ReadingGuide />} />
     </div>
   )
 }

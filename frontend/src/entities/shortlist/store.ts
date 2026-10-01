@@ -2,6 +2,7 @@ import { useCallback, useSyncExternalStore } from "react"
 import { localJson } from "@/shared/storage/local-json"
 
 export const SHORTLIST_KEY = "rlt.shortlist.v1"
+export const SEARCH_SCOPE = "~search"
 
 export type LotShortlists = Readonly<Record<string, readonly string[]>>
 type Shortlists = Readonly<Record<string, LotShortlists>>
@@ -53,4 +54,12 @@ export function useShortlist(uploadId: string, lotId: string) {
     [uploadId, lotId],
   )
   return { ids, toggle }
+}
+
+export function searchShortlistOf(searchId: string): readonly string[] {
+  return shortlistsOf(SEARCH_SCOPE)[searchId] ?? EMPTY
+}
+
+export function useSearchShortlist(searchId: string) {
+  return useShortlist(SEARCH_SCOPE, searchId)
 }
