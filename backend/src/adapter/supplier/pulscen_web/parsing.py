@@ -1,0 +1,119 @@
+"""Разбор страниц Пульса цен: список товаров рубрики и каталог компаний.
+
+Список товаров размечен JSON-LD `ItemList` с `Product` и `Offer`: название, цена
+и наличие, но без продавца. Каталог компаний — карточки `li.company-card` с
+идентификатором компании, названием, ролями, адресом и ссылкой на сайт. Реквизитов
+(ИНН) в списках нет, поэтому они остаются неизвестными.
+"""
+
+import re
+from dataclasses import dataclass
+from decimal import Decimal
+from typing import Any
+
+from src.adapter.supplier import jsonld
+from src.models.enums import Availability, SupplierRole
+
+_PRODUCT_ID = re.compile(r"_(\d+)/?$")
+
+_ROLES = (
+    ("Производитель", SupplierRole.MANUFACTURER),
+    ("Оптовый продавец", SupplierRole.DISTRIBUTOR),
+    ("Розничный продавец", SupplierRole.RESELLER),
+    ("Услуги и сервис", SupplierRole.SERVICE_PROVIDER),
+)
+
+_AVAILABILITY = {
+    "instock": Availability.AVAILABLE,
+    "outofstock": Availability.UNAVAILABLE,
+    "preorder": Availability.ON_ORDER,
+    "backorder": Availability.ON_ORDER,
+}
+
+
+@dataclass(frozen=True, slots=True)
+class ListedProduct:
+    external_id: str
+    url: str
+    name: str
+    price: Decimal | None
+    currency: str
+    availability: Availability
+
+
+@dataclass(frozen=True, slots=True)
+class ListedCompany:
+    company_id: str
+    name: str
+    website: str
+    address: str
+    roles: tuple[SupplierRole, ...]
+
+
+def product_id(url: str) -> str:
+    """Числовой ID товара из адреса: региональные поддомены дают один и тот же ID."""
+    match = _PRODUCT_ID.search(url.split("?")[0])
+    return match.group(1) if match else url
+
+
+def products(tree: Any) -> list[ListedProduct]:
+    found: list[ListedProduct] = []
+    for node in jsonld.of_types(jsonld.nodes(tree), frozenset({"ItemList"})):
+        for entry in node.get("itemListElement") or ():
+            item = jsonld.first(entry.get("item") if isinstance(entry, dict) else None)
+            url = jsonld.text(item.get("url"))
+            name = jsonld.text(item.get("name"))
+            if not url or not name:
+                continue
+            offer = jsonld.first(item.get("offers"))
+            stock = jsonld.text(offer.get("availability")).rsplit("/", 1)[-1].casefold()
+            found.append(
+                ListedProduct(
+                    external_id=product_id(url),
+                    url=url,
+                    name=name,
+                    price=jsonld.number(offer.get("price")),
+                    currency=jsonld.text(offer.get("priceCurrency")),
+                    availability=_AVAILABILITY.get(stock, Availability.UNKNOWN),
+                )
+            )
+    return found
+
+
+def companies(tree: Any) -> list[ListedCompany]:
+    found: list[ListedCompany] = []
+    for card in tree.cssselect("li.company-card"):
+        company_id = card.get("data-id") or ""
+        title = card.cssselect(".ccd-title")
+        name = " ".join(title[0].text_content().split()) if title else ""
+        if not company_id or not name:
+            continue
+        markers = " ".join(
+            " ".join(m.text_content().split()) for m in card.cssselect(".ccd-marker")
+        )
+        found.append(
+            ListedCompany(
+                company_id=company_id,
+                name=name,
+                website=title[0].get("data-to") or "" if title else "",
+                address=_address(card),
+                roles=tuple(role for label, role in _ROLES if label in markers),
+            )
+        )
+    return found
+
+
+def has_next_page(tree: Any) -> bool:
+    return bool(tree.cssselect("link[rel='next']"))
+
+
+def is_bot_check(text: str) -> bool:
+    return "Проверка безопасности - Pulscen" in text
+
+
+def _address(card: Any) -> str:
+    for element in card.cssselect(".ccd-address .ccda-row"):
+        text = " ".join(element.text_content().split())
+        if text:
+            return text
+    return ""

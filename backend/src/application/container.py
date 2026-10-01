@@ -26,6 +26,8 @@ from src.adapter.supplier.aboutpartner_web import PROVIDER_NAME as ABOUTPARTNER
 from src.adapter.supplier.aboutpartner_web import AboutPartnerWebProvider
 from src.adapter.supplier.optkatalog_web import PROVIDER_NAME as OPTKATALOG
 from src.adapter.supplier.optkatalog_web import OptKatalogWebProvider
+from src.adapter.supplier.pulscen_web import PROVIDER_NAME as PULSCEN
+from src.adapter.supplier.pulscen_web import PulscenWebProvider
 from src.adapter.supplier.schema_org_web import PROVIDER_NAME as SCHEMA_ORG
 from src.adapter.supplier.schema_org_web import SchemaOrgWebProvider
 from src.adapter.supplier.supplier_dataset import PROVIDER_NAME as SUPPLIER_DATASET
@@ -178,6 +180,20 @@ class Container:
                     ),
                     max_companies=config.max_cards_per_source,
                     max_concurrent=config.parallel_requests,
+                    http_timeout=config.request_timeout,
+                )
+            )
+
+        if config.use_pulscen_provider:
+            providers.append(
+                PulscenWebProvider(
+                    source_defaults=_source(
+                        name="Пульс цен",
+                        base_url="https://www.pulscen.ru/",
+                        source_type=SourceType.DIRECTORY,
+                        provider_name=PULSCEN,
+                    ),
+                    delay_seconds=config.pulscen_delay_seconds,
                     http_timeout=config.request_timeout,
                 )
             )

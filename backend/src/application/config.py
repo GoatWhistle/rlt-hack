@@ -72,6 +72,9 @@ class AppConfig:
     use_optkatalog_provider: bool = False
     use_aboutpartner_provider: bool = False
     use_texzakaz_provider: bool = False
+    # Сайт закрыт проверкой на робота: включается только с разрешения владельца.
+    use_pulscen_provider: bool = False
+    pulscen_delay_seconds: float = 10.0
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -101,4 +104,6 @@ class AppConfig:
             use_optkatalog_provider=_bool("OPTKATALOG_WEB_PROVIDER", False),
             use_aboutpartner_provider=_bool("ABOUTPARTNER_WEB_PROVIDER", False),
             use_texzakaz_provider=_bool("TEXZAKAZ_WEB_PROVIDER", False),
+            use_pulscen_provider=_bool("PULSCEN_WEB_PROVIDER", False),
+            pulscen_delay_seconds=_float("PULSCEN_DELAY_SECONDS", 10.0),
         )

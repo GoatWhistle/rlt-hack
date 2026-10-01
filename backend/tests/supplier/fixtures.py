@@ -236,3 +236,36 @@ TEXZAKAZ_CARD = """<!doctype html>
   </script>
 </body></html>
 """
+
+
+PULSCEN_SITEMAP = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.pulscen.ru/firms/010301-armatura</loc></url>
+  <url><loc>https://www.pulscen.ru/price/010301-armatura</loc></url>
+  <url><loc>https://www.pulscen.ru/price/010301-armatura/f:36_rossiia</loc></url>
+</urlset>
+"""
+
+PULSCEN_FIRMS_PAGE = """<html><head><link rel="next" href="https://www.pulscen.ru/firms/010301-armatura?page=2"></head><body>
+<ul><li class="company-card js-company-card" data-id="99418958">
+<span class="ccd-title" data-to="https://pervostroi.example">ПервоСтрой, ООО</span>
+<div class="ccd-marker marker">Производитель</div>
+<div class="ccd-marker marker">Оптовый продавец</div>
+<div class="ccdc-row ccd-address"><div class="ccda-row">г. Новосибирск, ул. Ватутина, 99</div></div>
+</li></ul></body></html>"""
+
+PULSCEN_FIRMS_PAGE_2 = """<html><body><ul>
+<li class="company-card" data-id="99418958"><span class="ccd-title">ПервоСтрой, ООО</span></li>
+<li class="company-card" data-id="99469184"><span class="ccd-title">АМК-Групп</span>
+<div class="ccd-marker marker">Услуги и сервис</div></li></ul></body></html>"""
+
+PULSCEN_PRICE_PAGE = """<html><head><script type="application/ld+json">
+{"@context":"https://schema.org","@type":"ItemList","itemListElement":[
+{"@type":"ListItem","position":1,"item":{"@type":"Product","name":"Арматура А400 14 мм",
+"offers":{"@type":"Offer","price":68.55,"priceCurrency":"RUB","availability":"https://schema.org/InStock"},
+"url":"https://nsk.pulscen.ru/products/armatura_a3_14mm_185531520"}},
+{"@type":"ListItem","position":2,"item":{"@type":"Product","name":"Арматура по запросу",
+"url":"https://www.pulscen.ru/products/armatura_zapros_185531999"}}]}
+</script></head><body></body></html>"""
+
+PULSCEN_BOT_CHECK = "<html><title>Проверка безопасности - Pulscen</title></html>"
