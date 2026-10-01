@@ -289,3 +289,15 @@ PULSCEN_PRICE_PAGE = """<html><head><script type="application/ld+json">
 </script></head><body></body></html>"""
 
 PULSCEN_BOT_CHECK = "<html><title>Проверка безопасности - Pulscen</title></html>"
+
+
+PULSCEN_CARD_WITH_RECOMMENDATIONS = """<html><head>
+<title>Товар купить от компании Верный продавец</title>
+</head><body>
+<div class="recommended"><a href="/companies/99">Чужая компания</a></div>
+<div class="seller"><span>Верный продавец</span>
+<a href="/companies/10/reviews">Отзывы</a></div>
+</body></html>"""
+
+PULSCEN_CARD_AMBIGUOUS = """<html><head><title>Товар купить от компании Никто</title></head><body>
+<a href="/companies/1">Первая</a><a href="/companies/2">Вторая</a></body></html>"""

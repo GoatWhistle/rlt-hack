@@ -11,12 +11,14 @@ import httpx
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from src.adapter.supplier import identity
+from src.adapter.supplier import identity, page
 from src.adapter.supplier.errors import BotProtectionError, SourceUnavailableError
-from src.adapter.supplier.pulscen_web import PulscenWebProvider
+from src.adapter.supplier.pulscen_web import PulscenWebProvider, parsing
 from src.models.enums import Availability, ItemType, SourceType, SupplierRole
 from tests.supplier.fixtures import (
     PULSCEN_BOT_CHECK,
+    PULSCEN_CARD_AMBIGUOUS,
+    PULSCEN_CARD_WITH_RECOMMENDATIONS,
     PULSCEN_FIRMS_PAGE,
     PULSCEN_FIRMS_PAGE_2,
     PULSCEN_PRICE_PAGE,
@@ -94,6 +96,12 @@ async def main() -> None:
         name=priced.name, item_type=str(ItemType.GOODS), attributes=priced.attributes
     )
     assert priced.content_hash == expected
+
+    tree = page.parse(PULSCEN_CARD_WITH_RECOMMENDATIONS, f"{BASE}/p")
+    seller = parsing.product_seller(tree)
+    assert seller == parsing.ProductSeller("10", "Верный продавец"), seller
+    ambiguous = parsing.product_seller(page.parse(PULSCEN_CARD_AMBIGUOUS, f"{BASE}/p"))
+    assert ambiguous is None, ambiguous
 
     pages = {**PAGES, f"{BASE}/sitemap_firms_rubrics.xml.gz": PULSCEN_SITEMAP_FIRMS}
     directory = source("Пульс цен", f"{BASE}/", SourceType.DIRECTORY, "pulscen_web")

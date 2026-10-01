@@ -18,6 +18,8 @@ _PRODUCT_ID = re.compile(r"_(\d+)/?$")
 
 _COMPANY_LINK = re.compile(r"/companies/(\d+)(?:/|$)")
 
+_NEAR_LEVELS = 5
+
 _COMPANY_IN_TITLE = re.compile(r"от компании\s+(.+?)\s*$")
 
 _ROLES = (
@@ -114,14 +116,39 @@ class ProductSeller:
 
 
 def product_seller(tree: Any) -> ProductSeller | None:
-    """Продавец товара: ID берётся из ссылки на компанию, название — из заголовка."""
-    for href in page.links(tree, "a[href*='/companies/']"):
-        match = _COMPANY_LINK.search(href.split("?")[0].split("#")[0])
+    """Продавец товара по ссылке на компанию, подтверждённой названием из заголовка.
+
+    Ссылок на компании на странице несколько: рекомендации и похожие товары тоже
+    ведут на чужие компании. Продавцом считается компания, рядом со ссылкой на
+    которую (в ближайших родительских блоках) стоит название из заголовка. Один
+    ID без названия принимается, если других компаний на странице нет. При
+    неоднозначности продавец не назначается.
+    """
+    title = page.first_text(tree, "title")
+    named = _COMPANY_IN_TITLE.search(title)
+    name = named.group(1) if named else ""
+    candidates: dict[str, bool] = {}
+    for link in tree.cssselect("a[href*='/companies/']"):
+        match = _COMPANY_LINK.search((link.get("href") or "").split("?")[0].split("#")[0])
         if match:
-            title = page.first_text(tree, "title")
-            named = _COMPANY_IN_TITLE.search(title)
-            return ProductSeller(match.group(1), named.group(1) if named else "")
+            confirmed = bool(name) and _near_text(link, name)
+            candidates[match.group(1)] = candidates.get(match.group(1), False) or confirmed
+    confirmed_ids = [company_id for company_id, confirmed in candidates.items() if confirmed]
+    if len(confirmed_ids) == 1:
+        return ProductSeller(confirmed_ids[0], name)
+    if not confirmed_ids and len(candidates) == 1:
+        return ProductSeller(next(iter(candidates)), name)
     return None
+
+
+def _near_text(link: Any, name: str) -> bool:
+    wanted = " ".join(name.split()).casefold().strip('"«» ')
+    for index, block in enumerate(link.iterancestors()):
+        if index >= _NEAR_LEVELS or block.tag in ("body", "html"):
+            return False
+        if wanted in " ".join(block.text_content().split()).casefold():
+            return True
+    return False
 
 
 def has_next_page(tree: Any) -> bool:
