@@ -73,6 +73,8 @@ async def test_lots_and_results_are_read_back() -> None:
     await service.start()
     upload_id = (await service.upload("n.csv", b"")).upload.upload_id
     await processed(service, upload_id, 2)
+    summary = await service.summary(upload_id)
+    assert (summary.processed, summary.upload.total) == (2, 2)
     lot = await service.lot(upload_id, "1")
     assert lot.result is not None
     assert lot.progress.status == LotStatus.NO_CANDIDATES
@@ -87,6 +89,8 @@ async def test_missing_uploads_and_lots_are_reported() -> None:
     service = build(FakeReader(make_notices()), store)
     with pytest.raises(UploadNotFoundError):
         await service.get(uid("nothing"))
+    with pytest.raises(UploadNotFoundError):
+        await service.summary(uid("nothing"))
     with pytest.raises(UploadNotFoundError):
         await service.lot(uid("nothing"), "1")
     with pytest.raises(UploadNotFoundError):
