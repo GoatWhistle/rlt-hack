@@ -158,6 +158,18 @@ class MoscowSuppliersProvider:
         except ValueError as exc:
             raise ContentFormatError(f"Неверный тип или статус оферты {external_id}") from exc
         attributes = {"sku_id": sku_id}
+        for key in ("delivery_days_min", "delivery_days_max", "valid_from", "valid_to"):
+            value = _optional(row, key)
+            if value:
+                attributes[key] = value
+        regions = row.get("delivery_regions", [])
+        if not isinstance(regions, list) or any(
+            not isinstance(region, str) or not region.strip() for region in regions
+        ):
+            raise ContentFormatError(f"Неверные регионы оферты {external_id}")
+        if regions:
+            attributes["delivery_regions"] = "|".join(region.strip() for region in regions)
+        article = _optional(row, "article")
         observed_at = datetime.now(UTC)
         return Offer(
             offer_id=identity.offer_id(self._source.source_id, external_id),
@@ -171,13 +183,19 @@ class MoscowSuppliersProvider:
             seller_status=VerificationStatus.UNVERIFIED,
             seller_evidence_url=url,
             item_type=kind,
+            article=article,
             attributes=attributes,
             price=price,
             currency=_optional(row, "currency"),
             unit=_optional(row, "unit"),
+            delivery_regions=tuple(region.strip() for region in regions),
             availability=status,
             content_hash=identity.offer_content_hash(
-                name=name, item_type=kind.value, unit=_optional(row, "unit"), attributes=attributes
+                name=name,
+                item_type=kind.value,
+                article=article,
+                unit=_optional(row, "unit"),
+                attributes=attributes,
             ),
         )
 
