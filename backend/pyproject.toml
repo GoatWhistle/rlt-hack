@@ -107,7 +107,6 @@ files = ["src", "tests"]
 exclude = [
     "^src/adapter/supplier/",
     "^src/service/supplier/",
-    "^src/controller/job/",
     "^tests/supplier/",
     '^tests/clickhouse/schema_smoke\.py$',
     '^tests/clickhouse/normalization_smoke\.py$',
@@ -125,16 +124,6 @@ ignore_missing_imports = true
 module = [
     "src.adapter.supplier.*",
     "src.service.supplier.*",
-    "src.controller.job.*",
-    "src.application.container",
-    "src.adapter.repository.clickhouse.client",
-    "src.adapter.repository.clickhouse.gateway",
-    "src.adapter.repository.clickhouse.journal",
-    "src.adapter.repository.clickhouse.migrator",
     "src.adapter.repository.clickhouse.offer",
-    "src.adapter.repository.clickhouse.package",
-    "src.adapter.repository.clickhouse.source",
-    "src.adapter.repository.clickhouse.supplier",
-    "tests.clickhouse.chdb_gateway",
 ]
 ignore_errors = true

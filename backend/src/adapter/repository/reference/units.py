@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from src.adapter.repository.errors import ReferenceDataError
+from src.adapter.repository.reference.protocols import MeasuredUnit
 
 # Непрерывные меры: длина, площадь, объём, масса. Их цену можно делить.
 MEASURE_BASES = frozenset({"006", "055", "113", "166", "112"})
@@ -50,7 +51,7 @@ class FileUnitReference:
             return None
         return self._aliases.get(key) or self._aliases.get(key.split(" ")[0])
 
-    def is_measure(self, unit: FileUnit) -> bool:
+    def is_measure(self, unit: MeasuredUnit) -> bool:
         return unit.base in MEASURE_BASES
 
     def name_of(self, code: str) -> str:

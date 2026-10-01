@@ -9,7 +9,7 @@
 import asyncio
 from collections.abc import Callable, Mapping, Sequence
 from types import TracebackType
-from typing import Any
+from typing import Any, Literal
 from uuid import uuid4
 
 from clickhouse_connect.driver.exceptions import OperationalError
@@ -95,7 +95,7 @@ class _translated_errors:
         exc_type: type[BaseException] | None,
         exc: BaseException | None,
         traceback: TracebackType | None,
-    ) -> bool:
+    ) -> Literal[False]:
         if exc is None:
             return False
         if isinstance(exc, OSError) or _transport_failure(exc):
