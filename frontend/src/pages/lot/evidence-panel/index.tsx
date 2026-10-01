@@ -29,7 +29,7 @@ export function EvidencePanel({
     <article className={styles.panel} aria-label={company.name}>
       <Hero company={company} products={products} />
       <Confirmations company={company} products={products} />
-      <MatchBlock company={company} products={products} />
+      {products.length > 0 ? <MatchBlock company={company} products={products} /> : null}
       <PurchaseBlock company={company} />
       <ClarifyBlock items={company.clarify} />
       <div className={styles.actions}>

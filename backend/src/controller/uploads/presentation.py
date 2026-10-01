@@ -1,6 +1,11 @@
 from src.models.upload import LotRecommendation, Upload
 
 
+def profile_summary(profile: str) -> str:
+    text = " ".join(profile.split())
+    return text if len(text) <= 650 else text[:650].rsplit(" ", 1)[0] + "…"
+
+
 def lot_summary(lot: LotRecommendation) -> dict:
     return {
         "id": lot.notice.lot_id,
@@ -45,8 +50,8 @@ def result(upload: Upload, lot: LotRecommendation) -> dict:
                     "inn": candidate.inn,
                     "role": f"Исторический профиль: {candidate.category}",
                     "status": "check",
-                    "checkReason": "Проверьте актуальный ассортимент и реквизиты компании.",
-                    "summary": candidate.profile,
+                    "checkReason": "Нужна проверка",
+                    "summary": profile_summary(candidate.profile),
                     "matches": [],
                     "similarPurchases": None,
                     "wins": None,
