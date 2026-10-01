@@ -33,6 +33,8 @@ from src.adapter.repository.reference import (
 from src.adapter.supplier import identity
 from src.adapter.supplier.aboutpartner_web import PROVIDER_NAME as ABOUTPARTNER
 from src.adapter.supplier.aboutpartner_web import AboutPartnerWebProvider
+from src.adapter.supplier.eis_registry import PROVIDER_NAME as EIS_REGISTRY
+from src.adapter.supplier.eis_registry import EisRegistryProvider
 from src.adapter.supplier.gisp_registry import PROVIDER_NAME as GISP_REGISTRY
 from src.adapter.supplier.gisp_registry import GispRegistryProvider
 from src.adapter.supplier.moscow_suppliers import PROVIDER_NAME as MOSCOW_SUPPLIERS
@@ -328,6 +330,28 @@ class Container:
                     ),
                     export_url=config.moscow_suppliers_export_url,
                     http_timeout=config.request_timeout,
+                )
+            )
+
+        if config.use_eis_registry_provider:
+            providers.append(
+                EisRegistryProvider(
+                    source_defaults=_source(
+                        name="ЕИС: реестр контрактов",
+                        base_url="https://zakupki.gov.ru/",
+                        source_type=SourceType.REGISTRY,
+                        provider_name=EIS_REGISTRY,
+                    ),
+                    period_start=config.eis_period_start,
+                    period_days=config.eis_period_days,
+                    max_contracts=config.eis_max_contracts or None,
+                    http_timeout=config.request_timeout,
+                    max_concurrent=config.parallel_requests,
+                    min_interval=config.eis_request_interval,
+                    proxy=config.eis_proxy,
+                    verify=(
+                        config.eis_ca_bundle if config.eis_ca_bundle else config.eis_verify_tls
+                    ),
                 )
             )
 

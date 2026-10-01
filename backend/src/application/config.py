@@ -7,6 +7,7 @@
 
 import os
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 
 from src.adapter.repository.clickhouse.config import ClickHouseConfig
@@ -35,6 +36,11 @@ def _bool(name: str, default: bool) -> bool:
     if raw is None or not raw.strip():
         return default
     return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
+def _date(name: str) -> date | None:
+    raw = os.getenv(name)
+    return date.fromisoformat(raw.strip()) if raw and raw.strip() else None
 
 
 def _urls(name: str) -> tuple[str, ...]:
@@ -102,6 +108,14 @@ class AppConfig:
     msp_registry_path: Path | None = None
     use_supl_biz_provider: bool = False
     supl_biz_max_cards: int = 0
+    use_eis_registry_provider: bool = False
+    eis_period_start: date | None = None
+    eis_period_days: int = 30
+    eis_max_contracts: int = 0
+    eis_ca_bundle: str = ""
+    eis_verify_tls: bool = True
+    eis_proxy: str = ""
+    eis_request_interval: float = 1.0
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -154,4 +168,12 @@ class AppConfig:
             ),
             use_supl_biz_provider=_bool("SUPL_BIZ_WEB_PROVIDER", False),
             supl_biz_max_cards=_int("SUPL_BIZ_MAX_CARDS", 0),
+            use_eis_registry_provider=_bool("EIS_REGISTRY_PROVIDER", False),
+            eis_period_start=_date("EIS_PERIOD_START"),
+            eis_period_days=_int("EIS_PERIOD_DAYS", 30),
+            eis_max_contracts=_int("EIS_MAX_CONTRACTS", 0),
+            eis_ca_bundle=os.getenv("EIS_CA_BUNDLE", ""),
+            eis_verify_tls=_bool("EIS_VERIFY_TLS", True),
+            eis_proxy=os.getenv("EIS_PROXY", ""),
+            eis_request_interval=_float("EIS_REQUEST_INTERVAL", 1.0),
         )

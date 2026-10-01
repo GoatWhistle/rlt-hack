@@ -215,6 +215,7 @@ uv run --python 3.13 python main.py registry-import --path var/msp/rmsp.zip
 | `GispRegistryProvider` | `gisp_registry` | организации и продукцию реестра ПП 719 ГИСП | `GISP_REGISTRY_PROVIDER` |
 | `ProductCenterWebProvider` | `productcenter_web` | производителей и товары productcenter.ru | `PRODUCTCENTER_WEB_PROVIDER` (выкл.) |
 | `MoscowSuppliersProvider` | `moscow_suppliers` | полный нормализованный экспорт поставщиков и оферт zakupki.mos.ru | `MOSCOW_SUPPLIERS_PROVIDER` (выкл.) |
+| `EisRegistryProvider` | `eis_registry` | поставщиков из реестра контрактов ЕИС zakupki.gov.ru | `EIS_REGISTRY_PROVIDER` (выкл.) |
 | `PulscenSnapshotProvider` | `pulscen_snapshot` | диагностический снимок страниц pulscen.ru из JSON-файла | `PULSCEN_SNAPSHOT_PATH` (пусто — выключен) |
 | `PulscenWebProvider` | `pulscen_web` | компании и товары с ценой pulscen.ru по рубрикам sitemap | `PULSCEN_WEB_PROVIDER` (выкл.), пауза `PULSCEN_DELAY_SECONDS` |
 | `SuplBizWebProvider` | `supl_biz_web` | товары и продавцов supl.biz: sitemap товаров и профилей, состояние страниц | `SUPL_BIZ_WEB_PROVIDER` (выкл.), `SUPL_BIZ_MAX_CARDS` |
@@ -337,7 +338,9 @@ uv run --python 3.13 python main.py registry-import      # загрузка ре
 `GISP_REGISTRY_PROVIDER`, `GISP_EXPORT_LOCATION`,
 `PRODUCTCENTER_WEB_PROVIDER`, `PRODUCTCENTER_MAX_CARDS`,
 `PRODUCTCENTER_PARALLEL_REQUESTS`, `PRODUCTCENTER_REQUEST_INTERVAL`,
-`PRODUCTCENTER_CONNECTION_RETRIES`, `PRODUCTCENTER_CACHE_DIR`.
+`PRODUCTCENTER_CONNECTION_RETRIES`, `PRODUCTCENTER_CACHE_DIR`,
+`EIS_REGISTRY_PROVIDER`, `EIS_PERIOD_START`, `EIS_PERIOD_DAYS`, `EIS_MAX_CONTRACTS`,
+`EIS_CA_BUNDLE`, `EIS_VERIFY_TLS`, `EIS_PROXY`, `EIS_REQUEST_INTERVAL`.
 
 Московский адаптер включается только после получения проверенного полного
 экспорта: `MOSCOW_SUPPLIERS_PROVIDER=true` и `MOSCOW_SUPPLIERS_EXPORT_URL`.
@@ -352,6 +355,28 @@ uv run --python 3.13 python main.py registry-import      # загрузка ре
 до своей оферты. Повтор страницы/ID, сбой запроса, неверный формат и
 расхождение контрольных чисел прерывают обход без сохранения пакета. СТЕ без
 оферты в поток не включается.
+
+ЕИС (`eis_registry`) выключен по умолчанию: разметка подтверждена архивными
+снимками 2021–2022 и ручной проверкой живых страниц 1 октября 2026 (только с
+российского IP: с зарубежного сайт не отвечает; нужен корневой сертификат НУЦ
+Минцифры в `EIS_CA_BUNDLE`), живой прогон адаптера 2 октября 2026 (30 контрактов за день) прошёл успешно, полный сбор не выполнялся.
+Адаптер читает HTML-выдачу `/epz/contract/search/results.html` окнами дат
+`publishDateFrom/To`. Сайт отдаёт не больше 100 страниц по 50 записей, поэтому
+выдача, упёршаяся в лимит, делится пополам по датам, а затем по цене
+(`contractPriceFrom/To`); неделимый срез прерывает обход. Для каждого контракта читаются
+три страницы карточки: `common-info` (поставщик с ИНН/КПП/адресом, цена, статус,
+даты), `payment-info-and-target-of-order` (позиции: ОКПД2/КТРУ, количество,
+единица, цена за единицу, сумма) и `process-info` (исполнено и оплачено по
+этапам). Пакет содержит только компании; `Offer` не создаются, контракты
+остаются в `provider.contracts` до расширения моделей. Сбой сети после повторов,
+не тот формат, расхождение числа записей с «Найдено» и лимит `EIS_MAX_CONTRACTS`
+завершают обход ошибкой без записи снимка. Снятая карточка (404) пропускается и
+считается в отчёте. Переменные: `EIS_REGISTRY_PROVIDER`,
+`EIS_PERIOD_START` (ГГГГ-ММ-ДД), `EIS_PERIOD_DAYS` (по умолчанию 30),
+`EIS_MAX_CONTRACTS` (0 — без лимита), `EIS_CA_BUNDLE` (путь к сертификату НУЦ
+Минцифры), `EIS_VERIFY_TLS`, `EIS_PROXY` (HTTP-прокси с российским выходом), `EIS_REQUEST_INTERVAL` (пауза между запросами, секунды; без неё сайт отвечает 429/403 и блокирует IP). Диагностический живой прогон без записи в БД:
+`python tests/supplier/eis_live.py --days 1 --max-contracts 30 --interval 2 \
+--proxy http://127.0.0.1:18080 --ca-bundle ru-bundle.pem --out report.json`.
 
 ГИСП выключен по умолчанию. С пустым `GISP_EXPORT_LOCATION` он обходит открытые
 JSON-страницы перечня производителей и реестра продукции через официальные
@@ -425,6 +450,8 @@ uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0
   python tests/supplier/productcenter_job_smoke.py
 uv run --no-project --python 3.13 --with httpx \
   python tests/supplier/moscow_suppliers_smoke.py
+uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx \
+  python tests/supplier/eis_registry_smoke.py
 uv run --no-project --python 3.13 python tests/supplier/worker_smoke.py
 uv run --no-project --python 3.13 --with httpx --with openpyxl \
   python tests/supplier/gisp_registry.py

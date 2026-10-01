@@ -75,6 +75,7 @@ jobs:
       - run: python backend/tests/supplier/moscow_suppliers_smoke.py
       - run: python backend/tests/registry/registry_smoke.py
       - run: python backend/tests/registry/registry_store_smoke.py
+      - run: python backend/tests/supplier/eis_registry_smoke.py
       - run: python backend/tests/embedding/smoke.py
       - run: python backend/tests/embedding/batching_smoke.py
       - run: python backend/tests/search/smoke.py
