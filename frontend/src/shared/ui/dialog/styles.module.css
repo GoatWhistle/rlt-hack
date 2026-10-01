@@ -3,7 +3,7 @@
   margin: auto;
   padding: 0;
   border: var(--line-width) solid var(--line-hairline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   background: var(--surface-base);
   color: var(--text-primary);
 }

@@ -2,15 +2,15 @@ import { clsx } from "clsx"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 import { isProcessing, type UploadSummary } from "@/entities/upload/model"
+import { StatusStrip } from "@/entities/upload/status-strip"
 import { uploadPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { Button } from "@/shared/ui/button"
 import { Caption } from "@/shared/ui/caption"
 import { DoneNote } from "@/shared/ui/done-note"
 import { Icon } from "@/shared/ui/icon"
-import { ProgressBar } from "@/shared/ui/progress-bar"
+import { PageTitle } from "@/shared/ui/page-title"
 import { SplitRow } from "@/shared/ui/split-row"
-import { Tag } from "@/shared/ui/tag"
 import { VisuallyHidden } from "@/shared/ui/visually-hidden"
 import styles from "./styles.module.css"
 
@@ -18,16 +18,9 @@ function UploadState({ upload }: { readonly upload: UploadSummary }) {
   const { t } = useTranslation("uploads")
   if (!isProcessing(upload)) return <DoneNote>{t("list.done")}</DoneNote>
   return (
-    <>
-      <span className={styles.progressText}>
-        {t("list.processing", { processed: upload.processed, total: upload.total })}
-      </span>
-      <ProgressBar
-        label={t("list.progress", { name: upload.fileName })}
-        value={upload.processed}
-        max={upload.total}
-      />
-    </>
+    <span className={styles.progressText}>
+      {t("list.processing", { processed: upload.processed, total: upload.total })}
+    </span>
   )
 }
 
@@ -61,14 +54,7 @@ function UploadRow({ upload }: { readonly upload: UploadSummary }) {
           {upload.stored ? null : <Caption>{t("list.notStored")}</Caption>}
         </span>
         <span className={styles.results}>
-          <Tag tone="success">{t("list.ready", { count: upload.counts.ready })}</Tag>
-          <Tag tone="warning">{t("list.needsCheck", { count: upload.counts.needsCheck })}</Tag>
-          <Tag tone="tentative">
-            {t("list.noCandidates", { count: upload.counts.noCandidates })}
-          </Tag>
-          {upload.counts.failed > 0 ? (
-            <Tag tone="warning">{t("list.failed", { count: upload.counts.failed })}</Tag>
-          ) : null}
+          <StatusStrip counts={upload.counts} total={upload.total} />
         </span>
         <span className={styles.chevron} aria-hidden="true">
           <Icon name="chevron" />
@@ -89,7 +75,7 @@ export function UploadList({ uploads, onUpload }: UploadListProps) {
     <div className={styles.page}>
       <SplitRow>
         <div className={styles.titles}>
-          <h1 className={styles.title}>{t("list.title")}</h1>
+          <PageTitle>{t("list.title")}</PageTitle>
           <p className={styles.caption}>{t("list.caption")}</p>
         </div>
         <Button onClick={onUpload}>

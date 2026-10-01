@@ -3,7 +3,7 @@
   border-collapse: separate;
   border-spacing: 0;
   border: var(--line-width) solid var(--line-hairline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   background: var(--surface-base);
   font-size: var(--text-sm);
 }
@@ -23,11 +23,11 @@
 }
 
 .head th:first-child {
-  border-start-start-radius: var(--radius-lg);
+  border-start-start-radius: var(--radius-xl);
 }
 
 .head th:last-child {
-  border-start-end-radius: var(--radius-lg);
+  border-start-end-radius: var(--radius-xl);
 }
 
 .row {
@@ -50,7 +50,11 @@
 }
 
 .row[data-selected="true"] {
-  background: var(--accent-tint);
+  background: var(--accent-soft);
+}
+
+.row[data-selected="true"] .link {
+  color: var(--accent-strong);
 }
 
 .check {
@@ -138,8 +142,36 @@
   white-space: nowrap;
 }
 
-.compact {
+.subject {
+  max-width: 0;
+  overflow: hidden;
+  color: var(--text-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.none {
+  color: var(--text-muted);
+}
+
+.compact,
+.extra {
   display: none;
+}
+
+@media (min-width: 100rem) {
+  .extra {
+    display: table-cell;
+  }
+
+  .lot {
+    width: 40%;
+  }
+
+  .table .number,
+  .status {
+    width: 1%;
+  }
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -148,7 +180,7 @@
   }
 
   .row[data-selected="true"]:hover {
-    background: var(--accent-soft);
+    background: var(--accent-soft-hover);
   }
 
   .row:hover .link {

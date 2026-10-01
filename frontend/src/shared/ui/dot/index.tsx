@@ -2,7 +2,7 @@ import { clsx } from "clsx"
 import styles from "./styles.module.css"
 
 export type DotShape = "filled" | "hollow" | "dashed"
-export type DotTone = "accent" | "warning" | "muted" | "current"
+export type DotTone = "accent" | "warning" | "danger" | "muted" | "current"
 export type DotSize = "sm" | "md"
 
 const SHAPES: Record<DotShape, string | undefined> = {
@@ -14,6 +14,7 @@ const SHAPES: Record<DotShape, string | undefined> = {
 const TONES: Record<DotTone, string | undefined> = {
   accent: styles.accent,
   warning: styles.warning,
+  danger: styles.danger,
   muted: styles.muted,
   current: undefined,
 }

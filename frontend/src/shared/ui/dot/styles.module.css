@@ -30,6 +30,10 @@
   color: var(--warning-icon);
 }
 
+.danger {
+  color: var(--danger-text);
+}
+
 .muted {
   color: var(--line-tentative);
 }

@@ -8,22 +8,14 @@
   gap: var(--space-2);
 }
 
-.title {
-  font-size: var(--text-page-title);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-}
-
 .caption {
   color: var(--text-secondary);
 }
 
 .table {
-  --upload-columns: minmax(12rem, 1.2fr) minmax(9rem, 0.7fr) minmax(5rem, auto)
-    minmax(10rem, 0.9fr) minmax(0, 2fr) var(--icon-md);
+  --upload-columns: minmax(12rem, 1fr) 10.5rem 6rem 11rem minmax(16rem, 1.5fr) var(--icon-md);
   border: var(--line-width) solid var(--line-hairline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   background: var(--surface-base);
   overflow: hidden;
 }
@@ -99,6 +91,7 @@
 .date {
   color: var(--text-body);
   font-size: var(--text-sm);
+  white-space: nowrap;
 }
 
 .count {
@@ -110,8 +103,9 @@
 
 .state {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
   min-width: 0;
+  white-space: nowrap;
 }
 
 .progressText {
@@ -121,9 +115,7 @@
 }
 
 .results {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+  min-width: 0;
 }
 
 .chevron {

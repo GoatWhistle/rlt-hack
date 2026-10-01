@@ -26,12 +26,14 @@
   --motion-pop-in: pop-in var(--dur-base) var(--ease-out) both;
   --motion-slide-in: slide-in var(--dur-enter) var(--ease-out) both;
   --motion-slide-out: slide-out var(--dur-exit) var(--ease-in) both;
+  --motion-grow: grow-x var(--dur-enter) var(--ease-out) both;
   --dur-pulse: 900ms;
   --skeleton-dim: 0.5;
   --motion-pulse: pulse var(--dur-pulse) var(--ease-in-out) infinite alternate;
   --delay-skeleton: 300ms;
   --motion-skeleton-in: fade-in var(--dur-enter) var(--ease-out) var(--delay-skeleton) both;
   --transition-indicator: transform var(--dur-base) var(--ease-out);
+  --transition-thumb: clip-path var(--dur-base) var(--ease-out);
 }
 
 @keyframes fade-in {
@@ -90,6 +92,12 @@
   to {
     opacity: 0;
     transform: translateY(var(--motion-offset));
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
   }
 }
 

@@ -32,7 +32,9 @@ describe("the purchases of a file", () => {
       .map((cell) => cell.textContent)
     expect(headers.slice(1)).toEqual([
       "Purchase",
+      "Subject",
       "Status",
+      "Published",
       "Start price",
       "Products",
       "Candidates",
@@ -127,10 +129,9 @@ describe("the purchases of a file", () => {
         issues: [{ row: 7, code: "missingTitle" }],
       }),
     )
-    expect(await screen.findByText("Processing: 1 of 2 ready")).toBeInTheDocument()
+    expect(await screen.findAllByText("Processing: 1 of 2 ready")).toHaveLength(2)
     expect(screen.getByRole("status")).toHaveTextContent("Processing: 1 of 2 ready")
     expect(screen.getByText(en("processing.hint", "lots"))).toBeInTheDocument()
-    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuemax", "2")
     const queued = screen.getByRole("row", { name: /Purchase 2/ })
     expect(within(queued).getByText(en("status.queued", "lots"))).toBeInTheDocument()
     expect(within(queued).getByText(en("table.noPrice", "lots"))).toBeInTheDocument()
@@ -150,7 +151,7 @@ describe("the purchases of a file", () => {
     await screen.findByRole("table")
     const failed = screen.getByRole("row", { name: /Purchase 2/ })
     expect(within(failed).getByText(en("status.failed", "lots"))).toBeInTheDocument()
-    expect(within(failed).getAllByText(en("table.pending", "lots"))).toHaveLength(2)
+    expect(within(failed).getAllByText(en("table.pending", "lots"))).toHaveLength(3)
     await view.user.click(screen.getByRole("radio", { name: /Not processed/ }))
     expect(view.router.state.location.search).toBe("?status=failed")
     expect(screen.getAllByRole("row")).toHaveLength(2)

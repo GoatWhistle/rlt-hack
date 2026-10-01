@@ -6,6 +6,7 @@ import { useFormatters } from "@/shared/i18n/formatters"
 import { BackLink } from "@/shared/ui/back-link"
 import { Button } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
+import { PageTitle } from "@/shared/ui/page-title"
 import styles from "./styles.module.css"
 
 export type LotsHeaderProps = {
@@ -16,25 +17,35 @@ export type LotsHeaderProps = {
 
 export function LotsHeader({ upload, onExport, status }: LotsHeaderProps) {
   const { t } = useTranslation("lots")
-  const { dateTime } = useFormatters()
+  const { date, dateTime } = useFormatters()
   return (
     <header className={styles.header}>
       <BackLink to={UPLOADS_PATH}>{t("back")}</BackLink>
       <div className={styles.top}>
         <div className={styles.titles}>
-          <h1 className={styles.title}>{upload.fileName}</h1>
+          <PageTitle size="record" mono>
+            {upload.fileName}
+          </PageTitle>
           <p className={styles.meta}>
-            {t("uploaded", { date: dateTime(upload.createdAt) })}
+            <span className={styles.full}>
+              {t("uploaded", { date: dateTime(upload.createdAt) })}
+            </span>
+            <span className={styles.short}>{date(upload.createdAt)}</span>
             {" · "}
             {t("notices", { count: upload.total })}
           </p>
-          {status}
         </div>
-        <Button variant="secondary" onClick={onExport} className={styles.action}>
+        <Button
+          variant="secondary"
+          onClick={onExport}
+          className={styles.action}
+          aria-label={t("download")}
+        >
           <Icon name="download" />
-          {t("download")}
+          <span className={styles.label}>{t("download")}</span>
         </Button>
       </div>
+      {status}
     </header>
   )
 }

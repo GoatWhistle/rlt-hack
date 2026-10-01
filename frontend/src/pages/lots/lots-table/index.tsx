@@ -28,7 +28,7 @@ type LotRowProps = {
 
 function LotRow({ lot, href, selected, onToggle }: LotRowProps) {
   const { t } = useTranslation("lots")
-  const { price, number } = useFormatters()
+  const { price, number, date } = useFormatters()
   const empty = lot.status === "queued" || lot.status === "failed"
   const amount = lot.startPrice === undefined ? undefined : price(lot.startPrice)
   const compact = [
@@ -69,8 +69,14 @@ function LotRow({ lot, href, selected, onToggle }: LotRowProps) {
           )}
         </span>
       </td>
+      <td className={clsx(styles.subject, styles.extra)}>
+        {lot.subject ?? <span className={styles.none}>{t("table.pending")}</span>}
+      </td>
       <td className={styles.status}>
         <LotStatusTag status={lot.status} />
+      </td>
+      <td className={clsx(styles.number, styles.extra)}>
+        {lot.publishDate ? date(lot.publishDate) : t("table.pending")}
       </td>
       <td className={clsx(styles.number, styles.wide)}>{amount ?? t("table.noPrice")}</td>
       <td className={clsx(styles.number, styles.wide)}>
@@ -115,7 +121,13 @@ export function LotsTable(props: LotsTableProps) {
             </label>
           </th>
           <th scope="col">{t("table.title")}</th>
+          <th scope="col" className={styles.extra}>
+            {t("table.subject")}
+          </th>
           <th scope="col">{t("table.status")}</th>
+          <th scope="col" className={clsx(styles.number, styles.extra)}>
+            {t("table.published")}
+          </th>
           <th scope="col" className={styles.number}>
             {t("table.price")}
           </th>

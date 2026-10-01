@@ -1,10 +1,41 @@
 .group {
+  --thumb-line: var(--accent-muted);
+  --thumb-fill: var(--accent-soft);
+  --thumb-text: var(--accent-strong);
+  position: relative;
   display: inline-flex;
   flex-wrap: wrap;
   gap: var(--space-1);
   padding: var(--space-1);
   border: var(--line-width) solid var(--line-hairline);
   border-radius: var(--radius-md);
+}
+
+.thumb {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: var(--thumb-span, 100%);
+  background: var(--thumb-line);
+  clip-path: inset(var(--thumb-inset) round var(--radius-sm));
+  pointer-events: none;
+}
+
+.thumb::after {
+  position: absolute;
+  inset: var(--line-width);
+  background: var(--thumb-fill);
+  clip-path: inset(var(--thumb-inset) round calc(var(--radius-sm) - var(--line-width)));
+  content: "";
+}
+
+.group:not([data-thumb="placed"], [data-thumb="ready"]) .thumb {
+  display: none;
+}
+
+.group[data-thumb="ready"] .thumb,
+.group[data-thumb="ready"] .thumb::after {
+  transition: var(--transition-thumb);
 }
 
 .option {
@@ -15,14 +46,19 @@
   min-height: var(--target-touch);
   padding-inline: var(--space-3);
   border-radius: var(--radius-sm);
+  color: var(--text-secondary);
   font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
   cursor: pointer;
   transition: var(--transition-control);
 }
 
 .option:has(:checked) {
-  background: var(--text-primary);
-  color: var(--surface-base);
+  color: var(--thumb-text);
+}
+
+.group:not([data-thumb="placed"], [data-thumb="ready"]) .option:has(:checked) {
+  background: var(--thumb-fill);
 }
 
 .option:has(:focus-visible) {
@@ -58,6 +94,9 @@
 }
 
 .block {
+  --thumb-line: var(--line-hairline);
+  --thumb-fill: var(--surface-base);
+  --thumb-text: var(--text-primary);
   display: flex;
   flex-wrap: nowrap;
   width: 100%;
@@ -70,14 +109,27 @@
   justify-content: center;
   min-width: 0;
   padding-inline: var(--space-2);
-  border: var(--line-width) solid transparent;
-  color: var(--text-secondary);
-  font-weight: var(--weight-medium);
 }
 
-.block .option:has(:checked) {
-  border-color: var(--line-hairline);
-  background: var(--surface-base);
-  color: var(--text-primary);
-  font-weight: var(--weight-semibold);
+@media (hover: hover) and (pointer: fine) {
+  .option:not(:has(:checked)):hover {
+    color: var(--text-primary);
+  }
+
+  .group:not(.block) .option:not(:has(:checked)):hover {
+    background: var(--surface-subtle);
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .scroll {
+    padding-inline-end: var(--space-6);
+    mask-image: linear-gradient(to left, transparent, black var(--space-6));
+    scroll-padding-inline: var(--space-1) var(--space-6);
+    scroll-snap-type: x proximity;
+  }
+
+  .scroll .option {
+    scroll-snap-align: start;
+  }
 }

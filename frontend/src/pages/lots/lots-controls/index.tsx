@@ -64,6 +64,7 @@ export function LotsControls({
             className={styles.input}
             value={search}
             placeholder={t("search.placeholder")}
+            aria-label={t("search.label")}
             aria-keyshortcuts={SHORTCUT}
             onChange={(event) => onSearch(event.target.value)}
             onKeyDown={(event) => {

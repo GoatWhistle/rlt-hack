@@ -18,8 +18,10 @@
 }
 
 .button:disabled {
+  border-color: var(--line-subtle);
+  background: var(--surface-subtle);
+  color: var(--text-disabled);
   cursor: not-allowed;
-  background: var(--text-disabled);
 }
 
 .primary {
@@ -49,7 +51,16 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .secondary:hover {
+  .primary:hover:not(:disabled) {
+    background: var(--accent-strong);
+  }
+
+  .strong:hover:not(:disabled) {
+    background: var(--text-body);
+  }
+
+  .secondary:hover:not(:disabled) {
+    border-color: var(--line-tentative);
     background: var(--surface-raised);
   }
 }

@@ -43,7 +43,7 @@
 .panel {
   display: grid;
   border: var(--line-width) solid var(--line-hairline);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   background: var(--surface-base);
   overflow: hidden;
 }

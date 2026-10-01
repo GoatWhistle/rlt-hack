@@ -7,7 +7,7 @@ import {
   type Violation,
 } from "./source-files.ts"
 
-export const BREAKPOINTS = ["30rem", "48rem", "64rem", "75rem"] as const
+export const BREAKPOINTS = ["30rem", "48rem", "64rem", "75rem", "100rem"] as const
 
 const LOWER_BOUNDS = new Set<string>(BREAKPOINTS)
 const UPPER_BOUNDS = new Set(

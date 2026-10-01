@@ -1,7 +1,8 @@
 import { clsx } from "clsx"
-import { useId } from "react"
+import { useId, useRef } from "react"
 import { VisuallyHidden } from "@/shared/ui/visually-hidden"
 import styles from "./styles.module.css"
+import { useThumb } from "./use-thumb"
 
 export type SegmentedOption<T extends string> = {
   readonly value: T
@@ -28,9 +29,15 @@ export function SegmentedControl<T extends string>({
   block = false,
 }: SegmentedControlProps<T>) {
   const name = useId()
+  const ref = useRef<HTMLFieldSetElement>(null)
+  useThumb(ref, value)
   return (
-    <fieldset className={clsx(styles.group, scroll && styles.scroll, block && styles.block)}>
+    <fieldset
+      ref={ref}
+      className={clsx(styles.group, scroll && styles.scroll, block && styles.block)}
+    >
       <VisuallyHidden as="legend">{legend}</VisuallyHidden>
+      <span className={styles.thumb} aria-hidden="true" />
       {options.map((option) => (
         <label key={option.value} className={styles.option}>
           <input

@@ -1,0 +1,27 @@
+.title {
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.page {
+  font-size: var(--text-page-title);
+}
+
+.record {
+  font-size: var(--text-record-title);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-medium);
+  letter-spacing: normal;
+}
+
+@media (max-width: 47.99rem) {
+  .record.mono {
+    font-size: var(--text-xl);
+  }
+}

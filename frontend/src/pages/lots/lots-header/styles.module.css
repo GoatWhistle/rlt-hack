@@ -1,11 +1,10 @@
 .header {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .top {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4) var(--space-6);
@@ -13,18 +12,9 @@
 
 .titles {
   display: grid;
-  flex: 1 1 24rem;
+  flex: 1 1 auto;
   gap: var(--space-1);
   min-width: 0;
-}
-
-.title {
-  font-family: var(--font-mono);
-  font-size: var(--text-2xl);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-  overflow-wrap: anywhere;
 }
 
 .meta {
@@ -35,4 +25,24 @@
 
 .action {
   flex: none;
+}
+
+.short {
+  display: none;
+}
+
+@media (max-width: 47.99rem) {
+  .action {
+    width: var(--target-touch);
+    padding-inline: 0;
+  }
+
+  .label,
+  .full {
+    display: none;
+  }
+
+  .short {
+    display: inline;
+  }
 }
