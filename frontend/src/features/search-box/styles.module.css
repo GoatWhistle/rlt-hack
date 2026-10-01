@@ -79,7 +79,35 @@
 
 .submit[aria-disabled="true"] {
   cursor: progress;
-  animation: var(--motion-pulse);
+}
+
+.spinner {
+  flex-shrink: 0;
+  width: var(--icon-md);
+  height: var(--icon-md);
+  border: var(--focus-ring-width) solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: var(--radius-pill);
+  animation: spin var(--dur-pulse) linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.progress {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.progress:empty {
+  position: absolute;
+}
+
+.hidden {
+  display: none;
 }
 
 .error {

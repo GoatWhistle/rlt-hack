@@ -37,13 +37,13 @@ describe("the search box", () => {
     await waitFor(() => expect(gateway.search).toHaveBeenCalledTimes(1))
   })
 
-  it("fills the field from an example without sending it", async () => {
-    const { user, field, gateway } = renderBox()
+  it("searches right away from an example and keeps it in the field", async () => {
+    const { user, field, gateway, onFound } = renderBox()
     const example = en("box.example.office", "search")
     await user.click(screen.getByRole("button", { name: example }))
     expect(field).toHaveValue(example)
-    expect(field).toHaveFocus()
-    expect(gateway.search).not.toHaveBeenCalled()
+    expect(gateway.search).toHaveBeenCalledWith({ text: example, limit: 20 })
+    await waitFor(() => expect(onFound).toHaveBeenCalled())
   })
 
   it("asks for text before sending an empty query", async () => {
@@ -89,13 +89,16 @@ describe("the search box", () => {
     )
     const { user, field } = renderBox(stubSearch({ search }))
     await user.type(field, "rice{Enter}")
-    const button = await screen.findByRole("button", { name: en("box.pending", "search") })
+    const button = screen.getByRole("button", { name: en("box.submit", "search") })
+    await waitFor(() => expect(button).toHaveAttribute("aria-busy", "true"))
     expect(button).toHaveAttribute("aria-disabled", "true")
     await user.type(field, "{Enter}")
     expect(search).toHaveBeenCalledTimes(1)
-    finish(contractResult())
     expect(
-      await screen.findByRole("button", { name: en("box.submit", "search") }),
+      await screen.findByText(en("box.progress", "search"), undefined, { timeout: 2000 }),
     ).toBeVisible()
+    finish(contractResult())
+    await waitFor(() => expect(button).toHaveAttribute("aria-busy", "false"))
+    expect(screen.queryByText(en("box.progress", "search"))).toBeNull()
   })
 })

@@ -1,5 +1,5 @@
 import { clsx } from "clsx"
-import { type FormEvent, type KeyboardEvent, useId, useRef, useState } from "react"
+import { type FormEvent, type KeyboardEvent, useEffect, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { invalidQuery } from "@/entities/search/gateway"
 import { DEFAULT_LIMIT, MAX_QUERY_LENGTH, type SearchResult } from "@/entities/search/model"
@@ -12,6 +12,7 @@ import styles from "./styles.module.css"
 import { useAutoHeight } from "./use-auto-height"
 
 export const COUNTER_FROM = 3600
+export const SLOW_SEARCH_MS = 1000
 
 export type SearchBoxProps = {
   readonly initialText?: string
@@ -41,7 +42,17 @@ export function SearchBox({ initialText = "", showExamples = true, onFound }: Se
   const hintId = useId()
   const counterId = useId()
   const errorId = useId()
+  const [slow, setSlow] = useState(false)
   useAutoHeight(fieldRef, text)
+
+  useEffect(() => {
+    if (!search.isPending) {
+      setSlow(false)
+      return
+    }
+    const timer = window.setTimeout(() => setSlow(true), SLOW_SEARCH_MS)
+    return () => window.clearTimeout(timer)
+  }, [search.isPending])
 
   const error = problem ?? search.error
   const showCounter = text.length >= COUNTER_FROM
@@ -49,9 +60,9 @@ export function SearchBox({ initialText = "", showExamples = true, onFound }: Se
     .filter(Boolean)
     .join(" ")
 
-  function submit() {
+  function submit(value = text) {
     if (search.isPending) return
-    const query = text.trim()
+    const query = value.trim()
     const found = problemOf(query)
     setProblem(found)
     if (found) return
@@ -69,7 +80,7 @@ export function SearchBox({ initialText = "", showExamples = true, onFound }: Se
 
   function pick(example: string) {
     change(example)
-    fieldRef.current?.focus()
+    submit(example)
   }
 
   return (
@@ -103,7 +114,10 @@ export function SearchBox({ initialText = "", showExamples = true, onFound }: Se
           }}
         />
         <div className={styles.bar}>
-          <span id={hintId} className={styles.hint}>
+          <span role="status" className={styles.progress}>
+            {slow ? t("box.progress") : null}
+          </span>
+          <span id={hintId} className={clsx(styles.hint, slow && styles.hidden)}>
             {t("box.hint")}
           </span>
           {showCounter ? (
@@ -114,9 +128,18 @@ export function SearchBox({ initialText = "", showExamples = true, onFound }: Se
               {t("box.counter", { count: text.length, limit: MAX_QUERY_LENGTH })}
             </span>
           ) : null}
-          <Button type="submit" className={styles.submit} aria-disabled={search.isPending}>
-            <Icon name="search" />
-            {search.isPending ? t("box.pending") : t("box.submit")}
+          <Button
+            type="submit"
+            className={styles.submit}
+            aria-disabled={search.isPending}
+            aria-busy={search.isPending}
+          >
+            {search.isPending ? (
+              <span className={styles.spinner} aria-hidden="true" />
+            ) : (
+              <Icon name="search" />
+            )}
+            {t("box.submit")}
           </Button>
         </div>
       </div>
