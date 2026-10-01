@@ -111,6 +111,7 @@ class UploadConfig:
     concurrency: int = 2
     attempts: int = 3
     lot_timeout_seconds: float = 30.0
+    resume_interval_seconds: float = 60.0
 
 
 def _upload_config() -> UploadConfig:
@@ -121,6 +122,7 @@ def _upload_config() -> UploadConfig:
         concurrency=_int("UPLOAD_CONCURRENCY", 2),
         attempts=_int("UPLOAD_ATTEMPTS", 3),
         lot_timeout_seconds=_float("UPLOAD_LOT_TIMEOUT_SECONDS", 30.0),
+        resume_interval_seconds=_float("UPLOAD_RESUME_INTERVAL_SECONDS", 60.0),
     )
 
 

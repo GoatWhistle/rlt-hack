@@ -12,6 +12,7 @@ class UploadSettings:
     retry_delay_seconds: float = 1.0
     lot_timeout_seconds: float = 30.0
     resume_delay_seconds: float = 5.0
+    resume_interval_seconds: float = 60.0
     max_selected_lots: int = 5000
 
     def __post_init__(self) -> None:
@@ -23,3 +24,5 @@ class UploadSettings:
             raise ValueError("lot timeout must be positive")
         if self.retry_delay_seconds < 0 or self.resume_delay_seconds < 0:
             raise ValueError("delays cannot be negative")
+        if self.resume_interval_seconds <= 0:
+            raise ValueError("resume interval must be positive")

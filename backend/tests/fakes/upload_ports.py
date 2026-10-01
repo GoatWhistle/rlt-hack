@@ -50,6 +50,7 @@ class FakeMatcher:
 @dataclass(slots=True)
 class FakeProcessor:
     failures: dict[str, int] = field(default_factory=dict)
+    errors: dict[str, Exception] = field(default_factory=dict)
     calls: list[str] = field(default_factory=list)
     gate: asyncio.Event | None = None
 
@@ -57,6 +58,8 @@ class FakeProcessor:
         self.calls.append(lot.lot_id)
         if self.gate is not None:
             await self.gate.wait()
+        if lot.lot_id in self.errors:
+            raise self.errors[lot.lot_id]
         remaining = self.failures.get(lot.lot_id, 0)
         if remaining:
             self.failures[lot.lot_id] = remaining - 1

@@ -1,4 +1,8 @@
 import asyncio
+import logging
+from dataclasses import replace
+
+import pytest
 
 from src.models.enums import LotStatus
 from src.models.upload import PendingLot
@@ -78,3 +82,50 @@ async def test_unfinished_lots_resume_after_restart() -> None:
     await finish(restarted, store, 2)
     await restarted.stop()
     assert sorted(second.calls) == ["1", "2"]
+
+
+async def test_lot_is_saved_after_store_recovers(caplog: pytest.LogCaptureFixture) -> None:
+    store = await stored(MemoryUploadStore(failing_saves=FAST.attempts), "1")
+    processor = FakeProcessor()
+    runner = LotRunner(processor, store, FixedClock(), replace(FAST, resume_interval_seconds=0.01))
+    with caplog.at_level(logging.ERROR):
+        await runner.start()
+        await finish(runner, store, 1)
+        await runner.stop()
+    assert store.saved[(UPLOAD_ID, "1")].status == LotStatus.NO_CANDIDATES
+    assert processor.calls == ["1", "1"]
+    assert "lot result was not saved and will be resumed" in caplog.text
+
+
+async def test_resume_skips_lots_already_in_work() -> None:
+    store = await stored(MemoryUploadStore(), "1")
+    processor = FakeProcessor(gate=asyncio.Event())
+    runner = LotRunner(processor, store, FixedClock(), replace(FAST, resume_interval_seconds=0.01))
+    await runner.start()
+    await asyncio.sleep(0.1)
+    assert processor.calls == ["1"]
+    assert processor.gate is not None
+    processor.gate.set()
+    await finish(runner, store, 1)
+    await runner.stop()
+
+
+@pytest.mark.parametrize(
+    ("error", "calls"),
+    [(ValueError("bad lot"), 1), (KeyError("column"), 1), (TimeoutError(), 2)],
+)
+async def test_deterministic_error_is_not_retried(error: Exception, calls: int) -> None:
+    store = MemoryUploadStore()
+    processor = FakeProcessor(errors={"1": error})
+    runner = LotRunner(processor, store, FixedClock(), replace(FAST, attempts=5))
+    await runner.start()
+    runner.submit(pending("1"))
+    await finish(runner, store, 1)
+    await runner.stop()
+    assert processor.calls == ["1"] * calls
+    assert store.saved[(UPLOAD_ID, "1")].status == LotStatus.FAILED
+
+
+def test_resume_interval_must_be_positive() -> None:
+    with pytest.raises(ValueError, match="resume interval"):
+        replace(FAST, resume_interval_seconds=0)
