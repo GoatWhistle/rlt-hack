@@ -123,9 +123,13 @@ async def import_history(
     database: str,
     prepared: Path,
     directory: Path,
-    before: date = date(2024, 12, 1),
+    before: date | None = None,
 ) -> dict:
     manifest = json.loads(await asyncio.to_thread((directory / "manifest.json").read_text))
+    snapshot = date.fromisoformat(manifest.get("history_before", "2024-12-01"))
+    if before is not None and before != snapshot:
+        raise ValueError("Evidence cutoff differs from the index snapshot")
+    before = snapshot
     index_id = manifest["files"]["card_vectors.npy"]
     cards_path = directory / "cards.parquet"
     checksum = await asyncio.to_thread(file_hash, cards_path)

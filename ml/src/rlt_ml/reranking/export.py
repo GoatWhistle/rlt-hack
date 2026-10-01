@@ -19,12 +19,16 @@ def export(models: Path, vectors: Path, data: Path, out: Path):
         or sha256(models / "ranker.cbm") != manifest["model_sha256"]
     ):
         raise ValueError("Model artifact differs from selection")
+    if evaluation["model_sha256"] != manifest["model_sha256"] or evaluation["split"] != "test":
+        raise ValueError("Evaluation belongs to a different model or split")
     vector_metadata = json.loads((vectors / "vectors.json").read_text())
-    if (
-        vector_metadata["model"] != "Qwen/Qwen3-Embedding-4B"
-        or vector_metadata["split"] != "validation"
-    ):
-        raise ValueError("Runtime snapshot must use the evaluated 4B validation history")
+    if vector_metadata["model"] != "Qwen/Qwen3-Embedding-4B" or vector_metadata["split"] not in {
+        "validation",
+        "test",
+    }:
+        raise ValueError("Runtime snapshot must use evaluated 4B history")
+    split = vector_metadata["split"]
+    before = {"validation": "2024-12-01", "test": "2025-06-01"}[split]
     out.mkdir(parents=True, exist_ok=False)
     for name in ("cards.parquet", "card_vectors.npy"):
         shutil.copyfile(vectors / name, out / name)
@@ -38,6 +42,7 @@ def export(models: Path, vectors: Path, data: Path, out: Path):
             "revision": vector_metadata["revision"],
             "shape": [vector_metadata["cards"], 2560],
             "query_instruction": vector_metadata["instruction"],
+            "history_before": before,
             "files": {
                 name: sha256(out / name)
                 for name in ("cards.parquet", "card_vectors.npy", "report.json")
@@ -48,14 +53,14 @@ def export(models: Path, vectors: Path, data: Path, out: Path):
     runtime.mkdir()
     shutil.copyfile(models / "ranker.cbm", runtime / "ranker.cbm")
     for name in ("supplier_stats.parquet", "category_stats.parquet"):
-        shutil.copyfile(data / "validation" / name, runtime / name)
+        shutil.copyfile(data / split / name, runtime / name)
     write_json(
         runtime / "runtime.json",
         {
             "features": list(FEATURES),
             "cards_sha256": sha256(out / "cards.parquet"),
             "model": vector_metadata["model"],
-            "history_before": "2024-12-01",
+            "history_before": before,
             "files": {
                 name: sha256(runtime / name)
                 for name in ("ranker.cbm", "supplier_stats.parquet", "category_stats.parquet")

@@ -3,7 +3,7 @@ import math
 
 from src.models.supplier_search import SupplierCandidate
 from src.service.errors import ServiceError
-from src.service.search.protocols import QueryEncoder, SupplierIndex
+from src.service.search.protocols import IndexVersion, QueryEncoder, SupplierIndex
 
 
 class SupplierSearch:
@@ -11,6 +11,10 @@ class SupplierSearch:
         self._index = index
         self._encoder = encoder
         self._lock = asyncio.Lock()
+
+    @property
+    def version(self) -> str:
+        return self._index.version if isinstance(self._index, IndexVersion) else ""
 
     async def enrich(self, candidates: list[SupplierCandidate]) -> list[SupplierCandidate]:
         return await self._index.enrich(candidates)

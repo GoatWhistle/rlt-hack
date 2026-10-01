@@ -19,3 +19,9 @@ class UploadRepository(Protocol):
 @runtime_checkable
 class CandidateEnrichment(Protocol):
     async def enrich(self, candidates: list[SupplierCandidate]) -> list[SupplierCandidate]: ...
+
+
+@runtime_checkable
+class SearchVersion(Protocol):
+    @property
+    def version(self) -> str: ...

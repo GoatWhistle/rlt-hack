@@ -21,6 +21,11 @@ class FileSupplierIndex:
         self.instruction = ""
         self.ranker: CandidateRanking | None = None
 
+    @property
+    def version(self) -> str:
+        model = self.ranker.version if self.ranker is not None else "rrf"
+        return self.manifest["files"]["card_vectors.npy"] + "/" + model
+
     async def initialize(self) -> None:
         document = await read_json(Path(__file__).resolve().parents[4] / "reference" / "okpd2.json")
         self.categories = FileOkpd2Reference.of(document, str.casefold)

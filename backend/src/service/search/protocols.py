@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from src.models.supplier_search import SupplierCandidate
 
@@ -16,3 +16,9 @@ class SupplierIndex(Protocol):
     async def search(
         self, text: str, vector: list[float], limit: int
     ) -> list[SupplierCandidate]: ...
+
+
+@runtime_checkable
+class IndexVersion(Protocol):
+    @property
+    def version(self) -> str: ...

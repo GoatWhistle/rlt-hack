@@ -23,3 +23,4 @@ class Upload:
     filename: str
     created_at: str
     lots: list[LotRecommendation]
+    ranking_version: str = ""

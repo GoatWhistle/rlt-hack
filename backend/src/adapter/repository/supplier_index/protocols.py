@@ -13,6 +13,8 @@ class SqlGateway(Protocol):
 
 
 class CandidateRanking(Protocol):
+    version: str
+
     def rank(
         self, text, cards, dense, lexical, scores, dense_order, lexical_order
     ) -> tuple[list[str], dict[str, int], dict[str, float], dict[str, list[str]]]: ...

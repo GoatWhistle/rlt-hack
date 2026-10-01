@@ -38,6 +38,7 @@ class CandidateRanker:
         self.model.load_model(str(self.directory / "ranker.cbm"))
         if self.model.feature_names_ != list(FEATURES):
             raise ValueError("Ranker model feature names mismatch")
+        self.version = manifest["files"]["ranker.cbm"]
         self.cutoff = date.fromisoformat(manifest["history_before"])
         self.suppliers = {
             row["supplier_inn"]: row
