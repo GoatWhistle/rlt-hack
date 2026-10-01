@@ -53,6 +53,7 @@ docker compose run --rm sync-job sync        # обход включённых �
 docker compose run --rm sync-job normalize   # пересчёт нормализации и классификации
 docker compose run --rm sync-job coverage    # отчёт о покрытии
 docker compose run --rm sync-job reidentify  # перевод позиций на новое правило ключа
+docker compose run --rm sync-job registry-import  # реестр МСП ФНС для ролей компаний
 ```
 
 Фронтенд будет доступен на `http://localhost:8080`, веб-интерфейс ClickHouse —
@@ -140,6 +141,8 @@ uv run --no-project --python 3.13 python backend/tests/supplier/identity_smoke.p
 uv run --no-project --python 3.13 python backend/tests/supplier/reidentify_smoke.py
 uv run --no-project --python 3.13 python backend/tests/normalizer/normalizer_smoke.py
 uv run --no-project --python 3.13 python backend/tests/classifier/classifier_smoke.py
+uv run --no-project --python 3.13 --with lxml python backend/tests/registry/registry_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/registry/registry_store_smoke.py
 ```
 
 Проверки используют временные каталоги, встроенный движок chDB и подготовленные

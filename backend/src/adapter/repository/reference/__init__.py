@@ -1,4 +1,4 @@
-"""Справочники из файлов: ОКПД2, рубрики, словарь, разделы каталогов, ОКЕИ.
+"""Справочники из файлов: ОКПД2, рубрики, словарь, разделы каталогов, ОКЕИ, роли.
 
 Это хранилище нормативных данных, поэтому оно и лежит в слое адаптеров: файлы
 читаются здесь, а правила применения живут в сервисах. Справочники загружаются
@@ -14,6 +14,7 @@ from src.adapter.repository.reference.categories import FileSourceCategoryRefere
 from src.adapter.repository.reference.lexicon import FileLexicon
 from src.adapter.repository.reference.loader import read_json
 from src.adapter.repository.reference.okpd2 import FileOkpd2Reference
+from src.adapter.repository.reference.okved_roles import FileOkvedRoles
 from src.adapter.repository.reference.rubrics import FileRubricReference
 from src.adapter.repository.reference.rules import FileTextRules
 from src.adapter.repository.reference.units import FileUnitReference
@@ -57,11 +58,16 @@ async def load_classifier_reference(
     )
 
 
+async def load_okved_roles(directory: Path = REFERENCE_DIR) -> FileOkvedRoles:
+    return FileOkvedRoles.of(await read_json(directory / "okved_roles.json"))
+
+
 __all__ = [
     "REFERENCE_DIR",
     "ClassifierReference",
     "FileLexicon",
     "FileOkpd2Reference",
+    "FileOkvedRoles",
     "FileRubricReference",
     "FileSourceCategoryReference",
     "FileTextRules",
@@ -69,4 +75,5 @@ __all__ = [
     "NormalizerReference",
     "load_classifier_reference",
     "load_normalizer_reference",
+    "load_okved_roles",
 ]

@@ -11,3 +11,11 @@ class ServiceError(Exception):
 
 class ProviderNotConfiguredError(ServiceError):
     """Ни один адаптер источника не включён: обходить нечего."""
+
+
+class RegistryNotConfiguredError(ServiceError):
+    """Путь к выгрузке реестра МСП не задан."""
+
+
+class EmptyRegistryDumpError(ServiceError):
+    """Выгрузка реестра МСП прочитана, но компаний в ней нет."""

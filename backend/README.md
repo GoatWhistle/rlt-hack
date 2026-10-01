@@ -27,9 +27,14 @@
   базовую единицу, ключ склейки дублей.
 - `src/service/classifier/` — код ОКПД2, рубрика и тип позиции по
   детерминированным каналам; таксономия и каналы разнесены по модулям.
+- `src/service/registry/` — обогащение компаний по реестру МСП ФНС: роль по
+  ОКВЭД и заявленной продукции, загрузка выгрузки реестра. Интерфейсы реестра
+  и справочника ролей — в его `protocols.py`.
+- `src/adapter/client/msp_registry/` — чтение ZIP-выгрузки реестра МСП;
+  `src/adapter/repository/clickhouse/registry.py` — её хранение и поиск по ИНН.
 - `src/service/supplier/` — бизнес-логика: `SupplierSyncWorker` запускает
   адаптеры всех включённых источников конкурентно, прогоняет собранный пакет
-  через нормализатор и классификатор и сохраняет результат;
+  через обогащение, нормализатор и классификатор и сохраняет результат;
   `OfferEnrichmentService` пересчитывает производные значения у уже сохранённых
   позиций. Интерфейсы объявлены в `protocols.py`.
 - `src/controller/job/` — команда запуска джобы и её DTO аргументов.
@@ -101,6 +106,50 @@ class OfferClassifying(Protocol):
 (`normalized_name`, `unit_code`, `unit_name`, `price_per_unit`, `rubric`,
 `rubric_name`, `classification_method`, версии правил). На хеш содержимого
 предложения производные значения не влияют.
+
+### Роль компании по реестру МСП
+
+Сразу после обхода и до нормализации воркер вызывает `SupplierEnriching`:
+
+```python
+class SupplierEnriching(Protocol):
+    async def enrich(self, package: SupplierPackage) -> SupplierPackage: ...
+```
+
+Реализация `SupplierRegistryEnricher` ищет компании пакета по ИНН в таблице
+`msp_companies` и проставляет `role` и `role_evidence` у компании
+(`suppliers_current`). Правило:
+
+1. компания заявила в реестре собственную продукцию (`СвПрод`) — производитель;
+2. иначе роль по основному ОКВЭД из `reference/okved_roles.json`, выигрывает
+   самый длинный префикс: разделы A–C (01–32) — производитель, 46 —
+   дистрибьютор, 45 и 47 — перепродавец, 33, 45.2 и услуги — исполнитель
+   услуг;
+3. иначе роль остаётся `unknown`.
+
+Основание записывается текстом с кодом, названием ОКВЭД и датой сведений.
+Роль и ОКВЭД, которые дал сам источник, реестр не перезаписывает. Компании без
+ИНН и вне реестра (крупный бизнес в нём не состоит) проходят без изменений.
+Роль предложений (`offers.supplier_role`) обогащение не трогает: она
+относится к конкретному товару и задаётся адаптером.
+
+Реестр загружается отдельной командой из заранее скачанной ZIP-выгрузки
+открытых данных ФНС (`https://www.nalog.gov.ru/opendata/7707329152-rsmp/`,
+около 2 ГБ; сервер ФНС ограничивает скорость, поэтому скачивайте с
+продолжением, например `curl -C - -o var/msp/rmsp.zip <адрес выгрузки>`):
+
+```sh
+docker compose run --rm sync-job registry-import
+uv run --python 3.13 python main.py registry-import --path var/msp/rmsp.zip
+```
+
+На сервере реестр загружается вручную workflow «MSP registry import» — см.
+[deploy/README.md](../deploy/README.md#реестр-мсп-фнс).
+
+Новая выгрузка заменяет сведения компаний, а выбывшие из реестра удаляются
+только после успешной загрузки всех файлов. Пока реестр не загружен,
+обогащение ничего не меняет. Пересчёт ролей у уже сохранённых компаний
+происходит при следующем обходе их источника.
 
 ### Что читать: `offers_normalized`
 
@@ -248,6 +297,7 @@ uv run --python 3.13 python main.py normalize            # пересчитат�
 uv run --python 3.13 python main.py normalize --limit 100
 uv run --python 3.13 python main.py coverage             # отчёт о покрытии
 uv run --python 3.13 python main.py reidentify           # перевод на новое правило ключа
+uv run --python 3.13 python main.py registry-import      # загрузка реестра МСП
 ```
 
 `normalize` нужен, когда изменились правила или справочники: при обходе
@@ -262,6 +312,8 @@ uv run --python 3.13 python main.py reidentify           # перевод на �
 `SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`,
 `SYNC_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `REFERENCE_DIR`,
 `CLASSIFIER_ARCHIVE_CHANNEL`, `CLASSIFIER_ARCHIVE_LIMIT`, `LOG_LEVEL`,
+`MSP_REGISTRY_PATH` (ZIP-выгрузка реестра МСП; в Compose каталог
+`MSP_REGISTRY_DIR`, по умолчанию `./var/msp`, монтируется в `/data/msp`),
 `GISP_REGISTRY_PROVIDER`, `GISP_EXPORT_LOCATION`,
 `PRODUCTCENTER_WEB_PROVIDER`, `PRODUCTCENTER_MAX_CARDS`,
 `PRODUCTCENTER_PARALLEL_REQUESTS`, `PRODUCTCENTER_REQUEST_INTERVAL`,
@@ -352,6 +404,9 @@ uv run --no-project --python 3.13 python tests/supplier/identity_smoke.py
 uv run --no-project --python 3.13 python tests/supplier/reidentify_smoke.py
 uv run --no-project --python 3.13 python tests/normalizer/normalizer_smoke.py
 uv run --no-project --python 3.13 python tests/classifier/classifier_smoke.py
+uv run --no-project --python 3.13 --with lxml python tests/registry/registry_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
+  python tests/registry/registry_store_smoke.py
 ```
 
 Проверки нормализатора и классификатора используют настоящие справочники из

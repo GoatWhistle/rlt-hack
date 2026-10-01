@@ -9,8 +9,10 @@
 делят все конкурентные обходы. Для будущего HTTP API он создаётся один раз.
 """
 
+from pathlib import Path
 from types import TracebackType
 
+from src.adapter.client.msp_registry import MspRegistryDump
 from src.adapter.clock import SystemClock
 from src.adapter.repository.clickhouse.archive import ClickHouseArchiveRepository
 from src.adapter.repository.clickhouse.client import create_client
@@ -19,12 +21,14 @@ from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepositor
 from src.adapter.repository.clickhouse.migrator import Migrator
 from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
 from src.adapter.repository.clickhouse.package import ClickHousePackageRepository
+from src.adapter.repository.clickhouse.registry import ClickHouseMspRegistryRepository
 from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
 from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
 from src.adapter.repository.clickhouse.versions import VersionSequencer
 from src.adapter.repository.reference import (
     load_classifier_reference,
     load_normalizer_reference,
+    load_okved_roles,
 )
 from src.adapter.supplier import identity
 from src.adapter.supplier.aboutpartner_web import PROVIDER_NAME as ABOUTPARTNER
@@ -54,6 +58,7 @@ from src.models.enums import SourceType
 from src.models.source import Source
 from src.service.classifier import OfferClassifier
 from src.service.normalizer import OfferNormalizer
+from src.service.registry import RegistryImportService, SupplierRegistryEnricher
 from src.service.supplier.enrich import OfferEnrichmentService
 from src.service.supplier.protocols import SupplierProvider
 from src.service.supplier.reidentify import OfferReidentifyService
@@ -78,6 +83,7 @@ class Container:
         # Справочники читаются один раз на процесс: они не меняются на ходу.
         self._normalizer: OfferNormalizer | None = None
         self._classifier: OfferClassifier | None = None
+        self._enricher: SupplierRegistryEnricher | None = None
 
     @property
     def config(self) -> AppConfig:
@@ -113,6 +119,23 @@ class Container:
             offers=await self.offers(),
             batch_size=self._config.write_batch_size,
         )
+
+    async def msp_registry(self) -> ClickHouseMspRegistryRepository:
+        return ClickHouseMspRegistryRepository(
+            await self.gateway(), self._config.clickhouse.database
+        )
+
+    async def enricher(self) -> SupplierRegistryEnricher:
+        """Роль по ОКВЭД берётся из реестра МСП, загруженного командой registry-import."""
+        if self._enricher is None:
+            self._enricher = SupplierRegistryEnricher(
+                registry=await self.msp_registry(),
+                roles=await load_okved_roles(self._config.reference_dir),
+            )
+        return self._enricher
+
+    async def registry_import(self, path: Path) -> RegistryImportService:
+        return RegistryImportService(dump=MspRegistryDump(path), store=await self.msp_registry())
 
     async def normalizer(self) -> OfferNormalizer:
         """Нормализатор знает только свои справочники и правила."""
@@ -341,6 +364,7 @@ class Container:
             storage=await self.package_repository(),
             journal=await self.journal(),
             clock=SystemClock(),
+            enricher=await self.enricher(),
             normalizer=await self.normalizer(),
             classifier=await self.classifier(),
             interval_seconds=self._config.sync_interval_seconds,

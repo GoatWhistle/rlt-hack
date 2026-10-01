@@ -1,6 +1,7 @@
 """Итоги операций над сохранёнными позициями."""
 
 from dataclasses import dataclass
+from datetime import date
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,3 +21,11 @@ class ReidentifyResult:
     offers: int = 0
     changed: int = 0
     merged: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class RegistryImportResult:
+    """Итог загрузки выгрузки реестра МСП."""
+
+    companies: int = 0
+    registry_date: date | None = None
