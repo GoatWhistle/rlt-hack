@@ -79,13 +79,13 @@ class ProductDto(CamelModel):
     origin_note: None = None
 
 
-class MatchDto(CamelModel):
+class ProductMatchDto(CamelModel):
     product_id: str
     basis: MatchBasis
     source: SourceDto | None
 
 
-class PurchaseDto(CamelModel):
+class CompanyPurchaseDto(CamelModel):
     lot_id: str
     title: str
     year: int | None
@@ -103,10 +103,10 @@ class CompanyDto(CamelModel):
     status: CandidateStatus
     check_reasons: list[CheckReason]
     highlights: list[HighlightDto]
-    matches: list[MatchDto]
+    matches: list[ProductMatchDto]
     similar_purchases: int
     wins: int
-    purchases: list[PurchaseDto]
+    purchases: list[CompanyPurchaseDto]
 
 
 class RecommendationDto(CamelModel):

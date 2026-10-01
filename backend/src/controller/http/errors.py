@@ -94,12 +94,18 @@ KNOWN_ERRORS: tuple[tuple[type[Exception], ErrorKind], ...] = (
     (UninterpretableQueryError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "query_not_understood")),
     (SearchNotFoundError, ErrorKind(HTTPStatus.NOT_FOUND, "search_not_found")),
     (SupplierNotFoundError, ErrorKind(HTTPStatus.NOT_FOUND, "supplier_not_found")),
-    (SearchUnavailableError, ErrorKind(HTTPStatus.SERVICE_UNAVAILABLE, "search_unavailable")),
+    (
+        SearchUnavailableError,
+        ErrorKind(HTTPStatus.SERVICE_UNAVAILABLE, "search_unavailable", RETRY_AFTER_SECONDS),
+    ),
     (
         StorageUnavailableError,
         ErrorKind(HTTPStatus.SERVICE_UNAVAILABLE, "storage_unavailable", RETRY_AFTER_SECONDS),
     ),
-    (SearchTimeoutError, ErrorKind(HTTPStatus.GATEWAY_TIMEOUT, "search_timeout")),
+    (
+        SearchTimeoutError,
+        ErrorKind(HTTPStatus.GATEWAY_TIMEOUT, "search_timeout", RETRY_AFTER_SECONDS),
+    ),
 )
 
 HTTP_CODES: dict[int, str] = {

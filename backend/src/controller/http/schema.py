@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, PlainSerializer
+from pydantic import BaseModel, ConfigDict, PlainSerializer, WithJsonSchema
 from pydantic.alias_generators import to_camel
 
 
@@ -19,7 +19,11 @@ def score(value: float) -> float:
     return round(value, 4)
 
 
-UtcDateTime = Annotated[datetime, PlainSerializer(rfc3339, return_type=str, when_used="json")]
+UtcDateTime = Annotated[
+    datetime,
+    PlainSerializer(rfc3339, return_type=str, when_used="json"),
+    WithJsonSchema({"type": "string", "format": "date-time"}),
+]
 
 
 class CamelModel(BaseModel):

@@ -70,6 +70,12 @@ class ProcurementUploadService:
     async def recent(self, limit: int) -> tuple[UploadSummary, ...]:
         return await self._store.recent(limit)
 
+    async def summary(self, upload_id: UUID) -> UploadSummary:
+        summary = await self._store.summary(upload_id)
+        if summary is None:
+            raise UploadNotFoundError(upload_id)
+        return summary
+
     async def get(self, upload_id: UUID) -> UploadDetail:
         detail = await self._store.detail(upload_id)
         if detail is None:

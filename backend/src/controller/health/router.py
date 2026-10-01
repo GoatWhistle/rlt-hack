@@ -18,6 +18,11 @@ async def live() -> LiveDto:
     return LiveDto()
 
 
+@router.head("/live")
+async def live_head() -> Response:
+    return Response()
+
+
 @router.get("/ready", responses={status.HTTP_503_SERVICE_UNAVAILABLE: {"model": ReadinessDto}})
 async def ready(
     response: Response,

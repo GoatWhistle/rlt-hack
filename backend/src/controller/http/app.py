@@ -7,6 +7,7 @@ from src.controller.health.router import router as health_router
 from src.controller.http.errors import install_error_handlers
 from src.controller.http.metrics import Metrics
 from src.controller.http.middleware import RequestContextMiddleware
+from src.controller.http.openapi import operation_id
 from src.controller.http.protocols import ServiceProvider
 from src.controller.http.settings import ApiSettings
 from src.controller.http.state import Services
@@ -46,6 +47,7 @@ def create_app(provider: ServiceProvider, settings: ApiSettings) -> FastAPI:
         docs_url=DOCS_URL if settings.docs_enabled else None,
         redoc_url=None,
         openapi_url=OPENAPI_URL if settings.docs_enabled else None,
+        generate_unique_id_function=operation_id,
     )
     app.state.settings = settings
     app.state.metrics = Metrics()

@@ -92,6 +92,8 @@ class FakeProcurementUploads:
     selections: list[tuple[str, ...]] = field(default_factory=list)
     started: int = 0
     stopped: int = 0
+    summaries: int = 0
+    details: int = 0
 
     async def start(self) -> None:
         self.started += 1
@@ -110,8 +112,14 @@ class FakeProcurementUploads:
             raise self.error
         return (self.detail.summary,)[:limit]
 
+    async def summary(self, upload_id: UUID) -> UploadSummary:
+        self._known(upload_id)
+        self.summaries += 1
+        return self.detail.summary
+
     async def get(self, upload_id: UUID) -> UploadDetail:
         self._known(upload_id)
+        self.details += 1
         return self.detail
 
     async def lot(self, upload_id: UUID, lot_id: str) -> LotDetail:

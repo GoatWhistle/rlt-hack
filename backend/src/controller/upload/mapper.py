@@ -9,16 +9,16 @@ from src.controller.search.mapper import (
 )
 from src.controller.upload.dto import (
     CompanyDto,
+    CompanyPurchaseDto,
     CountsDto,
     IssueDto,
     LotDetailDto,
     LotResultDto,
     LotResultsDto,
     LotSummaryDto,
-    MatchDto,
     ProductDto,
+    ProductMatchDto,
     ProductOrigin,
-    PurchaseDto,
     RecommendationDto,
     UploadDetailDto,
     UploadSummaryDto,
@@ -110,12 +110,14 @@ def product_dto(item: QueryItem) -> ProductDto:
     )
 
 
-def match_dto(match: ProductMatch) -> MatchDto:
-    return MatchDto(product_id=match.item_id, basis=match.basis, source=source_dto(match.evidence))
+def match_dto(match: ProductMatch) -> ProductMatchDto:
+    return ProductMatchDto(
+        product_id=match.item_id, basis=match.basis, source=source_dto(match.evidence)
+    )
 
 
-def purchase_dto(record: PurchaseRecord) -> PurchaseDto:
-    return PurchaseDto(
+def purchase_dto(record: PurchaseRecord) -> CompanyPurchaseDto:
+    return CompanyPurchaseDto(
         lot_id=record.lot_id, title=record.title, year=None, outcome=record.outcome, source=None
     )
 
