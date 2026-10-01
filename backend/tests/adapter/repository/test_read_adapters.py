@@ -15,10 +15,10 @@ from tests.fakes.domain import CHECKED, make_offer, make_source, make_supplier, 
 pytest.importorskip("chdb")
 pytestmark = pytest.mark.chdb
 
-ALPHA = make_supplier("alpha", inn="7801234567")
+ALPHA = make_supplier("alpha", inn="7801234564")
 BETA = make_supplier("beta", inn=None)
-TWIN = make_supplier("twin", inn="7801234567")
-GAMMA = make_supplier("gamma", inn="780123456789")
+TWIN = make_supplier("twin", inn="7801234564")
+GAMMA = make_supplier("gamma", inn="780123456724")
 
 
 async def test_directory_reads_suppliers_by_id(gateway: ChdbGateway) -> None:
@@ -32,8 +32,8 @@ async def test_directory_reads_suppliers_by_id(gateway: ChdbGateway) -> None:
 async def test_identity_maps_only_unambiguous_inns(gateway: ChdbGateway) -> None:
     await Seeder(gateway).suppliers(ALPHA, TWIN, GAMMA)
     identity = ClickHouseSupplierIdentity(gateway)
-    found = await identity.ids_by_inn(["7801234567", " 780123456789 ", "0000000000"])
-    assert found == {"780123456789": GAMMA.supplier_id}
+    found = await identity.ids_by_inn(["7801234564", " 780123456724 ", "0000000000"])
+    assert found == {"780123456724": GAMMA.supplier_id}
     assert await identity.ids_by_inn(["", " "]) == {}
 
 

@@ -1,4 +1,6 @@
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+from types import MappingProxyType
 from uuid import UUID
 
 
@@ -10,7 +12,10 @@ class EmbeddingDocument:
     brand: str
     article: str
     description: str
-    attributes: dict[str, str]
+    attributes: Mapping[str, str] = field(hash=False)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "attributes", MappingProxyType(dict(self.attributes)))
 
 
 @dataclass(frozen=True, slots=True)

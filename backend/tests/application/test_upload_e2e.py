@@ -20,7 +20,7 @@ from tests.fakes.waiting import eventually
 pytest.importorskip("chdb")
 pytestmark = pytest.mark.chdb
 
-ALPHA = make_supplier("alpha", inn="7801234567")
+ALPHA = make_supplier("alpha", inn="7801234564")
 GAMMA = make_supplier("gamma", inn=None)
 NOTICES = "\n".join(
     (
@@ -89,7 +89,7 @@ async def test_csv_becomes_lots_with_candidates(client: httpx.AsyncClient) -> No
         "Рис шлифованный",
     ]
     companies = recommendation["companies"]
-    assert companies[0]["inn"] == "7801234567"
+    assert companies[0]["inn"] == "7801234564"
     assert {match["basis"] for match in companies[0]["matches"]} == {"stock"}
     assert lot["lot"]["status"] == detail["lots"][0]["status"]
     assert lot["upload"]["fileName"] == "закупки.csv"

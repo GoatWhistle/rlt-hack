@@ -20,9 +20,9 @@ from tests.fakes.domain import make_request as build_request
 pytest.importorskip("chdb")
 pytestmark = pytest.mark.chdb
 
-ALPHA = make_supplier("alpha", inn="7801234567")
-BETA = make_supplier("beta", inn="7807654321")
-GAMMA = replace(make_supplier("gamma", inn="4701234567"), region="47")
+ALPHA = make_supplier("alpha", inn="7801234564")
+BETA = make_supplier("beta", inn="7807654325")
+GAMMA = replace(make_supplier("gamma", inn="4701234565"), region="47")
 ITEMS = (make_item("i1", "крупа гречневая ядрица"), make_item("i2", "рис"))
 
 

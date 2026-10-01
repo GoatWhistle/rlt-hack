@@ -25,7 +25,7 @@ type Handler = Callable[[httpx.Request], httpx.Response]
 @dataclass(slots=True)
 class FakeIdentity:
     known: Mapping[str, UUID] = field(
-        default_factory=lambda: {"7801234567": ALPHA, "7807654321": BETA}
+        default_factory=lambda: {"7801234564": ALPHA, "7807654325": BETA}
     )
     asked: list[tuple[str, ...]] = field(default_factory=list)
 
@@ -58,10 +58,10 @@ def retriever(handler: Handler, identity: FakeIdentity | None = None) -> MlServi
 
 
 RANKED = [
-    {"supplierInn": "7807654321", "rank": 2, "matchedItemIds": ["i2", "zz"]},
-    {"supplierInn": "7801234567", "rank": 1, "matchedItemIds": ["i1", "i1"]},
+    {"supplierInn": "7807654325", "rank": 2, "matchedItemIds": ["i2", "zz"]},
+    {"supplierInn": "7801234564", "rank": 1, "matchedItemIds": ["i1", "i1"]},
     {"supplierInn": "0000000000", "rank": 3},
-    {"supplierInn": "7801234567", "rank": 4},
+    {"supplierInn": "7801234564", "rank": 4},
 ]
 
 
@@ -113,8 +113,8 @@ async def test_request_follows_the_wire_contract() -> None:
 async def test_limit_cuts_resolved_candidates() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         candidates = [
-            {"supplierInn": "7801234567", "rank": 1},
-            {"supplierInn": "7807654321", "rank": 2},
+            {"supplierInn": "7801234564", "rank": 1},
+            {"supplierInn": "7807654325", "rank": 2},
         ]
         return httpx.Response(200, json=answer(candidates))
 
@@ -127,7 +127,7 @@ async def test_limit_cuts_resolved_candidates() -> None:
     [
         answer([], requestId=str(uid("other"))),
         answer([], schemaVersion="2.0"),
-        answer([{"supplierInn": "7801234567", "rank": 0}]),
+        answer([{"supplierInn": "7801234564", "rank": 0}]),
         {"unexpected": True},
     ],
 )
@@ -146,7 +146,7 @@ async def test_transient_failures_are_retried_once() -> None:
         calls.append(1)
         if len(calls) == 1:
             raise httpx.ConnectError("refused", request=request)
-        return httpx.Response(200, json=answer([{"supplierInn": "7801234567", "rank": 1}]))
+        return httpx.Response(200, json=answer([{"supplierInn": "7801234564", "rank": 1}]))
 
     hits = await retriever(handler).retrieve(make_request(), 5)
     assert len(calls) == 2

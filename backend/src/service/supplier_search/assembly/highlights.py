@@ -5,7 +5,6 @@ from src.models.enums import HighlightCode, MatchBasis, VerificationStatus
 from src.models.offer_evidence import OfferEvidence
 from src.models.purchase import PurchaseSummary
 from src.models.supplier import Supplier
-from src.service.supplier_search.identity import has_valid_inn
 
 
 def _priced(matches: Sequence[ProductMatch], cards: Sequence[OfferEvidence]) -> int:
@@ -36,6 +35,6 @@ class HighlightComposer:
         highlights.extend(
             Highlight(code, {"count": count}) for code, count in counters if count > 0
         )
-        if supplier.identity_status == VerificationStatus.VERIFIED and has_valid_inn(supplier):
+        if supplier.identity_status == VerificationStatus.VERIFIED and supplier.has_valid_inn:
             highlights.append(Highlight(HighlightCode.VERIFIED_IDENTITY))
         return tuple(highlights)

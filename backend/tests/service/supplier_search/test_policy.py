@@ -22,13 +22,13 @@ from tests.fakes.domain import make_offer, make_offer_evidence, make_source, mak
 from tests.fakes.drafts import make_draft, stock_match
 
 
-@pytest.mark.parametrize("inn", [None, "", "12345", "78012345678", "78012345ab", "7801234567890"])
+@pytest.mark.parametrize("inn", [None, "", "12345", "78012345648", "78012345ab", "7801234567240"])
 def test_inn_rule_flags_missing_or_malformed_inn(inn: str | None) -> None:
     outcome = InnRequiredRule().apply(make_draft(make_supplier(inn=inn)))
     assert (outcome.reason, outcome.triggered) == (CheckReason.INN_MISSING, True)
 
 
-@pytest.mark.parametrize("inn", ["7801234567", "780123456789"])
+@pytest.mark.parametrize("inn", ["7801234564", "780123456724"])
 def test_inn_rule_accepts_ten_or_twelve_digits(inn: str) -> None:
     assert not InnRequiredRule().apply(make_draft(make_supplier(inn=inn))).triggered
 

@@ -54,7 +54,7 @@ def make_request(*items: QueryItem, query: SearchQuery | None = None) -> SearchR
     return SearchRequest(query=query or make_query(), items=items or (make_item(),))
 
 
-def make_supplier(name: str = "alpha", inn: str | None = "7801234567") -> Supplier:
+def make_supplier(name: str = "alpha", inn: str | None = "7801234564") -> Supplier:
     return Supplier(
         supplier_id=uid(name),
         name=f"ООО «{name}»",

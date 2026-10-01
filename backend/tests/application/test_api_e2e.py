@@ -18,7 +18,7 @@ from tests.fakes.domain import make_offer, make_source, make_supplier
 pytest.importorskip("chdb")
 pytestmark = pytest.mark.chdb
 
-ALPHA = make_supplier("alpha", inn="7801234567")
+ALPHA = make_supplier("alpha", inn="7801234564")
 GAMMA = make_supplier("gamma", inn=None)
 
 
@@ -64,7 +64,7 @@ async def test_text_search_runs_through_http_and_reopens(client: httpx.AsyncClie
     assert [item["quantity"]["value"] for item in body["items"]] == ["500", "200"]
     alpha, gamma = body["candidates"]
     assert (alpha["inn"], alpha["status"], alpha["checkReasons"]) == (
-        "7801234567",
+        "7801234564",
         "recommended",
         [],
     )
