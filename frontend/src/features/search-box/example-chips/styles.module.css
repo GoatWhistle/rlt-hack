@@ -49,13 +49,6 @@
   transition: var(--transition-control);
 }
 
-.text {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .chip:active {
   transform: scale(var(--press-scale));
 }

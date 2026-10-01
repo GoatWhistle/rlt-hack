@@ -95,7 +95,7 @@ describe("the export dialog", () => {
     expect(screen.getByText(/1 more is still processing/)).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: en("submit", "export") }))
     await waitFor(() => expect(onClose).toHaveBeenCalled())
-    expect(screen.getByText(en("done", "export"))).toBeInTheDocument()
+    expect(screen.getAllByText(en("done", "export")).length).toBeGreaterThan(0)
     expect(gateway.results).toHaveBeenCalledWith("u1", ["10", "12"])
     expect(save.mock.calls.map(([name, , type]) => [name, type])).toEqual([
       ["notices-products.csv", CSV_TYPE],

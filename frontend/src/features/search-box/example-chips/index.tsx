@@ -1,6 +1,7 @@
 import { useId } from "react"
 import { useTranslation } from "react-i18next"
 import { Icon } from "@/shared/ui/icon"
+import { Truncate } from "@/shared/ui/truncate"
 import styles from "./styles.module.css"
 
 export const EXAMPLES = ["groats", "office", "medical"] as const
@@ -27,7 +28,7 @@ export function ExampleChips({ onPick }: { readonly onPick: (text: string) => vo
                 <span className={styles.icon} aria-hidden="true">
                   <Icon name="search" size="sm" />
                 </span>
-                <span className={styles.text}>{text}</span>
+                <Truncate>{text}</Truncate>
               </button>
             </li>
           )

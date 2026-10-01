@@ -25,14 +25,6 @@
   transition: var(--transition-control);
 }
 
-.file,
-.query {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .file {
   font-family: var(--font-mono);
   font-size: var(--text-sm);

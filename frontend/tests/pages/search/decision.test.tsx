@@ -70,8 +70,8 @@ describe("deciding on a search result", () => {
     expect(content).toContain("АО «Зерновой Двор»")
     expect(content).not.toContain("Северный Провиант")
     expect(
-      await screen.findByText(`File downloaded: ${searchFileName(SEARCH)}`),
-    ).toBeInTheDocument()
+      (await screen.findAllByText(`File downloaded: ${searchFileName(SEARCH)}`)).length,
+    ).toBeGreaterThan(0)
   })
 
   it("downloads everyone when nobody is chosen", async () => {

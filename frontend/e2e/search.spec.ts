@@ -126,7 +126,7 @@ test("chooses a candidate and downloads the choice", async ({ page }) => {
   const download = page.waitForEvent("download")
   await dialog.getByRole("button", { name: /download csv/i }).click()
   expect((await download).suggestedFilename()).toMatch(/^search-.+-suppliers\.csv$/)
-  await expect(page.getByText(/file downloaded/i)).toBeVisible()
+  await expect(page.getByRole("listitem").filter({ hasText: /file downloaded/i })).toBeVisible()
 })
 
 test("explains an empty result and a query it cannot read", async ({ page }) => {

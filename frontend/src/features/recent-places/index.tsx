@@ -7,6 +7,7 @@ import { searchPath, uploadPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { Icon } from "@/shared/ui/icon"
 import { Stack } from "@/shared/ui/stack"
+import { Truncate } from "@/shared/ui/truncate"
 import styles from "./styles.module.css"
 
 export const RECENT_FILES = 3
@@ -30,7 +31,7 @@ export function RecentPlaces() {
           <li key={upload.id}>
             <Link to={uploadPath(upload.id)} className={styles.link}>
               <Icon name="fileCheck" size="sm" />
-              <span className={styles.file}>{upload.fileName}</span>
+              <Truncate className={styles.file}>{upload.fileName}</Truncate>
               <span className={styles.meta}>{dateTime(upload.createdAt)}</span>
             </Link>
           </li>
@@ -39,7 +40,7 @@ export function RecentPlaces() {
           <li>
             <Link to={searchPath(search.searchId)} className={styles.link}>
               <Icon name="search" size="sm" />
-              <span className={styles.query}>{search.text}</span>
+              <Truncate>{search.text}</Truncate>
               <span className={styles.meta}>{t("recent.search")}</span>
             </Link>
           </li>
