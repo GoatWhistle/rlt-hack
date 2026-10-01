@@ -263,7 +263,9 @@ uv run --python 3.13 python main.py reidentify           # перевод на �
 `SYNC_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `REFERENCE_DIR`,
 `CLASSIFIER_ARCHIVE_CHANNEL`, `CLASSIFIER_ARCHIVE_LIMIT`, `LOG_LEVEL`,
 `GISP_REGISTRY_PROVIDER`, `GISP_EXPORT_LOCATION`,
-`PRODUCTCENTER_WEB_PROVIDER`, `PRODUCTCENTER_MAX_CARDS`, `PRODUCTCENTER_CACHE_DIR`.
+`PRODUCTCENTER_WEB_PROVIDER`, `PRODUCTCENTER_MAX_CARDS`,
+`PRODUCTCENTER_PARALLEL_REQUESTS`, `PRODUCTCENTER_REQUEST_INTERVAL`,
+`PRODUCTCENTER_CONNECTION_RETRIES`, `PRODUCTCENTER_CACHE_DIR`.
 
 Московский адаптер включается только после получения проверенного полного
 экспорта: `MOSCOW_SUPPLIERS_PROVIDER=true` и `MOSCOW_SUPPLIERS_EXPORT_URL`.
@@ -300,7 +302,14 @@ JSON-интерфейса остановился на HTML-проверке до
 `PRODUCTCENTER_MAX_CARDS=0` означает полный обход. Положительный лимит
 останавливает обход ошибкой без сохранения неполного пакета и годится только
 для диагностики. ProductCenter выключен по умолчанию до полного живого прогона.
-Успешные страницы кешируются не дольше 24 часов; ошибки HTTP не сохраняются.
+По умолчанию ProductCenter делает один запрос за раз с интервалом не меньше
+секунды между началами запросов. После сетевого отказа он повторяет запрос с
+возрастающей паузой до 180 раз (около 90 минут); постоянный отказ завершает
+обход ошибкой без фиксации полного снимка. Уже готовые порции товаров сохраняются
+по потоковому контракту. Эти ограничения задаются отдельными переменными
+`PRODUCTCENTER_PARALLEL_REQUESTS`, `PRODUCTCENTER_REQUEST_INTERVAL` и
+`PRODUCTCENTER_CONNECTION_RETRIES`, независимо от других источников.
+Успешные страницы кешируются не дольше 48 часов; ошибки HTTP не сохраняются.
 Docker Compose держит кеш в томе `productcenter-cache` вне Git. Пакет
 фиксируется только после полного успешного обхода; готовые порции товаров
 сохраняются раньше, по потоковому контракту.

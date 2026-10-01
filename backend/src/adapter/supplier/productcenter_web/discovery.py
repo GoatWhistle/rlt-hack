@@ -10,7 +10,7 @@ import httpx
 
 from src.adapter.supplier.errors import ContentFormatError
 from src.adapter.supplier.productcenter_web.cache import PageCache
-from src.adapter.supplier.productcenter_web.request import get
+from src.adapter.supplier.productcenter_web.request import RequestPacer, get
 
 BASE_URL = "https://productcenter.ru"
 SITEMAP_URL = f"{BASE_URL}/sitemaps/sitemaps.xml"
@@ -49,9 +49,16 @@ def xml_locs(content: bytes, indexed: bool) -> list[str]:
 
 
 async def sitemap_cards(
-    http: httpx.AsyncClient, retries: int, cache: PageCache | None = None
+    http: httpx.AsyncClient,
+    retries: int,
+    cache: PageCache | None = None,
+    *,
+    connection_retries: int | None = None,
+    pacer: RequestPacer | None = None,
 ) -> dict[str, dict[str, str]]:
-    index = await get(http, SITEMAP_URL, retries, cache)
+    index = await get(
+        http, SITEMAP_URL, retries, cache, connection_retries=connection_retries, pacer=pacer
+    )
     try:
         names = await asyncio.to_thread(xml_locs, index.content, True)
     except ContentFormatError:
@@ -67,7 +74,9 @@ async def sitemap_cards(
         raise ContentFormatError("В индексе отсутствует карта компаний или товаров")
     cards: dict[str, dict[str, str]] = {"producers": {}, "products": {}}
     for url in selected:
-        response = await get(http, url, retries, cache)
+        response = await get(
+            http, url, retries, cache, connection_retries=connection_retries, pacer=pacer
+        )
         try:
             urls = await asyncio.to_thread(xml_locs, response.content, False)
         except ContentFormatError:
