@@ -35,11 +35,19 @@
 
 Находок: **P0 — 1, P1 — 10, P2 — 12**.
 
+## Статус исправлений
+
+Исправления — ветка от `feature/supplier-search-api` после `3544a9f`, 2026-10-02. Закрыты P0, все P1, кроме CSV-инъекции во фронтенде (находка 10, отдельная задача), и дешёвые P2: 12, 13, 14 (частично), 16, 17, 19, 20, 22. Открыты 15, 18, 21, 23. Статус и тесты — у каждой находки.
+
+Проверки в `backend/` на Windows: `ruff check`, `ruff format --check`, `mypy --strict` и `pytest` зелёные, тесты chDB пропущены. Docker локально не запускался: сборка образов, `nginx -t` и шаги `deploy/smoke.sh` проверяются в CI; `docker compose config` для обычного и продакшн-набора проходит.
+
 ## Находки
 
 ### P0 — блокирует релиз
 
 #### 1. Широкая шапка CSV занимает ≈1,3 ГБ памяти на один запрос
+
+- Статус: **закрыто** (`4cced25`). Записи читаются потоком, чтение прерывается на `max_rows + 1`; строка длиннее 64 КБ и шапка шире 64 колонок дают `invalid_file`; не больше двух разборов одновременно; у `api` в продакшне `mem_limit` 768m (`API_MEMORY_LIMIT`) и `pids_limit`. `csv.field_size_limit` не менялся: это глобальное состояние модуля, а длину поля и так ограничивает длина строки, кроме многострочных полей в кавычках (стандартные 128 КБ). Тесты: `tests/adapter/file/test_notice_csv_limits.py` (шапка из 1 млн разделителей отклоняется быстрее 0,2 с, пик `tracemalloc` на 10 МБ меньше 64 МБ, семафор).
 
 - Где: `backend/src/adapter/file/notice_csv/table.py:20-38` (`detect_delimiter` делит всю первую строку на три списка, `read_records` материализует все ячейки), `backend/src/adapter/file/notice_csv/reader.py:23-36` (`header` ещё раз копирует ячейки), `deploy/compose.production.yml:2-6` (у `api` нет `mem_limit`).
 - Воспроизведение: файл `lot_id;procedure_name` и ещё 10 485 730 символов `;`, затем строка `L1;x`, всего 10,5 МБ. Это меньше `UPLOAD_MAX_BYTES` и лимита nginx 12 МБ. `wide_rss.py`: пиковый RSS **+1262 МБ**. `wide_lag.py`: разбор в `to_thread` идёт 2,7 с, задержка событийного цикла из-за GIL до **820 мс**. Файл принимается (`lots=1`). Три параллельных запроса дают ≈4 ГБ, а ClickHouse ограничен `CLICKHOUSE_MEMORY_LIMIT=1500m` на том же хосте.
@@ -54,6 +62,8 @@
 ### P1 — исправить до фронтенд-аудитов
 
 #### 2. Таймаут поиска не освобождает ClickHouse: слоты пула заняты до 300 с
+
+- Статус: **закрыто, кроме объединения позиций** (`8f04218`). Каждый запрос уходит со своим `query_id`; при отмене вызывающего пул шлёт `KILL QUERY ... ASYNC` через отдельный управляющий клиент. Клиенты API получают `max_execution_time` = бюджет + 2 с и `timeout_overflow_mode=throw`, таймаут ответа — `CLICKHOUSE_API_QUERY_TIMEOUT` (15 с), у джобы по-прежнему 300 с; `max_memory_usage` — по `CLICKHOUSE_API_MAX_MEMORY_USAGE`. Проба готовности идёт через управляющий клиент вне пулов. Не сделано: `max_result_rows` с `break` (молча обрезает результат — риск для корректности дообработки закупок) и снижение `MAX_ITEMS`/объединение позиций в один запрос — это изменение каналов поиска, отдельная задача. Тесты: `tests/adapter/repository/test_pool_control.py`, `tests/application/test_clickhouse_config.py::test_api_client_limits_execution_time`.
 
 - Где:
   - `backend/src/adapter/repository/clickhouse/pool/gateway.py:51-56`: `asyncio.shield` возвращает клиента в пул только после завершения потока.
@@ -78,12 +88,16 @@
 
 #### 3. Фоновые загрузки и интерактивный поиск делят один пул
 
+- Статус: **закрыто** (`8f04218`). Обработка закупок идёт через отдельный пул `CLICKHOUSE_BACKGROUND_POOL_SIZE=2` (с `max_execution_time` по `UPLOAD_LOT_TIMEOUT_SECONDS`), `UPLOAD_CONCURRENCY` по умолчанию 2; чтение загрузок из API — через интерактивный пул. Тест: `tests/application/test_api.py::test_uploads_use_separate_gateway`. Замер ожидания лиза под нагрузкой не делался: изоляция обеспечена раздельными пулами.
+
 - Где: `backend/src/application/api.py:47` (один `DeferredGateway`), `:136-140` (`ClickHouseUploadStore` и `LotProcessor` с `self.matcher()` на том же шлюзе). Вместе с `service/procurement_upload/runner.py:37-41` и `UPLOAD_CONCURRENCY=4` (`application/config.py:82`) на 4 слота `CLICKHOUSE_POOL_SIZE` (`config.py:186`) это значит, что каждая закупка — полный поиск до 50 позиций.
 - Воспроизведение: `starvation.py` с настоящим `GatewayPool(4)` и запросом 50 мс. Поиск без нагрузки — 0,10 с, на фоне четырёх закупок по 10 позиций — **1,08–1,32 с**, в 11–13 раз дольше. Когда запросы идут 0,5–0,7 с, поиск выходит за `SEARCH_TIMEOUT_SECONDS=8` и отвечает 504. Закупки тоже упираются в `UPLOAD_LOT_TIMEOUT_SECONDS`, повторяются трижды (находка 17) и ещё сильнее нагружают пул.
 - Исправление: дать загрузкам отдельный пул на 1–2 клиента (или семафор на их долю слотов) и держать `UPLOAD_CONCURRENCY` меньше доли пула. Ещё вариант — приоритетная очередь лизов, где поиск обслуживается раньше закупок.
 - Тест: `tests/application/test_api.py::test_uploads_use_separate_gateway`. `tests/adapter/repository/clickhouse/test_pool.py::test_interactive_lease_not_starved_by_background` — p95 ожидания интерактивного лиза под фоновой нагрузкой ограничен.
 
 #### 4. Нет ограничения частоты и очереди для `POST /api/searches` и `POST /api/uploads`
+
+- Статус: **закрыто** (`50f228b`). nginx: `limit_req` 2 r/s, `burst=10` для `POST /api/searches`; 6 r/m, `burst=3` и `limit_conn 2` для `POST /api/uploads`; ответ `429 rate_limited` JSON-телом ошибки; адрес клиента из `X-Forwarded-For` только от локальных и частных сетей. Сервис: `UPLOAD_MAX_BACKLOG` (10 000) → `429 upload_queue_full` с `Retry-After: 60`. Семафор поиска с `503 search_busy` не добавлен: одновременные запросы к ClickHouse ограничены интерактивным пулом, частота — nginx. Тесты: `test_service.py::test_rejects_upload_when_backlog_is_full`, `test_upload_api.py::test_queue_full_maps_to_429`, шаг `deploy/smoke.sh` (30 поисков → хотя бы один 429). `nginx -t` локально не запускался (нет Docker), конфигурацию проверяет smoke в CI.
 
 - Где: `deploy/nginx.conf:25-60` — нет `limit_req`/`limit_conn`. `backend/src/service/procurement_upload/runner.py:26`: неограниченная `asyncio.Queue()`. `service.py:51-66`: каждая загрузка добавляет до 5000 закупок без проверки очереди. В uvicorn нет `--limit-concurrency`.
 - Воспроизведение: по коду. Анонимный клиент шлёт N загрузок по 5000 строк. Все закупки держатся в памяти процесса (до 10 МБ текста на загрузку) и обрабатываются по 4 штуки. При худшем раскладе одна загрузка занимает API на часы (см. находку 17). Каждый `POST /api/searches` даёт до 100 SQL (находка 2).
@@ -95,12 +109,16 @@
 
 #### 5. Закупка навсегда остаётся «в очереди», если результат не сохранился
 
+- Статус: **закрыто** (`f6fa5d3`). Незавершённые закупки вне работы снова ставятся в очередь каждые `UPLOAD_RESUME_INTERVAL_SECONDS` (60 с); последняя неудача сохранения пишется уровнем `error` с `upload_id` и `lot_id`. Тесты: `test_runner.py::test_lot_is_saved_after_store_recovers`, `::test_resume_skips_lots_already_in_work`.
+
 - Где: `backend/src/service/procurement_upload/runner.py:96-109` — после `attempts` неудачных `save_result` метод молча возвращается. `:58-69`: `_resume` читает незавершённые закупки только при старте. `:76-78`: ключ снимается с `_known`.
 - Воспроизведение: `runner_save.py` с `MemoryUploadStore(failing_saves=3)` и `attempts=3`. Через секунду после `drain()`: `saved results: 0`, статус закупки `queued`, `pending: 1`, раннер работает. Пользователь видит вечный прогресс, пока API не перезапустят. Финальная ошибка даже не пишется уровнем `error`.
 - Исправление: продолжать попытки сохранения с экспоненциальной паузой до успеха (ключ остаётся в `_known`) или периодически повторять `_resume` (каждые `resume_interval`) для закупок вне `_known`. На последней неудаче писать `logger.error` с `upload_id` и `lot_id`.
 - Тест: `tests/service/procurement_upload/test_runner.py::test_lot_is_saved_after_store_recovers` — `failing_saves = attempts`, затем хранилище восстанавливается, и результат появляется без перезапуска.
 
 #### 6. Недоступный ClickHouse даёт `500 internal_error` почти на всех маршрутах
+
+- Статус: **закрыто** (`eee4a29`). `StorageUnavailableError` в `service/errors.py`; `DeferredGateway` (слой `application`) переводит в неё `RepositoryUnavailableError`, а `ConnectGateway` относит к недоступности и транспортные `OperationalError` драйвера. Ответ — `503 storage_unavailable` с `Retry-After: 5`, без стектрейса в логе. Код добавлен в таблицу ошибок `backend/README.md` и в `ERRORS` роутеров; форма тела ошибки не изменилась, поэтому примеры `contracts/*/error.example.json` не менялись. Тесты: `tests/controller/test_errors.py::test_storage_outage_maps_to_503` для всех маршрутов, `tests/application/test_api.py::test_unreachable_clickhouse_returns_503`.
 
 - Где: `backend/src/controller/http/errors.py:76-87,95-96,153-154`. `RepositoryUnavailableError` (`adapter/repository/errors.py`) не классифицируется и попадает в `handle_unexpected`. Для 503 есть только `SearchUnavailableError`, когда отказали все каналы.
 - Воспроизведение: `ch_down.py`. Старт 0,0 с, `/live` 200, `/ready` 503 за 2 с, `POST /api/searches` → 503 `search_unavailable`. Но `GET /api/searches`, `GET /api/searches/{id}`, `GET /api/suppliers/{id}`, `GET /api/uploads`, `POST /api/uploads` → **500 `internal_error`**, каждый с полным стектрейсом в логе уровня `ERROR`. Фронтенд не отличает «хранилище недоступно, повторите» от дефекта.
@@ -109,12 +127,16 @@
 
 #### 7. Продакшн-образ API работает от root
 
+- Статус: **закрыто** (`1bba1b7`). Выпуск собирает два образа: `rlt/backend-api` (`--target api`, пользователь `api`) и `rlt/backend` (`--target job` для миграций, джобы и воркеров — без изменений поведения). `release.sh` проверяет метки всех трёх образов, `smoke.sh` собирает неисправный выпуск из трёх образов и проверяет `id -u` в `api`. У `api` в продакшне `read_only`, `tmpfs /tmp`, `cap_drop: [ALL]`, `no-new-privileges`. Тест: `tests/architecture/test_deployment.py`. Docker локально не запускался.
+
 - Где: `deploy/package.sh:12-13` — `docker build` без `--target`, поэтому собирается последняя стадия `job` (`backend/Dockerfile:34-37`) без `USER`. `deploy/compose.production.yml:3` запускает этот образ как `api`. Непривилегированный `USER api` (`Dockerfile:26-28`) есть только в стадии `api`, а её используют лишь локальный Compose и README.
 - Воспроизведение: по коду и правилам Docker. Без `--target` собирается последняя стадия. Проверка на сервере: `docker compose exec api id -u` выдаёт `0`.
 - Исправление: собирать два образа (`--target api` → `rlt/backend-api`, `--target job` → `rlt/backend-job`) или перенести `useradd`/`USER` в стадию `base`. Для `api` в `compose.production.yml` добавить `read_only: true`, `tmpfs: /tmp`, `cap_drop: [ALL]`, `security_opt: [no-new-privileges:true]`.
 - Тест: в `deploy/smoke.sh` после активации — `test "$(compose exec -T api id -u)" != 0`.
 
 #### 8. Документация API открыта в продакшне и грузит скрипты с CDN без SRI
+
+- Статус: **закрыто** (`1bba1b7`). `API_DOCS: ${API_DOCS:-false}` в `compose.production.yml`, `API_DOCS=false` в `production.env.example`; при выключенной документации API отвечает 404 на `/api/docs` и `/api/openapi.json`, отдельный `location` в nginx не понадобился. Проверка: `deploy/smoke.sh` (`/api/openapi.json` → 404), `tests/architecture/test_deployment.py`. Локально документация по-прежнему включена.
 
 - Где: `docker-compose.yml:185` (`API_DOCS: ${API_DOCS:-true}`), `deploy/production.env.example` (переменной нет), `backend/src/application/config.py:58,102`, `backend/src/controller/http/app.py:44-46`. nginx проксирует весь `/api/`. FastAPI отдаёт Swagger UI со скриптом `https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js`: плавающая мажорная версия, без `integrity`, на том же origin, что и SPA.
 - Воспроизведение: `inputs.py` — `GET /api/openapi.json` с настройками по умолчанию отвечает 200. В продакшне по этой же цепочке `/api/docs` доступен по `https://rlt.goatwhistle.ru/api/docs`. Подмена пакета на CDN даёт выполнение чужого кода на origin приложения.
@@ -123,6 +145,8 @@
 
 #### 9. `contacts.site` не проверяется: в API проходят `javascript:`, относительные и `//host`
 
+- Статус: **закрыто** (`1d3a656`). `contacts.site` — только абсолютный `http(s)`, иначе пустая строка; `contacts.email` — только адрес вида `имя@домен` без `?&#/:`. Нормализация адресов без схемы в адаптерах источников не делалась. Тесты: `tests/controller/test_contacts.py` (поиск и профиль).
+
 - Где: `backend/src/controller/search/mapper.py:74-79` (`site=supplier.website` как есть); значения приходят из парсеров (`adapter/supplier/pulscen_web/parsing.py:104` — атрибут `data-to`, `gisp_registry/workbook.py:147`, `moscow_suppliers/provider.py:134`). Фронтенд выводит `<a href={site}>` (`frontend/src/entities/evidence/ui/contact-list/index.tsx:16`). В контракте (`contracts/search/response.example.json:96`) — абсолютный `https://…` или пустая строка.
 - Воспроизведение: `inject.py` — `Supplier(website="javascript:alert(document.cookie)")` → `{'site': 'javascript:alert(document.cookie)', …}`. XSS сейчас гасит React 19.3: в `react-dom` есть блокировка `javascript:`. Но значение без схемы (`www.example.ru`) становится относительной ссылкой внутри приложения, а `//evil.example` — внешним переходом. Ссылки оснований (`models/evidence.py`) проверяются, контакты нет.
 - Исправление: в `contacts_dto` отдавать `site` только при `is_web_url(...)`, иначе `""`. При сборе нормализовать адрес без схемы до `https://`. `email` проверять простым шаблоном.
@@ -130,12 +154,16 @@
 
 #### 10. CSV-инъекция в выгрузке результатов
 
+- Статус: **не в этой задаче** — правка во фронтенде. Backend отдаёт JSON и CSV не формирует; экранирование на его стороне изменило бы сами значения контракта.
+
 - Где: `frontend/src/features/export-results/csv.ts:40-43`. `cell()` кавычит только `",;\n\r` и не нейтрализует ведущие `=`, `+`, `-`, `@`, `\t`, `\r`. Значения приходят из backend: названия позиций из `procedure_name`/`subject` загруженного CSV и названия поставщиков из обходов внешних сайтов.
 - Воспроизведение: `inject.py` — `RuleQueryInterpreter` сохраняет `=HYPERLINK("http://evil.example","бумага`, `@SUM(1+1)*cmd|' /C calc'!A0 бумага`, `+бумага офисная` как названия позиций. После выгрузки `products.csv`/`suppliers.csv` Excel исполняет формулу.
 - Исправление: в `cell()` добавлять `'` перед строками, начинающимися с `= + - @ \t \r`, кроме числовых колонок. Правка во фронтенде, отдельной задачей после текущих фронтенд-правок.
 - Тест: `frontend/tests/features/export-results/csv.test.ts` — `toCsv` экранирует каждое из шести начал и не трогает числа.
 
 #### 11. Оценка зависимостей не совпадает с тем, что попадает в образ
+
+- Статус: **закрыто, кроме дайджеста базового образа** (`64d3ea1`). Образ ставит зависимости `uv sync --frozen --no-dev` из `uv.lock` в `/opt/venv`, uv закреплён (`ghcr.io/astral-sh/uv:0.9.25`); в CI шаг `uv export --frozen` → `pip-audit` (локально: уязвимостей нет). Базовый `python:3.13-slim` по дайджесту не закреплён: локально нет доступа к реестру. Тест: `tests/architecture/test_deployment.py::test_image_installs_locked_dependencies`.
 
 - Где: `backend/Dockerfile:13-16` — `pip install uv` без версии, `uv pip install --system -r pyproject.toml` ставит последние версии по нижним границам и игнорирует `uv.lock`. Базовый `python:3.13-slim` без дайджеста.
 - Воспроизведение: по коду. `pip-audit` по `uv.lock` чистый, но в образ попадают другие версии, разрешённые в момент сборки; повторная сборка того же коммита может дать другой набор.
@@ -145,6 +173,8 @@
 ### P2 — бэклог
 
 #### 12. Не все входные поля ограничены
+
+- Статус: **закрыто, кроме предела тела в ASGI** (`3736e79`). `regions` — до 100 значений по 100 символов, элементы `lotIds` — до 64 символов, `lot_id` в пути проверяется по `LOT_ID_PATTERN` до запроса в хранилище. Предел тела JSON в приложении не добавлен: в продакшне тело режет nginx (1 МБ). Тесты: `tests/controller/test_input_limits.py`.
 
 - Где:
   - `backend/src/controller/search/dto.py:27`: `regions: list[str]` без предела числа и длины.
@@ -157,12 +187,16 @@
 
 #### 13. Ответ 404 повторяет произвольный сегмент пути
 
+- Статус: **закрыто** (`3736e79`). При неверном формате идентификатора сообщение постоянное (`search not found` и т. п.). Тест: `tests/controller/test_input_limits.py::test_not_found_message_does_not_echo_input`.
+
 - Где: `backend/src/controller/search/mapper.py:43-47`, `controller/supplier/mapper.py:11-15`, `controller/upload/mapper.py:42-46`, `service/errors.py:37-40,43-46,53-56` — сообщение строится из сырого значения.
 - Воспроизведение: `inputs.py`: `GET /api/searches/xxx…` (300 символов) → `message` длиной 317 с этими символами. JSON экранируется, но это отражённый пользовательский ввод.
 - Исправление: при неверном формате id — постоянное сообщение (`"search not found"`), без исходного значения.
 - Тест: `tests/controller/test_errors.py::test_not_found_message_does_not_echo_input`.
 
 #### 14. Заголовки nginx неполные
+
+- Статус: **закрыто частично** (`9571bf3`). `server_tokens off`, `Referrer-Policy` в `/assets/` и `/index.html`, минимальная CSP без ограничения скриптов (`frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'`), HSTS в `deploy/Caddyfile`; проверка заголовков — в `deploy/smoke.sh`. Полная CSP с `default-src 'self'` — после сверки с фронтендом.
 
 - Где: `deploy/nginx.conf:16-18,62-73`. Нет `Content-Security-Policy` и `Strict-Transport-Security` (`deploy/Caddyfile` тоже их не ставит), `server_tokens` включён. `add_header` в `location /assets/` и `location = /index.html` отменяет наследование, поэтому там теряется `Referrer-Policy`.
 - Воспроизведение: по конфигурации и правилам наследования `add_header` в nginx; `curl -I /index.html` покажет отсутствие `Referrer-Policy`.
@@ -171,12 +205,16 @@
 
 #### 15. API ходит в ClickHouse администратором
 
+- Статус: **открыто**. Отдельный пользователь ClickHouse с грантами требует изменения развёртывания и проверки на сервере; ограничения `max_execution_time`/`max_memory_usage` уже задаются клиентами API (находка 2).
+
 - Где: `docker-compose.yml:24` (`CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1`), `:63-69,182` (у `api` те же `CLICKHOUSE_USER`/`PASSWORD`, что у `migrate`).
 - Воспроизведение: по конфигурации. Пользователь API может выполнять DDL и управлять доступом.
 - Исправление: отдельный пользователь API — `SELECT` на читаемые таблицы, `INSERT` в `searches`, `uploads`, `upload_lots`, `upload_results`, профиль с `max_execution_time` и `max_memory_usage` (дополняет находку 2).
 - Тест: шаг smoke — `INSERT INTO supplier_search.offers` от пользователя API завершается ошибкой доступа.
 
 #### 16. `--forwarded-allow-ips "*"`
+
+- Статус: **закрыто решением**. Ограничение частоты живёт только в nginx, адрес клиента в приложении не используется; флаг оставлен.
 
 - Где: `docker-compose.yml:180`.
 - Воспроизведение: по конфигурации. Любой клиент, достучавшийся до `api` напрямую (локально порт 8000 на `0.0.0.0`), подменяет `X-Forwarded-For` и `-Proto`. Сейчас IP клиента нигде не используется, но станет важен для ограничения частоты в приложении.
@@ -185,12 +223,16 @@
 
 #### 17. Закупки повторяются при любой ошибке, включая таймаут и детерминированные
 
+- Статус: **закрыто** (`f6fa5d3`). Ошибки данных (`ValueError`, `TypeError`, `LookupError` и т. п.) не повторяются, таймаут повторяется не больше одного раза, к паузе добавлен случайный разброс. Тест: `test_runner.py::test_deterministic_error_is_not_retried`.
+
 - Где: `backend/src/service/procurement_upload/runner.py:81-94`.
 - Воспроизведение: по коду. `TimeoutError` от `asyncio.timeout(30)` и ошибки разбора данных повторяются `attempts=3` раза. Худший случай — 3×30 + 3 с на закупку, при 5000 закупках и 4 обработчиках ≈ 32 ч. Под перегрузкой повторы усиливают её (находка 3).
 - Исправление: повторять только транзиентные ошибки (недоступность хранилища; таймаут не больше одного раза), детерминированные сразу помечать `failed`, к паузе добавить случайный разброс.
 - Тест: `tests/service/procurement_upload/test_runner.py::test_deterministic_error_is_not_retried`.
 
 #### 18. Повторная загрузка того же файла дублирует обработку
+
+- Статус: **открыто**. `Idempotency-Key` или дедупликация по хешу меняют контракт загрузки — отдельная задача.
 
 - Где: `backend/src/service/procurement_upload/service.py:51-66`.
 - Воспроизведение: по коду. Повтор `POST /api/uploads` после сетевого сбоя создаёт новую загрузку с новым UUID и заново ставит все закупки в очередь.
@@ -199,12 +241,16 @@
 
 #### 19. Сохранение архива входит в бюджет таймаута поиска
 
+- Статус: **закрыто** (`b770f34`). Архив сохраняется после бюджета поиска с отдельным таймаутом 2 с; при его срабатывании ответ 201 с `archiveFailed`, а запрос вставки отменяется (находка 2). Тест: `test_service.py::test_slow_archive_returns_result_with_warning`.
+
 - Где: `backend/src/service/supplier_search/service.py:42-47,82-89`.
 - Воспроизведение: по коду. Если вставка в архив затянулась до конца `SEARCH_TIMEOUT_SECONDS`, пользователь получает 504 при готовом результате. Защищённая `shield` вставка в пуле всё равно завершается и сохраняет поиск, которого пользователь не видел.
 - Исправление: отдельный короткий таймаут на `archive.save`; при его срабатывании ответ 201 с предупреждением `archiveFailed`.
 - Тест: `tests/service/supplier_search/test_service.py::test_slow_archive_returns_result_with_warning`.
 
 #### 20. Фоновая обработка рассчитана на один процесс
+
+- Статус: **закрыто** (`f6fa5d3`). В `backend/README.md` зафиксирован один процесс API без `--workers`; `tests/architecture/test_deployment.py::test_api_runs_in_a_single_process` проверяет Dockerfile и Compose.
 
 - Где: `backend/src/service/procurement_upload/runner.py:26-27,58-69` — очередь в памяти и разовая дообработка при старте.
 - Воспроизведение: по коду. При `--workers N` или нескольких репликах каждый процесс поднимает все незавершённые закупки и обрабатывает их параллельно.
@@ -213,6 +259,8 @@
 
 #### 21. Списки поисков и загрузок открыты всем
 
+- Статус: **открыто** — продуктовое решение.
+
 - Где: `backend/src/controller/search/router.py:58-64`, `controller/upload/router.py:44-49`.
 - Воспроизведение: по коду. Аутентификации нет, `GET /api/searches` отдаёт тексты чужих запросов, `GET /api/uploads` — имена файлов и закупки. В логах при этом хранится только хеш запроса.
 - Исправление: продуктовое решение. Либо задокументировать, что инструмент однопользовательский, либо привязать списки к сессии или токену.
@@ -220,12 +268,16 @@
 
 #### 22. ML-клиент не ограничивает размер ответа
 
+- Статус: **закрыто** (`dbd74a0`). Ответ больше 1 МБ отклоняется (после чтения тела, без потокового предела), кандидаты обрезаются до `limit × 4` до запроса ИНН, клиент создаётся с `trust_env=False`. Тесты: `tests/adapter/client/test_ml_service_limits.py`.
+
 - Где: `backend/src/adapter/client/ml_service/retriever.py:78,85`, `dto.py:115` (`candidates` без предела).
 - Воспроизведение: по коду. Ответ читается целиком, все ИНН из него уходят одним массивом в `ids_by_inn`.
 - Исправление: отбрасывать ответ больше N КБ (потоковое чтение с пределом), обрезать кандидатов до `limit × k` до запроса в ClickHouse, `trust_env=False` для внутреннего адреса.
 - Тест: `tests/adapter/client/test_ml_service.py::test_oversized_response_is_rejected`, `::test_candidates_are_capped_before_identity_lookup`.
 
 #### 23. Загрузка может оставить строки закупок без загрузки
+
+- Статус: **открыто**. TTL или очистка сиротских строк требуют миграции.
 
 - Где: `backend/src/adapter/repository/clickhouse/upload_store/store.py:58-61` — сначала `upload_lots`, потом `uploads`.
 - Воспроизведение: по коду. Если вторая вставка упала, клиент получает 500, а строки `upload_lots` остаются в таблице. Они не видны (`SELECT_PENDING` фильтрует по `uploads_current`), но копятся.
