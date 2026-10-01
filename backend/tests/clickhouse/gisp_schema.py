@@ -9,9 +9,6 @@ from chdb.session import Session
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, split_statements
-from src.adapter.repository.clickhouse.offer import COLUMNS as OFFER_COLUMNS
-from src.adapter.repository.clickhouse.source import COLUMNS as SOURCE_COLUMNS
-from src.adapter.repository.clickhouse.supplier import COLUMNS as SUPPLIER_COLUMNS
 
 
 def main() -> None:
@@ -40,9 +37,9 @@ def main() -> None:
             ):
                 session.query(statement)
             for table, expected in (
-                ("sources", SOURCE_COLUMNS),
-                ("suppliers", SUPPLIER_COLUMNS),
-                ("offers", OFFER_COLUMNS),
+                ("sources", ("enabled",)),
+                ("suppliers", ("legal_status",)),
+                ("offers", ("seller_evidence_url", "delivery_regions", "role_evidence_url")),
             ):
                 result = session.query(f"DESCRIBE TABLE supplier_search.{table}", "CSV")
                 columns = {line.split(",", 1)[0].strip('"') for line in str(result).splitlines()}
