@@ -47,6 +47,7 @@ class SupplierProvider(Protocol):
 | `OptKatalogWebProvider` | `optkatalog_web` | компании и номенклатуру optkatalog.ru | `OPTKATALOG_WEB_PROVIDER` |
 | `AboutPartnerWebProvider` | `aboutpartner_web` | компании и товары aboutpartner.ru | `ABOUTPARTNER_WEB_PROVIDER` |
 | `TexZakazWebProvider` | `texzakaz_web` | производителей и их продукцию texzakaz.ru | `TEXZAKAZ_WEB_PROVIDER` |
+| `PulscenSnapshotProvider` | `pulscen_snapshot` | диагностический снимок страниц pulscen.ru из JSON-файла | `PULSCEN_SNAPSHOT_PATH` (пусто — выключен) |
 | `PulscenWebProvider` | `pulscen_web` | компании и товары с ценой pulscen.ru по рубрикам sitemap | `PULSCEN_WEB_PROVIDER` (выкл.), пауза `PULSCEN_DELAY_SECONDS` |
 
 Адреса фидов и сайтов задаются списками `SUPPLIER_FEED_URLS` и

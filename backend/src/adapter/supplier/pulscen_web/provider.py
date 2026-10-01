@@ -14,19 +14,16 @@
 import asyncio
 import logging
 import time
-from datetime import UTC, datetime
 from urllib.parse import urlsplit
 
 import httpx
 
-from src.adapter.supplier import identity, page
+from src.adapter.supplier import page
 from src.adapter.supplier.errors import BotProtectionError, SourceUnavailableError
 from src.adapter.supplier.pulscen_web import parsing, sitemaps
-from src.models.enums import ItemType, SupplierRole, VerificationStatus
-from src.models.offer import Offer
+from src.adapter.supplier.pulscen_web.builders import ModelBuilder
 from src.models.package import SupplierPackage
 from src.models.source import Source
-from src.models.supplier import Supplier
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +63,7 @@ class PulscenWebProvider:
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         self._source = source_defaults
+        self._builder = ModelBuilder(source_defaults)
         self._sitemap_url = sitemap_url
         self._delay = max(0.0, delay_seconds)
         self._http_timeout = http_timeout
@@ -102,15 +100,18 @@ class PulscenWebProvider:
         if not companies and not listed:
             raise SourceUnavailableError(f"{self._sitemap_url}: рубрики не содержат данных")
         logger.info("Пульс цен: компаний — %d, товаров — %d", len(companies), len(listed))
-        suppliers = {company.company_id: self._supplier(company) for company in companies.values()}
+        suppliers = {
+            company.company_id: self._builder.supplier(company) for company in companies.values()
+        }
         for seller in sellers.values():
             if seller is not None and seller.company_id not in suppliers:
-                suppliers[seller.company_id] = self._seller_supplier(seller)
+                suppliers[seller.company_id] = self._builder.seller_supplier(seller)
         return SupplierPackage(
             source=self._source,
             suppliers=tuple(suppliers.values()),
             offers=tuple(
-                self._offer(product, sellers[product.external_id]) for product in listed.values()
+                self._builder.offer(product, sellers[product.external_id])
+                for product in listed.values()
             ),
         )
 
@@ -182,49 +183,3 @@ class PulscenWebProvider:
             if pause > 0:
                 await asyncio.sleep(pause)
             self._next_request_at = time.monotonic() + self._delay
-
-    def _seller_supplier(self, seller: parsing.ProductSeller) -> Supplier:
-        return Supplier(
-            supplier_id=self._supplier_id(seller.company_id),
-            name=seller.name or f"Компания {seller.company_id}",
-            identity_status=VerificationStatus.UNVERIFIED,
-            identity_evidence_url=self._source.base_url,
-        )
-
-    def _supplier_id(self, company_id: str):
-        return identity.supplier_id(None, self._source.source_id, f"company:{company_id}")
-
-    def _supplier(self, company: parsing.ListedCompany) -> Supplier:
-        return Supplier(
-            supplier_id=self._supplier_id(company.company_id),
-            name=company.name,
-            region=company.address,
-            website=company.website,
-            identity_status=VerificationStatus.UNVERIFIED,
-            identity_evidence_url=self._source.base_url,
-        )
-
-    def _offer(self, product: parsing.ListedProduct, seller: parsing.ProductSeller | None) -> Offer:
-        observed_at = datetime.now(UTC)
-        attributes = {"price_kind": "listing"} if product.price is not None else {}
-        return Offer(
-            offer_id=identity.offer_id(self._source.source_id, product.external_id),
-            source_id=self._source.source_id,
-            external_id=product.external_id,
-            url=product.url,
-            name=product.name,
-            first_seen_at=observed_at,
-            last_seen_at=observed_at,
-            supplier_id=self._supplier_id(seller.company_id) if seller else None,
-            seller_status=VerificationStatus.UNVERIFIED,
-            seller_evidence_url=product.url if seller else "",
-            item_type=ItemType.GOODS,
-            price=product.price,
-            currency=product.currency,
-            availability=product.availability,
-            supplier_role=SupplierRole.UNKNOWN,
-            attributes=attributes,
-            content_hash=identity.offer_content_hash(
-                name=product.name, item_type=str(ItemType.GOODS), attributes=attributes
-            ),
-        )

@@ -14,6 +14,11 @@ from src.adapter.repository.clickhouse.config import ClickHouseConfig
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
 
+def _optional_path(name: str) -> Path | None:
+    value = os.getenv(name, "").strip()
+    return Path(value) if value else None
+
+
 def _int(name: str, default: int) -> int:
     raw = os.getenv(name)
     return int(raw) if raw and raw.strip() else default
@@ -75,6 +80,8 @@ class AppConfig:
     # Сайт закрыт проверкой на робота: включается только с разрешения владельца.
     use_pulscen_provider: bool = False
     pulscen_delay_seconds: float = 10.0
+    # Диагностический снимок страниц Пульса цен из JSON-файла: пусто — выключен.
+    pulscen_snapshot_path: Path | None = None
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -106,4 +113,5 @@ class AppConfig:
             use_texzakaz_provider=_bool("TEXZAKAZ_WEB_PROVIDER", False),
             use_pulscen_provider=_bool("PULSCEN_WEB_PROVIDER", False),
             pulscen_delay_seconds=_float("PULSCEN_DELAY_SECONDS", 10.0),
+            pulscen_snapshot_path=_optional_path("PULSCEN_SNAPSHOT_PATH"),
         )

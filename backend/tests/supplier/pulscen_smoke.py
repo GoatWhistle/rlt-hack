@@ -2,7 +2,9 @@
 
 import asyncio
 import gzip
+import json
 import sys
+import tempfile
 from decimal import Decimal
 from pathlib import Path
 
@@ -12,8 +14,12 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from src.adapter.supplier import identity, page
-from src.adapter.supplier.errors import BotProtectionError, SourceUnavailableError
-from src.adapter.supplier.pulscen_web import PulscenWebProvider, parsing
+from src.adapter.supplier.errors import (
+    BotProtectionError,
+    ContentFormatError,
+    SourceUnavailableError,
+)
+from src.adapter.supplier.pulscen_web import PulscenSnapshotProvider, PulscenWebProvider, parsing
 from src.models.enums import Availability, ItemType, SourceType, SupplierRole
 from tests.supplier.fixtures import (
     PULSCEN_BOT_CHECK,
@@ -73,6 +79,66 @@ async def expect(error: type[Exception], pages: dict[str, str], failing: tuple[s
     except error:
         return
     raise AssertionError(f"ожидалась ошибка {error.__name__}")
+
+
+async def check_snapshot() -> None:
+    snapshot = {
+        "companies": {
+            "99418958": {
+                "n": "ПервоСтрой, ООО",
+                "w": "https://p.example",
+                "a": "г. Новосибирск",
+                "r": ["Производитель", "Оптовый продавец"],
+            },
+        },
+        "products": {
+            "185531520": {
+                "n": "Арматура А400",
+                "p": 68.55,
+                "c": "RUB",
+                "a": "InStock",
+                "u": "nsk.pulscen.ru/products/armatura_185531520",
+            },
+            "185531999": {
+                "n": "Арматура по запросу",
+                "p": None,
+                "c": "",
+                "a": "",
+                "u": "https://www.pulscen.ru/products/zapros_185531999",
+            },
+        },
+    }
+    directory = source("Снимок", f"{BASE}/", SourceType.DIRECTORY, "pulscen_snapshot")
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "snapshot.json"
+        path.write_text(json.dumps(snapshot, ensure_ascii=False))
+        package = await PulscenSnapshotProvider(directory, path).fetch()
+        again = await PulscenSnapshotProvider(directory, path).fetch()
+        assert len(package.suppliers) == 1 and len(package.offers) == 2
+        priced = next(o for o in package.offers if o.external_id == "185531520")
+        assert priced.price == Decimal("68.55") and priced.url.startswith("https://nsk.")
+        assert priced.availability == Availability.AVAILABLE
+        assert [o.offer_id for o in again.offers] == [o.offer_id for o in package.offers]
+        path.write_text("{}")
+        for error in (ContentFormatError,):
+            try:
+                await PulscenSnapshotProvider(directory, path).fetch()
+            except error:
+                continue
+            raise AssertionError("ожидалась ошибка формата снимка")
+        path.write_text(json.dumps({"companies": {}, "products": {}}))
+        try:
+            await PulscenSnapshotProvider(directory, path).fetch()
+        except ContentFormatError:
+            pass
+        else:
+            raise AssertionError("пустой снимок должен завершаться ошибкой")
+    try:
+        await PulscenSnapshotProvider(directory, Path("/nonexistent/x.json")).fetch()
+    except SourceUnavailableError:
+        pass
+    else:
+        raise AssertionError("отсутствующий файл должен завершаться ошибкой")
 
 
 async def main() -> None:
@@ -139,6 +205,7 @@ async def main() -> None:
         {**PAGES, f"{BASE}/firms/010301-armatura?page=2": PULSCEN_FIRMS_PAGE},
     )
     await expect(BotProtectionError, {**PAGES, f"{BASE}/firms/010301-armatura": PULSCEN_BOT_CHECK})
+    await check_snapshot()
     print("Проверка адаптера Пульс цен пройдена")
 
 
