@@ -30,7 +30,8 @@ query() {
 
 failed() {
   local status=$?
-  trap - ERR
+  trap - EXIT
+  if (( status == 0 )); then return; fi
   if [[ $frontend_changed == true && -n $previous ]]; then
     echo "Deployment failed; restoring frontend $(basename "$previous")" >&2
     if ! compose_at "$previous" up -d --no-deps --wait --wait-timeout 120 frontend; then
@@ -40,7 +41,10 @@ failed() {
   echo "Deployment $revision failed. Database volumes and backups are preserved." >&2
   exit "$status"
 }
-trap failed ERR
+trap failed EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+trap 'exit 129' HUP
 
 test -r "$env_file"
 mkdir -p "$base/releases"
@@ -91,5 +95,5 @@ if [[ -n $previous ]]; then
 fi
 ln -sfn "$release" "$base/current.next"
 mv -Tf "$base/current.next" "$base/current"
-trap - ERR
+trap - EXIT
 echo "Release $revision is healthy and active"
