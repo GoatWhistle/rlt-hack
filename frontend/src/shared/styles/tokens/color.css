@@ -1,0 +1,11 @@
+:root {
+  color-scheme: light dark;
+  --surface-base: Canvas;
+  --text-primary: CanvasText;
+  --text-muted: GrayText;
+  --line-hairline: GrayText;
+  --link: LinkText;
+  --focus-ring: Highlight;
+  --state-success: CanvasText;
+  --state-danger: Mark;
+}

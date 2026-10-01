@@ -1,1 +1,12 @@
+* text=auto eol=lf
 task/data/*.csv filter=lfs diff=lfs merge=lfs -text
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.zip binary
+package-lock.json -diff linguist-generated
+uv.lock -diff linguist-generated

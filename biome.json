@@ -1,0 +1,64 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "root": true,
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": ["frontend/**", "*.json"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 96,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "asNeeded",
+      "trailingCommas": "all",
+      "arrowParentheses": "always"
+    }
+  },
+  "css": {
+    "formatter": { "enabled": true },
+    "linter": { "enabled": true }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": { "recommended": true },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": { "maxAllowedComplexity": 15 }
+        }
+      },
+      "correctness": {
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error"
+      },
+      "style": {
+        "noDefaultExport": "error",
+        "useConst": "error",
+        "useImportType": "error",
+        "noNonNullAssertion": "error"
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noConsole": { "level": "error", "options": { "allow": ["error", "warn"] } }
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["frontend/scripts/**"],
+      "linter": { "rules": { "suspicious": { "noConsole": "off" } } }
+    },
+    {
+      "includes": ["frontend/src/shared/styles/tokens/motion.css"],
+      "linter": { "rules": { "complexity": { "noImportantStyles": "off" } } }
+    }
+  ]
+}

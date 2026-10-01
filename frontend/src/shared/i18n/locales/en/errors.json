@@ -1,0 +1,12 @@
+{
+  "network": "No connection to the server. Check your network.",
+  "timeout": "The server did not respond in time. Please try again.",
+  "badRequest": "The request is invalid. Check the data you entered.",
+  "unauthorized": "You need to sign in.",
+  "forbidden": "You do not have permission for this action.",
+  "notFound": "The requested data was not found.",
+  "conflict": "The data has changed. Reload the page and try again.",
+  "rateLimited": "Too many requests. Please wait a moment.",
+  "server": "The server is temporarily unavailable. Please try again later.",
+  "unexpected": "Unexpected error. Please try again later."
+}

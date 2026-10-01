@@ -1,0 +1,77 @@
+import type { ReactNode } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { EXIT_FALLBACK_MS } from "@/shared/motion/use-presence"
+import styles from "./styles.module.css"
+import { type ToastApi, ToastContext, type ToastInput } from "./toast-context"
+import { type ToastEntry, ToastItem } from "./toast-item"
+
+export const DEFAULT_TOAST_MS = 5000
+export const MAX_TOASTS = 3
+
+export type ToastProviderProps = {
+  readonly children: ReactNode
+}
+
+export function ToastProvider({ children }: ToastProviderProps) {
+  const { t } = useTranslation()
+  const [entries, setEntries] = useState<readonly ToastEntry[]>([])
+  const nextId = useRef(0)
+  const timers = useRef(new Set<number>())
+
+  const later = useCallback((callback: () => void, delay: number) => {
+    const timer = window.setTimeout(() => {
+      timers.current.delete(timer)
+      callback()
+    }, delay)
+    timers.current.add(timer)
+  }, [])
+
+  const dismiss = useCallback(
+    (id: number) => {
+      setEntries((current) =>
+        current.map((entry) => (entry.id === id ? { ...entry, open: false } : entry)),
+      )
+      later(
+        () => setEntries((current) => current.filter((entry) => entry.id !== id)),
+        EXIT_FALLBACK_MS,
+      )
+    },
+    [later],
+  )
+
+  const show = useCallback(
+    ({ message, tone = "info", durationMs = DEFAULT_TOAST_MS }: ToastInput) => {
+      nextId.current += 1
+      const id = nextId.current
+      setEntries((current) =>
+        [...current, { id, message, tone, open: true }].slice(-MAX_TOASTS),
+      )
+      later(() => dismiss(id), durationMs)
+      return id
+    },
+    [dismiss, later],
+  )
+
+  useEffect(() => {
+    const pending = timers.current
+    return () => {
+      for (const timer of pending) window.clearTimeout(timer)
+    }
+  }, [])
+
+  const api = useMemo<ToastApi>(() => ({ show, dismiss }), [show, dismiss])
+
+  return (
+    <ToastContext value={api}>
+      {children}
+      <section className={styles.viewport} aria-label={t("notifications.label")}>
+        <ol className={styles.list}>
+          {entries.map((entry) => (
+            <ToastItem key={entry.id} entry={entry} onDismiss={dismiss} />
+          ))}
+        </ol>
+      </section>
+    </ToastContext>
+  )
+}

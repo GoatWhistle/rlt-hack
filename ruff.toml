@@ -1,0 +1,14 @@
+target-version = "py314"
+line-length = 100
+extend-exclude = ["task", "frontend"]
+
+[lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "RUF", "ANN", "ERA", "PL", "PT", "TID"]
+ignore = ["PLR2004"]
+
+[lint.per-file-ignores]
+"**/tests/**" = ["ANN", "PLR2004"]
+
+[format]
+quote-style = "double"
+line-ending = "lf"

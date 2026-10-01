@@ -1,0 +1,23 @@
+@import "./tokens/color.css";
+@import "./tokens/layout.css";
+@import "./tokens/typography.css";
+@import "./tokens/motion.css";
+@import "./reset.css";
+
+body {
+  min-height: 100dvh;
+  background: var(--surface-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+a {
+  color: var(--link);
+}

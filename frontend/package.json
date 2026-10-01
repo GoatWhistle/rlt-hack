@@ -1,0 +1,50 @@
+{
+  "name": "rlt-hack-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "rules": "node scripts/checks/run.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "e2e": "playwright test",
+    "verify": "npm run rules && npm run typecheck && npm run lint && npm run test:coverage"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.104.0",
+    "clsx": "2.1.1",
+    "i18next": "26.4.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-i18next": "17.0.15",
+    "react-router": "8.4.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@biomejs/biome": "2.5.15",
+    "@playwright/test": "1.63.0",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.7",
+    "@types/node": "26.6.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "@vitest/coverage-v8": "5.0.3",
+    "jsdom": "30.1.1",
+    "typescript": "6.0.3",
+    "vite": "8.3.1",
+    "vitest": "5.0.3"
+  }
+}

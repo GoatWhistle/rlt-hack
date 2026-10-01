@@ -1,0 +1,52 @@
+{
+  "app": {
+    "name": "RLT Hack",
+    "skipToContent": "Skip to content",
+    "mainNavigation": "Main navigation"
+  },
+  "nav": {
+    "home": "Home"
+  },
+  "action": {
+    "close": "Close",
+    "dismiss": "Dismiss notification",
+    "retry": "Try again",
+    "reload": "Reload the page",
+    "home": "Go home",
+    "back": "Go back"
+  },
+  "language": {
+    "legend": "Interface language",
+    "ru": "Русский",
+    "en": "English"
+  },
+  "home": {
+    "title": "RLT Hack",
+    "description": "Base frontend skeleton."
+  },
+  "state": {
+    "loading": "Loading"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The address is outdated or contains a typo. Check the link or go back home."
+  },
+  "routeError": {
+    "title": "The page could not open",
+    "description": "Please try again. If the error repeats, report the code below."
+  },
+  "updateRequired": {
+    "title": "A new version is available",
+    "description": "Part of this page is out of date. Reload the page to continue."
+  },
+  "crash": {
+    "title": "The application ran into an error",
+    "description": "We could not render the interface. Reload the page."
+  },
+  "errorDetails": {
+    "code": "Error code: {{code}}"
+  },
+  "notifications": {
+    "label": "Notifications"
+  }
+}

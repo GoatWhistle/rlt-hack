@@ -1,0 +1,23 @@
+.fade[data-state="open"] {
+  animation: var(--motion-fade-in);
+}
+
+.fade[data-state="closed"] {
+  animation: var(--motion-fade-out);
+}
+
+.scale[data-state="open"] {
+  animation: var(--motion-scale-in);
+}
+
+.scale[data-state="closed"] {
+  animation: var(--motion-scale-out);
+}
+
+.slide[data-state="open"] {
+  animation: var(--motion-slide-in);
+}
+
+.slide[data-state="closed"] {
+  animation: var(--motion-slide-out);
+}
