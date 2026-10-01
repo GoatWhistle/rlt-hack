@@ -10,8 +10,11 @@ docker build --label "org.opencontainers.image.revision=$revision" \
   --file deploy/frontend.Dockerfile --target runtime \
   --tag "rlt/frontend:$revision" .
 docker build --label "org.opencontainers.image.revision=$revision" \
-  --tag "rlt/backend:$revision" backend
-docker save "rlt/frontend:$revision" "rlt/backend:$revision" | gzip > "$output/images.tar.gz"
+  --target job --tag "rlt/backend:$revision" backend
+docker build --label "org.opencontainers.image.revision=$revision" \
+  --target api --tag "rlt/backend-api:$revision" backend
+docker save "rlt/frontend:$revision" "rlt/backend:$revision" "rlt/backend-api:$revision" \
+  | gzip > "$output/images.tar.gz"
 tar -czf "$output/release.tar.gz" docker-compose.yml deploy backend/migration
 cp deploy/release.sh "$output/activate.sh"
 (

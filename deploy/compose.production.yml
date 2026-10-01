@@ -1,11 +1,19 @@
 services:
   api:
-    image: rlt/backend:${RLT_IMAGE_TAG:?Set the release revision}
+    image: rlt/backend-api:${RLT_IMAGE_TAG:?Set the release revision}
     build: !reset null
     ports: !override
       - "127.0.0.1:${API_PORT:-18082}:8000"
+    environment:
+      API_DOCS: ${API_DOCS:-false}
     mem_limit: ${API_MEMORY_LIMIT:-768m}
     pids_limit: 256
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
   frontend:
     image: rlt/frontend:${RLT_IMAGE_TAG:?Set the release revision}
     ports:

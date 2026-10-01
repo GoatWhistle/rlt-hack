@@ -90,7 +90,7 @@ fi
 chmod 0644 "$release/deploy/clickhouse-backup.xml"
 compose_at "$release" config --quiet
 docker load --input "$bundle/images.tar.gz"
-for component in frontend backend; do
+for component in frontend backend backend-api; do
   actual=$(docker image inspect "rlt/$component:$revision" \
     --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')
   test "$actual" = "$revision"

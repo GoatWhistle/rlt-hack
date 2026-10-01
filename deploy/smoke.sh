@@ -43,6 +43,10 @@ codes=$(seq 30 | xargs -P 15 -I{} curl --silent --output /dev/null \
   --write-out '%{http_code}\n' --request POST --header 'Content-Type: application/json' \
   --data '{"text":"бумага офисная"}' http://127.0.0.1:8081/api/searches)
 grep -qx 429 <<<"$codes"
+test "$(compose exec -T api id -u)" != 0
+docs=$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  http://127.0.0.1:8081/api/openapi.json)
+test "$docs" = 404
 test -s "$RLT_DEPLOY_ROOT/current/backup-before.txt"
 compose exec -T clickhouse clickhouse-client --user rlt --multiquery --query \
   'CREATE TABLE supplier_search.ci_guard (id UInt64) ENGINE = MergeTree ORDER BY id;
@@ -64,8 +68,14 @@ docker build --build-arg "BASE=rlt/backend:$revision" \
 ARG BASE
 FROM ${BASE}
 EOF
+docker build --build-arg "BASE=rlt/backend-api:$revision" \
+  --label "org.opencontainers.image.revision=$broken_revision" \
+  --tag "rlt/backend-api:$broken_revision" - <<'EOF'
+ARG BASE
+FROM ${BASE}
+EOF
 docker save "rlt/frontend:$broken_revision" "rlt/backend:$broken_revision" \
-  | gzip > "$broken_bundle/images.tar.gz"
+  "rlt/backend-api:$broken_revision" | gzip > "$broken_bundle/images.tar.gz"
 cp "$bundle/release.tar.gz" "$bundle/activate.sh" "$broken_bundle/"
 (
   cd "$broken_bundle"

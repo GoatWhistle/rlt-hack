@@ -342,11 +342,19 @@ curl -s http://localhost:8000/api/health/ready
 (образ `backend/Dockerfile`, цель `api`); через фронтенд API доступен по
 `http://localhost:8080/api/`. Локально — `uv run api` из `backend/`.
 
+Образ ставит зависимости строго по `uv.lock` (`uv sync --frozen --no-dev`, uv
+закреплён версией) в `/opt/venv`; CI проверяет ту же выгрузку `uv export --frozen`
+через `pip-audit`. Цель `api` работает от непривилегированного пользователя
+`api` (uid 10001), цель `job` — образ миграций, джобы и воркеров. В продакшне
+это два образа: `rlt/backend-api` и `rlt/backend`; контейнер `api` запускается
+с `read_only`, `tmpfs /tmp`, `cap_drop: ALL` и `no-new-privileges`, а
+документация OpenAPI выключена (`API_DOCS=false`).
+
 | Переменная | По умолчанию | Назначение |
 | --- | --- | --- |
 | `API_HOST` | `0.0.0.0` | адрес `uv run api` |
 | `API_PORT` | `8000` | порт `uv run api`; в Compose — порт на хосте |
-| `API_DOCS` | `true` | документация OpenAPI |
+| `API_DOCS` | `true` | документация OpenAPI; в продакшне `false` |
 | `SEARCH_TIMEOUT_SECONDS` | `8` | таймаут сценария поиска |
 | `SEARCH_RETRIEVAL_DEPTH` | `3` | во сколько раз каналы берут больше кандидатов, чем лимит |
 | `SEARCH_COVERAGE_THRESHOLD` | `0.5` | порог покрытия позиций для статуса `recommended` |
