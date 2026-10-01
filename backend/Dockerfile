@@ -1,8 +1,13 @@
+FROM ghcr.io/astral-sh/uv:0.9.25 AS uv
+
 FROM python:3.13-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1
+    UV_PROJECT_ENVIRONMENT=/opt/venv \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_LINK_MODE=copy \
+    PATH=/opt/venv/bin:$PATH
 
 WORKDIR /app
 
@@ -10,10 +15,9 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y libxml2 libxslt1.1 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install uv
-
-COPY pyproject.toml ./
-RUN uv pip install --system --no-cache -r pyproject.toml
+COPY pyproject.toml uv.lock ./
+RUN --mount=from=uv,source=/uv,target=/usr/local/bin/uv \
+    uv sync --frozen --no-dev --no-install-project --no-cache
 
 COPY migration ./migration
 # Справочники ОКПД2, рубрик, словаря и ОКЕИ нужны нормализатору и классификатору.
