@@ -24,6 +24,10 @@ docker compose run --rm --no-deps embedding-worker search 'бумага для �
 или ключи; существующий env сохраняется. Настройка постоянного доступа CI/CD
 выполняется отдельно.
 
+После загрузки модели команда `bash deploy/run-workers.sh /path/to/release`
+проверяет её наличие и БД и поднимает оба воркера. `RLT_RUN_WORKERS=true`
+включает их обновление при последующих деплоях.
+
 Для ProductCenter задать `PRODUCTCENTER_WEB_PROVIDER=true`,
 `PRODUCTCENTER_MAX_CARDS=0`, `SYNC_PARALLEL_REQUESTS=2`, `REQUEST_TIMEOUT=45`.
 Остальные источники оставить выключенными до настройки и проверки их доступа.

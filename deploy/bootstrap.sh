@@ -28,7 +28,7 @@ if [[ ! -f /etc/rlt-hack/production.env ]]; then
   database_password=$(openssl rand -hex 32)
   sed "s/replace-with-a-generated-password/$database_password/" \
     "$directory/production.env.example" > /etc/rlt-hack/production.env
-  chown root:rlt-deploy /etc/rlt-hack/production.env
-  chmod 0640 /etc/rlt-hack/production.env
 fi
+chown root:rlt-deploy /etc/rlt-hack/production.env
+chmod 0640 /etc/rlt-hack/production.env
 echo "Deployment user and directories are ready"

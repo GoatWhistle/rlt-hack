@@ -12,6 +12,13 @@ bundle=$(pwd)
 release="$base/releases/$revision"
 previous=""
 frontend_changed=false
+workers_changed=false
+
+start_workers() {
+  if grep -Eq '^RLT_RUN_WORKERS=true$' "$env_file"; then
+    bash "$1/deploy/run-workers.sh" "$1"
+  fi
+}
 
 compose_at() {
   local directory=$1
@@ -32,6 +39,12 @@ failed() {
   local status=$?
   trap - EXIT
   if (( status == 0 )); then return; fi
+  if [[ $workers_changed == true ]]; then
+    compose_at "$release" --profile workers --profile ml stop parser-worker embedding-worker || true
+    if [[ -n $previous && -f $previous/deploy/run-workers.sh ]]; then
+      start_workers "$previous" || echo "Worker rollback failed; inspect containers" >&2
+    fi
+  fi
   if [[ $frontend_changed == true && -n $previous ]]; then
     echo "Deployment failed; restoring frontend $(basename "$previous")" >&2
     if ! compose_at "$previous" up -d --no-deps --wait --wait-timeout 120 frontend; then
@@ -56,6 +69,7 @@ if [[ -L $base/current ]]; then
 fi
 if [[ $previous == "$release" ]]; then
   compose_at "$release" up -d --no-deps --wait --wait-timeout 120 frontend
+  start_workers "$release"
   echo "Release $revision is already active"
   exit 0
 fi
@@ -85,11 +99,16 @@ database=$(compose_at "$release" exec -T clickhouse printenv CLICKHOUSE_DB)
 backup="before_${revision}_${run_id}_$(date -u +%Y%m%dT%H%M%SZ).zip"
 query "BACKUP DATABASE $database TO Disk('backups', '$backup')"
 printf '%s\n' "$backup" > "$release/backup-before.txt"
+if grep -Eq '^RLT_RUN_WORKERS=true$' "$env_file"; then
+  workers_changed=true
+  compose_at "$release" --profile workers --profile ml stop parser-worker embedding-worker
+fi
 compose_at "$release" run --rm --no-deps migrate
 
 frontend_changed=true
 compose_at "$release" up -d --no-deps --wait --wait-timeout 120 frontend
 compose_at "$release" exec -T frontend wget -qO- http://127.0.0.1:8080/ >/dev/null
+start_workers "$release"
 if [[ -n $previous ]]; then
   ln -sfn "$previous" "$base/previous.next"
   mv -Tf "$base/previous.next" "$base/previous"
