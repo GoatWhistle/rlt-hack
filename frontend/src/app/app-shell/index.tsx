@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next"
 import { Link, Outlet, ScrollRestoration } from "react-router"
 import { NavTabs } from "@/app/nav-tabs"
+import { RouteProgress } from "@/app/route-progress"
 import { LocaleSwitch } from "@/features/locale-switch"
 import { REPOSITORY_URL } from "@/shared/config/links"
-import { UPLOADS_PATH } from "@/shared/config/paths"
+import { SEARCH_PATH } from "@/shared/config/paths"
 import { BrandMark } from "@/shared/ui/brand-mark"
 import { GithubMark } from "@/shared/ui/github-mark"
 import { SkipLink } from "@/shared/ui/skip-link"
@@ -19,7 +20,7 @@ export function AppShell() {
       <SkipLink targetId={MAIN_CONTENT_ID} label={t("app.skipToContent")} />
       <header className={styles.header}>
         <div className={styles.bar}>
-          <Link to={UPLOADS_PATH} className={styles.brand}>
+          <Link to={SEARCH_PATH} className={styles.brand}>
             <BrandMark />
             <span className={styles.wordmark}>{t("app.name")}</span>
           </Link>
@@ -35,6 +36,7 @@ export function AppShell() {
             </ToolLink>
           </div>
         </div>
+        <RouteProgress />
       </header>
       <main id={MAIN_CONTENT_ID} tabIndex={-1} className={styles.main}>
         <Outlet />

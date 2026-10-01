@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useUploads } from "@/entities/upload/queries"
+import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { ErrorState } from "@/shared/ui/error-state"
 import { PageSkeleton } from "@/shared/ui/skeleton"
 import { Intro } from "./intro"
@@ -17,6 +18,7 @@ type DialogState = {
 export function UploadsPage() {
   const { t } = useTranslation()
   const uploads = useUploads()
+  useDocumentTitle([t("title.uploads")])
   const [dialog, setDialog] = useState<DialogState>({ open: false, file: null, session: 0 })
 
   function openDialog(file: File | null) {

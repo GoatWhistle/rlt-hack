@@ -6,6 +6,7 @@
 }
 
 .header {
+  position: relative;
   border-block-end: var(--line-width) solid var(--line-hairline);
   background: var(--surface-base);
 }

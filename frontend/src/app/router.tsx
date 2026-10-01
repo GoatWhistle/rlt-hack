@@ -4,8 +4,9 @@ import { AppShell } from "@/app/app-shell"
 import { readLastUpload } from "@/entities/upload/last-upload"
 import { NotFoundPage } from "@/pages/not-found"
 import { RouteErrorPage } from "@/pages/route-error"
-import { UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
+import { SEARCH_PATH, uploadPath } from "@/shared/config/paths"
 import { PageSkeleton } from "@/shared/ui/skeleton"
+import { routeModules } from "./route-modules"
 
 export function RouteLoading() {
   const { t } = useTranslation()
@@ -27,18 +28,18 @@ export const routes: RouteObject[] = [
         ErrorBoundary: RouteErrorPage,
         HydrateFallback: RouteLoading,
         children: [
-          { index: true, loader: () => redirect(UPLOADS_PATH), element: null },
+          { index: true, loader: () => redirect(SEARCH_PATH), element: null },
           {
             path: "uploads",
-            lazy: async () => ({ Component: (await import("@/pages/uploads")).UploadsPage }),
+            lazy: async () => ({ Component: (await routeModules.uploads()).UploadsPage }),
           },
           {
             path: "uploads/:uploadId",
-            lazy: async () => ({ Component: (await import("@/pages/lots")).LotsPage }),
+            lazy: async () => ({ Component: (await routeModules.lots()).LotsPage }),
           },
           {
             path: "uploads/:uploadId/lots/:lotId",
-            lazy: async () => ({ Component: (await import("@/pages/lot")).LotPage }),
+            lazy: async () => ({ Component: (await routeModules.lot()).LotPage }),
           },
           {
             path: "uploads/:uploadId/lots/:lotId/evidence/:inn/:purchaseId",
@@ -50,17 +51,17 @@ export const routes: RouteObject[] = [
             path: "lots",
             loader: lastUploadRedirect,
             lazy: async () => ({
-              Component: (await import("@/pages/lots-entry")).LotsEntryPage,
+              Component: (await routeModules.lotsEntry()).LotsEntryPage,
             }),
           },
           {
             path: "search",
-            lazy: async () => ({ Component: (await import("@/pages/search")).SearchPage }),
+            lazy: async () => ({ Component: (await routeModules.search()).SearchPage }),
           },
           {
             path: "search/:searchId",
             lazy: async () => ({
-              Component: (await import("@/pages/search")).SearchResultPage,
+              Component: (await routeModules.search()).SearchResultPage,
             }),
           },
           { path: "*", Component: NotFoundPage },

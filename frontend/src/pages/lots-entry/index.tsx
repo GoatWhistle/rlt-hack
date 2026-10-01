@@ -4,6 +4,7 @@ import { useUploads } from "@/entities/upload/queries"
 import { StatusStrip } from "@/entities/upload/status-strip"
 import { UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
+import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { ButtonLink } from "@/shared/ui/button"
 import { ErrorState } from "@/shared/ui/error-state"
 import { PageTitle } from "@/shared/ui/page-title"
@@ -16,7 +17,9 @@ export const RECENT_UPLOADS = 5
 export function LotsEntryPage() {
   const { t } = useTranslation("lots")
   const { dateTime } = useFormatters()
+  const { t: common } = useTranslation()
   const uploads = useUploads()
+  useDocumentTitle([common("title.lots")])
 
   if (uploads.isPending) return <PageSkeleton label={t("loading")} rows={3} />
   if (uploads.isError) {
