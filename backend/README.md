@@ -223,7 +223,7 @@ class OfferClassifying(Protocol):
 `MOSCOW_PRODUCTS_PROVIDER` (по умолчанию `false`) и
 `MOSCOW_PRODUCTS_PAGE_SIZE` (по умолчанию 100). Промежуточные строки
 помечаются `run_id` и становятся видимы в `moscow_products_current` только
-после полного обхода и сверки числа записей. Живой контракт карточки и
+после двух одинаковых полных обходов и сверки числа записей. Живой контракт карточки и
 устойчивость пагинации ещё не подтверждены; адаптер оставлен выключенным.
 
 Через Docker Compose из корня репозитория:
@@ -334,6 +334,7 @@ uv run --no-project --python 3.13 --with httpx \
   python tests/supplier/moscow_suppliers_smoke.py
 uv run --no-project --python 3.13 --with httpx \
   python tests/product/moscow_smoke.py
+uv run --no-project --python 3.13 python tests/product/worker_smoke.py
 uv run --no-project --python 3.13 python tests/supplier/worker_smoke.py
 uv run --no-project --python 3.13 --with httpx --with openpyxl \
   python tests/supplier/gisp_registry.py
