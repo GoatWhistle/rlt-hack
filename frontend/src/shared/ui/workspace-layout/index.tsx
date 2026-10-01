@@ -50,7 +50,7 @@ export function WorkspaceLayout({
     <div className={styles.columns}>
       <div className={clsx(styles.pane, styles.list)}>{panes.list}</div>
       <div className={styles.pane}>{panes.candidates}</div>
-      <div className={styles.pane}>{panes.evidence}</div>
+      <div className={clsx(styles.pane, styles.detail)}>{panes.evidence}</div>
     </div>
   )
 }

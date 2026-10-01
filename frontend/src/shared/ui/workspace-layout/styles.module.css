@@ -17,8 +17,13 @@
     margin: calc(-1 * var(--space-1));
     padding: var(--space-1);
     overflow-y: auto;
-    overscroll-behavior: contain;
     scrollbar-width: thin;
+  }
+
+  .columns .detail {
+    position: static;
+    max-height: none;
+    overflow: visible;
   }
 }
 
