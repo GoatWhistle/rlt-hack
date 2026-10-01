@@ -7,11 +7,11 @@ from src.models.offer_evidence import OfferEvidence
 
 
 def is_stock(card: OfferEvidence) -> bool:
-    return card.is_current and card.seller_confirmed and card.in_stock and card.evidence is not None
+    return card.is_current and card.backs_supplier and card.in_stock and card.evidence is not None
 
 
 def is_catalog(card: OfferEvidence) -> bool:
-    return card.catalog_confirmed and card.evidence is not None
+    return card.catalog_confirmed and card.backs_supplier and card.evidence is not None
 
 
 def _freshness(card: OfferEvidence) -> tuple[bool, datetime, str]:

@@ -17,7 +17,6 @@ from src.models.search import SearchQuery, SearchText
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
 from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver
-from src.service.supplier_search.assembly.role import RoleResolver
 from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from src.service.supplier_search.matcher import SupplierMatcher
 from src.service.supplier_search.policy.policy import CandidatePolicy
@@ -31,7 +30,7 @@ from tests.fakes.domain import make_offer, make_source, make_supplier
 pytest.importorskip("chdb")
 pytestmark = pytest.mark.chdb
 
-ALPHA = make_supplier("alpha", inn="7801234567")
+ALPHA = make_supplier("alpha", inn="7801234564")
 GAMMA = make_supplier("gamma", inn=None)
 
 
@@ -47,7 +46,7 @@ def build_service(gateway: ChdbGateway) -> SupplierSearchService:
         offers=ClickHouseOfferCatalog(gateway),
         history=ClickHousePurchaseHistory(gateway, analyzer),
         fusion=ReciprocalRankFusion(settings.rrf_k),
-        assembler=CandidateAssembler(RoleResolver(), MatchResolver(), HighlightComposer()),
+        assembler=CandidateAssembler(MatchResolver(), HighlightComposer()),
         policy=CandidatePolicy.standard(settings.coverage_threshold),
         ranker=CandidateRanker(settings.weights),
         settings=settings,

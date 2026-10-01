@@ -54,11 +54,8 @@ SOURCE_FIELDS = (
     "s.ownership_evidence_url",
     "s.provider_name",
 )
-MATCH_FIELD = (
-    "if(m.status = 'accepted' AND m.offer_content_hash != o.content_hash, "
-    "'review', toString(m.status))"
-)
-EVIDENCE_FIELDS = ", ".join((*OFFER_FIELDS, *SOURCE_FIELDS, MATCH_FIELD))
+MATCH_FIELDS = ("toString(m.status)", "m.offer_content_hash")
+EVIDENCE_FIELDS = ", ".join((*OFFER_FIELDS, *SOURCE_FIELDS, *MATCH_FIELDS))
 SOURCE_START = len(OFFER_FIELDS)
 MATCH_POSITION = SOURCE_START + len(SOURCE_FIELDS)
 
@@ -116,4 +113,5 @@ def to_offer_evidence(row: Sequence[object]) -> OfferEvidence:
         offer=to_offer(row[:SOURCE_START]),
         source=to_source(row[SOURCE_START:MATCH_POSITION]),
         match_status=MatchStatus(str(row[MATCH_POSITION])),
+        matched_content_hash=str(row[MATCH_POSITION + 1] or ""),
     )

@@ -51,8 +51,12 @@ async def test_catalog_returns_cards_with_sources_and_match_status(gateway: Chdb
     assert cards[accepted.offer_id].offer == accepted
     assert cards[accepted.offer_id].source == make_source()
     assert cards[accepted.offer_id].match_status == MatchStatus.ACCEPTED
-    assert cards[stale.offer_id].match_status == MatchStatus.REVIEW
+    assert cards[accepted.offer_id].catalog_confirmed
+    assert cards[stale.offer_id].match_status == MatchStatus.ACCEPTED
+    assert cards[stale.offer_id].matched_content_hash == "old"
+    assert not cards[stale.offer_id].catalog_confirmed
     assert cards[plain.offer_id].match_status == MatchStatus.UNMATCHED
+    assert not cards[plain.offer_id].catalog_confirmed
     assert await catalog.get_many([]) == {}
 
 

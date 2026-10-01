@@ -29,7 +29,6 @@ from src.service.supplier_profile.service import SupplierProfileService
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
 from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver
-from src.service.supplier_search.assembly.role import RoleResolver
 from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from src.service.supplier_search.matcher import SupplierMatcher
 from src.service.supplier_search.policy.policy import CandidatePolicy
@@ -82,7 +81,7 @@ class ApiContainer:
             offers=ClickHouseOfferCatalog(sql, self.database),
             history=ClickHousePurchaseHistory(sql, self._analyzer, self.database),
             fusion=ReciprocalRankFusion(settings.rrf_k),
-            assembler=CandidateAssembler(RoleResolver(), MatchResolver(), HighlightComposer()),
+            assembler=CandidateAssembler(MatchResolver(), HighlightComposer()),
             policy=CandidatePolicy.standard(settings.coverage_threshold),
             ranker=CandidateRanker(settings.weights),
             settings=settings,
@@ -107,7 +106,6 @@ class ApiContainer:
         return SupplierProfileService(
             directory=ClickHouseSupplierDirectory(self._gateway, self.database),
             offers=ClickHouseOfferCatalog(self._gateway, self.database),
-            roles=RoleResolver(),
         )
 
     async def health(self) -> HealthService:

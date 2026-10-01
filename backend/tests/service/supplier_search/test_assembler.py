@@ -4,7 +4,6 @@ from src.models.scoring import ChannelRank, Score
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
 from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver
-from src.service.supplier_search.assembly.role import RoleResolver
 from src.service.supplier_search.enrichment.bundle import Enrichment
 from src.service.supplier_search.fusion.candidate import FusedCandidate, ItemRefs
 from tests.fakes.domain import make_item, make_offer, make_offer_evidence, make_supplier
@@ -15,7 +14,7 @@ ITEMS = (make_item("i1"), make_item("i2", "Рис"), make_item("i3", "Соль")
 
 
 def assembler() -> CandidateAssembler:
-    return CandidateAssembler(RoleResolver(), MatchResolver(), HighlightComposer())
+    return CandidateAssembler(MatchResolver(), HighlightComposer())
 
 
 def test_draft_uses_only_cards_of_the_candidate_and_history_items() -> None:

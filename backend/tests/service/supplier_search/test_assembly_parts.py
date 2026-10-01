@@ -2,6 +2,7 @@ from dataclasses import replace
 
 import pytest
 
+from src.models.company_role import RoleAssessment, assess_role, company_role
 from src.models.enums import (
     Availability,
     CompanyRole,
@@ -15,7 +16,6 @@ from src.models.offer_evidence import OfferEvidence
 from src.models.purchase import PurchaseSummary
 from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver
-from src.service.supplier_search.assembly.role import RoleResolver, company_role
 from tests.fakes.domain import make_offer, make_offer_evidence, make_supplier
 from tests.fakes.drafts import stock_match
 
@@ -51,21 +51,29 @@ def test_company_role_follows_the_strongest_card(
     assert company_role(roles) == expected
 
 
-def test_role_comes_from_current_cards_with_evidence_of_the_best_card() -> None:
+def test_role_comes_from_cards_with_a_confirmed_seller() -> None:
     reseller = card("reseller", SupplierRole.RESELLER, seller=VerificationStatus.UNVERIFIED)
     distributor = card("distributor")
     withdrawn = card("old", SupplierRole.MANUFACTURER, Availability.UNAVAILABLE)
-    role, evidence = RoleResolver().resolve((reseller, distributor, withdrawn))
-    assert role == CompanyRole.SUPPLIER_DISTRIBUTOR
-    assert evidence == distributor.role_evidence
+    assessed = assess_role((reseller, distributor, withdrawn))
+    assert assessed == RoleAssessment(CompanyRole.DISTRIBUTOR, distributor.role_evidence)
+    assert assessed.confirmed
+
+
+def test_role_of_unconfirmed_sellers_has_no_evidence() -> None:
+    unverified = card("unverified", seller=VerificationStatus.UNVERIFIED)
+    conflicted = card("conflicted", SupplierRole.MANUFACTURER, seller=VerificationStatus.CONFLICT)
+    assessed = assess_role((unverified, conflicted))
+    assert assessed == RoleAssessment(CompanyRole.MANUFACTURER)
+    assert not assessed.confirmed
 
 
 def test_role_without_any_evidence_or_cards_stays_unconfirmed() -> None:
     blank = card("blank", url="not a link")
-    assert RoleResolver().resolve((blank,)) == (CompanyRole.DISTRIBUTOR, None)
-    assert RoleResolver().resolve(()) == (CompanyRole.UNKNOWN, None)
+    assert assess_role((blank,)) == RoleAssessment(CompanyRole.DISTRIBUTOR)
+    assert assess_role(()) == RoleAssessment(CompanyRole.UNKNOWN)
     unknown = card("unknown", SupplierRole.UNKNOWN)
-    assert RoleResolver().resolve((unknown,)) == (CompanyRole.UNKNOWN, None)
+    assert assess_role((unknown,)) == RoleAssessment(CompanyRole.UNKNOWN)
 
 
 def test_stock_needs_a_current_confirmed_available_card() -> None:
@@ -84,6 +92,24 @@ def test_catalog_needs_an_accepted_match_and_a_source() -> None:
     match = MatchResolver().resolve("i1", (accepted,), True)
     assert match is not None
     assert match.basis == MatchBasis.CATALOG
+
+
+def test_catalog_needs_a_confirmed_seller_and_the_matched_content() -> None:
+    resolver = MatchResolver()
+    unverified = card(
+        "unverified",
+        availability=Availability.UNKNOWN,
+        seller=VerificationStatus.UNVERIFIED,
+        match=MatchStatus.ACCEPTED,
+    )
+    weak = resolver.resolve("i1", (unverified,), True)
+    assert weak is not None
+    assert weak.basis == MatchBasis.INFERRED
+    accepted = card("changed", availability=Availability.UNKNOWN, match=MatchStatus.ACCEPTED)
+    stale = replace(accepted, matched_content_hash="before")
+    changed = resolver.resolve("i1", (stale,), True)
+    assert changed is not None
+    assert changed.basis == MatchBasis.INFERRED
 
 
 def test_unconfirmed_card_or_history_gives_only_an_inferred_match() -> None:

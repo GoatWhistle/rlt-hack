@@ -1,25 +1,19 @@
 from collections.abc import Sequence
 
 from src.models.candidate import ProductMatch
+from src.models.company_role import assess_role
 from src.models.offer_evidence import OfferEvidence
 from src.models.query_item import QueryItem
 from src.models.supplier import Supplier
 from src.service.supplier_search.assembly.draft import CandidateDraft
 from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver
-from src.service.supplier_search.assembly.role import RoleResolver
 from src.service.supplier_search.enrichment.bundle import Enrichment
 from src.service.supplier_search.fusion.candidate import FusedCandidate, ItemRefs
 
 
 class CandidateAssembler:
-    def __init__(
-        self,
-        roles: RoleResolver,
-        matches: MatchResolver,
-        highlights: HighlightComposer,
-    ) -> None:
-        self._roles = roles
+    def __init__(self, matches: MatchResolver, highlights: HighlightComposer) -> None:
         self._matches = matches
         self._highlights = highlights
 
@@ -36,11 +30,11 @@ class CandidateAssembler:
         history = enrichment.history_of(supplier.supplier_id)
         current = enrichment.current_of(supplier.supplier_id)
         matches = self._resolve_matches(fused, items, used, history.item_ids)
-        role, role_evidence = self._roles.resolve((*current, *used))
+        role = assess_role((*current, *used))
         return CandidateDraft(
             supplier=supplier,
-            role=role,
-            role_evidence=role_evidence,
+            role=role.role,
+            role_evidence=role.evidence,
             fusion=fused.fusion,
             channels=fused.channels,
             total_items=len(items),

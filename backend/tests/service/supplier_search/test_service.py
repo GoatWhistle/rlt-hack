@@ -16,7 +16,6 @@ from src.service.errors import (
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
 from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver
-from src.service.supplier_search.assembly.role import RoleResolver
 from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from src.service.supplier_search.matcher import SupplierMatcher
 from src.service.supplier_search.policy.policy import CandidatePolicy
@@ -92,7 +91,7 @@ class Harness:
             offers=self.offers,
             history=self.history,
             fusion=ReciprocalRankFusion(self.settings.rrf_k),
-            assembler=CandidateAssembler(RoleResolver(), MatchResolver(), HighlightComposer()),
+            assembler=CandidateAssembler(MatchResolver(), HighlightComposer()),
             policy=CandidatePolicy.standard(self.settings.coverage_threshold),
             ranker=CandidateRanker(self.settings.weights),
             settings=self.settings,

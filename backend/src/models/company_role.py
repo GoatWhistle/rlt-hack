@@ -1,4 +1,5 @@
 from collections.abc import Collection, Sequence
+from dataclasses import dataclass
 from datetime import datetime
 
 from src.models.enums import CompanyRole, SupplierRole
@@ -12,6 +13,16 @@ CONTRIBUTORS: dict[CompanyRole, frozenset[SupplierRole]] = {
     CompanyRole.SUPPLIER: frozenset({SupplierRole.RESELLER}),
     CompanyRole.SERVICE_PROVIDER: frozenset({SupplierRole.SERVICE_PROVIDER}),
 }
+
+
+@dataclass(frozen=True, slots=True)
+class RoleAssessment:
+    role: CompanyRole
+    evidence: Evidence | None = None
+
+    @property
+    def confirmed(self) -> bool:
+        return self.role != CompanyRole.UNKNOWN and self.evidence is not None
 
 
 def company_role(roles: Collection[SupplierRole]) -> CompanyRole:
@@ -28,25 +39,29 @@ def company_role(roles: Collection[SupplierRole]) -> CompanyRole:
     return CompanyRole.UNKNOWN
 
 
-def _strength(card: OfferEvidence) -> tuple[bool, datetime, str]:
-    return (card.seller_confirmed, card.offer.last_seen_at, str(card.offer.offer_id))
+def _freshness(card: OfferEvidence) -> tuple[datetime, str]:
+    return (card.offer.last_seen_at, str(card.offer.offer_id))
 
 
-class RoleResolver:
-    def resolve(self, offers: Sequence[OfferEvidence]) -> tuple[CompanyRole, Evidence | None]:
-        current = [
-            card
-            for card in offers
-            if card.is_current and card.offer.supplier_role != SupplierRole.UNKNOWN
-        ]
-        role = company_role({card.offer.supplier_role for card in current})
-        if role == CompanyRole.UNKNOWN:
-            return role, None
-        backing = [
-            card
-            for card in current
-            if card.offer.supplier_role in CONTRIBUTORS[role] and card.role_evidence is not None
-        ]
-        if not backing:
-            return role, None
-        return role, max(backing, key=_strength).role_evidence
+def _role_of(cards: Sequence[OfferEvidence]) -> CompanyRole:
+    return company_role({card.offer.supplier_role for card in cards})
+
+
+def assess_role(offers: Sequence[OfferEvidence]) -> RoleAssessment:
+    current = [
+        card
+        for card in offers
+        if card.is_current and card.offer.supplier_role != SupplierRole.UNKNOWN
+    ]
+    backed = [card for card in current if card.backs_supplier]
+    role = _role_of(backed)
+    if role == CompanyRole.UNKNOWN:
+        return RoleAssessment(_role_of(current))
+    backing = [
+        card
+        for card in backed
+        if card.offer.supplier_role in CONTRIBUTORS[role] and card.role_evidence is not None
+    ]
+    if not backing:
+        return RoleAssessment(role)
+    return RoleAssessment(role, max(backing, key=_freshness).role_evidence)

@@ -27,6 +27,7 @@ class OfferEvidence:
     offer: Offer
     source: Source
     match_status: MatchStatus = MatchStatus.UNMATCHED
+    matched_content_hash: str = ""
 
     @property
     def is_current(self) -> bool:
@@ -51,8 +52,15 @@ class OfferEvidence:
         )
 
     @property
+    def backs_supplier(self) -> bool:
+        return self.seller_confirmed and not self.has_conflict
+
+    @property
     def catalog_confirmed(self) -> bool:
-        return self.match_status == MatchStatus.ACCEPTED
+        return (
+            self.match_status == MatchStatus.ACCEPTED
+            and self.matched_content_hash == self.offer.content_hash
+        )
 
     @property
     def evidence(self) -> Evidence | None:

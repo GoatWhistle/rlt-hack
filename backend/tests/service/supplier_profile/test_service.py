@@ -3,7 +3,6 @@ import pytest
 from src.models.enums import Availability, CompanyRole
 from src.service.errors import SupplierNotFoundError
 from src.service.supplier_profile.service import SupplierProfileService
-from src.service.supplier_search.assembly.role import RoleResolver
 from tests.fakes.domain import make_offer, make_offer_evidence, make_supplier
 from tests.fakes.ports import FakeDirectory, FakeOfferCatalog
 
@@ -18,7 +17,6 @@ def service() -> SupplierProfileService:
     return SupplierProfileService(
         FakeDirectory((ALPHA,)),
         FakeOfferCatalog((current, withdrawn)),
-        RoleResolver(),
         offers_per_supplier=50,
     )
 
@@ -37,6 +35,6 @@ async def test_unknown_supplier_is_not_found() -> None:
 
 
 async def test_supplier_without_cards_has_unknown_role() -> None:
-    lonely = SupplierProfileService(FakeDirectory((ALPHA,)), FakeOfferCatalog(), RoleResolver())
+    lonely = SupplierProfileService(FakeDirectory((ALPHA,)), FakeOfferCatalog())
     profile = await lonely.get(ALPHA.supplier_id)
     assert (profile.role, profile.offers, profile.role_evidence) == (CompanyRole.UNKNOWN, (), None)
