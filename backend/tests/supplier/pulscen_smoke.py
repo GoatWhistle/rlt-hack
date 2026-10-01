@@ -18,6 +18,8 @@ from src.models.enums import Availability, ItemType, SourceType, SupplierRole
 from tests.supplier.fixtures import (
     PULSCEN_BOT_CHECK,
     PULSCEN_CARD_AMBIGUOUS,
+    PULSCEN_CARD_FOREIGN_LINK,
+    PULSCEN_CARD_LINK_IN_BODY,
     PULSCEN_CARD_WITH_RECOMMENDATIONS,
     PULSCEN_FIRMS_PAGE,
     PULSCEN_FIRMS_PAGE_2,
@@ -102,6 +104,10 @@ async def main() -> None:
     assert seller == parsing.ProductSeller("10", "Верный продавец"), seller
     ambiguous = parsing.product_seller(page.parse(PULSCEN_CARD_AMBIGUOUS, f"{BASE}/p"))
     assert ambiguous is None, ambiguous
+    foreign = parsing.product_seller(page.parse(PULSCEN_CARD_FOREIGN_LINK, f"{BASE}/p"))
+    assert foreign is None, foreign
+    in_body = parsing.product_seller(page.parse(PULSCEN_CARD_LINK_IN_BODY, f"{BASE}/p"))
+    assert in_body == parsing.ProductSeller("10", "Верный продавец"), in_body
 
     pages = {**PAGES, f"{BASE}/sitemap_firms_rubrics.xml.gz": PULSCEN_SITEMAP_FIRMS}
     directory = source("Пульс цен", f"{BASE}/", SourceType.DIRECTORY, "pulscen_web")

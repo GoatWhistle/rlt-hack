@@ -260,11 +260,13 @@ PULSCEN_SITEMAP_PRICE = """<?xml version="1.0" encoding="UTF-8"?>
 
 PULSCEN_PRODUCT_CARD = """<html><head>
 <title>Арматура А400 купить от компании ООО "ПервоСтрой"</title>
-</head><body><a href="https://nsk.pulscen.ru/companies/99418958/reviews">Отзывы</a></body></html>"""
+</head><body><div class="seller">ООО "ПервоСтрой"
+<a href="https://nsk.pulscen.ru/companies/99418958/reviews">Отзывы</a></div></body></html>"""
 
 PULSCEN_PRODUCT_CARD_NEW_SELLER = """<html><head>
 <title>Арматура купить от компании Сталь-Опт</title>
-</head><body><a href="/companies/55500011/reviews">Отзывы</a></body></html>"""
+</head><body><div class="seller">Сталь-Опт
+<a href="/companies/55500011/reviews">Отзывы</a></div></body></html>"""
 
 PULSCEN_FIRMS_PAGE = """<html><head><link rel="next" href="https://www.pulscen.ru/firms/010301-armatura?page=2"></head><body>
 <ul><li class="company-card js-company-card" data-id="99418958">
@@ -301,3 +303,18 @@ PULSCEN_CARD_WITH_RECOMMENDATIONS = """<html><head>
 
 PULSCEN_CARD_AMBIGUOUS = """<html><head><title>Товар купить от компании Никто</title></head><body>
 <a href="/companies/1">Первая</a><a href="/companies/2">Вторая</a></body></html>"""
+
+
+PULSCEN_CARD_FOREIGN_LINK = """<html><head>
+<title>Товар от компании Верный продавец</title>
+</head><body>
+<section itemprop="seller">Верный продавец</section>
+<aside><a href="/companies/99/">Другой продавец</a></aside>
+</body></html>"""
+
+PULSCEN_CARD_LINK_IN_BODY = """<html><head>
+<title>Товар от компании Верный продавец</title>
+</head><body>
+<a itemprop="seller" href="/companies/10/">Верный продавец</a>
+<a href="/companies/99/">Другой продавец</a>
+</body></html>"""

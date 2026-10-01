@@ -116,35 +116,35 @@ class ProductSeller:
 
 
 def product_seller(tree: Any) -> ProductSeller | None:
-    """Продавец товара по ссылке на компанию, подтверждённой названием из заголовка.
+    """Продавец товара: ссылка на компанию, подтверждённая названием из заголовка.
 
     Ссылок на компании на странице несколько: рекомендации и похожие товары тоже
-    ведут на чужие компании. Продавцом считается компания, рядом со ссылкой на
-    которую (в ближайших родительских блоках) стоит название из заголовка. Один
-    ID без названия принимается, если других компаний на странице нет. При
-    неоднозначности продавец не назначается.
+    ведут на чужие компании. Продавцом считается компания, название которой из
+    заголовка («от компании …») есть в тексте самой ссылки или в ближайших
+    родительских блоках. Неподтверждённая ссылка, в том числе единственная, не
+    даёт продавца, как и несколько подтверждённых разных компаний.
     """
-    title = page.first_text(tree, "title")
-    named = _COMPANY_IN_TITLE.search(title)
-    name = named.group(1) if named else ""
-    candidates: dict[str, bool] = {}
+    named = _COMPANY_IN_TITLE.search(page.first_text(tree, "title"))
+    if not named:
+        return None
+    name = named.group(1)
+    confirmed: set[str] = set()
     for link in tree.cssselect("a[href*='/companies/']"):
         match = _COMPANY_LINK.search((link.get("href") or "").split("?")[0].split("#")[0])
-        if match:
-            confirmed = bool(name) and _near_text(link, name)
-            candidates[match.group(1)] = candidates.get(match.group(1), False) or confirmed
-    confirmed_ids = [company_id for company_id, confirmed in candidates.items() if confirmed]
-    if len(confirmed_ids) == 1:
-        return ProductSeller(confirmed_ids[0], name)
-    if not confirmed_ids and len(candidates) == 1:
-        return ProductSeller(next(iter(candidates)), name)
-    return None
+        if match and _confirms(link, name):
+            confirmed.add(match.group(1))
+    if len(confirmed) != 1:
+        return None
+    return ProductSeller(next(iter(confirmed)), name)
 
 
-def _near_text(link: Any, name: str) -> bool:
+def _confirms(link: Any, name: str) -> bool:
     wanted = " ".join(name.split()).casefold().strip('"«» ')
-    for index, block in enumerate(link.iterancestors()):
-        if index >= _NEAR_LEVELS or block.tag in ("body", "html"):
+    if not wanted:
+        return False
+    blocks = [link, *link.iterancestors()]
+    for index, block in enumerate(blocks):
+        if index > _NEAR_LEVELS or block.tag in ("body", "html"):
             return False
         if wanted in " ".join(block.text_content().split()).casefold():
             return True
