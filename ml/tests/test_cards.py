@@ -1,6 +1,6 @@
 from datetime import date
 
-from rlt_ml.cards import _group_examples, _unique_products, compact_profile
+from rlt_ml.cards import _add_mentions, _group_examples, _unique_products, compact_profile
 
 
 def test_compact_profile_puts_diverse_products_before_examples():
@@ -28,6 +28,13 @@ def test_product_selection_is_deterministic_and_casefold_deduplicated():
     assert _unique_products(examples, 1) == [products[0]]
 
 
+def test_product_mention_retains_source_lot_provenance():
+    mention = _add_mentions("supplier:category", [{
+        "name": "Модель 42", "source_name": "Модель 42", "source_length": 9,
+        "code": "26.20", "source_lot_id": "lot-17",
+    }], "Товары и услуги: Модель 42.", 19)[0]
+    assert mention["source_lot_id"] == "lot-17"
+    assert mention["displayed_text"] == "Модель 42"
 def test_okpd2_groups_rank_and_keep_distinct_examples():
     examples = [
         {"product_items": [{"name": "A", "code": "26.20.11.000"}],

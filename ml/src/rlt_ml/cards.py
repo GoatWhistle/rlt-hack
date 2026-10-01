@@ -32,7 +32,8 @@ WITH product_names AS (
     SELECT lot_id, category,
            array_to_string(list(product_name ORDER BY product_name), '; ') product_text,
            list(struct_pack(name := product_name, source_name := source_name,
-                            source_length := source_length, code := okpd2_code)
+                            source_length := source_length, code := okpd2_code,
+                            source_lot_id := cast(lot_id AS VARCHAR))
                 ORDER BY product_name, okpd2_code) product_items
     FROM ranked_products
     WHERE item_rank <= 5
@@ -43,7 +44,8 @@ WITH product_names AS (
            coalesce(d.product_text, '') product_text,
            left(l.query_text, 400) || ' ' || coalesce(d.product_text, '') profile_description,
            coalesce(d.product_items,
-                    []::STRUCT(name VARCHAR, source_name VARCHAR, source_length BIGINT, code VARCHAR)[])
+                    []::STRUCT(name VARCHAR, source_name VARCHAR, source_length BIGINT,
+                               code VARCHAR, source_lot_id VARCHAR)[])
                product_items
     FROM participations p
     JOIN lot_info l USING (lot_id)
@@ -174,6 +176,7 @@ def _add_mentions(card_id: str, items: list[dict], profile_text: str, preferred_
             "source_char_count": int(item.get("source_length", len(source_name))),
             "displayed_char_count": len(displayed),
             "okpd2_code": item.get("code", ""),
+            "source_lot_id": item.get("source_lot_id"),
             "start_char": start,
             "end_char": end,
         })
