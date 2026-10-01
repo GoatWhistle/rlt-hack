@@ -37,7 +37,7 @@ export function SegmentedControl<T extends string>({
       className={clsx(styles.group, scroll && styles.scroll, block && styles.block)}
     >
       <VisuallyHidden as="legend">{legend}</VisuallyHidden>
-      <span className={styles.thumb} aria-hidden="true" />
+      <span className={styles.thumb} aria-hidden="true" data-thumb-layer />
       {options.map((option) => (
         <label key={option.value} className={styles.option}>
           <input

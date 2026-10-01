@@ -13,29 +13,19 @@
 
 .thumb {
   position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  width: var(--thumb-span, 100%);
-  background: var(--thumb-line);
-  clip-path: inset(var(--thumb-inset) round var(--radius-sm));
+  inset-block-start: var(--thumb-y);
+  inset-inline-start: var(--thumb-x);
+  width: var(--thumb-width);
+  height: var(--thumb-height);
+  border: var(--line-width) solid var(--thumb-line);
+  border-radius: var(--radius-sm);
+  background: var(--thumb-fill);
+  transform-origin: 0 0;
   pointer-events: none;
 }
 
-.thumb::after {
-  position: absolute;
-  inset: var(--line-width);
-  background: var(--thumb-fill);
-  clip-path: inset(var(--thumb-inset) round calc(var(--radius-sm) - var(--line-width)));
-  content: "";
-}
-
-.group:not([data-thumb="placed"], [data-thumb="ready"]) .thumb {
+.group:not([data-thumb="placed"]) .thumb {
   display: none;
-}
-
-.group[data-thumb="ready"] .thumb,
-.group[data-thumb="ready"] .thumb::after {
-  transition: var(--transition-thumb);
 }
 
 .option {
@@ -57,7 +47,7 @@
   color: var(--thumb-text);
 }
 
-.group:not([data-thumb="placed"], [data-thumb="ready"]) .option:has(:checked) {
+.group:not([data-thumb="placed"]) .option:has(:checked) {
   background: var(--thumb-fill);
 }
 
@@ -75,8 +65,8 @@
 }
 
 .count {
+  font-weight: var(--weight-regular);
   font-variant-numeric: tabular-nums;
-  opacity: 0.75;
 }
 
 .scroll {

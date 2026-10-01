@@ -34,7 +34,6 @@
   --delay-skeleton: 300ms;
   --motion-skeleton-in: fade-in var(--dur-enter) var(--ease-out) var(--delay-skeleton) both;
   --transition-indicator: transform var(--dur-base) var(--ease-out);
-  --transition-thumb: clip-path var(--dur-base) var(--ease-out);
 }
 
 @keyframes fade-in {
