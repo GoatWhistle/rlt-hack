@@ -1,0 +1,31 @@
+split = "validation"
+history_before = "2024-12-01"
+seed = 42
+max_queries = 1000
+query_max_length = 256
+examples_per_card = 5
+max_cards_per_supplier = 8
+compact_product_limit = 15
+c_max_cards_per_supplier = 16
+retrieval_top_k = 100
+rrf_constant = 60
+bootstrap_replicates = 2000
+bootstrap_seed = 42
+model = "Qwen/Qwen3-Embedding-4B"
+model_revision = "5cf2132abc99cad020ac570b19d031efec650f2b"
+tokenizer_revision = "5cf2132abc99cad020ac570b19d031efec650f2b"
+variants = ["A", "B", "C", "D"]
+card_max_lengths = [256, 512]
+
+[variant_c]
+group_by_okpd2_digits = 6
+category_cap = 8
+card_cap = 16
+groups_per_category_round_robin = true
+
+[hypotheses]
+A = "Текущая склейка при 256 токенах воспроизводит исходный результат."
+B = "Товары и услуги в начале компактной карточки улучшают полноту поиска при лимите 256."
+C = "Короткие карточки по подгруппам ОКПД2 помогают найти релевантное направление без бонуса за число карточек."
+D = "Лимит 512 токенов сохраняет полезные хвосты и улучшает полноту относительно A."
+

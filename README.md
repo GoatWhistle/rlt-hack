@@ -158,3 +158,56 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 rlt-evaluate-retrieval \
 В текущем сравнении выбран Qwen3-Embedding-4B BF16 + BM25/RRF. Отдельный Qwen3-Embedding-8B NF4 прогон был остановлен до завершения индекса; качество не измерялось, поэтому 8B не входит в рабочий pipeline. Зафиксированный частичный запуск указан в [журнале экспериментов](ml/EXPERIMENTS.md).
 
 GPU-проверка запускается через `rlt-gpu-check`. Замеры качества и ресурсов, ограничения метрик и фактические результаты ведутся в [журнале экспериментов](ml/EXPERIMENTS.md).
+
+### Эксперимент с карточками поставщиков
+
+Сборка вариантов A–D выполняется на сервере данных рядом с DuckDB; перед ней
+установите актуальный ML-пакет из `/root/rlt/work/ml`. Производные карточки
+переносятся на GPU напрямую между серверами. Тексты и выборочные примеры остаются
+на серверах.
+
+```bash
+cd /root/rlt/work/ml
+/root/rlt/.venv312/bin/pip install -e '.[dev]'
+PYTHONPATH=src /root/rlt/.venv312/bin/python -m rlt_ml.cards \
+  --data /root/rlt/ready-v1 \
+  --database /root/rlt/ready-v1/procurement.duckdb \
+  --out /root/rlt/runs/card-variants \
+  --config configs/supplier_cards.toml
+```
+
+На GPU с локальным кешем Qwen3-Embedding-4B выполните аудит токенов:
+
+```bash
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONPATH=src \
+  /root/rlt/.venv/bin/python -m rlt_ml.card_audit \
+  --variants /root/rlt/data/card-variants \
+  --data /root/rlt/data/ready-v1 \
+  --model Qwen/Qwen3-Embedding-4B \
+  --revision 5cf2132abc99cad020ac570b19d031efec650f2b \
+  --out /root/rlt/runs/card-audit
+```
+
+Оценка каждого варианта использует один набор validation-запросов, Qwen4B и
+замороженные исходные карточки A для BM25; отчёт одного hybrid-прогона содержит
+отдельные метрики dense и hybrid. Запуски выполняются последовательно:
+
+```bash
+cd /root/rlt/work/ml
+for variant in A B C D; do
+  length=256
+  [ "$variant" = D ] && length=512
+  HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONPATH=src \
+    /root/rlt/.venv/bin/python -m rlt_ml.retrieval \
+    --data /root/rlt/data/ready-v1 \
+    --out "/root/rlt/runs/card-retrieval/$variant" \
+    --split validation --model Qwen/Qwen3-Embedding-4B --hybrid \
+    --config configs/compare_qwen.toml --batch-size 1 --card-max-length "$length" \
+    --cards "/root/rlt/data/card-variants/$variant/cards.parquet" \
+    --lexical-cards /root/rlt/data/card-variants/A/cards.parquet \
+    --gpu-memory-fraction 0.68 --cpu-threads 2
+done
+PYTHONPATH=src /root/rlt/.venv/bin/python -m rlt_ml.compare_cards \
+  --predictions-dir /root/rlt/runs/card-retrieval \
+  --out /root/rlt/runs/card-retrieval/paired-comparison.json
+```

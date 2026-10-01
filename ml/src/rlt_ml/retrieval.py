@@ -99,13 +99,15 @@ def summarize(predictions: list[dict]) -> dict:
 
 
 def evaluate(data: Path, out: Path, split: str, model_id: str, config: dict,
-             input_mode: str = "notice_text", device: str = "cuda", hybrid: bool = False) -> dict:
+             input_mode: str = "notice_text", device: str = "cuda", hybrid: bool = False,
+             cards_path: Path | None = None, lexical_cards_path: Path | None = None) -> dict:
     if out.exists():
         raise FileExistsError(f"Выберите новый каталог оценки: {out}")
     if config["top_k"] != 100:
         raise ValueError("В этом отчёте фиксирована метрика @100; top_k должен быть 100")
     folder = data / split
-    cards = parquet.read_table(folder / "cards.parquet").to_pylist()
+    source_cards = cards_path or folder / "cards.parquet"
+    cards = parquet.read_table(source_cards).to_pylist()
     if not cards:
         raise ValueError("История не содержит карточек поставщиков")
     with duckdb.connect() as con:
@@ -116,6 +118,9 @@ def evaluate(data: Path, out: Path, split: str, model_id: str, config: dict,
             ORDER BY hash(lot_id, {int(config['seed'])}) {limit}
         """).fetch_arrow_table().to_pylist()
     targets = parquet.read_table(folder / "targets.parquet").to_pylist()
+    history_rows = parquet.read_table(folder / "supplier_stats.parquet").to_pylist()
+    history_counts = {row["supplier_inn"]: int(row["participations"])
+                      for row in history_rows}
     winners = {}
     for row in targets:
         if row["is_winner"] and not row["label_conflict"]:
@@ -166,6 +171,7 @@ def evaluate(data: Path, out: Path, split: str, model_id: str, config: dict,
             config["query_instruction"],
             device,
             quantization=config.get("quantization", "none"),
+            card_max_length=int(config.get("card_max_length", config["max_length"])),
         )
         encoder.model.eval()
         timings["model_load_seconds"] = round(time.monotonic() - model_start, 2)
@@ -200,11 +206,16 @@ def evaluate(data: Path, out: Path, split: str, model_id: str, config: dict,
         base_revision = encoder.base_revision
         dense_predictions = [p[:100] for p in predictions]
         if hybrid:
-            vectorizer, lexical_profiles = lexical_index(profile_texts, "bm25")
+            lexical_cards = (parquet.read_table(lexical_cards_path).to_pylist()
+                             if lexical_cards_path else cards)
+            lexical_texts = [c["profile_text"] for c in lexical_cards]
+            lexical_inns = [c["supplier_inn"] for c in lexical_cards]
+            lexical_cap = max(np.unique(lexical_inns, return_counts=True)[1])
+            vectorizer, lexical_profiles = lexical_index(lexical_texts, "bm25")
             lexical_queries = vectorizer.transform(texts).sign()
             predictions = [reciprocal_rank_fusion(
                 dense, unique_suppliers((lexical_profiles @ lexical_queries[i].T).toarray().ravel(),
-                                        inns, 300, int(card_cap), True))
+                                        lexical_inns, 300, int(lexical_cap), True))
                 for i, dense in enumerate(predictions)]
         latencies = []
         with torch.inference_mode():
@@ -216,7 +227,7 @@ def evaluate(data: Path, out: Path, split: str, model_id: str, config: dict,
                 if hybrid:
                     lexical = unique_suppliers(
                         (lexical_profiles @ lexical_queries[i].T).toarray().ravel(),
-                        inns, 300, int(card_cap), True)
+                        lexical_inns, 300, int(lexical_cap), True)
                     reciprocal_rank_fusion(dense, lexical)
                 latencies.append(time.monotonic() - request_start)
         if latencies:
@@ -235,14 +246,19 @@ def evaluate(data: Path, out: Path, split: str, model_id: str, config: dict,
                 "peak_vram_reserved_gib": round(torch.cuda.max_memory_reserved() / 2**30, 2),
             })
     rows = []
-    for query, candidates in zip(queries, predictions, strict=True):
+    for row_index, (query, candidates) in enumerate(zip(queries, predictions, strict=True)):
         winner_list = winners.get(query["lot_id"], [])
         winner = winner_list[0] if len(winner_list) == 1 and not query["label_conflict"] else None
         participants = query["known_positive_inns"]
         rows.append({
             "lot_id": query["lot_id"], "candidate_inns": candidates,
+            "dense_candidate_inns": (dense_predictions[row_index]
+                                      if dense_predictions is not None else None),
+            "procedure_group": query.get("procedure_group") or ("lot:" + query["lot_id"]),
             "participants": participants, "winner_inn": winner,
             "has_unseen_supplier": any(inn not in known_inns for inn in participants),
+            "has_low_history_supplier": any(1 <= history_counts.get(inn, 0) <= 5
+                                            for inn in participants),
             "multiposition": query["product_count"] > 1,
         })
     report = {
@@ -250,11 +266,17 @@ def evaluate(data: Path, out: Path, split: str, model_id: str, config: dict,
         "split": split, "config": config, "input_mode": input_mode,
         "hybrid": hybrid,
         "data_manifest_sha256": sha256(data / "manifest.json"),
-        "cards_sha256": sha256(folder / "cards.parquet"),
+        "cards_sha256": sha256(source_cards),
+        "lexical_cards_sha256": sha256(lexical_cards_path or source_cards) if hybrid else None,
         "query_sample_sha256": hashlib.sha256(
             json.dumps([q["lot_id"] for q in queries]).encode()).hexdigest(),
+        "procedure_sample_sha256": hashlib.sha256(
+            json.dumps([q.get("procedure_group") for q in queries]).encode()).hexdigest(),
         "all": summarize(rows),
         "with_unseen_supplier": summarize([r for r in rows if r["has_unseen_supplier"]]),
+        "with_low_history_supplier": summarize(
+            [r for r in rows if r["has_low_history_supplier"]]
+        ),
         "multiposition": summarize([r for r in rows if r["multiposition"]]),
         "duration_seconds": round(time.monotonic() - started, 2),
         "card_count": len(cards), "supplier_count": len(known_inns),
@@ -285,10 +307,14 @@ def main() -> None:
     parser.add_argument("--split", choices=["validation", "test"], default="validation")
     parser.add_argument("--model", default="bm25", help="tfidf, bm25, HF model id или путь к адаптеру")
     parser.add_argument("--hybrid", action="store_true", help="BM25 + dense с RRF")
+    parser.add_argument("--cards", type=Path, help="Parquet карточек для dense индекса")
+    parser.add_argument("--lexical-cards", type=Path,
+                        help="Зафиксированные карточки BM25 для гибридного поиска")
     parser.add_argument("--config", type=Path, default=Path("ml/configs/retrieval.toml"))
     parser.add_argument("--input-mode", choices=["notice_text", "known_products"], default="notice_text")
     parser.add_argument("--device", choices=["cuda", "cpu"], default="cuda")
     parser.add_argument("--batch-size", type=int)
+    parser.add_argument("--card-max-length", type=int)
     parser.add_argument("--quantization", choices=["none", "nf4"], default="none")
     parser.add_argument("--gpu-memory-fraction", type=float)
     parser.add_argument("--cpu-threads", type=int)
@@ -296,6 +322,8 @@ def main() -> None:
     config = read_config(args.config)
     if args.batch_size is not None:
         config["batch_size"] = args.batch_size
+    if args.card_max_length is not None:
+        config["card_max_length"] = args.card_max_length
     if args.gpu_memory_fraction is not None:
         config["gpu_memory_fraction"] = args.gpu_memory_fraction
     if args.cpu_threads is not None:
@@ -306,7 +334,8 @@ def main() -> None:
     if config["batch_size"] < 1 or not 0 < config["gpu_memory_fraction"] <= 1:
         parser.error("batch-size > 0; 0 < gpu-memory-fraction <= 1")
     print(evaluate(args.data, args.out, args.split, args.model,
-                   config, args.input_mode, args.device, args.hybrid))
+                   config, args.input_mode, args.device, args.hybrid, args.cards,
+                   args.lexical_cards))
 
 
 if __name__ == "__main__":

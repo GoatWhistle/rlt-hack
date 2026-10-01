@@ -41,7 +41,8 @@ def pool(hidden, mask, kind: str):
 
 class TextEncoder:
     def __init__(self, model_id: str, max_length: int, instruction: str, device: str = "cuda",
-                 offline: bool = True, quantization: str = "none"):
+                 offline: bool = True, quantization: str = "none",
+                 card_max_length: int | None = None):
         model_path = Path(model_id)
         adapter = model_path.is_dir() and (model_path / "adapter_config.json").exists()
         metadata = {}
@@ -54,6 +55,7 @@ class TextEncoder:
         self.model_id = base_id
         self.device = device
         self.max_length = max_length
+        self.card_max_length = card_max_length or max_length
         self.instruction = metadata.get("query_instruction", instruction)
         dtype = torch.bfloat16 if device == "cuda" and torch.cuda.is_bf16_supported() else torch.float32
         source = base_id if adapter else model_id
@@ -100,7 +102,8 @@ class TextEncoder:
     def __call__(self, texts: list[str], query: bool):
         texts = [format_text(t, self.kind, query, self.instruction) for t in texts]
         tokens = self.tokenizer(
-            texts, padding=True, truncation=True, max_length=self.max_length, return_tensors="pt"
+            texts, padding=True, truncation=True,
+            max_length=self.max_length if query else self.card_max_length, return_tensors="pt"
         ).to(self.device)
         hidden = self.model(**tokens).last_hidden_state
         return pool(hidden, tokens["attention_mask"], self.kind)

@@ -32,6 +32,9 @@ rlt-train-encoder = "rlt_ml.encoder:main"
 rlt-gpu-check = "rlt_ml.gpu_check:main"
 rlt-evaluate-retrieval = "rlt_ml.retrieval:main"
 rlt-cache-models = "rlt_ml.cache_models:main"
+rlt-build-card-variants = "rlt_ml.cards:main"
+rlt-audit-card-variants = "rlt_ml.card_audit:main"
+rlt-compare-card-variants = "rlt_ml.compare_cards:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
