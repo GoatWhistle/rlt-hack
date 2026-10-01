@@ -188,6 +188,20 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 rlt-evaluate-retrieval \
 
 GPU-проверка запускается через `rlt-gpu-check`. Замеры качества и ресурсов, ограничения метрик и фактические результаты ведутся в [журнале экспериментов](ml/EXPERIMENTS.md).
 
+Для оценки CatBoost поверх готового retrieval-пула используйте только validation
+прогнозы и модель, обученную на train. Команда строит признаки по validation-ТРУ
+и считает метрики с пропуском победителя, если его нет в пуле; это oracle-режим
+для upstream предсказания ТРУ:
+
+```bash
+cd /root/rlt/work/ml
+PYTHONPATH=src /root/rlt/.venv312/bin/python -m rlt_ml.candidate_ranker \
+  --data /root/rlt/ready-v1 \
+  --predictions /root/rlt/backups/embedding-results/run-20261001/qwen-4b/predictions.jsonl \
+  --model /root/rlt/runs/ranker-20261001-b/ranker.cbm \
+  --out /root/rlt/runs/full-chain-ranker-validation
+```
+
 ### Эксперимент с карточками поставщиков
 
 Сборка вариантов A–D выполняется на сервере данных рядом с DuckDB; перед ней
