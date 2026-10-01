@@ -127,9 +127,12 @@ def product_seller(tree: Any) -> ProductSeller | None:
     named = _COMPANY_IN_TITLE.search(page.first_text(tree, "title"))
     if not named:
         return None
-    name = named.group(1)
+    name = named.group(1).strip('"«» ')
     confirmed: set[str] = set()
-    for link in tree.cssselect("a[href*='/companies/']"):
+    links = tree.cssselect("a.js-all-reviews[href*='/companies/']") or tree.cssselect(
+        "a[href*='/companies/']"
+    )
+    for link in links:
         match = _COMPANY_LINK.search((link.get("href") or "").split("?")[0].split("#")[0])
         if match and _confirms(link, name):
             confirmed.add(match.group(1))

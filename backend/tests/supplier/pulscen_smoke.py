@@ -20,6 +20,7 @@ from tests.supplier.fixtures import (
     PULSCEN_CARD_AMBIGUOUS,
     PULSCEN_CARD_FOREIGN_LINK,
     PULSCEN_CARD_LINK_IN_BODY,
+    PULSCEN_CARD_REVIEWS_LINK,
     PULSCEN_CARD_WITH_RECOMMENDATIONS,
     PULSCEN_FIRMS_PAGE,
     PULSCEN_FIRMS_PAGE_2,
@@ -106,6 +107,8 @@ async def main() -> None:
     assert ambiguous is None, ambiguous
     foreign = parsing.product_seller(page.parse(PULSCEN_CARD_FOREIGN_LINK, f"{BASE}/p"))
     assert foreign is None, foreign
+    reviews = parsing.product_seller(page.parse(PULSCEN_CARD_REVIEWS_LINK, f"{BASE}/p"))
+    assert reviews == parsing.ProductSeller("99682156", "Региональный Склад"), reviews
     in_body = parsing.product_seller(page.parse(PULSCEN_CARD_LINK_IN_BODY, f"{BASE}/p"))
     assert in_body == parsing.ProductSeller("10", "Верный продавец"), in_body
 

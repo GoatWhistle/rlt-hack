@@ -318,3 +318,11 @@ PULSCEN_CARD_LINK_IN_BODY = """<html><head>
 <a itemprop="seller" href="/companies/10/">Верный продавец</a>
 <a href="/companies/99/">Другой продавец</a>
 </body></html>"""
+
+
+PULSCEN_CARD_REVIEWS_LINK = """<html><head>
+<title>Арматура 10 мм от компании "Региональный Склад"</title>
+</head><body><div class="product-tabber"><div>"Региональный Склад" о компании
+<div class="recent-company-reviews"><a class="js-all-reviews" href="/companies/99682156/reviews">
+Посмотреть все отзывы о компании</a></div></div></div>
+<a href="/companies/55">Региональный Склад Соседний</a></body></html>"""
