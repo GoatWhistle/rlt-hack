@@ -1,7 +1,7 @@
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, StringConstraints
 
 from src.controller.http.schema import CamelModel, UtcDateTime
 from src.controller.search.dto import ContactsDto, HighlightDto, SourceDto
@@ -14,6 +14,7 @@ from src.models.enums import (
     MatchBasis,
     PurchaseOutcome,
 )
+from src.models.procurement import LOT_ID_MAX_LENGTH
 
 MAX_SELECTED_LOTS = 5000
 
@@ -126,4 +127,6 @@ class LotResultsDto(CamelModel):
 class ResultsRequestDto(CamelModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
-    lot_ids: list[str] = Field(max_length=MAX_SELECTED_LOTS)
+    lot_ids: list[Annotated[str, StringConstraints(max_length=LOT_ID_MAX_LENGTH)]] = Field(
+        max_length=MAX_SELECTED_LOTS
+    )

@@ -34,9 +34,13 @@ class SearchTimeoutError(SearchError):
         self.seconds = seconds
 
 
+def _not_found(subject: str, key: object) -> str:
+    return f"{subject} not found" if key is None else f"{subject} {key} not found"
+
+
 class SearchNotFoundError(SearchError):
-    def __init__(self, search_id: object) -> None:
-        super().__init__(f"search {search_id} not found")
+    def __init__(self, search_id: object = None) -> None:
+        super().__init__(_not_found("search", search_id))
         self.search_id = search_id
 
 
@@ -46,8 +50,8 @@ class StorageUnavailableError(ServiceError):
 
 
 class SupplierNotFoundError(ServiceError):
-    def __init__(self, supplier_id: object) -> None:
-        super().__init__(f"supplier {supplier_id} not found")
+    def __init__(self, supplier_id: object = None) -> None:
+        super().__init__(_not_found("supplier", supplier_id))
         self.supplier_id = supplier_id
 
 
@@ -56,8 +60,8 @@ class UploadError(ServiceError):
 
 
 class UploadNotFoundError(UploadError):
-    def __init__(self, upload_id: object) -> None:
-        super().__init__(f"upload {upload_id} not found")
+    def __init__(self, upload_id: object = None) -> None:
+        super().__init__(_not_found("upload", upload_id))
         self.upload_id = upload_id
 
 
@@ -68,7 +72,7 @@ class UploadQueueFullError(UploadError):
 
 
 class LotNotFoundError(UploadError):
-    def __init__(self, upload_id: object, lot_id: str) -> None:
-        super().__init__(f"lot {lot_id} not found in upload {upload_id}")
+    def __init__(self, upload_id: object, lot_id: str | None = None) -> None:
+        super().__init__(f"{_not_found('lot', lot_id)} in upload {upload_id}")
         self.upload_id = upload_id
         self.lot_id = lot_id

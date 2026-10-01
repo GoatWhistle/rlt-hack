@@ -20,7 +20,7 @@ from src.controller.upload.dto import (
 from src.models.candidate import ProductMatch, SupplierCandidate
 from src.models.enums import ItemOrigin
 from src.models.lot_result import LotResult
-from src.models.procurement import RowIssue
+from src.models.procurement import LOT_ID_MAX_LENGTH, LOT_ID_PATTERN, RowIssue
 from src.models.purchase import PurchaseRecord
 from src.models.query_item import QueryItem
 from src.models.upload import (
@@ -30,7 +30,7 @@ from src.models.upload import (
     UploadResults,
     UploadSummary,
 )
-from src.service.errors import UploadNotFoundError
+from src.service.errors import LotNotFoundError, UploadNotFoundError
 
 PRODUCT_ORIGINS: dict[ItemOrigin, ProductOrigin] = {
     ItemOrigin.TEXT: "notice",
@@ -43,7 +43,13 @@ def parse_upload_id(raw: str) -> UUID:
     try:
         return UUID(raw)
     except ValueError as error:
-        raise UploadNotFoundError(raw) from error
+        raise UploadNotFoundError from error
+
+
+def parse_lot_id(upload_id: UUID, raw: str) -> str:
+    if len(raw) > LOT_ID_MAX_LENGTH or not LOT_ID_PATTERN.fullmatch(raw):
+        raise LotNotFoundError(upload_id)
+    return raw
 
 
 def summary_dto(summary: UploadSummary) -> UploadSummaryDto:

@@ -1,7 +1,7 @@
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, StringConstraints
 
 from src.controller.http.schema import CamelModel, UtcDateTime
 from src.models.enums import (
@@ -19,12 +19,16 @@ from src.models.enums import (
 )
 
 FilterItemType = Literal["goods", "work", "service"]
+MAX_REGIONS = 100
+REGION_MAX_LENGTH = 100
 
 
 class FiltersDto(CamelModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
-    regions: list[str] = Field(default_factory=list)
+    regions: list[Annotated[str, StringConstraints(max_length=REGION_MAX_LENGTH)]] = Field(
+        default_factory=list, max_length=MAX_REGIONS
+    )
     item_type: FilterItemType | None = None
 
 

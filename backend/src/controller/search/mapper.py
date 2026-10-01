@@ -47,7 +47,7 @@ def parse_search_id(raw: str) -> UUID:
     try:
         return UUID(raw)
     except ValueError as error:
-        raise SearchNotFoundError(raw) from error
+        raise SearchNotFoundError from error
 
 
 def to_query(dto: SearchRequestDto, locale: Locale) -> SearchQuery:

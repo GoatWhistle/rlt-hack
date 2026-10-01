@@ -12,7 +12,7 @@ def parse_supplier_id(raw: str) -> UUID:
     try:
         return UUID(raw)
     except ValueError as error:
-        raise SupplierNotFoundError(raw) from error
+        raise SupplierNotFoundError from error
 
 
 def offer_dto(card: OfferEvidence) -> OfferDto:

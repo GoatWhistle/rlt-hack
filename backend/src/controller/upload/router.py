@@ -19,6 +19,7 @@ from src.controller.upload.files import receive_file
 from src.controller.upload.mapper import (
     detail_dto,
     lot_detail_dto,
+    parse_lot_id,
     parse_upload_id,
     results_dto,
     summary_dto,
@@ -80,7 +81,8 @@ async def get_lot(
     lot_id: str,
     service: Annotated[ProcurementUploads, Depends(uploading)],
 ) -> LotDetailDto:
-    return lot_detail_dto(await service.lot(parse_upload_id(upload_id), lot_id))
+    upload = parse_upload_id(upload_id)
+    return lot_detail_dto(await service.lot(upload, parse_lot_id(upload, lot_id)))
 
 
 @router.post("/{upload_id}/results", responses=ERRORS)
