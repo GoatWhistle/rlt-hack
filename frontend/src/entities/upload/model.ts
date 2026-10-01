@@ -1,10 +1,10 @@
 import type { RowIssue } from "@/entities/notice/model"
 import type { Recommendation } from "@/entities/recommendation/model"
 
-export const LOT_STATUSES = ["queued", "ready", "needsCheck", "noCandidates"] as const
+export const LOT_STATUSES = ["queued", "ready", "needsCheck", "noCandidates", "failed"] as const
 export type LotStatus = (typeof LOT_STATUSES)[number]
 
-export const RESULT_STATUSES = ["ready", "needsCheck", "noCandidates"] as const
+export const RESULT_STATUSES = ["ready", "needsCheck", "noCandidates", "failed"] as const
 export type ResultStatus = (typeof RESULT_STATUSES)[number]
 
 export type LotSummary = {

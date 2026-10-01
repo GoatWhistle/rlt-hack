@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { createHttpGateway, UPLOADS_PATH } from "@/entities/upload/http"
+import { createHttpGateway, HTTP_MAX_NOTICES, UPLOADS_PATH } from "@/entities/upload/http"
 import type { HttpClient } from "@/shared/api/http-client"
 import { PayloadFormatError } from "@/shared/api/payload"
 import { recommendationFixture } from "../recommendation/fixture"
@@ -10,7 +10,7 @@ const summary = {
   createdAt: "2026-10-01",
   total: 2,
   processed: 1,
-  counts: { ready: 1, needsCheck: 0, noCandidates: 0 },
+  counts: { ready: 1, needsCheck: 0, noCandidates: 0, failed: 0 },
   rejected: 1,
 }
 const lot = {
@@ -33,18 +33,25 @@ describe("the http gateway", () => {
   it("lists, reads and creates uploads", async () => {
     const http = client({ uploads: [summary] })
     const gateway = createHttpGateway(http)
+    expect(gateway.maxNotices).toBe(HTTP_MAX_NOTICES)
+    expect(HTTP_MAX_NOTICES).toBe(5000)
     expect(await gateway.list()).toEqual([{ ...summary, stored: true }])
     expect(http.get).toHaveBeenCalledWith(UPLOADS_PATH, expect.anything())
 
     const detail = createHttpGateway(
       client({
         ...summary,
-        lots: [lot, { id: "11", title: "Paper", status: "queued", products: 0, candidates: 0 }],
+        lots: [
+          lot,
+          { id: "11", title: "Paper", status: "queued", products: 0, candidates: 0 },
+          { id: "12", title: "Ink", status: "failed", products: 0, candidates: 0 },
+        ],
         issues: [{ row: 3, code: "badPrice", value: "x" }],
       }),
     )
     const read = await detail.get("u 1")
     expect(read.lots[0]).toEqual(lot)
+    expect(read.lots[2]?.status).toBe("failed")
     expect(read.issues).toEqual([{ row: 3, code: "badPrice", value: "x" }])
 
     const post = client(summary)
@@ -86,6 +93,10 @@ describe("the http gateway", () => {
     await expect(
       createHttpGateway(client({ uploads: [{ ...summary, total: -1 }] })).list(),
     ).rejects.toBeInstanceOf(PayloadFormatError)
+    const { failed: _, ...withoutFailed } = summary.counts
+    await expect(
+      createHttpGateway(client({ uploads: [{ ...summary, counts: withoutFailed }] })).list(),
+    ).rejects.toThrow("$.uploads[0].counts.failed")
     await expect(
       createHttpGateway(
         client({ ...summary, lots: [{ ...lot, startPrice: "1" }], issues: [] }),

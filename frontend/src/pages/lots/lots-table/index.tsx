@@ -29,11 +29,11 @@ type LotRowProps = {
 function LotRow({ lot, href, selected, onToggle }: LotRowProps) {
   const { t } = useTranslation("lots")
   const { price, number } = useFormatters()
-  const queued = lot.status === "queued"
+  const empty = lot.status === "queued" || lot.status === "failed"
   const amount = lot.startPrice === undefined ? undefined : price(lot.startPrice)
   const compact = [
     amount ?? t("table.priceMissing"),
-    ...(queued
+    ...(empty
       ? []
       : [
           t("table.productCount", { count: lot.products }),
@@ -74,10 +74,10 @@ function LotRow({ lot, href, selected, onToggle }: LotRowProps) {
       </td>
       <td className={clsx(styles.number, styles.wide)}>{amount ?? t("table.noPrice")}</td>
       <td className={clsx(styles.number, styles.wide)}>
-        {queued ? t("table.pending") : number(lot.products)}
+        {empty ? t("table.pending") : number(lot.products)}
       </td>
       <td className={clsx(styles.number, styles.wide)}>
-        {queued ? t("table.pending") : number(lot.candidates)}
+        {empty ? t("table.pending") : number(lot.candidates)}
       </td>
       <td className={styles.compact}>{compact}</td>
     </tr>

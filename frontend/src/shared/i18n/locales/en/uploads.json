@@ -28,6 +28,7 @@
     "ready": "ready: {{count, number}}",
     "needsCheck": "need clarifying: {{count, number}}",
     "noCandidates": "no candidates: {{count, number}}",
+    "failed": "not processed: {{count, number}}",
     "rejected_one": "{{count, number}} row with errors was not processed",
     "rejected_other": "{{count, number}} rows with errors were not processed",
     "notStored": "Will be lost after a reload: the browser ran out of space.",

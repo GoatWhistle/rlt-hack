@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next"
 import type { Product, ProductOrigin } from "@/entities/recommendation/model"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { Icon } from "@/shared/ui/icon"
+import { ResultSection } from "@/shared/ui/result-section"
 import { Tag } from "@/shared/ui/tag"
-import { ResultSection } from "../section"
 import styles from "./styles.module.css"
 
 export function OriginLabel({ origin }: { readonly origin: ProductOrigin }) {

@@ -2,9 +2,9 @@ import { useTranslation } from "react-i18next"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { Icon } from "@/shared/ui/icon"
+import { PanelBlock } from "@/shared/ui/panel-block"
 import { Stack } from "@/shared/ui/stack"
-import { Block } from "../block"
-import { MatchRow, matchRows } from "../match-block"
+import { matchRows, ProductMatchRow } from "../match-block"
 import styles from "./styles.module.css"
 
 export const KEY_CONFIRMATIONS = 3
@@ -21,12 +21,12 @@ export function Confirmations({ company, products }: ConfirmationsProps) {
   const confirmed = rows.filter((row) => row.basis && row.source).slice(0, KEY_CONFIRMATIONS)
   const missing = rows.filter((row) => !row.basis).map((row) => row.product.name)
   return (
-    <Block title={t("evidence.confirmations")}>
+    <PanelBlock title={t("evidence.confirmations")}>
       {confirmed.length > 0 ? (
         <Stack as="ul">
           {confirmed.map((row) => (
             <li key={row.product.id}>
-              <MatchRow row={row} />
+              <ProductMatchRow row={row} />
             </li>
           ))}
         </Stack>
@@ -42,6 +42,6 @@ export function Confirmations({ company, products }: ConfirmationsProps) {
           {t("evidence.unmatched", { count: missing.length, names: list(missing) })}
         </p>
       ) : null}
-    </Block>
+    </PanelBlock>
   )
 }

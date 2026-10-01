@@ -1,0 +1,134 @@
+{
+  "searchId": "1f0c3b5e-6a1d-4c2e-9f7a-2b8d4e6f1a90",
+  "query": {
+    "text": "Крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
+    "locale": "ru",
+    "limit": 20,
+    "filters": {
+      "regions": ["78"],
+      "itemType": "goods"
+    }
+  },
+  "items": [
+    {
+      "id": "i1",
+      "name": "Крупа гречневая ядрица",
+      "okpd2": "",
+      "itemType": "goods",
+      "origin": "text",
+      "quantity": { "value": "500", "unit": "кг" }
+    },
+    {
+      "id": "i2",
+      "name": "Рис шлифованный",
+      "okpd2": "",
+      "itemType": "goods",
+      "origin": "text",
+      "quantity": { "value": "200", "unit": "кг" }
+    }
+  ],
+  "candidates": [
+    {
+      "rank": 1,
+      "id": "6c1e2f3a-4b5c-4d6e-8f70-81a2b3c4d5e6",
+      "name": "ООО «Северный Провиант»",
+      "inn": "7801234567",
+      "region": "78",
+      "role": "supplierDistributor",
+      "roleSource": {
+        "kind": "catalog",
+        "title": "Каталог поставщиков",
+        "url": "https://catalog.example.org/companies/severny-proviant",
+        "checkedAt": "2026-09-28T10:00:00Z"
+      },
+      "status": "recommended",
+      "checkReasons": [],
+      "matches": [
+        {
+          "itemId": "i1",
+          "basis": "stock",
+          "offerId": "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d",
+          "source": {
+            "kind": "price",
+            "title": "Прайс-лист компании",
+            "url": "https://severny-proviant.example.org/price/grechka",
+            "checkedAt": "2026-09-29T08:00:00Z"
+          }
+        },
+        {
+          "itemId": "i2",
+          "basis": "catalog",
+          "offerId": "8b7c6d5e-4f3a-4b2c-8d1e-0f9a8b7c6d5e",
+          "source": {
+            "kind": "catalog",
+            "title": "Каталог поставщиков",
+            "url": "https://catalog.example.org/products/ris-shlifovanny",
+            "checkedAt": "2026-09-28T10:00:00Z"
+          }
+        }
+      ],
+      "history": {
+        "similarPurchases": 11,
+        "wins": 4,
+        "records": [
+          {
+            "lotId": "32514850391-1",
+            "title": "Поставка круп для школьного питания",
+            "outcome": "winner",
+            "itemIds": ["i1"]
+          }
+        ]
+      },
+      "highlights": [
+        { "code": "coversItems", "params": { "matched": 2, "total": 2 } },
+        { "code": "inStock", "params": { "count": 1 } },
+        { "code": "pastWins", "params": { "count": 4 } }
+      ],
+      "score": {
+        "total": 0.82,
+        "fusion": 0.9,
+        "coverage": 1.0,
+        "evidence": 0.8,
+        "history": 0.4,
+        "channels": [{ "channel": "lexical", "rank": 1 }]
+      },
+      "contacts": {
+        "site": "https://severny-proviant.example.org",
+        "email": "sales@severny-proviant.example.org",
+        "phone": "+7 812 000-00-00"
+      }
+    },
+    {
+      "rank": 2,
+      "id": "7d2f3a4b-5c6d-4e7f-9081-92b3c4d5e6f7",
+      "name": "АО «Зерновой Двор»",
+      "inn": "",
+      "region": "",
+      "role": "unknown",
+      "roleSource": null,
+      "status": "check",
+      "checkReasons": ["innMissing", "roleUnconfirmed", "noCurrentOffer", "rangeUnconfirmed"],
+      "matches": [
+        { "itemId": "i1", "basis": "inferred", "offerId": null, "source": null }
+      ],
+      "history": { "similarPurchases": 3, "wins": 0, "records": [] },
+      "highlights": [{ "code": "similarPurchases", "params": { "count": 3 } }],
+      "score": {
+        "total": 0.31,
+        "fusion": 0.45,
+        "coverage": 0.5,
+        "evidence": 0.0,
+        "history": 0.2,
+        "channels": [{ "channel": "history", "rank": 1 }]
+      },
+      "contacts": { "site": "", "email": "", "phone": "" }
+    }
+  ],
+  "pipeline": {
+    "version": "search-v1",
+    "channels": ["lexical", "history"],
+    "asOf": "2026-10-01T12:00:00Z"
+  },
+  "warnings": [],
+  "createdAt": "2026-10-01T12:00:00Z"
+}

@@ -31,9 +31,16 @@ def _connect(config: ClickHouseConfig) -> Any:
             secure=config.secure,
             connect_timeout=config.connect_timeout,
             send_receive_timeout=config.query_timeout,
-            settings={"insert_deduplicate": 0},
+            settings=_settings(config),
         )
     except ClickHouseError as error:
         raise RepositoryUnavailableError(str(error)) from error
     except OSError as error:
         raise RepositoryUnavailableError(str(error)) from error
+
+
+def _settings(config: ClickHouseConfig) -> dict[str, int]:
+    settings = {"insert_deduplicate": 0}
+    if config.max_threads > 0:
+        settings["max_threads"] = config.max_threads
+    return settings

@@ -1,0 +1,63 @@
+{
+  "status": {
+    "recommended": "Recommended",
+    "check": "Needs checking"
+  },
+  "role": {
+    "manufacturer": "Manufacturer",
+    "distributor": "Distributor",
+    "supplier": "Supplier",
+    "supplierDistributor": "Supplier · distributor",
+    "serviceProvider": "Service provider",
+    "unknown": "Role not determined"
+  },
+  "basis": {
+    "stock": "Stock confirmed",
+    "catalog": "In the catalog",
+    "inferred": "System assumption"
+  },
+  "notFound": "Not found",
+  "noSource": "No source given",
+  "checkedAt": "checked {{date}}",
+  "sourceKind": {
+    "catalog": "Catalog",
+    "price": "Price list",
+    "purchase": "Purchase",
+    "registry": "Registry"
+  },
+  "outcome": {
+    "winner": "Winner",
+    "participant": "Participant"
+  },
+  "meter": {
+    "label": "Match {{matched, number}} of {{total, number}}: stock confirmed — {{stock, number}}, in the catalog — {{catalog, number}}, assumed — {{inferred, number}}"
+  },
+  "contacts": {
+    "site": "Website",
+    "email": "Email",
+    "phone": "Phone",
+    "none": "No contacts found in the sources."
+  },
+  "highlight": {
+    "coversItems": "Covers {{matched, number}} of {{total, number}} items",
+    "inStock_one": "In stock for {{count, number}} item",
+    "inStock_other": "In stock for {{count, number}} items",
+    "hasPrice_one": "Price listed for {{count, number}} item",
+    "hasPrice_other": "Price listed for {{count, number}} items",
+    "pastWins_one": "{{count, number}} win in similar purchases",
+    "pastWins_other": "{{count, number}} wins in similar purchases",
+    "similarPurchases_one": "{{count, number}} similar purchase",
+    "similarPurchases_other": "{{count, number}} similar purchases",
+    "verifiedIdentity": "Company details verified"
+  },
+  "checkReason": {
+    "innMissing": "No INN: the company cannot be identified for certain.",
+    "identityConflict": "Sources disagree about the company details.",
+    "roleUnconfirmed": "No source confirms what the company does: manufacturer, distributor or supplier.",
+    "noCurrentOffer": "No current offer: the products were found only in older records.",
+    "rangeUnconfirmed": "The range is not confirmed for every item.",
+    "sourceUnavailable": "One of the sources did not answer during the check."
+  },
+  "inn": "INN {{inn}}",
+  "noInn": "INN unknown"
+}

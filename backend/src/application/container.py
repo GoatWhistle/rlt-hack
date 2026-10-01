@@ -11,7 +11,6 @@
 
 from types import TracebackType
 
-from src.adapter.clock import SystemClock
 from src.adapter.repository.clickhouse.archive import ClickHouseArchiveRepository
 from src.adapter.repository.clickhouse.client import create_client
 from src.adapter.repository.clickhouse.gateway import ConnectGateway
@@ -19,6 +18,7 @@ from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepositor
 from src.adapter.repository.clickhouse.migrator import Migrator
 from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
 from src.adapter.repository.clickhouse.package import ClickHousePackageRepository
+from src.adapter.repository.clickhouse.pool.gateway import GatewayPool
 from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
 from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
 from src.adapter.repository.clickhouse.versions import VersionSequencer
@@ -49,6 +49,7 @@ from src.adapter.supplier.texzakaz_web import PROVIDER_NAME as TEXZAKAZ
 from src.adapter.supplier.texzakaz_web import TexZakazWebProvider
 from src.adapter.supplier.yml_feed import PROVIDER_NAME as YML_FEED
 from src.adapter.supplier.yml_feed import YmlFeedProvider
+from src.adapter.system.clock import SystemClock
 from src.application.config import AppConfig
 from src.models.enums import SourceType
 from src.models.source import Source
@@ -58,6 +59,8 @@ from src.service.supplier.enrich import OfferEnrichmentService
 from src.service.supplier.protocols import SupplierProvider
 from src.service.supplier.reidentify import OfferReidentifyService
 from src.service.supplier.worker import SupplierSyncWorker
+
+JOB_POOL_SIZE = 1
 
 
 def _source(name: str, base_url: str, source_type: SourceType, provider_name: str) -> Source:
@@ -74,7 +77,8 @@ class Container:
     def __init__(self, config: AppConfig) -> None:
         self._config = config
         self._versions = VersionSequencer()
-        self._gateway: ConnectGateway | None = None
+        self._gateway: GatewayPool | None = None
+        self._api_gateway: GatewayPool | None = None
         # Справочники читаются один раз на процесс: они не меняются на ходу.
         self._normalizer: OfferNormalizer | None = None
         self._classifier: OfferClassifier | None = None
@@ -83,10 +87,18 @@ class Container:
     def config(self) -> AppConfig:
         return self._config
 
-    async def gateway(self) -> ConnectGateway:
+    async def gateway(self) -> GatewayPool:
         if self._gateway is None:
-            self._gateway = ConnectGateway(await create_client(self._config.clickhouse))
+            self._gateway = GatewayPool(self._open_gateway, JOB_POOL_SIZE)
         return self._gateway
+
+    async def api_gateway(self) -> GatewayPool:
+        if self._api_gateway is None:
+            self._api_gateway = GatewayPool(self._open_gateway, self._config.clickhouse.pool_size)
+        return self._api_gateway
+
+    async def _open_gateway(self) -> ConnectGateway:
+        return ConnectGateway(await create_client(self._config.clickhouse))
 
     async def migrator(self) -> Migrator:
         return Migrator(await self.gateway(), database=self._config.clickhouse.database)
@@ -348,9 +360,11 @@ class Container:
         )
 
     async def aclose(self) -> None:
-        if self._gateway is not None:
-            await self._gateway.close()
-            self._gateway = None
+        pools = [pool for pool in (self._gateway, self._api_gateway) if pool is not None]
+        self._gateway = None
+        self._api_gateway = None
+        for pool in pools:
+            await pool.aclose()
 
     async def __aenter__(self) -> "Container":
         return self

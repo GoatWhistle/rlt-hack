@@ -1,12 +1,13 @@
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import type { Company, MatchBasis, Product } from "@/entities/recommendation/model"
+import type { MatchBasis } from "@/entities/evidence/model"
+import { SegmentMeter } from "@/entities/evidence/ui/segment-meter"
+import type { Company, Product } from "@/entities/recommendation/model"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { Caption } from "@/shared/ui/caption"
 import { Dialog } from "@/shared/ui/dialog"
 import { ScrollRegion } from "@/shared/ui/scroll-region"
-import { SegmentMeter } from "../segment-meter"
-import { useRoleText, useStatusText } from "../status"
+import { companySegments, useClarifyItems, useRoleText, useStatusText } from "../status"
 import styles from "./styles.module.css"
 
 export type CompareDialogProps = {
@@ -24,8 +25,10 @@ type Criterion = {
 
 export function CompareDialog({ open, companies, products, onClose }: CompareDialogProps) {
   const { t } = useTranslation("lot")
+  const { t: label } = useTranslation("evidence")
   const statusText = useStatusText()
   const roleText = useRoleText()
+  const clarifyItems = useClarifyItems()
   const { list, number } = useFormatters()
   const count = (company: Company, basis: MatchBasis) =>
     number(company.matches.filter((match) => match.basis === basis).length)
@@ -49,13 +52,13 @@ export function CompareDialog({ open, companies, products, onClose }: CompareDia
             matched: company.matches.length,
             total: products.length,
           })}
-          <SegmentMeter company={company} products={products} />
+          <SegmentMeter segments={companySegments(company, products)} />
         </span>
       ),
     },
-    { id: "stock", label: t("evidence.basis.stock"), value: (c) => count(c, "stock") },
-    { id: "catalog", label: t("evidence.basis.catalog"), value: (c) => count(c, "catalog") },
-    { id: "inferred", label: t("evidence.basis.inferred"), value: (c) => count(c, "inferred") },
+    { id: "stock", label: label("basis.stock"), value: (c) => count(c, "stock") },
+    { id: "catalog", label: label("basis.catalog"), value: (c) => count(c, "catalog") },
+    { id: "inferred", label: label("basis.inferred"), value: (c) => count(c, "inferred") },
     { id: "missing", label: t("compare.missing"), value: unmatched },
     { id: "status", label: t("compare.status"), value: statusText },
     {
@@ -67,7 +70,7 @@ export function CompareDialog({ open, companies, products, onClose }: CompareDia
     {
       id: "clarify",
       label: t("compare.clarify"),
-      value: (c) => c.clarify[0] ?? t("compare.none"),
+      value: (c) => clarifyItems(c, products)[0] ?? t("compare.none"),
     },
     { id: "contacts", label: t("compare.contacts"), value: contacts },
     { id: "inn", label: t("profile.inn"), value: (c) => c.inn },

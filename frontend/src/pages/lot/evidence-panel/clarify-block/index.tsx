@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { Caption } from "@/shared/ui/caption"
-import { Fold } from "../fold"
+import { Fold } from "@/shared/ui/fold"
 import styles from "./styles.module.css"
 
 export function ClarifyBlock({ items }: { readonly items: readonly string[] }) {

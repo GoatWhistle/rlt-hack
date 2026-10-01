@@ -8,3 +8,14 @@ export function uploadPath(uploadId: string, search = ""): string {
 export function lotPath(uploadId: string, lotId: string, search = ""): string {
   return `${uploadPath(uploadId)}/lots/${encodeURIComponent(lotId)}${search}`
 }
+
+export const SEARCH_PATH = "/search"
+export const SEARCH_TEXT_PARAM = "q"
+
+export function searchPath(searchId: string): string {
+  return `${SEARCH_PATH}/${encodeURIComponent(searchId)}`
+}
+
+export function searchDraftPath(text: string): string {
+  return `${SEARCH_PATH}?${new URLSearchParams({ [SEARCH_TEXT_PARAM]: text }).toString()}`
+}

@@ -66,6 +66,9 @@ function UploadRow({ upload }: { readonly upload: UploadSummary }) {
           <Tag tone="tentative">
             {t("list.noCandidates", { count: upload.counts.noCandidates })}
           </Tag>
+          {upload.counts.failed > 0 ? (
+            <Tag tone="warning">{t("list.failed", { count: upload.counts.failed })}</Tag>
+          ) : null}
         </span>
         <span className={styles.chevron} aria-hidden="true">
           <Icon name="chevron" />

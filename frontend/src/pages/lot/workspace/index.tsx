@@ -1,21 +1,21 @@
-import { clsx } from "clsx"
-import { type ReactElement, useRef, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Recommendation } from "@/entities/recommendation/model"
 import { useShortlist } from "@/entities/shortlist/store"
-import { useMediaQuery } from "@/shared/media/use-media-query"
 import { EmptyState } from "@/shared/ui/empty-state"
-import { SegmentedControl } from "@/shared/ui/segmented-control"
+import {
+  useWorkspaceView,
+  WorkspaceEmpty,
+  WorkspaceLayout,
+  type WorkspaceView,
+} from "@/shared/ui/workspace-layout"
 import { CompanyList } from "../company-list"
 import { CompareDialog } from "../compare-dialog"
 import { EvidencePanel } from "../evidence-panel"
 import { ProductList } from "../product-list"
 import { ProfilePanel } from "../profile-panel"
-import styles from "./styles.module.css"
 
-export const NARROW_LAYOUT = "(max-width: 47.99rem)"
-const VIEWS = ["products", "companies", "evidence"] as const
-type View = (typeof VIEWS)[number]
+export { NARROW_LAYOUT } from "@/shared/ui/workspace-layout"
 
 export type WorkspaceProps = {
   readonly uploadId: string
@@ -26,14 +26,12 @@ export type WorkspaceProps = {
 export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
   const { t } = useTranslation("lot")
   const { products, companies } = recommendation
-  const narrow = useMediaQuery(NARROW_LAYOUT)
+  const { narrow, view, show, stackRef } = useWorkspaceView()
   const shortlist = useShortlist(uploadId, lotId)
-  const [view, setView] = useState<View>("evidence")
   const [selectedId, setSelectedId] = useState(companies[0]?.id)
   const [filterId, setFilterId] = useState<string | null>(null)
   const [profileOpen, setProfileOpen] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
-  const stackRef = useRef<HTMLDivElement>(null)
 
   const ranks = new Map(companies.map((company, index) => [company.id, index + 1]))
   const filterProduct = products.find((product) => product.id === filterId)
@@ -45,12 +43,6 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
     shown[0] ??
     companies.find((company) => company.id === selectedId)
 
-  function show(next: View) {
-    setView(next)
-    const top = stackRef.current?.getBoundingClientRect().top ?? 0
-    if (top < 0) window.scrollBy({ top })
-  }
-
   function select(id: string) {
     setSelectedId(id)
     if (narrow) show("evidence")
@@ -58,7 +50,7 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
 
   function filter(productId: string | null) {
     setFilterId(productId)
-    if (narrow && productId) show("companies")
+    if (narrow && productId) show("candidates")
   }
 
   const productPane = (
@@ -71,70 +63,61 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
   )
   if (!selected) {
     return (
-      <div className={styles.empty}>
-        {productPane}
+      <WorkspaceEmpty list={productPane}>
         <EmptyState
           icon="search"
           headingLevel={2}
           title={t("noCandidates.title")}
           description={t("noCandidates.text")}
         />
-      </div>
+      </WorkspaceEmpty>
     )
   }
 
-  const companyPane = (
-    <CompanyList
-      companies={shown}
-      ranks={ranks}
-      products={products}
-      selectedId={selected.id}
-      chosen={shortlist.ids}
-      filter={
-        filterProduct ? { name: filterProduct.name, onReset: () => filter(null) } : undefined
-      }
-      onSelect={select}
-      onCompare={() => setCompareOpen(true)}
-    />
-  )
-  const evidencePane = (
-    <EvidencePanel
-      key={selected.id}
-      company={selected}
-      products={products}
-      chosen={shortlist.ids.includes(selected.id)}
-      onChoose={() => shortlist.toggle(selected.id)}
-      onProfile={() => setProfileOpen(true)}
-    />
-  )
-  const panes: Record<View, ReactElement> = {
-    products: productPane,
-    companies: companyPane,
-    evidence: evidencePane,
+  const labels: Record<WorkspaceView, string> = {
+    list: t("views.products"),
+    candidates: t("views.companies"),
+    evidence: t("views.evidence"),
   }
-
   return (
     <>
-      {narrow ? (
-        <div className={styles.stacked} ref={stackRef}>
-          <div className={styles.switcher}>
-            <SegmentedControl
-              block
-              legend={t("views.legend")}
-              value={view}
-              onChange={show}
-              options={VIEWS.map((value) => ({ value, label: t(`views.${value}`) }))}
+      <WorkspaceLayout
+        narrow={narrow}
+        legend={t("views.legend")}
+        labels={labels}
+        view={view}
+        onShow={show}
+        stackRef={stackRef}
+        panes={{
+          list: productPane,
+          candidates: (
+            <CompanyList
+              companies={shown}
+              ranks={ranks}
+              products={products}
+              selectedId={selected.id}
+              chosen={shortlist.ids}
+              filter={
+                filterProduct
+                  ? { name: filterProduct.name, onReset: () => filter(null) }
+                  : undefined
+              }
+              onSelect={select}
+              onCompare={() => setCompareOpen(true)}
             />
-          </div>
-          {panes[view]}
-        </div>
-      ) : (
-        <div className={styles.columns}>
-          <div className={clsx(styles.pane, styles.products)}>{productPane}</div>
-          <div className={styles.pane}>{companyPane}</div>
-          <div className={styles.pane}>{evidencePane}</div>
-        </div>
-      )}
+          ),
+          evidence: (
+            <EvidencePanel
+              key={selected.id}
+              company={selected}
+              products={products}
+              chosen={shortlist.ids.includes(selected.id)}
+              onChoose={() => shortlist.toggle(selected.id)}
+              onProfile={() => setProfileOpen(true)}
+            />
+          ),
+        }}
+      />
       <ProfilePanel
         open={profileOpen}
         company={selected}

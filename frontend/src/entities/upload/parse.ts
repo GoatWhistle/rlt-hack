@@ -15,7 +15,6 @@ import {
   type LotDetail,
   type LotResult,
   type LotSummary,
-  RESULT_STATUSES,
   type UploadDetail,
   type UploadSummary,
 } from "./model"
@@ -57,9 +56,10 @@ export function parseUploadSummary(value: unknown, path = "$"): UploadSummary {
     total: count(fields, "total", path),
     processed: count(fields, "processed", path),
     counts: {
-      ready: count(counts, RESULT_STATUSES[0], `${path}.counts`),
-      needsCheck: count(counts, RESULT_STATUSES[1], `${path}.counts`),
-      noCandidates: count(counts, RESULT_STATUSES[2], `${path}.counts`),
+      ready: count(counts, "ready", `${path}.counts`),
+      needsCheck: count(counts, "needsCheck", `${path}.counts`),
+      noCandidates: count(counts, "noCandidates", `${path}.counts`),
+      failed: count(counts, "failed", `${path}.counts`),
     },
     rejected: count(fields, "rejected", path),
     stored: true,

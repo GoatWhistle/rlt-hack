@@ -95,7 +95,9 @@ export function LotsControls({
           legend={t("filter.legend")}
           value={filter}
           onChange={onFilter}
-          options={FILTERS.map((value) => ({
+          options={FILTERS.filter(
+            (value) => value !== "failed" || counts.failed > 0 || filter === "failed",
+          ).map((value) => ({
             value,
             label: t(`filter.${value}`),
             count: number(counts[value]),

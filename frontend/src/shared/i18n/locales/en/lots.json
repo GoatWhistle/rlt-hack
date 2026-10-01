@@ -26,7 +26,8 @@
     "all": "All",
     "ready": "Ready",
     "needsCheck": "Need clarifying",
-    "noCandidates": "No candidates"
+    "noCandidates": "No candidates",
+    "failed": "Not processed"
   },
   "table": {
     "caption": "Purchases from {{name}}",
@@ -52,7 +53,8 @@
     "queued": "Queued",
     "ready": "Ready",
     "needsCheck": "Needs clarifying",
-    "noCandidates": "No candidates"
+    "noCandidates": "No candidates",
+    "failed": "Not processed"
   },
   "pages": {
     "label": "Table pages",

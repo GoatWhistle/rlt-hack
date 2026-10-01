@@ -1,0 +1,41 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.lead {
+  width: 2.25rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+.dot {
+  flex-shrink: 0;
+  width: var(--swatch-width);
+  height: var(--swatch-width);
+  border-radius: var(--radius-pill);
+}
+
+.won {
+  background: var(--text-primary);
+}
+
+.took {
+  border: 2px solid var(--text-faint);
+}
+
+.title {
+  flex-grow: 1;
+  min-width: 0;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.outcome {
+  color: var(--text-body);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+}

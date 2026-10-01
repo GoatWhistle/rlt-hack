@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useCheckReasonText, useHighlightText } from "@/entities/evidence/labels"
 import { shortlistsOf } from "@/entities/shortlist/store"
 import { useUploadGateway } from "@/entities/upload/gateway-context"
 import type { LotSummary } from "@/entities/upload/model"
@@ -28,6 +29,7 @@ export function ExportDialog(props: ExportDialogProps) {
   const { open, onClose, uploadId, fileName, lots, selectedIds = [], currentLotId } = props
   const { t } = useTranslation("export")
   const gateway = useUploadGateway()
+  const labels = { checkReason: useCheckReasonText(), highlight: useHighlightText() }
   const initial: LotScope = currentLotId ? "lot" : selectedIds.length > 0 ? "selected" : "file"
   const [lotScope, setLotScope] = useState<LotScope>(initial)
   const [candidates, setCandidates] = useState<CandidateScope>("all")
@@ -55,8 +57,8 @@ export function ExportDialog(props: ExportDialogProps) {
   ]
   const ids = new Set(scopes.find((scope) => scope.value === lotScope)?.ids ?? [])
   const inScope = lots.filter((lot) => ids.has(lot.id))
-  const ready = inScope.filter((lot) => lot.status !== "queued")
-  const pending = inScope.length - ready.length
+  const ready = inScope.filter((lot) => lot.status !== "queued" && lot.status !== "failed")
+  const pending = inScope.filter((lot) => lot.status === "queued").length
   const shortlists = shortlistsOf(uploadId)
   const chosen = ready.reduce((sum, lot) => sum + (shortlists[lot.id]?.length ?? 0), 0)
 
@@ -72,7 +74,7 @@ export function ExportDialog(props: ExportDialogProps) {
       saveTextFile(names.products, productsCsv(results), CSV_TYPE)
       saveTextFile(
         names.suppliers,
-        suppliersCsv(results, candidates === "shortlist" ? shortlists : undefined),
+        suppliersCsv(results, labels, candidates === "shortlist" ? shortlists : undefined),
         CSV_TYPE,
       )
       onClose()

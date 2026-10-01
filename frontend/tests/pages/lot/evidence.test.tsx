@@ -1,20 +1,16 @@
-import { screen, waitFor, within } from "@testing-library/react"
+import { screen, within } from "@testing-library/react"
 import { en } from "@tests/support/dictionaries"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { Company } from "@/entities/recommendation/model"
 import { resetShortlists } from "@/entities/shortlist/store"
 import { NARROW_LAYOUT } from "@/pages/lot/workspace"
 import { LONG_NAME, recommendationFixture } from "../../entities/recommendation/fixture"
-import { lotDetail, openLot } from "./open-lot"
+import { lotDetail, openLot, panel } from "./open-lot"
 
 afterEach(() => {
   resetShortlists()
   Object.assign(window, { matchMedia: undefined })
 })
-
-function panel(name: string | RegExp) {
-  return screen.getByRole("article", { name })
-}
 
 function extraCompanies(count: number): Company[] {
   return Array.from({ length: count }, (_, index) => ({
@@ -23,12 +19,12 @@ function extraCompanies(count: number): Company[] {
     inn: `78000009${index}0`,
     role: "supplier",
     status: "recommended",
-    summary: "Extra.",
+    checkReasons: [],
+    highlights: [],
     matches: [{ productId: "rice", basis: "catalog" }],
     similarPurchases: 0,
     wins: 0,
     purchases: [],
-    clarify: [],
   }))
 }
 
@@ -49,7 +45,7 @@ describe("the candidates column", () => {
     const south = within(companies).getByRole("button", { name: new RegExp(LONG_NAME) })
     expect(within(south).getByText("Product range not confirmed")).toBeInTheDocument()
     const west = within(companies).getByRole("button", { name: /West Trade/ })
-    expect(within(west).getByText(en("companies.status.check", "lot"))).toBeInTheDocument()
+    expect(within(west).getByText(en("status.check", "evidence"))).toBeInTheDocument()
     expect(within(companies).getByText(en("companies.compareHint", "lot"))).toBeInTheDocument()
   })
 
@@ -82,7 +78,14 @@ describe("the grounds panel", () => {
         name: en("evidence.summaryTitle", "lot"),
       }),
     ).toBeInTheDocument()
-    expect(within(grounds).getByText(en("evidence.mainClarify", "lot"))).toBeInTheDocument()
+    expect(
+      within(grounds).getByText(
+        "Covers 5 of 5 items · In stock for 1 item · 4 wins in similar purchases",
+      ),
+    ).toBeInTheDocument()
+    expect(
+      within(grounds).getByText(en("evidence.mainClarify", "lot")).parentElement,
+    ).toHaveTextContent("Confirm availability and price: Rice")
     const confirmations = within(grounds)
       .getByRole("heading", { name: en("evidence.confirmations", "lot") })
       .closest("section")
@@ -90,7 +93,7 @@ describe("the grounds panel", () => {
     const rows = within(confirmations).getAllByRole("listitem")
     expect(rows).toHaveLength(3)
     expect(
-      within(rows[0] as HTMLElement).getByText(en("evidence.basis.stock", "lot")),
+      within(rows[0] as HTMLElement).getByText(en("basis.stock", "evidence")),
     ).toBeInTheDocument()
     expect(within(confirmations).getByRole("link", { name: "Price list" })).toHaveAttribute(
       "href",
@@ -103,8 +106,8 @@ describe("the grounds panel", () => {
     const { user } = await openLot()
     const grounds = panel("North Foods")
     await user.click(within(grounds).getByText(en("evidence.matchesTitle", "lot")))
-    expect(within(grounds).getByText(en("evidence.basis.inferred", "lot"))).toBeVisible()
-    expect(within(grounds).getByText(en("evidence.noSource", "lot"))).toBeVisible()
+    expect(within(grounds).getByText(en("basis.inferred", "evidence"))).toBeVisible()
+    expect(within(grounds).getByText(en("noSource", "evidence"))).toBeVisible()
     await user.click(within(grounds).getByText(en("evidence.purchasesTitle", "lot")))
     expect(within(grounds).getByRole("link", { name: "Lot 42 · Food supply" })).toHaveAttribute(
       "href",
@@ -112,7 +115,14 @@ describe("the grounds panel", () => {
     )
     expect(within(grounds).getByText(en("evidence.purchasesNote", "lot"))).toBeVisible()
     await user.click(within(grounds).getByText(en("evidence.clarifyTitle", "lot")))
-    expect(within(grounds).getByRole("checkbox", { name: "Delivery terms." })).not.toBeChecked()
+    const clarify = within(grounds).getAllByRole("checkbox")
+    expect(clarify.map((box) => box.closest("label")?.textContent)).toEqual([
+      "Confirm availability and price: Rice",
+      "Confirm availability and price: Sugar",
+      "Confirm availability and price: Salt",
+      "Confirm availability and price: Oil",
+    ])
+    expect(clarify[0]).not.toBeChecked()
   })
 
   it("does not hide missing records or missing sources", async () => {
@@ -125,6 +135,9 @@ describe("the grounds panel", () => {
         name: en("evidence.checkTitle", "lot"),
       }),
     ).toBeInTheDocument()
+    expect(
+      within(grounds).getByText(en("checkReason.rangeUnconfirmed", "evidence")),
+    ).toBeInTheDocument()
     expect(within(grounds).getByText(en("evidence.noConfirmations", "lot"))).toBeInTheDocument()
     expect(
       within(grounds).getByText("No records for 4 products: Rice, Sugar, Salt, and Oil"),
@@ -132,89 +145,37 @@ describe("the grounds panel", () => {
     await user.click(within(grounds).getByText(en("evidence.purchasesTitle", "lot")))
     expect(within(grounds).getByText(en("evidence.noPurchases", "lot"))).toBeVisible()
     await user.click(within(grounds).getByText(en("evidence.clarifyTitle", "lot")))
+    expect(
+      within(grounds).getByRole("checkbox", {
+        name: en("clarify.reason.rangeUnconfirmed", "lot"),
+      }),
+    ).toBeVisible()
+    expect(
+      within(grounds).getByRole("checkbox", { name: "Confirm availability and price: Tea" }),
+    ).toBeVisible()
+  })
+
+  it("says when there is nothing to report or clarify", async () => {
+    const { user } = await openLot()
+    await user.click(screen.getByRole("button", { name: /West Trade/ }))
+    const grounds = panel("West Trade")
+    expect(within(grounds).getByText(en("evidence.noHighlights", "lot"))).toBeInTheDocument()
+    expect(within(grounds).queryByText(en("evidence.mainClarify", "lot"))).toBeNull()
+    await user.click(within(grounds).getByText(en("evidence.clarifyTitle", "lot")))
     expect(within(grounds).getByText(en("evidence.noClarify", "lot"))).toBeVisible()
   })
-})
 
-describe("choosing, comparing and the profile", () => {
-  it("compares chosen candidates side by side", async () => {
-    const { user } = await openLot()
-    await user.click(
-      within(panel("North Foods")).getByRole("button", { name: en("evidence.choose", "lot") }),
-    )
-    expect(
-      within(panel("North Foods")).getByRole("button", { name: en("evidence.chosen", "lot") }),
-    ).toBeInTheDocument()
-    await user.click(screen.getByRole("button", { name: /West Trade/ }))
-    await user.click(
-      within(panel("West Trade")).getByRole("button", { name: en("evidence.choose", "lot") }),
-    )
-    await user.click(screen.getByRole("button", { name: "Compare chosen (2)" }))
-    const dialog = await screen.findByRole("dialog", { name: en("compare.title", "lot") })
-    const table = within(dialog).getByRole("table")
-    const headers = within(table).getAllByRole("columnheader")
-    expect(headers.map((cell) => cell.firstChild?.textContent)).toEqual([
-      en("compare.criterion", "lot"),
-      "North Foods",
-      "West Trade",
-    ])
-    expect(headers[1]).toHaveTextContent(en("companies.role.supplier", "lot"))
-    const missing = within(table)
-      .getByRole("rowheader", { name: en("compare.missing", "lot") })
-      .closest("tr")
-    expect(missing).toHaveTextContent("Rice, Sugar, Tea, Salt, and Oil")
-    expect(
-      within(table)
-        .getByRole("rowheader", { name: en("compare.contacts", "lot") })
-        .closest("tr"),
-    ).toHaveTextContent("No records")
-    expect(within(dialog).getByText(en("compare.note", "lot"))).toBeInTheDocument()
-    await user.click(within(dialog).getByRole("button", { name: en("action.close") }))
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
-    expect(screen.getAllByText(en("companies.chosen", "lot"))).toHaveLength(2)
-  })
-
-  it("opens the company profile with requisites, contacts and sources", async () => {
+  it("says the INN is unknown when the company has none", async () => {
     const recommendation = {
       ...recommendationFixture,
       companies: recommendationFixture.companies.map((company, index) =>
-        index === 0
-          ? {
-              ...company,
-              contacts: {
-                site: "https://north.example",
-                email: "a@north.example",
-                phone: "+7 (812) 1",
-              },
-              roleSource: { kind: "registry" as const, title: "Registry card", url: "#reg" },
-            }
-          : company,
+        index === 0 ? { ...company, inn: "" } : company,
       ),
     }
-    const { user } = await openLot(lotDetail({ recommendation }))
-    await user.click(screen.getByRole("button", { name: en("evidence.profile", "lot") }))
-    const profile = await screen.findByRole("dialog", { name: "North Foods" })
-    expect(within(profile).getByRole("link", { name: "a@north.example" })).toHaveAttribute(
-      "href",
-      "mailto:a@north.example",
-    )
-    expect(within(profile).getByRole("link", { name: "+7 (812) 1" })).toHaveAttribute(
-      "href",
-      "tel:+78121",
-    )
-    expect(within(profile).getAllByRole("link", { name: "Registry card" })).toHaveLength(2)
-    expect(within(profile).getByRole("link", { name: "Price list" })).toBeInTheDocument()
-    expect(within(profile).getByText("11 similar · wins: 4")).toBeInTheDocument()
-  })
-
-  it("says when a profile has no contacts, role basis or sources", async () => {
-    const { user } = await openLot()
-    await user.click(screen.getByRole("button", { name: new RegExp(LONG_NAME) }))
-    await user.click(screen.getByRole("button", { name: en("evidence.profile", "lot") }))
-    const profile = await screen.findByRole("dialog")
-    expect(within(profile).getByText(en("profile.noContacts", "lot"))).toBeInTheDocument()
-    expect(within(profile).getByText(en("profile.noRoleBasis", "lot"))).toBeInTheDocument()
-    expect(within(profile).getByText(en("profile.noSources", "lot"))).toBeInTheDocument()
+    await openLot(lotDetail({ recommendation }))
+    const grounds = panel("North Foods")
+    expect(within(grounds).getByText(en("noInn", "evidence"))).toBeInTheDocument()
+    expect(within(grounds).queryByText(/^INN $/)).toBeNull()
   })
 })
 

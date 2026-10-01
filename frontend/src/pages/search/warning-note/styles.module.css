@@ -1,0 +1,27 @@
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: var(--line-width) solid var(--warning-soft);
+  border-radius: var(--radius-md);
+  background: var(--warning-tint);
+  color: var(--warning-ink);
+  font-size: var(--text-xs);
+  animation: var(--motion-fade-in);
+}
+
+.body {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.title {
+  font-weight: var(--weight-semibold);
+}
+
+.list {
+  padding: 0;
+  list-style: none;
+}

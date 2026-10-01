@@ -1,0 +1,9 @@
+.company {
+  display: grid;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.missing {
+  color: var(--warning-text);
+}

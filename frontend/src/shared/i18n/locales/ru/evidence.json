@@ -1,0 +1,71 @@
+{
+  "status": {
+    "recommended": "Рекомендуем",
+    "check": "Требует проверки"
+  },
+  "role": {
+    "manufacturer": "Производитель",
+    "distributor": "Дистрибьютор",
+    "supplier": "Поставщик",
+    "supplierDistributor": "Поставщик · дистрибьютор",
+    "serviceProvider": "Оказывает услуги",
+    "unknown": "Роль не определена"
+  },
+  "basis": {
+    "stock": "Наличие подтверждено",
+    "catalog": "Есть в каталоге",
+    "inferred": "Предположение системы"
+  },
+  "notFound": "Не найдено",
+  "noSource": "Источник не указан",
+  "checkedAt": "проверено {{date}}",
+  "sourceKind": {
+    "catalog": "Каталог",
+    "price": "Прайс-лист",
+    "purchase": "Закупка",
+    "registry": "Реестр"
+  },
+  "outcome": {
+    "winner": "Победитель",
+    "participant": "Участник"
+  },
+  "meter": {
+    "label": "Совпадение {{matched, number}} из {{total, number}}: наличие подтверждено — {{stock, number}}, в каталоге — {{catalog, number}}, предположение — {{inferred, number}}"
+  },
+  "contacts": {
+    "site": "Сайт",
+    "email": "Почта",
+    "phone": "Телефон",
+    "none": "Контакты в источниках не найдены."
+  },
+  "highlight": {
+    "coversItems": "Покрывает {{matched, number}} из {{total, number}} позиций",
+    "inStock_one": "Наличие по {{count, number}} позиции",
+    "inStock_few": "Наличие по {{count, number}} позициям",
+    "inStock_many": "Наличие по {{count, number}} позициям",
+    "inStock_other": "Наличие по {{count, number}} позиции",
+    "hasPrice_one": "Цена по {{count, number}} позиции",
+    "hasPrice_few": "Цены по {{count, number}} позициям",
+    "hasPrice_many": "Цены по {{count, number}} позициям",
+    "hasPrice_other": "Цены по {{count, number}} позиции",
+    "pastWins_one": "{{count, number}} победа в похожих закупках",
+    "pastWins_few": "{{count, number}} победы в похожих закупках",
+    "pastWins_many": "{{count, number}} побед в похожих закупках",
+    "pastWins_other": "{{count, number}} победы в похожих закупках",
+    "similarPurchases_one": "{{count, number}} похожая закупка",
+    "similarPurchases_few": "{{count, number}} похожие закупки",
+    "similarPurchases_many": "{{count, number}} похожих закупок",
+    "similarPurchases_other": "{{count, number}} похожей закупки",
+    "verifiedIdentity": "Реквизиты подтверждены"
+  },
+  "checkReason": {
+    "innMissing": "Нет ИНН: компанию нельзя однозначно определить.",
+    "identityConflict": "Источники расходятся в реквизитах компании.",
+    "roleUnconfirmed": "Ни один источник не подтверждает, кто компания: производитель, дистрибьютор или поставщик.",
+    "noCurrentOffer": "Нет актуального предложения: товары найдены только в старых записях.",
+    "rangeUnconfirmed": "Ассортимент подтверждён не по всем позициям.",
+    "sourceUnavailable": "Один из источников не ответил во время проверки."
+  },
+  "inn": "ИНН {{inn}}",
+  "noInn": "ИНН неизвестен"
+}

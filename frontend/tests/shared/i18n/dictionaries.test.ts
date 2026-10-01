@@ -43,6 +43,7 @@ const TEXT_PARAMS = new Set([
   "query",
   "row",
   "title",
+  "unit",
   "value",
 ])
 const CYRILLIC_ALLOWED_IN_EN = new Set(["common:language.ru"])

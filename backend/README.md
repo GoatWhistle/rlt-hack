@@ -1,12 +1,13 @@
-# Backend: сбор поставщиков и хранилище
+# Backend: HTTP API, сбор поставщиков и хранилище
 
-Локальная векторизация предложений и поиск: [инструкция](../deploy/WORKERS.md).
+Сервис собирает компании и их ассортимент из внешних источников, сохраняет их
+в ClickHouse и отдаёт поиск поставщиков через HTTP API на FastAPI. Код
+полностью асинхронный: источники обходятся конкурентно, запросы API
+обслуживаются одним процессом с общим контейнером зависимостей.
+
+Локальная векторизация предложений: [инструкция](../deploy/WORKERS.md).
 Проверка на искусственных данных: `python tests/embedding/smoke.py`
 в окружении с зависимостями backend и extra `test`.
-
-Сервис собирает компании и их ассортимент из внешних источников и сохраняет их
-в ClickHouse. Код полностью асинхронный: источники обходятся конкурентно, а те
-же сервисы будет вызывать будущее HTTP API на FastAPI.
 
 ## Слои
 
@@ -27,12 +28,24 @@
   базовую единицу, ключ склейки дублей.
 - `src/service/classifier/` — код ОКПД2, рубрика и тип позиции по
   детерминированным каналам; таксономия и каналы разнесены по модулям.
+- `src/adapter/file/notice_csv/` — разбор CSV извещений о закупках.
+- `src/service/supplier_search/` — подбор поставщиков: `SupplierMatcher` (каналы,
+  слияние, обогащение, политика, ранжирование) и тонкая обёртка
+  `SupplierSearchService` для поиска по тексту.
+- `src/service/procurement_upload/` — загрузка файла закупок: деление на
+  закупки, фоновая обработка через тот же `SupplierMatcher`, повторы и
+  дообработка после перезапуска.
 - `src/service/supplier/` — бизнес-логика: `SupplierSyncWorker` запускает
   адаптеры всех включённых источников конкурентно, прогоняет собранный пакет
   через нормализатор и классификатор и сохраняет результат;
   `OfferEnrichmentService` пересчитывает производные значения у уже сохранённых
   позиций. Интерфейсы объявлены в `protocols.py`.
 - `src/controller/job/` — команда запуска джобы и её DTO аргументов.
+- `src/controller/http/` — FastAPI-приложение: `create_app`, middleware,
+  обработчики ошибок, разбор `Accept-Language`; `src/controller/search/`,
+  `src/controller/supplier/`, `src/controller/upload/`, `src/controller/health/` —
+  роуты, DTO и мапперы;
+  `src/controller/api/main.py` — запуск uvicorn.
 - `src/application/` — конфигурация и сборка зависимостей: там объявлены
   источники и подключены их адаптеры.
 - `migration/` — SQL-миграции ClickHouse.
@@ -224,6 +237,140 @@ ProductCenter дополнительно реализует `StreamingSupplierPr
 Блокирующие операции — разбор HTML и XML, чтение CSV, запросы к ClickHouse —
 выполняются в пуле потоков, поэтому событийный цикл свободен.
 
+Запросы к ClickHouse идут через пул клиентов `GatewayPool`
+(`src/adapter/repository/clickhouse/pool/`): клиент драйвера не рассчитан на
+одновременные запросы, поэтому каждый запрос берёт свободного клиента из
+очереди и возвращает его после ответа или ошибки. Клиенты создаются по мере
+надобности, не больше `CLICKHOUSE_POOL_SIZE`, и закрываются все при остановке.
+API получает пул такого размера, и каналы поиска с обогащением кандидатов
+выполняются параллельно; джоба сбора работает с одним клиентом, как и раньше.
+
+## HTTP API
+
+Все маршруты лежат под `/api`; документация OpenAPI — `/api/docs` и
+`/api/openapi.json` (выключается `API_DOCS=false`). Формат запросов и ответов
+зафиксирован примерами в [`contracts/`](../contracts): контрактные тесты
+сверяют с ними DTO и ответы API.
+
+| Метод | Путь | Ответ |
+| --- | --- | --- |
+| `POST` | `/api/searches` | 201, результат поиска и `Location: /api/searches/{id}` |
+| `GET` | `/api/searches/{searchId}` | 200, сохранённый результат |
+| `GET` | `/api/searches?limit=1..50` | 200, последние поиски (по умолчанию 10) |
+| `GET` | `/api/suppliers/{supplierId}` | 200, профиль поставщика и его карточки |
+| `GET` | `/api/uploads?limit=1..50` | 200, последние загрузки с прогрессом (по умолчанию 20) |
+| `POST` | `/api/uploads` | 201, загрузка принята, `Location: /api/uploads/{id}` |
+| `GET` | `/api/uploads/{uploadId}` | 200, загрузка, закупки со статусами и отклонённые строки |
+| `GET` | `/api/uploads/{uploadId}/lots/{lotId}` | 200, закупка, её рекомендация и прогресс загрузки |
+| `POST` | `/api/uploads/{uploadId}/results` | 200, рекомендации выбранных закупок (`{"lotIds": [...]}`) |
+| `GET` | `/api/health/live` | 200, `{"status":"ok"}` |
+| `GET` | `/api/health/ready` | 200 или 503, `{"ready", "components":[{"name","state"}]}` |
+
+Тело поиска: `text` (обязательно), `limit` (1..50, по умолчанию 20) и
+`filters` с `regions` и `itemType` (`goods`, `work`, `service`); лишние поля
+отклоняются. Язык ответа выбирается по `Accept-Language` (`ru` или `en`, по
+умолчанию `ru`). Время в ответах — RFC 3339 UTC с `Z`, количества и цены —
+строки, оценки округлены до 4 знаков.
+
+Каждый ответ содержит `X-Request-Id` (входящий токен `[A-Za-z0-9-]{8,64}`
+сохраняется, иначе выдаётся новый UUID) и `Server-Timing: app;dur=<мс>`.
+Ошибки приходят телом `{"code", "message", "requestId"}`:
+
+| HTTP | `code` | Когда |
+| --- | --- | --- |
+| 422 | `empty_query` | пустой текст |
+| 422 | `query_too_long` | текст длиннее 4000 символов |
+| 422 | `invalid_limit` | `limit` вне 1..50 |
+| 422 | `invalid_request` | тело или параметры не соответствуют схеме |
+| 422 | `query_not_understood` | в тексте не нашлось позиций для поиска |
+| 404 | `search_not_found` | нет поиска с таким id |
+| 404 | `supplier_not_found` | нет поставщика с таким id |
+| 400 | `missing_file` | в multipart нет поля `file` |
+| 413 | `file_too_large` | файл больше `UPLOAD_MAX_BYTES` |
+| 415 | `unsupported_file_type` | не `.csv` или двоичное содержимое (XLSX, XLS, PDF) |
+| 422 | `invalid_file` | пустой файл, нет строк данных, неизвестная кодировка |
+| 422 | `missing_columns` | нет обязательных колонок `lot_id`, `procedure_name` |
+| 422 | `too_many_rows` | строк больше `UPLOAD_MAX_ROWS` |
+| 422 | `no_valid_lots` | ни одна строка не прошла проверку |
+| 404 | `upload_not_found` | нет загрузки с таким id |
+| 404 | `lot_not_found` | в загрузке нет закупки с таким номером |
+| 404 | `not_found` | неизвестный маршрут |
+| 405 | `method_not_allowed` | метод не поддерживается маршрутом |
+| 503 | `search_unavailable` | недоступны все каналы поиска |
+| 504 | `search_timeout` | превышен `SEARCH_TIMEOUT_SECONDS` |
+| 500 | `internal_error` | прочие ошибки, без деталей наружу |
+
+Логи пишутся в JSON; текст поискового запроса в них не попадает — только его
+длина и SHA-256.
+
+```sh
+curl -s -X POST http://localhost:8000/api/searches   -H 'Content-Type: application/json' -H 'Accept-Language: ru'   -d '{"text": "Крупа гречневая ядрица 500 кг; рис шлифованный 200 кг", "limit": 20}'
+curl -s http://localhost:8000/api/searches/<searchId>
+curl -s 'http://localhost:8000/api/searches?limit=5'
+curl -s http://localhost:8000/api/suppliers/<supplierId>
+curl -s http://localhost:8000/api/health/ready
+```
+
+Запуск через Docker Compose из корня репозитория — `docker compose up -d --build api`
+(образ `backend/Dockerfile`, цель `api`); через фронтенд API доступен по
+`http://localhost:8080/api/`. Локально — `uv run api` из `backend/`.
+
+| Переменная | По умолчанию | Назначение |
+| --- | --- | --- |
+| `API_HOST` | `0.0.0.0` | адрес `uv run api` |
+| `API_PORT` | `8000` | порт `uv run api`; в Compose — порт на хосте |
+| `API_DOCS` | `true` | документация OpenAPI |
+| `SEARCH_TIMEOUT_SECONDS` | `8` | таймаут сценария поиска |
+| `SEARCH_RETRIEVAL_DEPTH` | `3` | во сколько раз каналы берут больше кандидатов, чем лимит |
+| `SEARCH_COVERAGE_THRESHOLD` | `0.5` | порог покрытия позиций для статуса `recommended` |
+| `SEARCH_LEXICAL_POOL` | `500` | сколько карточек отбирает лексический поиск |
+| `SEARCH_HISTORY_ENABLED` | `true` | канал поиска по истории закупок |
+| `SEARCH_ML_ENABLED` | `false` | ML-канал поиска |
+| `ML_SERVICE_URL` | `http://ml:8001` | адрес ML-сервиса |
+| `ML_SERVICE_TIMEOUT` | `5` | таймаут запроса к ML-сервису, секунды |
+| `CLICKHOUSE_POOL_SIZE` | `4` | сколько одновременных запросов API отправляет в ClickHouse |
+| `CLICKHOUSE_MAX_THREADS` | `4` | потоков ClickHouse на один запрос; `0` — значение сервера |
+| `UPLOAD_MAX_BYTES` | `10485760` | наибольший размер CSV; nginx пропускает до 12 МБ |
+| `UPLOAD_MAX_ROWS` | `5000` | наибольшее число строк закупок в файле |
+| `UPLOAD_CANDIDATES` | `20` | сколько кандидатов подбирается на закупку |
+| `UPLOAD_CONCURRENCY` | `4` | сколько закупок обрабатывается одновременно |
+| `UPLOAD_ATTEMPTS` | `3` | попыток на закупку, затем статус `failed` |
+| `UPLOAD_LOT_TIMEOUT_SECONDS` | `30` | таймаут обработки одной закупки |
+
+## Загрузка файла закупок
+
+`POST /api/uploads` принимает multipart с полем `file` — CSV извещений в формате
+фронтенда (`frontend/src/entities/notice`): разделитель `;`, `,` или табуляция,
+UTF-8 (с BOM или без) либо Windows-1251, обязательные колонки `lot_id` и
+`procedure_name`, необязательные `subject`, `start_price`, `customer_inn`,
+`publish_date` и прочие. Строки с ошибками (`missingLotId`, `badLotId`,
+`duplicateLot`, `missingTitle`, `badPrice`, `badDate`, `columnCount`) не
+обрабатываются и возвращаются в `issues`; остальные становятся закупками.
+
+Каждая закупка обрабатывается в фоне тем же конвейером, что и поиск по тексту:
+текст предмета (или названия) → позиции через `RuleQueryInterpreter` →
+`SupplierMatcher` → кандидаты с основаниями. Раннер живёт в процессе API
+(`asyncio`, `UPLOAD_CONCURRENCY` воркеров) и стартует в lifespan; очередей и
+брокеров нет. Сбой закупки повторяется `UPLOAD_ATTEMPTS` раз с паузой, затем
+закупка получает статус `failed`. Состояние хранится в ClickHouse
+(миграция `0006_uploads.sql`: `uploads`, `upload_lots`, `upload_results` на
+`ReplacingMergeTree` и представления `*_current`); при старте API закупки без
+результата снова ставятся в очередь, поэтому перезапуск не теряет работу.
+
+Статус закупки: `queued` — ждёт обработки, `ready` — лидер рекомендован,
+`needsCheck` — лидер требует проверки или есть предполагаемые позиции,
+`noCandidates` — кандидатов нет, `failed` — обработать не удалось. Рекомендация
+содержит только коды (`checkReasons`, `highlights`, `basis`, `role`), текст для
+людей строит фронтенд на языке интерфейса. Примеры ответов — в
+[`contracts/upload/`](../contracts/upload).
+
+```sh
+curl -s -F 'file=@notices.csv;type=text/csv' http://localhost:8000/api/uploads
+curl -s http://localhost:8000/api/uploads/<uploadId>
+curl -s http://localhost:8000/api/uploads/<uploadId>/lots/<lotId>
+curl -s -X POST http://localhost:8000/api/uploads/<uploadId>/results   -H 'Content-Type: application/json' -d '{"lotIds": ["<lotId>"]}'
+```
+
 ## Команды
 
 Через Docker Compose из корня репозитория:
@@ -257,7 +404,7 @@ uv run --python 3.13 python main.py reidentify           # перевод на �
 
 Переменные окружения: `CLICKHOUSE_HOST`, `CLICKHOUSE_PORT`, `CLICKHOUSE_USER`,
 `CLICKHOUSE_PASSWORD`, `CLICKHOUSE_DATABASE`, `CLICKHOUSE_SECURE`,
-`TASK_DATA_DIR`, `SUPPLIER_DATASET_PATH`, `SUPPLIER_DATASET_REGION`,
+`CLICKHOUSE_MAX_THREADS`, `TASK_DATA_DIR`, `SUPPLIER_DATASET_PATH`, `SUPPLIER_DATASET_REGION`,
 `SUPPLIER_FEED_URLS`, `SUPPLIER_SITE_URLS`, флаги адаптеров из таблицы выше,
 `SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`,
 `SYNC_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `REFERENCE_DIR`,
@@ -321,9 +468,53 @@ uv run --python 3.13 python tests/supplier/productcenter_live.py \
   --cache-dir /tmp/productcenter-cache --out /tmp/productcenter-report.json
 ```
 
+## Нагрузочный замер
+
+`bench/` — генератор синтетических данных и замер задержки `POST /api/searches`.
+Это инструмент, а не тест; реальные данные он не читает. Генератор наполняет
+ClickHouse запросами `INSERT … SELECT` из словарей категорий: 50 000
+поставщиков (часть без ИНН и с конфликтом идентичности), 300 источников,
+300 000 карточек, сопоставления с каталогом, 100 000 лотов, 300 000 позиций и
+участия с победителями. Замер прогоняет 50 разных текстовых запросов
+последовательно и конкурентно, считает p50/p95/p99, ошибки и RPS, а разбивку
+SQL по стадиям поиска берёт из `system.query_log`.
+
+Скрипт поднимает отдельный проект Compose `rlt-bench` со своим томом, чтобы не
+смешивать синтетику с рабочей базой. Из `backend/`:
+
+```sh
+uv run python -m bench.run --up --build --seed --out bench.json
+uv run python -m bench.run --up --pool-size 1 --max-threads 0
+uv run python -m bench.run --sequential 50 --concurrency 8 --requests 100
+docker compose -p rlt-bench stop
+```
+
+`--seed` наполняет пустую базу и пропускает уже наполненную, `--reset`
+очищает таблицы перед наполнением. `--pool-size` и `--max-threads`
+пересоздают `api` с другими `CLICKHOUSE_POOL_SIZE` и `CLICKHOUSE_MAX_THREADS`.
+Порты по умолчанию — API `8000`, ClickHouse `8123`, поэтому основной проект на
+время замера должен быть остановлен или запущен на других портах.
+
 ## Проверки
 
-Без сервера ClickHouse и без сети:
+Тесты, линтер, форматтер и типы из `backend/`:
+
+```sh
+uv run pytest --cov=src/controller --cov=src.application.config --cov-report=term-missing
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy
+```
+
+Тесты с chDB работают только в Linux. Полный прогон в контейнере — из корня
+репозитория `docker compose --profile tests run --rm backend-tests` или
+напрямую:
+
+```sh
+docker run --rm -v "$PWD/backend:/repo/backend:ro" -v "$PWD/contracts:/repo/contracts:ro"   -v rlt-backend-uv:/root/.cache/uv -w /repo/backend -e UV_PROJECT_ENVIRONMENT=/opt/venv   -e UV_LINK_MODE=copy -e COVERAGE_FILE=/tmp/.coverage -e UV_PYTHON=3.13   ghcr.io/astral-sh/uv:python3.13-bookworm-slim   sh -c "uv sync --all-extras --no-install-project -q && /opt/venv/bin/python -m pytest -p no:cacheprovider"
+```
+
+Smoke-проверки джобы без сервера ClickHouse и без сети:
 
 ```sh
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
@@ -364,20 +555,7 @@ uv run --no-project --python 3.13 --with 'ruff>=0.14' ruff check .
 uv run --no-project --python 3.13 --with 'ruff>=0.14' ruff format .
 ```
 
-## HTTP-поиск и импорт готового индекса
-
-`python -m uvicorn src.controller.search.api:app --host 0.0.0.0 --port 8080`
-запускает `/api/health`, `/api/suppliers/search` и `/api/uploads`.
-CSV содержит `lot_id,procedure_name,subject`; максимум 20 строк и 2 МБ.
-Результаты связаны с cookie сессии и сохраняются в `UPLOADS_DIR`.
-
-`python -m src.controller.search.import_index /data/index` применяет миграции,
-проверяет манифест и импортирует карточки/вектора в ClickHouse. Каталог должен
-содержать `cards.parquet`, `card_vectors.npy`, `report.json`, `manifest.json`.
-`SUPPLIER_INDEX_DIR` задаёт этот каталог для API, `SUPPLIER_INDEX_ID` — SHA-256
-массива векторов. При заданном ID косинусная близость считается в ClickHouse;
-BM25 и RRF объединяют результаты по ИНН. Незавершённый импорт не публикуется
-в реестре готовых индексов. Результаты не заменяются демонстрационными данными.
+## Прокси парсеров
 
 Прокси задаётся только в окружении parser-worker через HTTP_PROXY/HTTPS_PROXY;
 внутренние сервисы исключаются через NO_PROXY. Поддерживается SOCKS5.

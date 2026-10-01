@@ -1,0 +1,13 @@
+.dot {
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: var(--radius-pill);
+}
+
+.filled {
+  background: var(--success);
+}
+
+.hollow {
+  border: 1.5px solid var(--warning-icon);
+}

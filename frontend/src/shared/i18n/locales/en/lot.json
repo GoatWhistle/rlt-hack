@@ -14,6 +14,10 @@
     "title": "No candidates found",
     "text": "No suitable companies in the available records. Check the purchase contents: the products may have been identified imprecisely."
   },
+  "failed": {
+    "title": "This purchase could not be processed",
+    "text": "The system could not pick companies after several attempts. Other purchases from this file are available in the list."
+  },
   "views": {
     "legend": "Review section",
     "products": "Products",
@@ -67,24 +71,16 @@
   },
   "companies": {
     "title": "Candidates",
-    "role": {
-      "manufacturer": "Manufacturer",
-      "distributor": "Distributor",
-      "supplier": "Supplier",
-      "supplierDistributor": "Supplier · distributor",
-      "unknown": "Role not determined"
-    },
     "matchCount": "{{matched, number}} of {{total, number}}",
     "purchases_one": "{{count, number}} purchase",
     "purchases_other": "{{count, number}} purchases",
-    "status": {
-      "recommended": "Recommended",
-      "check": "Needs checking",
-      "historical": "Procurement history"
-    },
     "checkReason": {
+      "innMissing": "No INN",
+      "identityConflict": "Details disagree",
       "roleUnconfirmed": "Role not confirmed",
-      "rangeUnconfirmed": "Product range not confirmed"
+      "noCurrentOffer": "No current offer",
+      "rangeUnconfirmed": "Product range not confirmed",
+      "sourceUnavailable": "Source did not answer"
     },
     "order": "by relevance",
     "filtered": "Candidates with “{{name}}”",
@@ -97,34 +93,15 @@
     "compareHint": "Choose two or more candidates in the grounds to compare them."
   },
   "evidence": {
-    "inn": "INN {{inn}}",
     "summaryTitle": "Why we recommend it",
     "checkTitle": "Why it needs checking",
     "mainClarify": "Key thing to clarify.",
     "matchesTitle": "Match for every product",
     "matchesHint": "by records, not warehouse stock",
-    "basis": {
-      "stock": "Stock confirmed",
-      "catalog": "In the catalog",
-      "inferred": "System assumption"
-    },
-    "notFound": "Not found",
-    "noSource": "No source given",
-    "checkedAt": "checked {{date}}",
-    "sourceKind": {
-      "catalog": "Catalog",
-      "price": "Price list",
-      "purchase": "Purchase",
-      "registry": "Registry"
-    },
     "purchasesTitle": "Purchase history",
     "purchaseLot": "Lot {{id}} · {{title}}",
     "purchasesSummary_one": "{{count, number}} similar · wins: {{wins, number}}",
     "purchasesSummary_other": "{{count, number}} similar · wins: {{wins, number}}",
-    "outcome": {
-      "winner": "Winner",
-      "participant": "Participant"
-    },
     "purchasesNote": "Past participation and wins do not guarantee a future delivery.",
     "noPurchases": "No purchase examples with a source.",
     "clarifyTitle": "What to clarify with the company",
@@ -138,10 +115,8 @@
     "choose": "Choose candidate",
     "chosen": "Remove from chosen",
     "profile": "Company profile",
-    "profileShort": "Profile"
-  },
-  "meter": {
-    "label": "Match {{matched, number}} of {{total, number}}: stock confirmed — {{stock, number}}, in the catalog — {{catalog, number}}, assumed — {{inferred, number}}"
+    "profileShort": "Profile",
+    "noHighlights": "No supporting records."
   },
   "profile": {
     "requisites": "Details",
@@ -150,10 +125,6 @@
     "roleBasis": "Role basis",
     "noRoleBasis": "No basis given",
     "contacts": "Contacts",
-    "site": "Website",
-    "email": "Email",
-    "phone": "Phone",
-    "noContacts": "No contacts found in the sources.",
     "products": "Products and lines of business",
     "history": "Purchase history",
     "sources": "Sources",
@@ -173,19 +144,15 @@
     "unknown": "No records",
     "note": "Past wins do not guarantee a future delivery. Prices and ratings are not shown: there is no confirmed data on them."
   },
-  "history": {
-    "whyFound": "Why this supplier was found",
-    "title": "Examples from procurement history",
-    "source": "Source: historical procurement dataset. OKPD2 category: {{category}}.",
-    "lastDate": "Latest procurement in this profile: {{date}}",
-    "note": "These examples describe historical specialization. Check current availability and supply terms with the company.",
-    "catalog": "Published company products",
-    "checkedAt": "Page read on {{date}}",
-    "examples_one": "{{count}} example",
-    "examples_other": "{{count}} examples",
-    "requestTitle": "Search by description",
-    "requestNote": "“{{title}}”. Candidates match the procurement description as a whole. Individual product items have not yet been extracted.",
-    "companySource": "Company details source",
-    "openSource": "Company page"
+  "clarify": {
+    "reason": {
+      "innMissing": "Request the company's INN and details.",
+      "identityConflict": "Reconcile the details: the sources disagree.",
+      "roleUnconfirmed": "Clarify the role: manufacturer, distributor or supplier.",
+      "noCurrentOffer": "Request a current offer: the products were found only in older records.",
+      "rangeUnconfirmed": "Confirm the range for every product in the purchase.",
+      "sourceUnavailable": "Recheck the records: one of the sources did not answer."
+    },
+    "product": "Confirm availability and price: {{name}}"
   }
 }

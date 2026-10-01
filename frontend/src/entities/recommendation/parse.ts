@@ -1,21 +1,23 @@
 import {
+  parseCheckReasons,
+  parseContacts,
+  parseHighlights,
+  parseSource,
+} from "@/entities/evidence/parse"
+import {
   count,
+  type Fields,
   list,
   oneOf,
-  optionalOneOf,
   optionalText,
-  plainText,
   record,
   text,
   withOptional,
 } from "@/shared/api/payload"
 import {
-  CHECK_REASONS,
   COMPANY_ROLES,
   COMPANY_STATUSES,
   type Company,
-  type Contacts,
-  type History,
   MATCH_BASES,
   ORIGIN_NOTE_CODES,
   type OriginNote,
@@ -25,36 +27,13 @@ import {
   PURCHASE_OUTCOMES,
   type Purchase,
   type Recommendation,
-  SOURCE_KINDS,
-  type Source,
 } from "./model"
 
 export { PayloadFormatError } from "@/shared/api/payload"
 
-function source(value: unknown, path: string): Source | undefined {
-  if (value === undefined || value === null) return undefined
-  const fields = record(value, path)
-  return withOptional(
-    {
-      kind: oneOf(SOURCE_KINDS, fields, "kind", path),
-      title: text(fields, "title", path),
-      url: text(fields, "url", path),
-    },
-    { checkedAt: optionalText(fields, "checkedAt", path) },
-  )
-}
-
-function contacts(value: unknown, path: string): Contacts | undefined {
-  if (value === undefined || value === null) return undefined
-  const fields = record(value, path)
-  return withOptional(
-    {},
-    {
-      site: optionalText(fields, "site", path),
-      email: optionalText(fields, "email", path),
-      phone: optionalText(fields, "phone", path),
-    },
-  )
+function optionalCount(fields: Fields, key: string, path: string): number | undefined {
+  const value = fields[key]
+  return value === undefined || value === null ? undefined : count(fields, key, path)
 }
 
 function originNote(value: unknown, path: string): OriginNote | undefined {
@@ -85,7 +64,7 @@ function match(value: unknown, path: string): ProductMatch {
       productId: text(fields, "productId", path),
       basis: oneOf(MATCH_BASES, fields, "basis", path),
     },
-    { source: source(fields.source, `${path}.source`) },
+    { source: parseSource(fields.source, `${path}.source`) },
   )
 }
 
@@ -94,12 +73,12 @@ function purchase(value: unknown, path: string): Purchase {
   return withOptional(
     {
       title: text(fields, "title", path),
-      year: count(fields, "year", path),
       outcome: oneOf(PURCHASE_OUTCOMES, fields, "outcome", path),
     },
     {
+      year: optionalCount(fields, "year", path),
       lotId: optionalText(fields, "lotId", path),
-      source: source(fields.source, `${path}.source`),
+      source: parseSource(fields.source, `${path}.source`),
     },
   )
 }
@@ -132,18 +111,16 @@ function company(value: unknown, path: string): Company {
       inn: text(fields, "inn", path),
       role: oneOf(COMPANY_ROLES, fields, "role", path),
       status: oneOf(COMPANY_STATUSES, fields, "status", path),
-      summary: text(fields, "summary", path),
+      checkReasons: parseCheckReasons(fields, path),
+      highlights: parseHighlights(fields, path),
       matches: list(fields, "matches", path, match),
-      similarPurchases:
-        fields.similarPurchases === null ? null : count(fields, "similarPurchases", path),
-      wins: fields.wins === null ? null : count(fields, "wins", path),
+      similarPurchases: count(fields, "similarPurchases", path),
+      wins: count(fields, "wins", path),
       purchases: list(fields, "purchases", path, purchase),
-      clarify: list(fields, "clarify", path, plainText),
     },
     {
-      checkReason: optionalOneOf(CHECK_REASONS, fields, "checkReason", path),
-      roleSource: source(fields.roleSource, `${path}.roleSource`),
-      contacts: contacts(fields.contacts, `${path}.contacts`),
+      roleSource: parseSource(fields.roleSource, `${path}.roleSource`),
+      contacts: parseContacts(fields.contacts, `${path}.contacts`),
     },
   )
 }

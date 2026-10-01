@@ -13,7 +13,47 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
 from tests.clickhouse.chdb_gateway import ChdbGateway
-from tests.clickhouse.queries import NEAREST_ITEMS, SUPPLIERS_BY_ITEM
+
+REQUIRED_OBJECTS = {
+    "schema_migrations",
+    "suppliers",
+    "suppliers_current",
+    "sources",
+    "sources_current",
+    "crawl_runs",
+    "offers",
+    "offers_current",
+    "catalog_items",
+    "catalog_items_current",
+    "offer_matches",
+    "offer_matches_current",
+    "embeddings",
+    "embeddings_current",
+    "procurement_lots",
+    "procurement_lots_current",
+    "procurement_items",
+    "procurement_items_current",
+    "lot_participations",
+    "lot_participations_current",
+    "searches",
+    "searches_current",
+}
+SUPPLIERS_BY_CATALOG_ITEM = """
+SELECT s.supplier_id, s.name, o.offer_id
+FROM supplier_search.offer_matches_current AS m
+INNER JOIN supplier_search.offers_current AS o
+    ON o.offer_id = m.offer_id AND o.content_hash = m.offer_content_hash
+INNER JOIN supplier_search.suppliers_current AS s ON s.supplier_id = o.supplier_id
+WHERE m.status = 'accepted' AND m.catalog_item_id = toUUID('{item}')
+"""
+NEAREST_CATALOG_ITEMS = """
+SELECT entity_id, cosineDistance(embedding, {vector}) AS distance
+FROM supplier_search.embeddings_current
+WHERE entity_type = 'catalog_item' AND model_key = '{model_key}'
+    AND dimensions = length({vector})
+ORDER BY distance, entity_id
+LIMIT 10
+"""
 
 
 async def main():
@@ -38,10 +78,9 @@ async def main():
             assert applied == sorted(path.name for path in MIGRATION_DIR.glob("*.sql"))
             # Повторный запуск не выполняет применённые файлы заново.
             assert await migrator.apply_pending() == []
-            objects = rows(
-                "SELECT count() AS n FROM system.tables WHERE database = 'supplier_search'"
-            )
-            assert int(objects[0]["n"]) == 23, objects
+            objects = rows("SELECT name FROM system.tables WHERE database = 'supplier_search'")
+            missing = REQUIRED_OBJECTS - {row["name"] for row in objects}
+            assert not missing, missing
 
             supplier = "00000000-0000-0000-0000-000000000001"
             offer = "00000000-0000-0000-0000-000000000002"
@@ -96,9 +135,7 @@ async def main():
             insert("offer_matches", match)
 
             def find(item):
-                return rows(
-                    SUPPLIERS_BY_ITEM.replace("{catalog_item_id:UUID}", f"toUUID('{item}')")
-                )
+                return rows(SUPPLIERS_BY_CATALOG_ITEM.format(item=item))
 
             assert len(find(first)) == 1
             insert("offer_matches", dict(match, catalog_item_id=second, version=2))
@@ -127,10 +164,11 @@ async def main():
                     assert "valid_vector" in str(exc), str(exc)
                 else:
                     raise AssertionError("Некорректный вектор принят")
-            vector_query = NEAREST_ITEMS.replace(
-                "{query_vector:Array(Float32)}", "CAST([1, 0, 0], 'Array(Float32)')"
-            ).replace("{model_key:String}", "'test-v1'")
-            found = rows(vector_query)
+            found = rows(
+                NEAREST_CATALOG_ITEMS.format(
+                    vector="CAST([1, 0, 0], 'Array(Float32)')", model_key="test-v1"
+                )
+            )
             assert len(found) == 2 and found[0]["entity_id"] == first
             assert abs(found[0]["distance"]) < 1e-6
 

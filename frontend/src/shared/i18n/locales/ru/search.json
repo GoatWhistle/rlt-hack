@@ -1,0 +1,122 @@
+{
+  "loading": "Загружаем поиск",
+  "demoNote": "Демо-данные: компании, ИНН, контакты и ссылки условные.",
+  "home": {
+    "title": "Найти поставщиков",
+    "lead": "Опишите товары или услуги своими словами. LOTIVE выделит позиции и предложит компании — с источниками и тем, что нужно проверить."
+  },
+  "box": {
+    "label": "Опишите, что нужно",
+    "placeholder": "Например: крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
+    "hint": "Enter — искать, Shift+Enter — новая строка",
+    "submit": "Найти поставщиков",
+    "pending": "Ищем",
+    "counter": "{{count, number}} из {{limit, number}} символов",
+    "examples": "Попробуйте пример",
+    "example": {
+      "groats": "Крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
+      "office": "Бумага офисная А4 80 г/м², 300 пачек; ручки шариковые синие, 500 шт",
+      "medical": "Перчатки нитриловые смотровые M, 2000 пар; маски медицинские трёхслойные, 5000 шт"
+    }
+  },
+  "recent": {
+    "title": "Недавние поиски",
+    "empty": "Поисков пока нет. Они появятся здесь, чтобы можно было вернуться к результатам.",
+    "items_one": "{{count, number}} позиция",
+    "items_few": "{{count, number}} позиции",
+    "items_many": "{{count, number}} позиций",
+    "items_other": "{{count, number}} позиции",
+    "candidates_one": "{{count, number}} кандидат",
+    "candidates_few": "{{count, number}} кандидата",
+    "candidates_many": "{{count, number}} кандидатов",
+    "candidates_other": "{{count, number}} кандидата",
+    "recommended_one": "{{count, number}} рекомендуем",
+    "recommended_few": "{{count, number}} рекомендуем",
+    "recommended_many": "{{count, number}} рекомендуем",
+    "recommended_other": "{{count, number}} рекомендуем",
+    "retry": "Повторить"
+  },
+  "header": {
+    "back": "Новый поиск",
+    "edit": "Изменить запрос",
+    "label": "Поисковый запрос",
+    "created": "Поиск от {{date}}"
+  },
+  "views": {
+    "legend": "Раздел результата",
+    "items": "Позиции",
+    "candidates": "Кандидаты",
+    "evidence": "Основания"
+  },
+  "items": {
+    "title": "Позиции",
+    "count_one": "{{count, number}} позиция",
+    "count_few": "{{count, number}} позиции",
+    "count_many": "{{count, number}} позиций",
+    "count_other": "{{count, number}} позиции",
+    "quantity": "{{value}} {{unit}}",
+    "okpd2": "ОКПД2 {{code}}",
+    "covered_one": "{{count, number}} кандидат",
+    "covered_few": "{{count, number}} кандидата",
+    "covered_many": "{{count, number}} кандидатов",
+    "covered_other": "{{count, number}} кандидата",
+    "filter": "Показать кандидатов по позиции «{{name}}»",
+    "origin": {
+      "text": "Из вашего текста",
+      "inferred": "Нужно подтвердить",
+      "user": "Уточнено вами"
+    },
+    "hint": "Выберите позицию, чтобы оставить только кандидатов, у которых она есть."
+  },
+  "candidates": {
+    "title": "Кандидаты",
+    "order": "по релевантности",
+    "filtered": "Кандидаты по позиции «{{name}}»",
+    "resetFilter": "Сбросить",
+    "noMatch": "Ни у одного кандидата нет сведений об этой позиции.",
+    "score": "Релевантность",
+    "scoreValue": "{{value}} из 1",
+    "showMore": "Показать ещё {{count, number}}",
+    "showLess": "Свернуть"
+  },
+  "warning": {
+    "title": "Результат может быть неполным",
+    "channelFailed": "Один из каналов поиска не ответил — часть компаний может отсутствовать.",
+    "enrichmentFailed": "Не удалось загрузить часть сведений о компаниях. Затронутые кандидаты отмечены для проверки.",
+    "archiveFailed": "Поиск не сохранился: позже ссылка не откроется.",
+    "itemsInferred": "Часть позиций добавлена системой. Подтвердите их, прежде чем обращаться к поставщикам."
+  },
+  "evidence": {
+    "highlightsTitle": "Что говорит в пользу",
+    "checkTitle": "Что проверить перед обращением",
+    "matchesTitle": "Совпадение по каждой позиции",
+    "matchesAside": "{{matched, number}} из {{total, number}}",
+    "matchesHint": "по сведениям, а не по складу",
+    "historyTitle": "Опыт закупок",
+    "historyAside_one": "{{count, number}} похожая · побед: {{wins, number}}",
+    "historyAside_few": "{{count, number}} похожие · побед: {{wins, number}}",
+    "historyAside_many": "{{count, number}} похожих · побед: {{wins, number}}",
+    "historyAside_other": "{{count, number}} похожей · побед: {{wins, number}}",
+    "historyNote": "Прошлые участия и победы не гарантируют будущую поставку.",
+    "noRecords": "Примеров закупок нет.",
+    "lot": "Лот {{id}} · {{title}}",
+    "recordItems": "Позиции: {{names}}",
+    "companyTitle": "Компания и контакты",
+    "role": "Роль",
+    "roleBasis": "Основание роли",
+    "noRoleBasis": "Роль не подтверждена источником",
+    "region": "Регион",
+    "profile": "Профиль компании",
+    "profileShort": "Профиль"
+  },
+  "empty": {
+    "title": "Поставщики не найдены",
+    "text": "В доступных сведениях нет совпадений с этими позициями. Назовите товары обобщённо, без брендов и размеров, или запишите каждую позицию с новой строки.",
+    "action": "Изменить запрос"
+  },
+  "missing": {
+    "title": "Поиск не найден",
+    "text": "Ссылка устарела или поиск выполнялся в другом браузере.",
+    "action": "Новый поиск"
+  }
+}

@@ -1,19 +1,10 @@
-import { clsx } from "clsx"
 import { useTranslation } from "react-i18next"
-import type { Company, MatchBasis, Product, Source } from "@/entities/recommendation/model"
+import type { MatchBasis, Source } from "@/entities/evidence/model"
+import { BASIS_ORDER, MatchRow } from "@/entities/evidence/ui/match-row"
+import type { Company, Product } from "@/entities/recommendation/model"
 import { Caption } from "@/shared/ui/caption"
-import { Icon } from "@/shared/ui/icon"
+import { Fold } from "@/shared/ui/fold"
 import { Stack } from "@/shared/ui/stack"
-import { Fold } from "../fold"
-import { SourceLine } from "../source-line"
-import styles from "./styles.module.css"
-
-const BASIS_ORDER: Record<MatchBasis, number> = { stock: 0, catalog: 1, inferred: 2 }
-const BASIS_STYLES: Record<MatchBasis, { marker?: string; label?: string }> = {
-  stock: { marker: styles.stock, label: styles.stockLabel },
-  catalog: { marker: styles.catalog },
-  inferred: { marker: styles.inferred, label: styles.inferredLabel },
-}
 
 export type MatchRowData = {
   readonly product: Product
@@ -31,25 +22,8 @@ export function matchRows(company: Company, products: readonly Product[]): Match
   return [...found, ...missing.map((product) => ({ product }))]
 }
 
-export function MatchRow({ row }: { readonly row: MatchRowData }) {
-  const { t } = useTranslation("lot")
-  const look = row.basis ? BASIS_STYLES[row.basis] : {}
-  return (
-    <div className={styles.row}>
-      <span className={clsx(styles.marker, look.marker)} aria-hidden="true">
-        {row.basis === "stock" ? <Icon name="check" size="sm" /> : null}
-      </span>
-      <div className={styles.body}>
-        <div className={styles.head}>
-          <span className={styles.product}>{row.product.name}</span>
-          <span className={clsx(styles.basis, look.label)}>
-            {row.basis ? t(`evidence.basis.${row.basis}`) : t("evidence.notFound")}
-          </span>
-        </div>
-        {row.basis ? <SourceLine source={row.source} /> : null}
-      </div>
-    </div>
-  )
+export function ProductMatchRow({ row }: { readonly row: MatchRowData }) {
+  return <MatchRow name={row.product.name} basis={row.basis} source={row.source} />
 }
 
 export type MatchBlockProps = {
@@ -70,7 +44,7 @@ export function MatchBlock({ company, products }: MatchBlockProps) {
       <Stack as="ul">
         {matchRows(company, products).map((row) => (
           <li key={row.product.id}>
-            <MatchRow row={row} />
+            <ProductMatchRow row={row} />
           </li>
         ))}
       </Stack>

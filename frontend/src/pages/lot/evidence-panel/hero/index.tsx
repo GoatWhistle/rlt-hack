@@ -1,11 +1,13 @@
 import { clsx } from "clsx"
 import { useTranslation } from "react-i18next"
+import { useCheckReasonText, useInnText } from "@/entities/evidence/labels"
+import { CandidateHero } from "@/entities/evidence/ui/candidate-hero"
+import { SegmentMeter } from "@/entities/evidence/ui/segment-meter"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { Icon } from "@/shared/ui/icon"
-import { StatusTag } from "../../company-list"
-import { SegmentMeter } from "../../segment-meter"
-import { useRoleText } from "../../status"
+import { CompanyStatus } from "../../company-list"
+import { companySegments, useClarifyItems, useRoleText, useSummaryText } from "../../status"
 import styles from "./styles.module.css"
 
 export type HeroProps = {
@@ -17,36 +19,37 @@ export function Hero({ company, products }: HeroProps) {
   const { t } = useTranslation("lot")
   const { number } = useFormatters()
   const roleText = useRoleText()
+  const innText = useInnText()
+  const summaryText = useSummaryText()
+  const reasonText = useCheckReasonText()
+  const clarifyItems = useClarifyItems()
   const recommended = company.status === "recommended"
-  const main = company.clarify[0]
+  const reasons = recommended ? [] : company.checkReasons.map(reasonText)
+  const summary =
+    reasons.length > 0 ? reasons.join(" ") : summaryText(company) || t("evidence.noHighlights")
+  const main = clarifyItems(company, products)[0]
   return (
-    <div className={clsx(styles.hero, company.status === "check" && styles.check)}>
-      <div className={styles.top}>
-        <div className={styles.identity}>
-          <h2 className={styles.name}>{company.name}</h2>
-          <p className={styles.meta}>
-            {roleText(company)} ·{" "}
-            <span className={styles.inn}>{t("evidence.inn", { inn: company.inn })}</span>
-          </p>
-        </div>
-        {products.length > 0 ? (
-          <p className={styles.result}>
-            <span className={styles.score}>
-              {number(company.matches.length)}/{number(products.length)}
-            </span>
-            <span className={styles.scoreLabel}>{t("compare.match")}</span>
-          </p>
-        ) : null}
-      </div>
-      <div className={styles.verdict}>
-        <StatusTag company={company} />
-        <SegmentMeter company={company} products={products} size="lg" />
-      </div>
+    <CandidateHero
+      name={company.name}
+      role={roleText(company)}
+      code={innText(company.inn)}
+      check={!recommended}
+      figure={{
+        value: `${number(company.matches.length)}/${number(products.length)}`,
+        label: t("compare.match"),
+      }}
+      verdict={
+        <>
+          <CompanyStatus company={company} />
+          <SegmentMeter segments={companySegments(company, products)} size="lg" />
+        </>
+      }
+    >
       <div className={styles.reason}>
-        <h3 className={styles.reasonTitle}>
+        <h3 className={clsx(styles.reasonTitle, !recommended && styles.warn)}>
           {recommended ? t("evidence.summaryTitle") : t("evidence.checkTitle")}
         </h3>
-        <p className={styles.summary}>{company.summary}</p>
+        <p className={styles.summary}>{summary}</p>
       </div>
       {main ? (
         <p className={styles.callout}>
@@ -56,6 +59,6 @@ export function Hero({ company, products }: HeroProps) {
           </span>
         </p>
       ) : null}
-    </div>
+    </CandidateHero>
   )
 }

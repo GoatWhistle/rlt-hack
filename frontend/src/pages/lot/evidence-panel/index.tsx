@@ -1,14 +1,14 @@
 import { useTranslation } from "react-i18next"
+import { EvidenceAction, EvidenceFrame } from "@/entities/evidence/ui/evidence-frame"
 import type { Company, Product } from "@/entities/recommendation/model"
-import { Button } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
+import { useClarifyItems } from "../status"
 import { ClarifyBlock } from "./clarify-block"
 import { Confirmations } from "./confirmations"
 import { Hero } from "./hero"
 import { HistoryBlock } from "./history-block"
 import { MatchBlock } from "./match-block"
 import { PurchaseBlock } from "./purchase-block"
-import styles from "./styles.module.css"
 
 export type EvidencePanelProps = {
   readonly company: Company
@@ -26,35 +26,33 @@ export function EvidencePanel({
   onProfile,
 }: EvidencePanelProps) {
   const { t } = useTranslation("lot")
+  const clarifyItems = useClarifyItems()
   return (
-    <article className={styles.panel} aria-label={company.name}>
+    <EvidenceFrame
+      label={company.name}
+      actions={
+        <>
+          <EvidenceAction
+            variant={chosen ? "secondary" : "primary"}
+            icon={chosen ? <Icon name="check" /> : null}
+            label={chosen ? t("evidence.chosen") : t("evidence.choose")}
+            onClick={onChoose}
+          />
+          <EvidenceAction
+            variant="secondary"
+            label={t("evidence.profile")}
+            shortLabel={t("evidence.profileShort")}
+            onClick={onProfile}
+          />
+        </>
+      }
+    >
       <Hero company={company} products={products} />
       {company.history ? <HistoryBlock company={company} /> : null}
       {products.length > 0 ? <Confirmations company={company} products={products} /> : null}
       {products.length > 0 ? <MatchBlock company={company} products={products} /> : null}
-      {!company.history || company.purchases.length > 0 ? (
-        <PurchaseBlock company={company} />
-      ) : null}
-      <ClarifyBlock items={company.clarify} />
-      <div className={styles.actions}>
-        <Button
-          variant={chosen ? "secondary" : "primary"}
-          className={styles.action}
-          onClick={onChoose}
-        >
-          {chosen ? <Icon name="check" /> : null}
-          {chosen ? t("evidence.chosen") : t("evidence.choose")}
-        </Button>
-        <Button
-          variant="secondary"
-          className={styles.action}
-          aria-label={t("evidence.profile")}
-          onClick={onProfile}
-        >
-          <span className={styles.full}>{t("evidence.profile")}</span>
-          <span className={styles.short}>{t("evidence.profileShort")}</span>
-        </Button>
-      </div>
-    </article>
+      <PurchaseBlock company={company} />
+      <ClarifyBlock items={clarifyItems(company, products)} />
+    </EvidenceFrame>
   )
 }

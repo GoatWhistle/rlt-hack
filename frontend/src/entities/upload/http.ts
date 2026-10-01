@@ -9,7 +9,7 @@ import {
 } from "./parse"
 
 export const UPLOADS_PATH = "/uploads"
-export const HTTP_MAX_NOTICES = 20
+export const HTTP_MAX_NOTICES = 5000
 
 function uploadPath(uploadId: string): string {
   return `${UPLOADS_PATH}/${encodeURIComponent(uploadId)}`

@@ -32,7 +32,8 @@
     "all": "Все",
     "ready": "Готово",
     "needsCheck": "Требуют уточнения",
-    "noCandidates": "Нет кандидатов"
+    "noCandidates": "Нет кандидатов",
+    "failed": "Не обработаны"
   },
   "table": {
     "caption": "Закупки из файла {{name}}",
@@ -62,7 +63,8 @@
     "queued": "В очереди",
     "ready": "Готово",
     "needsCheck": "Требует уточнения",
-    "noCandidates": "Нет кандидатов"
+    "noCandidates": "Нет кандидатов",
+    "failed": "Не обработана"
   },
   "pages": {
     "label": "Страницы таблицы",

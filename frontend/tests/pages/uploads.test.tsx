@@ -124,6 +124,7 @@ describe("the list of uploads", () => {
           total: 10,
           processed: 4,
           stored: false,
+          counts: { ready: 2, needsCheck: 1, noCandidates: 0, failed: 1 },
         }),
       ]),
     })
@@ -141,6 +142,8 @@ describe("the list of uploads", () => {
     expect(within(running).getByText("Processed 4 of 10")).toBeInTheDocument()
     expect(within(running).getByRole("progressbar")).toHaveAttribute("aria-valuenow", "4")
     expect(within(running).getByText(en("list.notStored", "uploads"))).toBeInTheDocument()
+    expect(within(running).getByText("not processed: 1")).toBeInTheDocument()
+    expect(within(done).queryByText(/not processed:/)).toBeNull()
     await user.click(screen.getByRole("button", { name: en("list.upload", "uploads") }))
     const dialog = await screen.findByRole("dialog")
     expect(within(dialog).getByLabelText(en("drop.choose", "uploads"))).toBeInTheDocument()

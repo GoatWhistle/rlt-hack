@@ -52,6 +52,76 @@ def _dataset_path() -> Path:
 
 
 @dataclass(frozen=True, slots=True)
+class ApiConfig:
+    host: str = "0.0.0.0"
+    port: int = 8000
+    docs_enabled: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class SearchConfig:
+    timeout_seconds: float = 8.0
+    retrieval_depth_factor: int = 3
+    coverage_threshold: float = 0.5
+    lexical_pool: int = 500
+    history_enabled: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class MlServiceConfig:
+    enabled: bool = False
+    base_url: str = "http://ml:8001"
+    timeout_seconds: float = 5.0
+
+
+@dataclass(frozen=True, slots=True)
+class UploadConfig:
+    max_bytes: int = 10 * 1024 * 1024
+    max_rows: int = 5000
+    candidates_per_lot: int = 20
+    concurrency: int = 4
+    attempts: int = 3
+    lot_timeout_seconds: float = 30.0
+
+
+def _upload_config() -> UploadConfig:
+    return UploadConfig(
+        max_bytes=_int("UPLOAD_MAX_BYTES", 10 * 1024 * 1024),
+        max_rows=_int("UPLOAD_MAX_ROWS", 5000),
+        candidates_per_lot=_int("UPLOAD_CANDIDATES", 20),
+        concurrency=_int("UPLOAD_CONCURRENCY", 4),
+        attempts=_int("UPLOAD_ATTEMPTS", 3),
+        lot_timeout_seconds=_float("UPLOAD_LOT_TIMEOUT_SECONDS", 30.0),
+    )
+
+
+def _api_config() -> ApiConfig:
+    return ApiConfig(
+        host=os.getenv("API_HOST") or "0.0.0.0",
+        port=_int("API_PORT", 8000),
+        docs_enabled=_bool("API_DOCS", True),
+    )
+
+
+def _search_config() -> SearchConfig:
+    return SearchConfig(
+        timeout_seconds=_float("SEARCH_TIMEOUT_SECONDS", 8.0),
+        retrieval_depth_factor=_int("SEARCH_RETRIEVAL_DEPTH", 3),
+        coverage_threshold=_float("SEARCH_COVERAGE_THRESHOLD", 0.5),
+        lexical_pool=_int("SEARCH_LEXICAL_POOL", 500),
+        history_enabled=_bool("SEARCH_HISTORY_ENABLED", True),
+    )
+
+
+def _ml_service_config() -> MlServiceConfig:
+    return MlServiceConfig(
+        enabled=_bool("SEARCH_ML_ENABLED", False),
+        base_url=os.getenv("ML_SERVICE_URL") or "http://ml:8001",
+        timeout_seconds=_float("ML_SERVICE_TIMEOUT", 5.0),
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class AppConfig:
     """Только данные: конфигурация передаётся в контейнер зависимостей целиком."""
 
@@ -98,6 +168,10 @@ class AppConfig:
     productcenter_cache_dir: Path | None = None
     use_moscow_suppliers_provider: bool = False
     moscow_suppliers_export_url: str = ""
+    api: ApiConfig = field(default_factory=ApiConfig)
+    search: SearchConfig = field(default_factory=SearchConfig)
+    ml_service: MlServiceConfig = field(default_factory=MlServiceConfig)
+    upload: UploadConfig = field(default_factory=UploadConfig)
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -109,6 +183,8 @@ class AppConfig:
                 password=os.getenv("CLICKHOUSE_PASSWORD", ""),
                 database=os.getenv("CLICKHOUSE_DATABASE", "supplier_search"),
                 secure=_bool("CLICKHOUSE_SECURE", False),
+                pool_size=_int("CLICKHOUSE_POOL_SIZE", 4),
+                max_threads=_int("CLICKHOUSE_MAX_THREADS", 4),
             ),
             reference_dir=Path(os.getenv("REFERENCE_DIR") or REFERENCE_DIR),
             use_archive_channel=_bool("CLASSIFIER_ARCHIVE_CHANNEL", True),
@@ -145,4 +221,8 @@ class AppConfig:
             ),
             use_moscow_suppliers_provider=_bool("MOSCOW_SUPPLIERS_PROVIDER", False),
             moscow_suppliers_export_url=os.getenv("MOSCOW_SUPPLIERS_EXPORT_URL", ""),
+            api=_api_config(),
+            search=_search_config(),
+            ml_service=_ml_service_config(),
+            upload=_upload_config(),
         )

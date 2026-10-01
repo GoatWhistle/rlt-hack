@@ -7,6 +7,7 @@ const TONES: Record<LotStatus, TagTone> = {
   ready: "success",
   needsCheck: "warning",
   noCandidates: "tentative",
+  failed: "warning",
 }
 
 export function LotStatusTag({ status }: { readonly status: LotStatus }) {

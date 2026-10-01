@@ -13,3 +13,5 @@ class ClickHouseConfig:
     secure: bool = False
     connect_timeout: int = 10
     query_timeout: int = 300
+    pool_size: int = 4
+    max_threads: int = 4

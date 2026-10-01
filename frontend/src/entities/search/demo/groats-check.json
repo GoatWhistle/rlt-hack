@@ -1,0 +1,77 @@
+[
+  {
+    "id": "3c5e7a91-2b4d-4f6a-8b9c-d0e1f2a3b4c5",
+    "name": { "ru": "ИП Кузнецова Анна Сергеевна", "en": "Sole trader Anna Kuznetsova" },
+    "inn": "781234567890",
+    "kpps": [],
+    "region": "78",
+    "identity": "conflict",
+    "role": "supplier",
+    "roleSource": {
+      "kind": "catalog",
+      "title": { "ru": "Каталог поставщиков", "en": "Supplier catalog" },
+      "url": "https://catalog.example.org/companies/kuznetsova",
+      "checkedAt": "2026-09-12T11:00:00Z"
+    },
+    "status": "check",
+    "checkReasons": ["identityConflict"],
+    "matches": [
+      {
+        "itemId": "i2",
+        "basis": "catalog",
+        "offerId": "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d",
+        "source": {
+          "kind": "catalog",
+          "title": { "ru": "Каталог поставщиков", "en": "Supplier catalog" },
+          "url": "https://catalog.example.org/products/ris-kuznetsova",
+          "checkedAt": "2026-09-12T11:00:00Z"
+        },
+        "offer": {
+          "name": { "ru": "Рис шлифованный 1 сорт", "en": "Polished rice, grade 1" },
+          "price": "88.0000",
+          "unit": { "ru": "кг", "en": "kg" },
+          "availability": "unknown"
+        }
+      },
+      { "itemId": "i1", "basis": "inferred", "offerId": null, "source": null }
+    ],
+    "history": {
+      "similarPurchases": 5,
+      "wins": 2,
+      "records": [
+        {
+          "lotId": "32514611870-1",
+          "title": {
+            "ru": "Крупы и макароны для столовой",
+            "en": "Cereals and pasta for a canteen"
+          },
+          "outcome": "winner",
+          "itemIds": ["i2"]
+        }
+      ]
+    },
+    "highlights": [
+      { "code": "coversItems", "params": { "matched": 2, "total": 2 } },
+      { "code": "pastWins", "params": { "count": 2 } }
+    ],
+    "score": { "total": 0.44, "fusion": 0.55, "coverage": 1, "evidence": 0.35, "history": 0.3 },
+    "contacts": { "email": "kuznetsova.trade@example.org" }
+  },
+  {
+    "id": "7d2f3a4b-5c6d-4e7f-9081-92b3c4d5e6f7",
+    "name": { "ru": "АО «Зерновой Двор»", "en": "Zernovoy Dvor JSC" },
+    "inn": "",
+    "kpps": [],
+    "region": "",
+    "identity": "unverified",
+    "role": "unknown",
+    "roleSource": null,
+    "status": "check",
+    "checkReasons": ["innMissing", "roleUnconfirmed", "noCurrentOffer", "rangeUnconfirmed"],
+    "matches": [{ "itemId": "i1", "basis": "inferred", "offerId": null, "source": null }],
+    "history": { "similarPurchases": 3, "wins": 0, "records": [] },
+    "highlights": [{ "code": "similarPurchases", "params": { "count": 3 } }],
+    "score": { "total": 0.31, "fusion": 0.45, "coverage": 0.5, "evidence": 0, "history": 0.2 },
+    "contacts": {}
+  }
+]

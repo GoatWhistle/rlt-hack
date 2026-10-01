@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react"
 import { en, text } from "@tests/support/dictionaries"
-import { renderPage, stubGateway, uploadDetail } from "@tests/support/gateway"
+import { lotSummary, renderPage, stubGateway, uploadDetail } from "@tests/support/gateway"
 import { describe, expect, it, vi } from "vitest"
 import { ApiError } from "@/shared/api/api-error"
 import { LONG_NAME, recommendationFixture } from "../../entities/recommendation/fixture"
@@ -96,6 +96,13 @@ describe("the purchase header", () => {
     const queued = lotDetail({ recommendation: undefined })
     await openLot(queued)
     expect(screen.getByRole("heading", { name: en("queued.title", "lot") })).toBeInTheDocument()
+  })
+
+  it("explains a purchase that could not be processed", async () => {
+    const lot = lotSummary("10", { title: "Food supply", status: "failed" })
+    await openLot(lotDetail({ lot, recommendation: undefined }))
+    expect(screen.getByRole("heading", { name: en("failed.title", "lot") })).toBeInTheDocument()
+    expect(screen.queryByRole("heading", { name: en("queued.title", "lot") })).toBeNull()
   })
 
   it("keeps the products when no candidate was found", async () => {

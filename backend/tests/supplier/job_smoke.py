@@ -19,7 +19,6 @@ from chdb.session import Session
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from src.adapter.clock import SystemClock
 from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepository
 from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
 from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
@@ -34,6 +33,7 @@ from src.adapter.repository.reference import (
 from src.adapter.supplier import identity
 from src.adapter.supplier.supplier_dataset import SupplierDatasetProvider
 from src.adapter.supplier.yml_feed import YmlFeedProvider
+from src.adapter.system.clock import SystemClock
 from src.models.enums import ClassificationMethod, FetchStatus, SourceType, VerificationStatus
 from src.models.source import Source
 from src.service.classifier import OfferClassifier

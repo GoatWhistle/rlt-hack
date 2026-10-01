@@ -1,26 +1,38 @@
+import {
+  CANDIDATE_STATUSES,
+  type CandidateStatus,
+  type CheckReason,
+  type CompanyRole,
+  type Contacts,
+  type Highlight,
+  type MatchBasis,
+  type PurchaseOutcome,
+  type Source,
+} from "@/entities/evidence/model"
+
+export {
+  CHECK_REASONS,
+  type CheckReason,
+  COMPANY_ROLES,
+  type CompanyRole,
+  type Contacts,
+  HIGHLIGHT_CODES,
+  type Highlight,
+  type HighlightCode,
+  MATCH_BASES,
+  type MatchBasis,
+  PURCHASE_OUTCOMES,
+  type PurchaseOutcome,
+  SOURCE_KINDS,
+  type Source,
+  type SourceKind,
+} from "@/entities/evidence/model"
+
+export const COMPANY_STATUSES = CANDIDATE_STATUSES
+export type CompanyStatus = CandidateStatus
+
 export const PRODUCT_ORIGINS = ["notice", "inferred", "user"] as const
 export type ProductOrigin = (typeof PRODUCT_ORIGINS)[number]
-
-export const COMPANY_STATUSES = ["recommended", "check", "historical"] as const
-export type CompanyStatus = (typeof COMPANY_STATUSES)[number]
-
-export const MATCH_BASES = ["stock", "catalog", "inferred"] as const
-export type MatchBasis = (typeof MATCH_BASES)[number]
-
-export const SOURCE_KINDS = ["catalog", "price", "purchase", "registry"] as const
-export type SourceKind = (typeof SOURCE_KINDS)[number]
-
-export const COMPANY_ROLES = [
-  "manufacturer",
-  "distributor",
-  "supplier",
-  "supplierDistributor",
-  "unknown",
-] as const
-export type CompanyRole = (typeof COMPANY_ROLES)[number]
-
-export const CHECK_REASONS = ["roleUnconfirmed", "rangeUnconfirmed"] as const
-export type CheckReason = (typeof CHECK_REASONS)[number]
 
 export const ORIGIN_NOTE_CODES = ["similarPurchases", "userSpecified"] as const
 export type OriginNoteCode = (typeof ORIGIN_NOTE_CODES)[number]
@@ -28,16 +40,6 @@ export type OriginNoteCode = (typeof ORIGIN_NOTE_CODES)[number]
 export type OriginNote =
   | { readonly code: "similarPurchases"; readonly hits: number; readonly total: number }
   | { readonly code: "userSpecified" }
-
-export const PURCHASE_OUTCOMES = ["winner", "participant"] as const
-export type PurchaseOutcome = (typeof PURCHASE_OUTCOMES)[number]
-
-export type Source = {
-  readonly kind: SourceKind
-  readonly title: string
-  readonly url: string
-  readonly checkedAt?: string
-}
 
 export type Product = {
   readonly id: string
@@ -56,27 +58,9 @@ export type ProductMatch = {
 export type Purchase = {
   readonly lotId?: string
   readonly title: string
-  readonly year: number
+  readonly year?: number
   readonly outcome: PurchaseOutcome
   readonly source?: Source
-}
-
-export type Contacts = {
-  readonly site?: string
-  readonly email?: string
-  readonly phone?: string
-}
-
-export type History = {
-  readonly category: string
-  readonly examples: readonly string[]
-  readonly lastDate: string
-}
-
-export type CatalogOffer = {
-  readonly name: string
-  readonly url: string
-  readonly checkedAt: string
 }
 
 export type Company = {
@@ -87,13 +71,12 @@ export type Company = {
   readonly roleSource?: Source
   readonly contacts?: Contacts
   readonly status: CompanyStatus
-  readonly checkReason?: CheckReason
-  readonly summary: string
+  readonly checkReasons: readonly CheckReason[]
+  readonly highlights: readonly Highlight[]
   readonly matches: readonly ProductMatch[]
-  readonly similarPurchases: number | null
-  readonly wins: number | null
+  readonly similarPurchases: number
+  readonly wins: number
   readonly purchases: readonly Purchase[]
-  readonly clarify: readonly string[]
 }
 
 export type Recommendation = {

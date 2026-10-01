@@ -1,0 +1,110 @@
+{
+  "loading": "Loading the search",
+  "demoNote": "Demo data: companies, INNs (Russian taxpayer numbers), contacts and links are placeholders.",
+  "home": {
+    "title": "Find suppliers",
+    "lead": "Describe the goods or services in your own words. LOTIVE picks out the items and suggests companies, with sources and checks for each one."
+  },
+  "box": {
+    "label": "Describe what you need",
+    "placeholder": "For example: buckwheat groats 500 kg; polished rice 200 kg",
+    "hint": "Enter to search, Shift+Enter for a new line",
+    "submit": "Find suppliers",
+    "pending": "Searching",
+    "counter": "{{count, number}} of {{limit, number}} characters",
+    "examples": "Try an example",
+    "example": {
+      "groats": "Buckwheat groats 500 kg; polished rice 200 kg",
+      "office": "Office paper A4 80 gsm, 300 reams; blue ballpoint pens, 500 pcs",
+      "medical": "Nitrile examination gloves size M, 2000 pairs; three-layer medical masks, 5000 pcs"
+    }
+  },
+  "recent": {
+    "title": "Recent searches",
+    "empty": "No searches yet. They will appear here so you can return to the results.",
+    "items_one": "{{count, number}} item",
+    "items_other": "{{count, number}} items",
+    "candidates_one": "{{count, number}} candidate",
+    "candidates_other": "{{count, number}} candidates",
+    "recommended_one": "{{count, number}} recommended",
+    "recommended_other": "{{count, number}} recommended",
+    "retry": "Try again"
+  },
+  "header": {
+    "back": "New search",
+    "edit": "Change the query",
+    "label": "Search query",
+    "created": "Searched {{date}}"
+  },
+  "views": {
+    "legend": "Result section",
+    "items": "Items",
+    "candidates": "Candidates",
+    "evidence": "Grounds"
+  },
+  "items": {
+    "title": "Items",
+    "count_one": "{{count, number}} item",
+    "count_other": "{{count, number}} items",
+    "quantity": "{{value}} {{unit}}",
+    "okpd2": "OKPD2 {{code}}",
+    "covered_one": "{{count, number}} candidate",
+    "covered_other": "{{count, number}} candidates",
+    "filter": "Show candidates for “{{name}}”",
+    "origin": {
+      "text": "From your text",
+      "inferred": "Needs confirming",
+      "user": "Specified by you"
+    },
+    "hint": "Choose an item to keep only the candidates that cover it."
+  },
+  "candidates": {
+    "title": "Candidates",
+    "order": "by relevance",
+    "filtered": "Candidates for “{{name}}”",
+    "resetFilter": "Reset",
+    "noMatch": "No candidate has records for this item.",
+    "score": "Relevance",
+    "scoreValue": "{{value}} out of 1",
+    "showMore": "Show {{count, number}} more",
+    "showLess": "Show fewer"
+  },
+  "warning": {
+    "title": "Results may be incomplete",
+    "channelFailed": "One of the search channels did not answer, so some companies may be missing.",
+    "enrichmentFailed": "Some company details could not be loaded. Affected candidates are marked for checking.",
+    "archiveFailed": "The search was not saved: the link will not open later.",
+    "itemsInferred": "Some items were added by the system. Confirm them before contacting suppliers."
+  },
+  "evidence": {
+    "highlightsTitle": "What speaks for it",
+    "checkTitle": "What to check before contacting",
+    "matchesTitle": "Match for every item",
+    "matchesAside": "{{matched, number}} of {{total, number}}",
+    "matchesHint": "by records, not warehouse stock",
+    "historyTitle": "Purchase history",
+    "historyAside_one": "{{count, number}} similar · wins: {{wins, number}}",
+    "historyAside_other": "{{count, number}} similar · wins: {{wins, number}}",
+    "historyNote": "Past participation and wins do not guarantee a future delivery.",
+    "noRecords": "No purchase examples.",
+    "lot": "Lot {{id}} · {{title}}",
+    "recordItems": "Items: {{names}}",
+    "companyTitle": "Company and contacts",
+    "role": "Role",
+    "roleBasis": "Role basis",
+    "noRoleBasis": "No source confirms the role",
+    "region": "Region",
+    "profile": "Company profile",
+    "profileShort": "Profile"
+  },
+  "empty": {
+    "title": "No suppliers found",
+    "text": "Nothing in the available records matches these items. Try naming the goods more generally, without brands and sizes, or put each item on its own line.",
+    "action": "Change the query"
+  },
+  "missing": {
+    "title": "Search not found",
+    "text": "The link is outdated, or the search was made in another browser.",
+    "action": "New search"
+  }
+}

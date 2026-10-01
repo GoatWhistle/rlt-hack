@@ -1,6 +1,6 @@
 # Поиск поставщиков по тексту: API, домен, сервис, фронтенд
 
-Ветка: `feature/supplier-search-api`. Статус: план, реализация не начата.
+Ветка: `feature/supplier-search-api`. Статус: фазы 0–1 выполнены, фаза 2 — backend на chDB и живом ClickHouse проверен, фронтенд проверен против живого API; ML-канал реализован за флагом, рантайм не подключён; фаза 4 — загрузка CSV закупок работает на общем ядре подбора, проверена на chDB и вживую.
 
 ## 1. Цель
 
@@ -471,47 +471,62 @@ frontend/src/pages/search/
 
 **Фаза 0 — контракт (вместе, первым коммитом, ~полдня).**
 
-- [ ] B: доменные модели раздела 5 с инвариантами и тестами объектов-значений.
-- [ ] B: `service/supplier_search/protocols.py` и сигнатуры `SupplierSearchService` с `raise NotImplementedError` в теле.
-- [ ] A: `contracts/search/request.example.json`, `response.example.json`, `error.example.json`; DTO раздела 8.
-- [ ] Оба: ревью и фиксация. Дальше модели и порты меняются только через согласование.
+- [x] B: доменные модели раздела 5 с инвариантами и тестами объектов-значений.
+- [x] B: `service/supplier_search/protocols.py` и сигнатуры `SupplierSearchService` с `raise NotImplementedError` в теле.
+- [x] A: `contracts/search/request.example.json`, `response.example.json`, `error.example.json`; DTO раздела 8.
+- [x] Оба: ревью и фиксация. Дальше модели и порты меняются только через согласование.
 
 **Фаза 1 — параллельно.**
 
 Агент A:
 
-- [ ] FastAPI-приложение: `create_app`, lifespan с одним `Container`, middleware, обработчики ошибок, health.
-- [ ] `controller/search`: роуты, DTO, маппер, `protocols.SupplierSearching`.
-- [ ] Фейковый `SupplierSearching` в тестах; контрактные тесты: ответ совпадает со схемой `contracts/search/*.json`, все коды ошибок, `X-Request-Id`, `Accept-Language`.
-- [ ] `controller/supplier`: профиль и карточки поставщика.
-- [ ] `pyproject.toml`, `Dockerfile` (две цели: `job` и `api`), сервис `api` в compose, nginx-прокси, README.
-- [ ] Фронтенд: `entities/search` с демо-шлюзом и парсером, тест «демо-ответ проходит parse», `features/search-box`, маршрут `/search`, вынос `candidate-workspace`.
+- [x] FastAPI-приложение: `create_app`, lifespan с одним `Container`, middleware, обработчики ошибок, health.
+- [x] `controller/search`: роуты, DTO, маппер, `protocols.SupplierSearching`.
+- [x] Фейковый `SupplierSearching` в тестах; контрактные тесты: ответ совпадает со схемой `contracts/search/*.json`, все коды ошибок, `X-Request-Id`, `Accept-Language`.
+- [x] `controller/supplier`: профиль и карточки поставщика.
+- [x] `pyproject.toml`, `Dockerfile` (две цели: `job` и `api`), сервис `api` в compose, nginx-прокси, README.
+- [x] Фронтенд: `entities/search` с демо-шлюзом и парсером, тест «демо-ответ проходит parse», `features/search-box`, маршрут `/search`, вынос `candidate-workspace`.
 
 Агент B:
 
-- [ ] `adapter/text`: анализатор и `RuleQueryInterpreter` (разделители `;`, перевод строк, «и», количества и единицы, коды ОКПД2 в тексте).
-- [ ] Миграция `0004` и `ClickHouseLexicalRetriever`; тесты на chDB с фикстурными карточками.
-- [ ] Адаптеры чтения: поставщики, карточки с источниками и `offer_matches`, история закупок; тесты на chDB.
-- [ ] Сервис: `ReciprocalRankFusion`, `CandidateAssembler`, `RoleResolver`, `MatchResolver`, правила `CandidatePolicy`, `CandidateRanker`, `HighlightComposer`; юнит-тесты на каждое правило с фейками портов.
-- [ ] `SupplierSearchService.search` целиком: параллельные каналы, таймауты, частичные отказы → `warnings`.
-- [ ] Миграция `0005` и `ClickHouseSearchArchive`; `get`, `recent`.
-- [ ] Фабрика `supplier_search()` в контейнере.
+- [x] `adapter/text`: анализатор и `RuleQueryInterpreter` (разделители `;`, перевод строк, «и», количества и единицы, коды ОКПД2 в тексте).
+- [x] Миграция `0004` и `ClickHouseLexicalRetriever`; тесты на chDB с фикстурными карточками.
+- [x] Адаптеры чтения: поставщики, карточки с источниками и `offer_matches`, история закупок; тесты на chDB.
+- [x] Сервис: `ReciprocalRankFusion`, `CandidateAssembler`, `RoleResolver`, `MatchResolver`, правила `CandidatePolicy`, `CandidateRanker`, `HighlightComposer`; юнит-тесты на каждое правило с фейками портов.
+- [x] `SupplierSearchService.search` целиком: параллельные каналы, таймауты, частичные отказы → `warnings`.
+- [x] Миграция `0005` и `ClickHouseSearchArchive`; `get`, `recent`.
+- [x] Фабрика `supplier_search()` в контейнере.
 
 **Фаза 2 — интеграция (вместе).**
 
-- [ ] A подключает настоящий сервис из контейнера вместо фейка; e2e на chDB: текст → кандидаты → `GET /api/searches/{id}`.
-- [ ] Фронтенд: `VITE_DEMO_MODE=false` против поднятого compose; Playwright-сценарий «ввёл текст → открыл кандидата → увидел основания».
+- [x] A подключает настоящий сервис из контейнера вместо фейка; e2e на chDB: текст → кандидаты → `GET /api/searches/{id}`.
+- [x] Фронтенд: `VITE_DEMO_MODE=false` против поднятого compose — проверено вручную скриптом Playwright (поиск → кандидаты → основания → перезагрузка по ссылке, 390 px). Автоматический e2e против compose — в CI.
 - [ ] Нагрузочный замер: 50 последовательных запросов, p50/p95, запись в `ml/EXPERIMENTS.md` как технический замер, не метрика качества.
 
 **Фаза 3 — ML-канал (B, после фазы 2).**
 
-- [ ] `MlServiceRetriever` по `ml_contr.md` §5: `schemaVersion`, эхо `requestId`, таймауты, ретрай только транзиентных ошибок.
-- [ ] Включение канала флагом `SEARCH_ML_ENABLED`; RRF двух каналов; сравнение на отложенной выборке запросов.
+- [x] `MlServiceRetriever` по `ml_contr.md` §5: `schemaVersion`, эхо `requestId`, таймауты, ретрай только транзиентных ошибок.
+- [x] Включение канала флагом `SEARCH_ML_ENABLED`; RRF трёх каналов (lexical, history, semantic). Сравнение на отложенной выборке запросов — после запуска ML-рантайма.
 - [ ] Порт `QueryInterpreter` на ML-извлечение позиций, если экстрактор валидирован; иначе предупреждение в `warnings`.
 
 **Фаза 4 — общий конвейер (обоим, отдельной задачей).**
 
-- [ ] Загрузка файла (`/api/uploads`) использует тот же `SupplierSearchService` на уровне позиций лота; `RecommendationService` из `ml_contr.md` становится тонкой обёрткой над ним.
+- [x] Ядро подбора выделено в `SupplierMatcher.match(SearchRequest) -> MatchOutcome` (каналы, RRF, обогащение, политика, ранжирование); `SupplierSearchService` — тонкая обёртка: интерпретация текста, таймаут, архив. Тесты поиска не менялись, кроме сборки сервиса.
+- [x] Модели: `ProcurementLot`, `RowIssue`, `NoticeFile` (`models/procurement.py`), `LotResult` со статусом (`models/lot_result.py`), `Upload`, `LotProgress`, `StatusCounts`, `UploadSummary`, `UploadDetail`, `LotDetail`, `ProcessedLot`, `UploadResults` (`models/upload.py`); перечисления `IssueCode`, `LotStatus`; ошибки файла в `models/errors.py`.
+- [x] Адаптер `adapter/file/notice_csv/`: формат `entities/notice` (UTF-8/BOM/Windows-1251, `;`/`,`/табуляция, кавычки и переносы, те же коды проблем строк), разбор в пуле потоков, отказ двоичных файлов.
+- [x] Сервис `service/procurement_upload/`: `ProcurementUploadService` (файл → закупки → сохранение → очередь), `LotProcessor` (текст предмета → `QueryInterpreter` → `SupplierMatcher` → `LotResult`, таймаут на закупку), `LotRunner` (in-process `asyncio`, `UPLOAD_CONCURRENCY` воркеров, `UPLOAD_ATTEMPTS` попыток с паузой, затем `failed`; при старте дообрабатывает закупки без результата).
+- [x] Хранение: миграция `0006_uploads.sql` (`uploads`, `upload_lots`, `upload_results` на `ReplacingMergeTree`, представления `*_current`), адаптер `clickhouse/upload_store/` (результат — JSON на кодеке архива поиска, выборки по 500 номеров).
+- [x] Контроллер `controller/upload/`: `GET/POST /api/uploads`, `GET /api/uploads/{id}`, `GET /api/uploads/{id}/lots/{lotId}`, `POST /api/uploads/{id}/results`; коды `missing_file`, `file_too_large`, `unsupported_file_type`, `invalid_file`, `missing_columns`, `too_many_rows`, `no_valid_lots`, `upload_not_found`, `lot_not_found`; раннер стартует и останавливается в lifespan; nginx `client_max_body_size 12m` для `/api/uploads`.
+- [x] Контракт рекомендации переведён на коды, как у поиска (вариант «б»): `checkReasons`, `highlights`, без `summary`/`clarify`/`checkReason`; «что уточнить» и сводку строит фронтенд из кодов. Статус закупки `failed` добавлен во фронтенд. Примеры — `contracts/upload/*.example.json`, их проверяют Pydantic-DTO и `entities/upload/parse.ts`.
+- [x] Тесты: модели, сервис с фейками портов (частичные отказы, повторы, дообработка после перезапуска), CSV на искусственных файлах, store на chDB, контроллер через `ASGITransport`, сквозной chDB-тест CSV → закупки → результаты → `GET`. Live-проверка — ниже.
+- [ ] Год и ссылка на протокол для прошлых закупок (`purchases[].year`, `source`) — нужны дата и URL в `lot_participations`; сейчас `null`.
+- [ ] ML-извлечение позиций из текста закупки — после валидации экстрактора (общая задача с фазой 3).
+
+Проверка фазы 4 (2026-10-01):
+
+- Backend на Windows: `ruff check`, `ruff format --check`, `mypy --strict`, `pytest` — зелёные; в Linux с chDB полный прогон — 367 тестов, покрытие 99,6 %.
+- Живой стек (`docker compose up -d clickhouse migrate api`, искусственные данные в ClickHouse): CSV в Windows-1251 из 4 строк → 3 закупки и 1 отклонённая строка (`badLotId`); статусы `ready`, `ready`, `noCandidates`; у закупки с гречкой и рисом лидер `recommended` с основаниями `stock`, второй кандидат `check` (`innMissing`, `roleUnconfirmed`, `noCurrentOffer`, `rangeUnconfirmed`). Ошибки `missing_file`, `unsupported_file_type`, `missing_columns` — по контракту. Перезапуск контейнера API посреди обработки 60 закупок: после старта лог `resuming unfinished lots`, все 60 обработаны.
+- Фронтенд с `VITE_DEMO_MODE=false` против живого API (Playwright-скрипт, 1440 px): выбор CSV → диалог проверки → «Обработать 3 закупки» → прогресс до «обработка завершена» → таблица закупок со статусами и ценами → разбор закупки: две позиции «из извещения», лидер «Рекомендован» с подтверждённым наличием и ссылками на прайс, второй кандидат «Нет ИНН» → выгрузка двух CSV через `POST …/results` → перезагрузка страницы закупки по ссылке.
 
 ## 11. Тесты и приёмка
 
@@ -526,12 +541,12 @@ frontend/src/pages/search/
 
 Готово, когда:
 
-- [ ] `ruff check`, `ruff format --check`, `mypy --strict`, `pytest` с покрытием ≥ 90 % нового кода — зелёные.
-- [ ] Фронтенд `npm run verify` и `npx playwright test` — зелёные.
-- [ ] Во всём новом коде нет комментариев, докстрингов и импортов внутри функций (проверка `ruff` + ревью).
-- [ ] `recommended` никогда не выдаётся без валидного ИНН, подтверждённой роли и актуальной карточки — отдельный тест на каждое условие.
-- [ ] Каждая ссылка в ответе — абсолютный http(s) URL реально полученного источника.
-- [ ] README описывает запуск `api`, переменные и примеры `curl`.
+- [x] `ruff check`, `ruff format --check`, `mypy --strict`, `pytest` с покрытием ≥ 90 % нового кода — зелёные.
+- [x] Фронтенд `npm run verify` и `npx playwright test` — зелёные.
+- [x] Во всём новом коде нет комментариев, докстрингов и импортов внутри функций (проверка `ruff` + ревью).
+- [x] `recommended` никогда не выдаётся без валидного ИНН, подтверждённой роли и актуальной карточки — отдельный тест на каждое условие.
+- [x] Каждая ссылка в ответе — абсолютный http(s) URL реально полученного источника.
+- [x] README описывает запуск `api`, переменные и примеры `curl`.
 
 ## 12. Риски
 
@@ -542,3 +557,15 @@ frontend/src/pages/search/
 | Расхождение контракта бэкенда и фронтенда | Общие примеры `contracts/search/*.json` проверяются тестами обеих сторон |
 | ML-рантайм недоступен на демо | Лексический канал работает самостоятельно; ML-канал за флагом |
 | Конфликт правок в общих файлах | Владельцы файлов из раздела 10, мелкие коммиты, ребейз на свою ветку перед PR |
+
+## 13. Отступления от плана при реализации
+
+- Сборка API вынесена из старого `Container` в `application/api.py` (`ApiContainer`): он получает подключение к ClickHouse лениво через `DeferredGateway`, поэтому API стартует и отвечает `ready=false`, пока хранилище недоступно.
+- Добавлен второй лексический канал `history` (`clickhouse/history_search`): поиск по позициям и предметам архивных лотов с агрегацией участников. Он даёт основания `inferred` и статус `check`.
+- `search_text` в `offers` — колонка `DEFAULT` с принудительной материализацией, а не `MATERIALIZED`: иначе её не видит `SELECT *` в `offers_current`, а `withdraw_absent` ломается на `INSERT … SELECT *`. Проекция по `supplier_id` заменена индексом `bloom_filter`.
+- Сервис проверки готовности (`service/health`) опрашивает зависимости через порт `DependencyProbe`; сейчас подключён только ClickHouse.
+- Правила кода проверяются тестами `backend/tests/architecture`: комментарии, докстринги, локальные и относительные импорты, длина файлов и функций, направления импортов между слоями.
+- Прогон SQL-тестов на chDB — только в Linux: `docker compose --profile tests run --rm backend-tests`.
+- Фаза 4: отдельный `RecommendationService` из `ml_contr.md` не появился. Загрузка — это `ProcurementUploadService`, а рекомендация закупки — `LotResult` на общем `SupplierMatcher`. Одна загрузка содержит много закупок (`/api/uploads`), поэтому `multiple_lots_not_supported` не нужен, а `invalid_workbook` заменён на `invalid_file` (CSV вместо XLSX).
+- Ответ рекомендации не содержит прозы: `summary`, `clarify` и `checkReason` из `ml_contr.md` §3 заменены кодами `checkReasons` и `highlights`. Пустой список компаний — успешный ответ со статусом закупки `noCandidates`, а не 422 `no_candidates_found`.
+- Обработка закупок идёт в процессе API без очередей. Закупку, которая так и не обработалась, повторно запускает только старт API; статус `failed` окончательный.

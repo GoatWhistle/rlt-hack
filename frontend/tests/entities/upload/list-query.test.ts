@@ -30,6 +30,7 @@ describe("the list query", () => {
       lotSummary("2", { title: "Bread", customerInn: "7811", status: "needsCheck" }),
       lotSummary("3", { title: "Paper", status: "queued" }),
       lotSummary("4", { title: "Ink", subject: "Printer milk", status: "noCandidates" }),
+      lotSummary("5", { title: "Glue", status: "failed" }),
     ]
     expect(
       filtered(lots, { search: "MILK", filter: "all", page: 1 }, "en").map((l) => l.id),
@@ -38,7 +39,14 @@ describe("the list query", () => {
       filtered(lots, { search: "7811", filter: "needsCheck", page: 1 }, "en"),
     ).toHaveLength(1)
     expect(filtered(lots, { search: " ", filter: "ready", page: 1 }, "en")).toHaveLength(1)
-    expect(filterCounts(lots)).toEqual({ all: 4, ready: 1, needsCheck: 1, noCandidates: 1 })
+    expect(filtered(lots, { search: "", filter: "failed", page: 1 }, "en")).toHaveLength(1)
+    expect(filterCounts(lots)).toEqual({
+      all: 5,
+      ready: 1,
+      needsCheck: 1,
+      noCandidates: 1,
+      failed: 1,
+    })
   })
 
   it("pages through results", () => {

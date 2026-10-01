@@ -1,0 +1,14 @@
+{
+  "id": "3b7d1c2e-8f4a-4b6c-9d0e-1f2a3b4c5d6e",
+  "fileName": "notices.csv",
+  "createdAt": "2026-10-01T12:00:00Z",
+  "total": 3,
+  "processed": 2,
+  "counts": {
+    "ready": 0,
+    "needsCheck": 1,
+    "noCandidates": 1,
+    "failed": 0
+  },
+  "rejected": 1
+}

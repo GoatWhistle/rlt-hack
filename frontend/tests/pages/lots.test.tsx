@@ -140,6 +140,22 @@ describe("the purchases of a file", () => {
     expect(screen.getByText("Row 7")).toBeVisible()
   })
 
+  it("marks lots that could not be processed and filters them only when there are any", async () => {
+    const first = renderPage("/uploads/u1", gatewayWith())
+    await screen.findByRole("table")
+    expect(screen.queryByRole("radio", { name: /Not processed/ })).toBeNull()
+    first.unmount()
+    const lots = [lotSummary("1"), lotSummary("2", { status: "failed", products: 0 })]
+    const view = renderPage("/uploads/u1", gatewayWith(lots))
+    await screen.findByRole("table")
+    const failed = screen.getByRole("row", { name: /Purchase 2/ })
+    expect(within(failed).getByText(en("status.failed", "lots"))).toBeInTheDocument()
+    expect(within(failed).getAllByText(en("table.pending", "lots"))).toHaveLength(2)
+    await view.user.click(screen.getByRole("radio", { name: /Not processed/ }))
+    expect(view.router.state.location.search).toBe("?status=failed")
+    expect(screen.getAllByRole("row")).toHaveLength(2)
+  })
+
   it("explains a missing upload and other failures", async () => {
     renderPage(
       "/uploads/x",

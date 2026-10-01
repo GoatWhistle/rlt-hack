@@ -33,7 +33,12 @@ export const recommendationFixture: Recommendation = {
       inn: "7800000011",
       role: "supplier",
       status: "recommended",
-      summary: "Covers most items by catalog.",
+      checkReasons: [],
+      highlights: [
+        { code: "coversItems", params: { matched: 5, total: 5 } },
+        { code: "inStock", params: { count: 1 } },
+        { code: "pastWins", params: { count: 4 } },
+      ],
       matches: [
         { productId: "sugar", basis: "inferred" },
         {
@@ -72,7 +77,7 @@ export const recommendationFixture: Recommendation = {
           outcome: "winner",
           source: { kind: "purchase", title: "Protocol 42", url: "#42" },
         },
-        { title: "Lot 43", year: 2025, outcome: "participant" },
+        { title: "Lot 43", outcome: "participant" },
         {
           title: "Lot 44",
           year: 2025,
@@ -80,7 +85,6 @@ export const recommendationFixture: Recommendation = {
           source: { kind: "registry", title: "Registry 44", url: "#44" },
         },
       ],
-      clarify: ["Delivery terms."],
     },
     {
       id: "south",
@@ -88,13 +92,12 @@ export const recommendationFixture: Recommendation = {
       inn: "7800000022",
       role: "unknown",
       status: "check",
-      checkReason: "rangeUnconfirmed",
-      summary: "Only tea was found.",
+      checkReasons: ["rangeUnconfirmed"],
+      highlights: [{ code: "coversItems", params: { matched: 1, total: 5 } }],
       matches: [{ productId: "tea", basis: "inferred" }],
       similarPurchases: 1,
       wins: 0,
       purchases: [],
-      clarify: [],
     },
     {
       id: "west",
@@ -102,12 +105,12 @@ export const recommendationFixture: Recommendation = {
       inn: "7800000033",
       role: "distributor",
       status: "check",
-      summary: "Partial match.",
+      checkReasons: [],
+      highlights: [],
       matches: [{ productId: "missing", basis: "catalog" }],
       similarPurchases: 3,
       wins: 0,
       purchases: [],
-      clarify: ["Role is not confirmed.", "Volume."],
     },
   ],
 }

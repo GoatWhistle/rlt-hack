@@ -21,16 +21,30 @@ describe("parseRecommendation", () => {
   })
 
   it("treats null optional fields as absent", () => {
-    const payload = changed(["companies", 0, "checkReason"], null)
-    const withNullSource = (payload as Node).companies as Node[]
-    ;(withNullSource[0]?.matches as Node[])[0] = {
-      productId: "sugar",
-      basis: "inferred",
+    const payload = changed(["companies", 0, "purchases", 0, "year"], null) as Node
+    const north = (payload.companies as Node[])[0] as Node
+    ;(north.purchases as Node[])[0] = {
+      title: "Lot 41",
+      year: null,
+      outcome: "winner",
       source: null,
     }
+    ;(north.matches as Node[])[0] = { productId: "sugar", basis: "inferred", source: null }
+    north.contacts = { site: "", email: "", phone: "" }
     const parsed = parseRecommendation(payload)
-    expect(parsed.companies[0]).not.toHaveProperty("checkReason")
+    expect(parsed.companies[0]?.purchases[0]).toEqual({ title: "Lot 41", outcome: "winner" })
     expect(parsed.companies[0]?.matches[0]).not.toHaveProperty("source")
+    expect(parsed.companies[0]?.contacts).toEqual({})
+  })
+
+  it("keeps check reasons and highlights as codes", () => {
+    const [north, south] = parseRecommendation(structuredClone(recommendationFixture)).companies
+    expect(north?.checkReasons).toEqual([])
+    expect(north?.highlights[0]).toEqual({
+      code: "coversItems",
+      params: { matched: 5, total: 5 },
+    })
+    expect(south?.checkReasons).toEqual(["rangeUnconfirmed"])
   })
 
   it.each([
@@ -65,8 +79,33 @@ describe("parseRecommendation", () => {
     ],
     [
       "a free-text check reason",
-      changed(["companies", 1, "checkReason"], "Range not confirmed"),
-      "$.companies[1].checkReason",
+      changed(["companies", 1, "checkReasons"], ["Range not confirmed"]),
+      "$.companies[1].checkReasons[0].reason",
+    ],
+    [
+      "check reasons that are not a list",
+      changed(["companies", 1, "checkReasons"], "rangeUnconfirmed"),
+      "$.companies[1].checkReasons",
+    ],
+    [
+      "a missing highlight list",
+      changed(["companies", 0, "highlights"], undefined),
+      "$.companies[0].highlights",
+    ],
+    [
+      "an unknown highlight",
+      changed(["companies", 0, "highlights", 0, "code"], "cheap"),
+      "$.companies[0].highlights[0].code",
+    ],
+    [
+      "a highlight parameter that is not a count",
+      changed(["companies", 0, "highlights", 0, "params", "matched"], "five"),
+      "$.companies[0].highlights[0].params.matched",
+    ],
+    [
+      "a purchase year that is not a count",
+      changed(["companies", 0, "purchases", 0, "year"], "2024"),
+      "$.companies[0].purchases[0].year",
     ],
     [
       "a purchase lot that is not text",
@@ -103,11 +142,6 @@ describe("parseRecommendation", () => {
       "an unknown purchase outcome",
       changed(["companies", 0, "purchases", 0, "outcome"], "lost"),
       "$.companies[0].purchases[0].outcome",
-    ],
-    [
-      "a clarification that is not text",
-      changed(["companies", 0, "clarify"], [1]),
-      "$.companies[0].clarify[0]",
     ],
   ])("rejects %s", (_, payload, path) => {
     expect(() => parseRecommendation(payload)).toThrow(new PayloadFormatError(path).message)

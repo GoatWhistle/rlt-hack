@@ -26,6 +26,10 @@
   color: var(--text-primary);
 }
 
+.icon {
+  display: none;
+}
+
 .indicator {
   position: absolute;
   inset-block-end: calc(var(--line-width) * -1);
@@ -50,5 +54,24 @@
   .nav {
     --tab-padding: var(--space-2);
     gap: 0;
+  }
+}
+
+@media (max-width: 30rem) {
+  .nav {
+    --tab-padding: var(--space-1);
+  }
+
+  .tab {
+    justify-content: center;
+    min-width: var(--target-touch);
+  }
+
+  .icon {
+    display: inline-flex;
+  }
+
+  .label {
+    display: none;
   }
 }

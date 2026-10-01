@@ -89,6 +89,20 @@ describe("the navigation tabs", () => {
     )
   })
 
+  it("marks the search tab on the search page and on a result", async () => {
+    const { router } = renderTabs("/search")
+    const search = screen.getByRole("link", { name: en("nav.search") })
+    expect(search).toHaveAttribute("aria-current", "page")
+    expect(search).toHaveAttribute("href", "/search")
+    expect(indicator()).not.toBeNull()
+    await act(() => router.navigate("/search/abc"))
+    expect(screen.getByRole("link", { name: en("nav.search") })).toHaveAttribute(
+      "aria-current",
+      "page",
+    )
+    expect(screen.getAllByRole("link")).toHaveLength(3)
+  })
+
   it("follows the tab when its width changes", () => {
     renderTabs("/uploads")
     const nav = screen.getByRole("navigation")

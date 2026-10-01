@@ -1,7 +1,7 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Поиск релевантных поставщиков: джоба сбора источников и хранилище ClickHouse"
+description = "Поиск релевантных поставщиков: API поиска, джоба сбора источников и хранилище ClickHouse"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -10,36 +10,125 @@ dependencies = [
     "lxml>=5.3",
     "cssselect>=1.2",
     "openpyxl>=3.1",
-    "fastapi>=0.115,<1",
-    "uvicorn>=0.34,<1",
-    "python-multipart>=0.0.20,<1",
-    "numpy>=2.2,<3",
-    "pyarrow>=19,<24",
-    "scikit-learn>=1.6,<2",
+    "fastapi>=0.136",
+    "uvicorn[standard]>=0.38",
+    "pydantic>=2.12",
+    "snowballstemmer>=3.0",
+    "python-multipart>=0.0.20",
 ]
 
 [project.optional-dependencies]
-# Проверки без сервера ClickHouse: встроенный движок chDB.
 test = [
-    "chdb==4.1.2",
-    "chdb-core==26.9.0",
+    "chdb==4.1.2; sys_platform != 'win32'",
+    "chdb-core==26.9.0; sys_platform != 'win32'",
 ]
 
 [project.scripts]
 sync-job = "src.controller.job.cli:main"
+api = "src.controller.api.main:run"
 
 [dependency-groups]
-dev = ["ruff>=0.14"]
+dev = [
+    "ruff>=0.14",
+    "mypy>=1.19",
+    "pytest>=9.0",
+    "pytest-asyncio>=1.3",
+    "pytest-cov>=7.0",
+    "lxml-stubs>=0.5",
+]
 
 [tool.ruff]
 line-length = 100
 target-version = "py313"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
-# Кириллица в строках и комментариях — ожидаемая часть кода проекта.
-ignore = ["RUF001", "RUF002", "RUF003"]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "RUF", "ANN", "ERA", "PL", "PT", "TID", "ASYNC"]
+ignore = ["RUF001", "RUF002", "RUF003", "PLR2004", "PLR0913", "PLR0917"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
 
 [tool.ruff.lint.per-file-ignores]
-# Проверки добавляют корень проекта в sys.path до импортов.
-"tests/**" = ["E402"]
+"tests/**" = ["E402", "ANN", "PLR2004", "PLC0415"]
+"tests/**/*_smoke.py" = ["PLR0915", "PT017", "PT018"]
+"src/adapter/supplier/**" = ["ANN", "ERA", "PL", "N"]
+"src/adapter/repository/clickhouse/gateway.py" = ["ANN401", "N801"]
+"src/adapter/repository/clickhouse/client.py" = ["ANN401"]
+"src/adapter/repository/clickhouse/protocols.py" = ["ANN401"]
+"src/controller/job/**" = ["ANN", "PL"]
+"src/application/container.py" = ["PLR0912"]
+"src/service/supplier/**" = ["PLR0912"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q --strict-markers"
+markers = ["chdb: needs the embedded ClickHouse engine"]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "src/adapter/supplier/*",
+    "src/controller/job/*",
+    "src/service/supplier/*",
+    "src/adapter/repository/clickhouse/client.py",
+    "src/adapter/repository/clickhouse/journal.py",
+    "src/adapter/repository/clickhouse/package.py",
+    "src/adapter/repository/clickhouse/source.py",
+    "src/adapter/repository/clickhouse/offer.py",
+    "src/adapter/repository/clickhouse/supplier.py",
+    "src/adapter/repository/clickhouse/migrator.py",
+    "src/adapter/repository/clickhouse/versions.py",
+    "src/application/container.py",
+    "src/adapter/repository/clickhouse/gateway.py",
+    "src/adapter/repository/clickhouse/config.py",
+    "src/models/journal.py",
+    "src/models/package.py",
+    "src/controller/api/__main__.py",
+]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true
+exclude_also = ["if TYPE_CHECKING:", "\\.\\.\\.$"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+files = ["src", "tests"]
+exclude = [
+    "^src/adapter/supplier/",
+    "^src/service/supplier/",
+    "^src/controller/job/",
+    "^tests/supplier/",
+    '^tests/clickhouse/schema_smoke\.py$',
+]
+plugins = ["pydantic.mypy"]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["clickhouse_connect.*", "chdb.*", "snowballstemmer.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "src.adapter.supplier.*",
+    "src.service.supplier.*",
+    "src.controller.job.*",
+    "src.application.container",
+    "src.adapter.repository.clickhouse.client",
+    "src.adapter.repository.clickhouse.gateway",
+    "src.adapter.repository.clickhouse.journal",
+    "src.adapter.repository.clickhouse.migrator",
+    "src.adapter.repository.clickhouse.offer",
+    "src.adapter.repository.clickhouse.package",
+    "src.adapter.repository.clickhouse.source",
+    "src.adapter.repository.clickhouse.supplier",
+    "tests.clickhouse.chdb_gateway",
+]
+ignore_errors = true

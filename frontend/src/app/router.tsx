@@ -47,6 +47,16 @@ export const routes: RouteObject[] = [
               Component: (await import("@/pages/lots-entry")).LotsEntryPage,
             }),
           },
+          {
+            path: "search",
+            lazy: async () => ({ Component: (await import("@/pages/search")).SearchPage }),
+          },
+          {
+            path: "search/:searchId",
+            lazy: async () => ({
+              Component: (await import("@/pages/search")).SearchResultPage,
+            }),
+          },
           { path: "*", Component: NotFoundPage },
         ],
       },

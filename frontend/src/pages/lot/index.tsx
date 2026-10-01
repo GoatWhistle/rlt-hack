@@ -11,10 +11,29 @@ import { useLocale } from "@/shared/i18n/locale-provider"
 import { ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
+import { WorkspaceSkeleton } from "@/shared/ui/workspace-skeleton"
 import { LotHeader, type Neighbours } from "./lot-header"
-import { LotSkeleton } from "./lot-skeleton"
 import styles from "./styles.module.css"
 import { Workspace } from "./workspace"
+
+function PendingState({ failed }: { readonly failed: boolean }) {
+  const { t } = useTranslation("lot")
+  return failed ? (
+    <EmptyState
+      icon="warning"
+      headingLevel={2}
+      title={t("failed.title")}
+      description={t("failed.text")}
+    />
+  ) : (
+    <EmptyState
+      icon="clock"
+      headingLevel={2}
+      title={t("queued.title")}
+      description={t("queued.text")}
+    />
+  )
+}
 
 export function LotPage() {
   const { t } = useTranslation("lot")
@@ -27,7 +46,7 @@ export function LotPage() {
   const { locale } = useLocale()
   const [exporting, setExporting] = useState({ open: false, session: 0 })
 
-  if (lot.isPending) return <LotSkeleton label={t("loading")} />
+  if (lot.isPending) return <WorkspaceSkeleton label={t("loading")} />
   if (lot.isError) {
     if (isApiError(lot.error) && lot.error.status === 404) {
       return (
@@ -85,12 +104,7 @@ export function LotPage() {
           recommendation={recommendation}
         />
       ) : (
-        <EmptyState
-          icon="clock"
-          headingLevel={2}
-          title={t("queued.title")}
-          description={t("queued.text")}
-        />
+        <PendingState failed={current.status === "failed"} />
       )}
       <ExportDialog
         key={exporting.session}

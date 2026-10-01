@@ -14,6 +14,10 @@
     "title": "Кандидаты не найдены",
     "text": "По имеющимся сведениям подходящих компаний нет. Проверьте состав закупки: возможно, товары определены неточно."
   },
+  "failed": {
+    "title": "Закупку не удалось обработать",
+    "text": "Система не смогла подобрать компании после нескольких попыток. Остальные закупки файла доступны в списке."
+  },
   "views": {
     "legend": "Раздел разбора",
     "products": "Товары",
@@ -69,25 +73,17 @@
   },
   "companies": {
     "title": "Кандидаты",
-    "role": {
-      "manufacturer": "Производитель",
-      "distributor": "Дистрибьютор",
-      "supplier": "Поставщик",
-      "supplierDistributor": "Поставщик · дистрибьютор",
-      "unknown": "Роль не определена"
-    },
     "matchCount": "{{matched, number}} из {{total, number}}",
     "purchases_one": "{{count, number}} закупка",
     "purchases_few": "{{count, number}} закупки",
     "purchases_many": "{{count, number}} закупок",
-    "status": {
-      "recommended": "Рекомендуем",
-      "check": "Требует проверки",
-      "historical": "Из истории закупок"
-    },
     "checkReason": {
+      "innMissing": "Нет ИНН",
+      "identityConflict": "Реквизиты расходятся",
       "roleUnconfirmed": "Роль не подтверждена",
-      "rangeUnconfirmed": "Не подтверждён ассортимент"
+      "noCurrentOffer": "Нет актуального предложения",
+      "rangeUnconfirmed": "Не подтверждён ассортимент",
+      "sourceUnavailable": "Источник не ответил"
     },
     "order": "по релевантности",
     "purchases_other": "{{count, number}} закупки",
@@ -101,36 +97,17 @@
     "compareHint": "Выберите двух и более кандидатов в основаниях, чтобы сравнить их."
   },
   "evidence": {
-    "inn": "ИНН {{inn}}",
     "summaryTitle": "Почему рекомендуем",
     "checkTitle": "Почему нужна проверка",
     "mainClarify": "Главное уточнение.",
     "matchesTitle": "Соответствие всем товарам",
     "matchesHint": "по сведениям, не остатки на складе",
-    "basis": {
-      "stock": "Наличие подтверждено",
-      "catalog": "Есть в каталоге",
-      "inferred": "Предположение системы"
-    },
-    "notFound": "Не найдено",
-    "noSource": "Источник не указан",
-    "checkedAt": "проверено {{date}}",
-    "sourceKind": {
-      "catalog": "Каталог",
-      "price": "Прайс-лист",
-      "purchase": "Закупка",
-      "registry": "Реестр"
-    },
     "purchasesTitle": "Опыт закупок",
     "purchaseLot": "Лот {{id}} · {{title}}",
     "purchasesSummary_one": "{{count, number}} похожая · побед: {{wins, number}}",
     "purchasesSummary_few": "{{count, number}} похожие · побед: {{wins, number}}",
     "purchasesSummary_many": "{{count, number}} похожих · побед: {{wins, number}}",
     "purchasesSummary_other": "{{count, number}} похожей · побед: {{wins, number}}",
-    "outcome": {
-      "winner": "Победитель",
-      "participant": "Участник"
-    },
     "purchasesNote": "Прошлые участия и победы не гарантируют будущую поставку.",
     "noPurchases": "Примеров закупок с источником нет.",
     "clarifyTitle": "Что уточнить у компании",
@@ -146,10 +123,8 @@
     "choose": "Выбрать кандидата",
     "chosen": "Убрать из выбранных",
     "profile": "Профиль компании",
-    "profileShort": "Профиль"
-  },
-  "meter": {
-    "label": "Совпадение {{matched, number}} из {{total, number}}: наличие подтверждено — {{stock, number}}, в каталоге — {{catalog, number}}, предположение — {{inferred, number}}"
+    "profileShort": "Профиль",
+    "noHighlights": "Подтверждающих сведений нет."
   },
   "profile": {
     "requisites": "Реквизиты",
@@ -158,10 +133,6 @@
     "roleBasis": "Основание роли",
     "noRoleBasis": "Основание не указано",
     "contacts": "Контакты",
-    "site": "Сайт",
-    "email": "Почта",
-    "phone": "Телефон",
-    "noContacts": "Контакты в источниках не найдены.",
     "products": "Товары и направления",
     "history": "История закупок",
     "sources": "Источники",
@@ -181,20 +152,15 @@
     "unknown": "Нет сведений",
     "note": "Прошлые победы не гарантируют будущую поставку. Цены и рейтинги не показываются: подтверждённых данных о них нет."
   },
-  "history": {
-    "whyFound": "Почему найден",
-    "title": "Примеры из истории закупок",
-    "source": "Источник: исторический датасет закупок. Категория ОКПД2: {{category}}.",
-    "lastDate": "Последняя закупка в профиле: {{date}}",
-    "note": "Эти примеры подтверждают историческую специализацию. Текущее наличие и условия поставки уточняются у компании.",
-    "catalog": "Опубликованные товары компании",
-    "checkedAt": "Страница прочитана {{date}}",
-    "examples_one": "{{count}} пример",
-    "examples_few": "{{count}} примера",
-    "examples_many": "{{count}} примеров",
-    "requestTitle": "Поиск по описанию",
-    "requestNote": "«{{title}}». Кандидаты подобраны по описанию закупки целиком. Отдельные товарные позиции пока не выделены.",
-    "companySource": "Источник реквизитов",
-    "openSource": "Карточка компании"
+  "clarify": {
+    "reason": {
+      "innMissing": "Запросить ИНН и реквизиты компании.",
+      "identityConflict": "Сверить реквизиты: источники расходятся.",
+      "roleUnconfirmed": "Уточнить роль: производитель, дистрибьютор или поставщик.",
+      "noCurrentOffer": "Запросить актуальное предложение: товары найдены только в старых записях.",
+      "rangeUnconfirmed": "Подтвердить ассортимент по всем товарам закупки.",
+      "sourceUnavailable": "Перепроверить сведения: один из источников не ответил."
+    },
+    "product": "Подтвердить наличие и цену: {{name}}"
   }
 }

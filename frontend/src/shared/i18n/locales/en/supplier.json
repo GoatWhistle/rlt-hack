@@ -1,0 +1,27 @@
+{
+  "loading": "Loading the company profile",
+  "requisites": "Details",
+  "inn": "INN",
+  "kpp": "KPP",
+  "region": "Region",
+  "identity": {
+    "title": "Details check",
+    "verified": "Verified",
+    "unverified": "Not verified",
+    "conflict": "Sources disagree"
+  },
+  "role": "Role",
+  "roleBasis": "Role basis",
+  "noRoleBasis": "No source confirms the role",
+  "contacts": "Contacts",
+  "offers": "Current offers",
+  "noOffers": "No current offers in the sources.",
+  "price": "{{price}} per {{unit}}",
+  "noPrice": "Price on request",
+  "availability": {
+    "available": "In stock",
+    "on_order": "On order",
+    "unavailable": "Out of stock",
+    "unknown": "Availability unknown"
+  }
+}

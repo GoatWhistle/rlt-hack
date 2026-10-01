@@ -2,7 +2,7 @@ import { LOCALE_TAGS, type Locale } from "@/shared/i18n/locale"
 import type { LotStatus, LotSummary, ResultStatus } from "./model"
 
 export const PAGE_SIZE = 20
-export const FILTERS = ["all", "ready", "needsCheck", "noCandidates"] as const
+export const FILTERS = ["all", "ready", "needsCheck", "noCandidates", "failed"] as const
 export type Filter = (typeof FILTERS)[number]
 
 export type ListQuery = {
@@ -68,6 +68,7 @@ export function filterCounts(lots: readonly LotSummary[]): Record<Filter, number
     ready: count("ready"),
     needsCheck: count("needsCheck"),
     noCandidates: count("noCandidates"),
+    failed: count("failed"),
   }
 }
 

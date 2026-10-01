@@ -1,9 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { keptAcrossLocales } from "@/shared/api/locale-keys"
 import type { Locale } from "@/shared/i18n/locale"
 import { useLocale } from "@/shared/i18n/locale-provider"
 import type { NewUpload } from "./gateway"
 import { useUploadGateway } from "./gateway-context"
 import { isProcessing } from "./model"
+
+export { sameButLocale } from "@/shared/api/locale-keys"
 
 export const POLL_MS = 1000
 
@@ -13,23 +16,6 @@ export const uploadKeys = {
   detail: (locale: Locale, uploadId: string) => ["uploads", locale, uploadId] as const,
   lot: (locale: Locale, uploadId: string, lotId: string) =>
     ["uploads", locale, uploadId, "lots", lotId] as const,
-}
-
-const LOCALE_PART = 1
-
-export function sameButLocale(
-  previous: readonly unknown[] | undefined,
-  next: readonly unknown[],
-): boolean {
-  if (!previous || previous.length !== next.length) return false
-  return previous.every((part, index) => index === LOCALE_PART || part === next[index])
-}
-
-function keptAcrossLocales<T>(key: readonly unknown[]) {
-  return (
-    previous: T | undefined,
-    query: { readonly queryKey: readonly unknown[] } | undefined,
-  ) => (sameButLocale(query?.queryKey, key) ? previous : undefined)
 }
 
 export function useUploads() {

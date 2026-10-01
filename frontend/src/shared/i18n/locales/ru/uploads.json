@@ -30,6 +30,7 @@
     "ready": "готово: {{count, number}}",
     "needsCheck": "требуют уточнения: {{count, number}}",
     "noCandidates": "без кандидатов: {{count, number}}",
+    "failed": "не обработаны: {{count, number}}",
     "rejected_one": "{{count, number}} строка с ошибкой не обработана",
     "rejected_few": "{{count, number}} строки с ошибками не обработаны",
     "rejected_many": "{{count, number}} строк с ошибками не обработаны",

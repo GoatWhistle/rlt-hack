@@ -1,0 +1,120 @@
+.hint {
+  padding: 0 var(--space-4) var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.list {
+  padding: 0;
+  list-style: none;
+}
+
+.entry {
+  border-block-start: var(--line-width) solid var(--line-subtle);
+}
+
+.item {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+  width: 100%;
+  min-height: var(--target-touch);
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: start;
+  transition: var(--transition-control);
+}
+
+.item:focus-visible {
+  outline-offset: calc(var(--focus-ring-width) * -1);
+}
+
+.active {
+  background: var(--accent-tint);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  overflow-wrap: anywhere;
+}
+
+.active .name {
+  color: var(--accent-strong);
+}
+
+.mark {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--tool-size);
+  height: var(--tool-size);
+  margin-block: calc(var(--space-1) * -1);
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+  opacity: 0;
+  transition: var(--transition-control);
+}
+
+.active .mark {
+  background: var(--accent);
+  color: var(--text-on-accent);
+  opacity: 1;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.quantity {
+  color: var(--text-body);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-medium);
+}
+
+.code {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+.covered {
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .item:not(.active):hover {
+    background: var(--surface-raised);
+  }
+
+  .item:hover .name {
+    color: var(--accent-strong);
+  }
+
+  .item:hover .mark,
+  .item:focus-visible .mark {
+    opacity: 1;
+  }
+}
+
+@media (hover: none) {
+  .mark {
+    opacity: 1;
+  }
+}

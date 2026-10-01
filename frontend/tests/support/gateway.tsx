@@ -36,7 +36,7 @@ export function uploadSummary(overrides: Partial<UploadSummary> = {}): UploadSum
     createdAt: "2026-10-01T10:00:00.000Z",
     total: 3,
     processed: 3,
-    counts: { ready: 2, needsCheck: 1, noCandidates: 0 },
+    counts: { ready: 2, needsCheck: 1, noCandidates: 0, failed: 0 },
     rejected: 0,
     stored: true,
     ...overrides,

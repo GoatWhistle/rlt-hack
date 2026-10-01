@@ -18,9 +18,14 @@
 - [Справочники ОКПД2, рубрик, словаря и ОКЕИ](backend/reference)
 - [Джоба сбора: контракт источника, адаптеры и команды](backend/README.md)
 - [Дизайн-система фронтенда](frontend/DESIGN.md)
+- [HTTP API: эндпоинты, коды ошибок, переменные](backend/README.md#http-api)
+- [Контракт API: примеры запросов и ответов](contracts)
 
-Добавлены HTTP API на FastAPI и поиск по историческим профилям поставщиков.
-Фронтенд использует только HTTP-ответы; демонстрационные карточки удалены.
+Backend отдаёт HTTP API на FastAPI под префиксом `/api`; код backend асинхронный.
+Поиск по тексту (`/api/searches`) и загрузка CSV закупок (`/api/uploads`) идут
+через одно ядро подбора поставщиков; загруженные закупки обрабатываются в фоне
+внутри процесса API, состояние хранится в ClickHouse. Лимиты файла задают
+переменные `UPLOAD_*` из [.env.example](.env.example).
 
 Нормализация и классификация подключены к джобе сбора через интерфейсы и
 вызываются сразу после обхода источника: сначала приведение позиции к единой
@@ -47,7 +52,7 @@ uv run --no-project --with 'reportlab==5.0.1' python docs/generate_normalization
 
 ```bash
 cp .env.example .env                         # переменные окружения, файл в Git не попадает
-docker compose up -d --build                 # фронтенд, ClickHouse с веб-интерфейсом и применение миграций
+docker compose up -d --build                 # фронтенд, API, ClickHouse с веб-интерфейсом и применение миграций
 docker compose run --rm sync-job providers   # подключённые адаптеры источников
 docker compose run --rm sync-job sync        # обход включённых источников
 docker compose run --rm sync-job normalize   # пересчёт нормализации и классификации
@@ -55,7 +60,9 @@ docker compose run --rm sync-job coverage    # отчёт о покрытии
 docker compose run --rm sync-job reidentify  # перевод позиций на новое правило ключа
 ```
 
-Фронтенд будет доступен на `http://localhost:8080`, веб-интерфейс ClickHouse —
+Фронтенд будет доступен на `http://localhost:8080`, HTTP API — на
+`http://localhost:8000/api` (документация — `http://localhost:8000/api/docs`,
+через фронтенд — `http://localhost:8080/api/`), веб-интерфейс ClickHouse —
 на `http://localhost:3488`. Вход в интерфейс выполняется пользователем самого
 ClickHouse (по умолчанию `default` с пустым паролем); сервис `clickhouse-ui`
 обращается к базе сам, из контейнера, поэтому порт 8123 наружу ему не нужен.
@@ -77,7 +84,7 @@ Compose читает их из `.env` в корне проекта и из ок�
 действуют значения по умолчанию, записанные в `docker-compose.yml`. Пустое
 значение в `.env` равносильно значению по умолчанию.
 
-Назначение переменных джобы сбора подробнее описано в
+Назначение переменных API, поиска и джобы сбора подробнее описано в
 [backend/README.md](backend/README.md).
 ProductCenter включается флагом `PRODUCTCENTER_WEB_PROVIDER=true` только для
 полного обхода: `PRODUCTCENTER_MAX_CARDS=0`. Положительный лимит останавливает
@@ -122,7 +129,11 @@ Production-конфигурация использует frontend на порт�
 
 ## Проверки backend
 
-Без сервера ClickHouse, Docker и сети, через `uv`:
+Тесты, линтер и типы из `backend/`: `uv run pytest`, `uv run ruff check .`,
+`uv run ruff format --check .`, `uv run mypy`. Полный прогон в Linux, включая
+тесты с chDB: `docker compose --profile tests run --rm backend-tests`.
+
+Smoke-проверки без сервера ClickHouse, Docker и сети, через `uv`:
 
 ```sh
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/clickhouse/schema_smoke.py

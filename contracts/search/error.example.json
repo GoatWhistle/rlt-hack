@@ -1,0 +1,5 @@
+{
+  "code": "query_too_long",
+  "message": "search text is longer than 4000 characters",
+  "requestId": "b686bf14-f773-4c89-ae9e-69914ee65a51"
+}

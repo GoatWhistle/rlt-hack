@@ -1,9 +1,18 @@
+import type { CheckReason, Highlight } from "@/entities/evidence/model"
 import type { LotShortlists } from "@/entities/shortlist/store"
 import type { LotResult } from "@/entities/upload/model"
 
 export const CSV_TYPE = "text/csv;charset=utf-8"
 export const CSV_SEPARATOR = ";"
 export const CSV_BOM = "\uFEFF"
+export const CODE_SEPARATOR = ","
+export const NOTE_SEPARATOR = " "
+export const SUMMARY_SEPARATOR = " \u00B7 "
+
+export type CsvLabels = {
+  readonly checkReason: (reason: CheckReason) => string
+  readonly highlight: (highlight: Highlight) => string
+}
 
 export const PRODUCT_COLUMNS = ["lot_id", "product_name", "okpd2_code", "origin"] as const
 
@@ -14,7 +23,8 @@ export const SUPPLIER_COLUMNS = [
   "supplier_name",
   "role",
   "status",
-  "check_reason",
+  "check_reasons",
+  "check_notes",
   "matched_products",
   "products_total",
   "stock_confirmed",
@@ -51,6 +61,7 @@ export function productsCsv(results: readonly LotResult[]): string {
 
 export function suppliersCsv(
   results: readonly LotResult[],
+  labels: CsvLabels,
   shortlists?: LotShortlists,
 ): string {
   const rows = results.flatMap(({ lot, recommendation }) => {
@@ -68,15 +79,16 @@ export function suppliersCsv(
           company.name,
           company.role,
           company.status,
-          company.checkReason ?? "",
+          company.checkReasons.join(CODE_SEPARATOR),
+          company.checkReasons.map(labels.checkReason).join(NOTE_SEPARATOR),
           company.matches.length,
           total,
           basis("stock"),
           basis("catalog"),
           basis("inferred"),
-          company.similarPurchases ?? "",
-          company.wins ?? "",
-          company.summary,
+          company.similarPurchases,
+          company.wins,
+          company.highlights.map(labels.highlight).join(SUMMARY_SEPARATOR),
         ],
       ]
     })

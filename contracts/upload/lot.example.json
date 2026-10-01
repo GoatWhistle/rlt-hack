@@ -1,0 +1,112 @@
+{
+  "lot": {
+    "id": "4257576",
+    "title": "Поставка крупы гречневой ядрицы",
+    "subject": "Крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
+    "customerInn": "7807022750",
+    "publishDate": "2024-01-18",
+    "startPrice": 2835.54,
+    "status": "needsCheck",
+    "products": 2,
+    "candidates": 2
+  },
+  "recommendation": {
+    "fileName": "notices.csv",
+    "requestTitle": "Поставка крупы гречневой ядрицы",
+    "lotLabel": "4257576",
+    "products": [
+      {
+        "id": "i1",
+        "name": "Крупа гречневая ядрица",
+        "okpd2": "",
+        "origin": "notice",
+        "originNote": null
+      },
+      {
+        "id": "i2",
+        "name": "Рис шлифованный",
+        "okpd2": "10.61.11.000",
+        "origin": "notice",
+        "originNote": null
+      }
+    ],
+    "companies": [
+      {
+        "id": "6c1e2f3a-4b5c-4d6e-8f70-81a2b3c4d5e6",
+        "name": "ООО «Северный Провиант»",
+        "inn": "7801234567",
+        "role": "supplierDistributor",
+        "roleSource": {
+          "kind": "catalog",
+          "title": "Каталог поставщиков",
+          "url": "https://catalog.example.org/companies/severny-proviant",
+          "checkedAt": "2026-09-28T10:00:00Z"
+        },
+        "contacts": {
+          "site": "https://severny-proviant.example.org",
+          "email": "sales@severny-proviant.example.org",
+          "phone": "+7 812 000-00-00"
+        },
+        "status": "check",
+        "checkReasons": ["rangeUnconfirmed"],
+        "highlights": [
+          { "code": "coversItems", "params": { "matched": 1, "total": 2 } },
+          { "code": "inStock", "params": { "count": 1 } },
+          { "code": "pastWins", "params": { "count": 4 } }
+        ],
+        "matches": [
+          {
+            "productId": "i1",
+            "basis": "stock",
+            "source": {
+              "kind": "price",
+              "title": "Прайс-лист компании",
+              "url": "https://severny-proviant.example.org/price/grechka",
+              "checkedAt": "2026-09-29T08:00:00Z"
+            }
+          }
+        ],
+        "similarPurchases": 11,
+        "wins": 4,
+        "purchases": [
+          {
+            "lotId": "32514850391-1",
+            "title": "Поставка круп для школьного питания",
+            "year": null,
+            "outcome": "winner",
+            "source": null
+          }
+        ]
+      },
+      {
+        "id": "7d2f3a4b-5c6d-4e7f-9081-92b3c4d5e6f7",
+        "name": "АО «Зерновой Двор»",
+        "inn": "",
+        "role": "unknown",
+        "roleSource": null,
+        "contacts": { "site": "", "email": "", "phone": "" },
+        "status": "check",
+        "checkReasons": ["innMissing", "roleUnconfirmed", "noCurrentOffer", "rangeUnconfirmed"],
+        "highlights": [{ "code": "similarPurchases", "params": { "count": 3 } }],
+        "matches": [{ "productId": "i2", "basis": "inferred", "source": null }],
+        "similarPurchases": 3,
+        "wins": 0,
+        "purchases": []
+      }
+    ]
+  },
+  "upload": {
+    "id": "3b7d1c2e-8f4a-4b6c-9d0e-1f2a3b4c5d6e",
+    "fileName": "notices.csv",
+    "createdAt": "2026-10-01T12:00:00Z",
+    "total": 3,
+    "processed": 2,
+    "counts": {
+      "ready": 0,
+      "needsCheck": 1,
+      "noCandidates": 1,
+      "failed": 0
+    },
+    "rejected": 1
+  }
+}

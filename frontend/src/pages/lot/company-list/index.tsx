@@ -1,35 +1,26 @@
-import { clsx } from "clsx"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { SegmentMeter } from "@/entities/evidence/ui/segment-meter"
+import { StatusTag } from "@/entities/evidence/ui/status-tag"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { Button } from "@/shared/ui/button"
 import { Caption } from "@/shared/ui/caption"
+import { FilterNote } from "@/shared/ui/filter-note"
 import { Icon } from "@/shared/ui/icon"
+import { PickCard } from "@/shared/ui/pick-card"
+import { ResultSection } from "@/shared/ui/result-section"
 import { Stack } from "@/shared/ui/stack"
 import { Tag } from "@/shared/ui/tag"
 import { TextButton } from "@/shared/ui/text-button"
-import { ResultSection } from "../section"
-import { SegmentMeter } from "../segment-meter"
-import { useRoleText, useStatusText } from "../status"
+import { companySegments, useRoleText, useStatusText } from "../status"
 import styles from "./styles.module.css"
 
 export const VISIBLE_COMPANIES = 4
 
-export function StatusTag({ company }: { readonly company: Company }) {
+export function CompanyStatus({ company }: { readonly company: Company }) {
   const statusText = useStatusText()
-  const recommended = company.status === "recommended"
-  return (
-    <Tag
-      tone={company.status === "historical" ? "accent" : recommended ? "success" : "warning"}
-    >
-      <span
-        aria-hidden="true"
-        className={clsx(styles.dot, recommended ? styles.filled : styles.hollow)}
-      />
-      {statusText(company)}
-    </Tag>
-  )
+  return <StatusTag status={company.status}>{statusText(company)}</StatusTag>
 }
 
 export type CompanyListProps = {
@@ -54,44 +45,32 @@ export function CompanyList(props: CompanyListProps) {
   return (
     <ResultSection title={t("companies.title")} aside={t("companies.order")}>
       {filter ? (
-        <p className={styles.filter}>
-          <Icon name="filter" size="sm" />
-          <span className={styles.filterText}>
-            {t("companies.filtered", { name: filter.name })}
-          </span>
-          <TextButton onClick={filter.onReset}>{t("companies.resetFilter")}</TextButton>
-        </p>
+        <FilterNote
+          text={t("companies.filtered", { name: filter.name })}
+          resetLabel={t("companies.resetFilter")}
+          onReset={filter.onReset}
+        />
       ) : null}
       {companies.length === 0 ? <Caption>{t("companies.noMatch")}</Caption> : null}
       <Stack>
         {visible.map((company) => (
-          <button
+          <PickCard
             key={company.id}
-            type="button"
-            aria-pressed={company.id === selectedId}
-            className={clsx(styles.company, company.id === selectedId && styles.selected)}
-            onClick={() => onSelect(company.id)}
+            title={company.name}
+            subtitle={roleText(company)}
+            rank={ranks.get(company.id) ?? 0}
+            selected={company.id === selectedId}
+            onSelect={() => onSelect(company.id)}
           >
-            <span className={styles.head}>
-              <span className={styles.identity}>
-                <span className={styles.name}>{company.name}</span>
-                <span className={styles.role}>{roleText(company)}</span>
-              </span>
-              <span className={styles.rank}>
-                {String(ranks.get(company.id) ?? 0).padStart(2, "0")}
-              </span>
-            </span>
             <span className={styles.match}>
-              <SegmentMeter company={company} products={products} />
-              {products.length > 0 ? (
-                <span className={styles.score} aria-hidden="true">
-                  {number(company.matches.length)}/{number(products.length)}
-                </span>
-              ) : null}
+              <SegmentMeter segments={companySegments(company, products)} />
+              <span className={styles.score} aria-hidden="true">
+                {number(company.matches.length)}/{number(products.length)}
+              </span>
             </span>
             <span className={styles.facts}>
               <span className={styles.tags}>
-                <StatusTag company={company} />
+                <CompanyStatus company={company} />
                 {chosen.includes(company.id) ? (
                   <Tag tone="accent">
                     <Icon name="check" size="sm" />
@@ -105,7 +84,7 @@ export function CompanyList(props: CompanyListProps) {
                   : t("companies.purchases", { count: company.similarPurchases })}
               </span>
             </span>
-          </button>
+          </PickCard>
         ))}
       </Stack>
       {hidden > 0 ? (

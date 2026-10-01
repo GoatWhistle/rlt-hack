@@ -11,7 +11,7 @@ from chdb.session import Session
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from src.adapter.clock import SystemClock
+from src.adapter.system.clock import SystemClock
 from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepository
 from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
 from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository

@@ -1,0 +1,36 @@
+{
+  "id": "6c1e2f3a-4b5c-4d6e-8f70-81a2b3c4d5e6",
+  "name": "ООО «Северный Провиант»",
+  "inn": "7801234567",
+  "kpps": ["780101001"],
+  "region": "78",
+  "identity": "verified",
+  "role": "supplierDistributor",
+  "roleSource": {
+    "kind": "catalog",
+    "title": "Каталог поставщиков",
+    "url": "https://catalog.example.org/companies/severny-proviant",
+    "checkedAt": "2026-09-28T10:00:00Z"
+  },
+  "contacts": {
+    "site": "https://severny-proviant.example.org",
+    "email": "sales@severny-proviant.example.org",
+    "phone": "+7 812 000-00-00"
+  },
+  "offers": [
+    {
+      "id": "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d",
+      "name": "Крупа гречневая ядрица 1 сорт, мешок 50 кг",
+      "price": "84.5000",
+      "currency": "RUB",
+      "unit": "кг",
+      "availability": "available",
+      "source": {
+        "kind": "price",
+        "title": "Прайс-лист компании",
+        "url": "https://severny-proviant.example.org/price/grechka",
+        "checkedAt": "2026-09-29T08:00:00Z"
+      }
+    }
+  ]
+}
