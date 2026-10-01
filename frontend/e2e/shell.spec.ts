@@ -1,5 +1,8 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, test } from "@playwright/test"
+import { installApiFixture } from "./api-fixture"
+
+test.beforeEach(async ({ page }) => installApiFixture(page))
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]
 const ROUTES = ["/uploads", "/lots", "/missing-page"]

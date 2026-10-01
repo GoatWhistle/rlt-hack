@@ -17,7 +17,7 @@ from src.adapter.supplier import identity
 from src.adapter.supplier.errors import ContentFormatError, SourceUnavailableError
 from src.adapter.supplier.productcenter_web import ProductCenterWebProvider
 from src.adapter.supplier.productcenter_web.cache import PageCache
-from src.adapter.supplier.productcenter_web.request import get
+from src.adapter.supplier.productcenter_web.request import RequestPacer, get
 from src.models.enums import SourceType, SupplierRole, VerificationStatus
 from src.models.source import Source
 
@@ -121,9 +121,14 @@ def provider(
         max_concurrent=2,
         retries=0,
         max_cards=max_cards,
+        request_interval=0,
         cache_dir=cache_dir,
         transport=httpx.MockTransport(handler),
     )
+
+
+async def no_wait(_seconds: float) -> None:
+    return None
 
 
 async def check() -> None:
@@ -252,6 +257,54 @@ async def check() -> None:
     async with httpx.AsyncClient(transport=httpx.MockTransport(throttled)) as http:
         assert (await get(http, f"{BASE}/retry", 1)).text == "ok"
     assert attempts == 2
+    refused = 0
+
+    async def temporarily_unavailable(request: httpx.Request) -> httpx.Response:
+        nonlocal refused
+        if str(request.url) == G1 and refused < 6:
+            refused += 1
+            raise httpx.ConnectError("connection refused", request=request)
+        body = data.get(str(request.url))
+        return httpx.Response(200, content=body) if body is not None else httpx.Response(503)
+
+    recovering = ProductCenterWebProvider(
+        provider(data).source,
+        max_concurrent=1,
+        retries=5,
+        transport=httpx.MockTransport(temporarily_unavailable),
+    )
+    with patch("src.adapter.supplier.productcenter_web.request.asyncio.sleep", no_wait):
+        assert len((await recovering.fetch()).offers) == 2
+    assert refused == 6
+    permanent_attempts = 0
+
+    def always_refused(request: httpx.Request) -> httpx.Response:
+        nonlocal permanent_attempts
+        permanent_attempts += 1
+        raise httpx.ConnectError("connection refused", request=request)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(always_refused)) as http:
+        with patch("src.adapter.supplier.productcenter_web.request.asyncio.sleep", no_wait):
+            try:
+                await get(http, f"{BASE}/unavailable", 0, connection_retries=1)
+            except SourceUnavailableError:
+                pass
+            else:
+                raise AssertionError("Постоянный сетевой отказ не остановил обход")
+    assert permanent_attempts == 2
+    request_times: list[float] = []
+
+    def record_start(_request: httpx.Request) -> httpx.Response:
+        request_times.append(asyncio.get_running_loop().time())
+        return httpx.Response(200, text="ok")
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(record_start)) as http:
+        pacer = RequestPacer(0.01)
+        await asyncio.gather(
+            get(http, f"{BASE}/paced-1", 0, pacer=pacer),
+            get(http, f"{BASE}/paced-2", 0, pacer=pacer),
+        )
+    assert request_times[1] - request_times[0] >= 0.009
     with tempfile.TemporaryDirectory() as directory:
         cache = PageCache(Path(directory))
         with patch.object(cache, "write", side_effect=OSError("disk full")):

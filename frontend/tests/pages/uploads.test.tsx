@@ -34,7 +34,6 @@ describe("the first visit", () => {
       "href",
       SAMPLE_PATH,
     )
-    expect(screen.getByText(en("demoNote"))).toBeInTheDocument()
     await user.upload(screen.getByLabelText(en("drop.choose", "uploads")), csv())
 
     const dialog = await screen.findByRole("dialog", { name: en("dialog.title", "uploads") })

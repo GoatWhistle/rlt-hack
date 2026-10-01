@@ -53,6 +53,17 @@ class ClickHousePackageRepository:
             return 0
         return await self._offers.withdraw_absent(package.source.source_id, observed_at)
 
+    async def save_batch(self, package: SupplierPackage, observed_at: datetime) -> None:
+        await self._sources.save_many([package.source])
+        for batch in _batches(_unique_suppliers(package.suppliers), self._batch_size):
+            await self._suppliers.save_many(batch)
+        for batch in _batches(_unique_offers(package.offers), self._batch_size):
+            known = await self._offers.first_seen_for([offer.offer_id for offer in batch])
+            await self._save_offers(batch, known, observed_at)
+
+    async def finish_snapshot(self, source_id: UUID, observed_at: datetime) -> int:
+        return await self._offers.withdraw_absent(source_id, observed_at)
+
     async def _save_offers(
         self,
         offers: Sequence[Offer],

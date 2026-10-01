@@ -12,9 +12,6 @@ def merge_supplier(primary: Supplier, secondary: Supplier) -> Supplier:
         name=primary.name or secondary.name,
         inn=primary.inn or secondary.inn,
         kpps=tuple(dict.fromkeys((*primary.kpps, *secondary.kpps))),
-        legal_status=(
-            primary.legal_status if primary.legal_status != "unknown" else secondary.legal_status
-        ),
         region=primary.region or secondary.region,
         website=primary.website or secondary.website,
         contacts={**secondary.contacts, **primary.contacts},

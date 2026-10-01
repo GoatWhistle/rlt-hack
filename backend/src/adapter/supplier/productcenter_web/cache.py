@@ -11,7 +11,7 @@ from uuid import uuid4
 
 
 class PageCache:
-    def __init__(self, directory: Path, ttl_seconds: int = 86400) -> None:
+    def __init__(self, directory: Path, ttl_seconds: int = 172800) -> None:
         self.directory = directory
         self.ttl_seconds = ttl_seconds
         self.hits = 0

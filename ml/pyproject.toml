@@ -35,6 +35,7 @@ rlt-cache-models = "rlt_ml.cache_models:main"
 rlt-build-card-variants = "rlt_ml.cards:main"
 rlt-audit-card-variants = "rlt_ml.card_audit:main"
 rlt-compare-card-variants = "rlt_ml.compare_cards:main"
+rlt-evaluate-candidate-ranker = "rlt_ml.candidate_ranker:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

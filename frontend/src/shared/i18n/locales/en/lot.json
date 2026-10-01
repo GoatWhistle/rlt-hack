@@ -1,6 +1,5 @@
 {
   "loading": "Loading the purchase",
-  "demoNote": "Demo data: companies, tax IDs, contacts and links are placeholders.",
   "missing": {
     "title": "Purchase not found",
     "text": "This lot is not in the upload, or the upload is not available in this browser.",
@@ -66,7 +65,8 @@
     "purchases_other": "{{count}} purchases",
     "status": {
       "recommended": "Recommended",
-      "check": "Needs checking"
+      "check": "Needs checking",
+      "historical": "Procurement history"
     },
     "order": "by relevance",
     "filtered": "Candidates with “{{name}}”",
@@ -152,5 +152,20 @@
     "contacts": "Contacts",
     "unknown": "No records",
     "note": "Past wins do not guarantee a future delivery. Prices and ratings are not shown: there is no confirmed data on them."
+  },
+  "history": {
+    "whyFound": "Why this supplier was found",
+    "title": "Examples from procurement history",
+    "source": "Source: historical procurement dataset. OKPD2 category: {{category}}.",
+    "lastDate": "Latest procurement in this profile: {{date}}",
+    "note": "These examples describe historical specialization. Check current availability and supply terms with the company.",
+    "catalog": "Published company products",
+    "checkedAt": "Page read on {{date}}",
+    "examples_one": "{{count}} example",
+    "examples_other": "{{count}} examples",
+    "requestTitle": "Search by description",
+    "requestNote": "“{{title}}”. Candidates match the procurement description as a whole. Individual product items have not yet been extracted.",
+    "companySource": "Company details source",
+    "openSource": "Company page"
   }
 }

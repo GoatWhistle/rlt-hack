@@ -5,6 +5,7 @@ import { Icon } from "@/shared/ui/icon"
 import { ClarifyBlock } from "./clarify-block"
 import { Confirmations } from "./confirmations"
 import { Hero } from "./hero"
+import { HistoryBlock } from "./history-block"
 import { MatchBlock } from "./match-block"
 import { PurchaseBlock } from "./purchase-block"
 import styles from "./styles.module.css"
@@ -28,9 +29,12 @@ export function EvidencePanel({
   return (
     <article className={styles.panel} aria-label={company.name}>
       <Hero company={company} products={products} />
-      <Confirmations company={company} products={products} />
-      <MatchBlock company={company} products={products} />
-      <PurchaseBlock company={company} />
+      {company.history ? <HistoryBlock company={company} /> : null}
+      {products.length > 0 ? <Confirmations company={company} products={products} /> : null}
+      {products.length > 0 ? <MatchBlock company={company} products={products} /> : null}
+      {!company.history || company.purchases.length > 0 ? (
+        <PurchaseBlock company={company} />
+      ) : null}
       <ClarifyBlock items={company.clarify} />
       <div className={styles.actions}>
         <Button variant={chosen ? "secondary" : "strong"} onClick={onChoose}>

@@ -15,11 +15,15 @@ export function Hero({ company, products }: HeroProps) {
   const recommended = company.status === "recommended"
   const main = company.clarify[0]
   return (
-    <div className={clsx(styles.hero, !recommended && styles.check)}>
+    <div className={clsx(styles.hero, company.status === "check" && styles.check)}>
       <div className={styles.top}>
         <div className={styles.identity}>
           <h3 className={styles.kicker}>
-            {recommended ? t("evidence.summaryTitle") : t("evidence.checkTitle")}
+            {company.status === "historical"
+              ? t("history.whyFound")
+              : recommended
+                ? t("evidence.summaryTitle")
+                : t("evidence.checkTitle")}
           </h3>
           <h2 className={styles.name}>{company.name}</h2>
           <p className={styles.meta}>
@@ -27,13 +31,15 @@ export function Hero({ company, products }: HeroProps) {
             <span className={styles.inn}>{t("evidence.inn", { inn: company.inn })}</span>
           </p>
         </div>
-        <span className={styles.score}>
-          {company.matches.length}/{products.length}
-        </span>
+        {products.length > 0 ? (
+          <span className={styles.score}>
+            {company.matches.length}/{products.length}
+          </span>
+        ) : null}
       </div>
       <p className={styles.summary}>{company.summary}</p>
       <SegmentMeter company={company} products={products} size="lg" />
-      {main ? (
+      {main && company.status !== "historical" ? (
         <p className={styles.callout}>
           <Icon name="warning" tone="warning" />
           <span>

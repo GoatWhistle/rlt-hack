@@ -2,8 +2,10 @@
 
 Покрыты: применение миграций, сохранение пакета источника, время первой
 встречи, снятие с продажи исчезнувших предложений, отсутствие снятия при пустом
-пакете, импорт компаний из датасета и журнал обхода. Сеть не используется:
-HTTP-клиент адаптера работает через httpx.MockTransport.
+пакете, импорт компаний из датасета и журнал обхода. Нормализатор и
+классификатор подключены настоящие, со справочниками репозитория: проверяется
+вся цепочка от разбора фида до производных колонок в хранилище. Сеть не
+используется: HTTP-клиент адаптера работает через httpx.MockTransport.
 """
 
 import asyncio
@@ -25,11 +27,17 @@ from src.adapter.repository.clickhouse.package import ClickHousePackageRepositor
 from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
 from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
 from src.adapter.repository.clickhouse.versions import VersionSequencer
+from src.adapter.repository.reference import (
+    load_classifier_reference,
+    load_normalizer_reference,
+)
 from src.adapter.supplier import identity
 from src.adapter.supplier.supplier_dataset import SupplierDatasetProvider
 from src.adapter.supplier.yml_feed import YmlFeedProvider
-from src.models.enums import FetchStatus, SourceType, VerificationStatus
+from src.models.enums import ClassificationMethod, FetchStatus, SourceType, VerificationStatus
 from src.models.source import Source
+from src.service.classifier import OfferClassifier
+from src.service.normalizer import OfferNormalizer
 from src.service.supplier.worker import SupplierSyncWorker
 from tests.clickhouse.chdb_gateway import ChdbGateway
 from tests.supplier.fixtures import FEED_EMPTY, FEED_FULL, FEED_WITHOUT_A3, SUPPLIERS_CSV
@@ -55,6 +63,19 @@ async def main() -> None:
             applied = await Migrator(gateway, MIGRATION_DIR).apply_pending()
             assert applied, "миграции не применились"
             assert not await Migrator(gateway, MIGRATION_DIR).apply_pending(), "повтор миграций"
+
+            normalizer_reference = await load_normalizer_reference()
+            normalizer = OfferNormalizer(normalizer_reference.units, normalizer_reference.rules)
+            classifier_reference = await load_classifier_reference(
+                normalizer.name_key, normalizer.name_stems
+            )
+            classifier = OfferClassifier(
+                okpd2=classifier_reference.okpd2,
+                rubrics=classifier_reference.rubrics,
+                lexicon=classifier_reference.lexicon,
+                categories=classifier_reference.categories,
+                name_key=normalizer.name_key,
+            )
 
             versions = VersionSequencer()
             sources = ClickHouseSourceRepository(gateway, versions)
@@ -102,6 +123,8 @@ async def main() -> None:
                     storage=storage,
                     journal=journal,
                     clock=SystemClock(),
+                    normalizer=normalizer,
+                    classifier=classifier,
                     max_parallel_sources=2,
                 )
                 result = await worker.run_once()
@@ -132,6 +155,25 @@ async def main() -> None:
             assert [row[0] for row in offer_rows] == ["A-1", "A-2"], offer_rows
             first_seen = {row[0]: row[4] for row in offer_rows}
             assert float(offer_rows[0][2]) == 350.50, offer_rows
+
+            # Производные значения записаны тем же обходом, что и исходные поля.
+            derived = await rows(
+                "SELECT external_id, normalized_name, normalizer_version, okpd2_code, rubric, "
+                "classification_method, classifier_version, unit_code, price_per_unit "
+                "FROM supplier_search.offers_current ORDER BY external_id"
+            )
+            assert all(row[1] for row in derived), derived
+            assert all(row[2] == normalizer.version for row in derived), derived
+            assert all(row[6] == classifier.version for row in derived), derived
+            classified = [row for row in derived if row[3]]
+            assert classified, derived
+            assert all(row[4] for row in classified), classified
+            assert all(row[5] != str(ClassificationMethod.NONE) for row in classified), classified
+
+            coverage = await offers.coverage()
+            assert coverage.offers == 2, coverage
+            assert coverage.normalized == 2, coverage
+            assert coverage.classified >= 1, coverage
 
             # Второй обход: А3 исчезла из фида, у А4 изменилась только цена.
             second = await sync(FEED_WITHOUT_A3)

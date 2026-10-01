@@ -56,7 +56,7 @@ async def main() -> None:
             offer = await asyncio.to_thread(
                 product_card, response.text, url, source.source_id, datetime.now(UTC)
             )
-            owner_url = urljoin(base, offer.seller_evidence_url)
+            owner_url = urljoin(base, offer.evidence_url)
             if owner_url not in suppliers:
                 response = await http.get(owner_url)
                 response.raise_for_status()

@@ -1,4 +1,7 @@
 services:
+  search-api:
+    image: rlt/backend:${RLT_IMAGE_TAG:?Set the release revision}
+    build: !reset null
   frontend:
     image: rlt/frontend:${RLT_IMAGE_TAG:?Set the release revision}
     ports:

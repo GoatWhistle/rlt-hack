@@ -74,8 +74,8 @@ export function suppliersCsv(
           basis("stock"),
           basis("catalog"),
           basis("inferred"),
-          company.similarPurchases,
-          company.wins,
+          company.similarPurchases ?? "",
+          company.wins ?? "",
           company.summary,
         ],
       ]

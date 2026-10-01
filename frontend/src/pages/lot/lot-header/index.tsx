@@ -71,11 +71,11 @@ export function LotHeader({ upload, lot, backTo, neighbours, onExport }: LotHead
         label={t("chain.label")}
         steps={[
           t("chain.request"),
-          t("chain.products"),
+          ...(lot.products > 0 ? [t("chain.products")] : []),
           t("chain.companies"),
           t("chain.evidence"),
         ]}
-        current={3}
+        current={lot.products > 0 ? 3 : 2}
       />
     </header>
   )

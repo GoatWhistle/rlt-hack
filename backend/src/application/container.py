@@ -12,6 +12,7 @@
 from types import TracebackType
 
 from src.adapter.clock import SystemClock
+from src.adapter.repository.clickhouse.archive import ClickHouseArchiveRepository
 from src.adapter.repository.clickhouse.client import create_client
 from src.adapter.repository.clickhouse.gateway import ConnectGateway
 from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepository
@@ -21,6 +22,10 @@ from src.adapter.repository.clickhouse.package import ClickHousePackageRepositor
 from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
 from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
 from src.adapter.repository.clickhouse.versions import VersionSequencer
+from src.adapter.repository.reference import (
+    load_classifier_reference,
+    load_normalizer_reference,
+)
 from src.adapter.supplier import identity
 from src.adapter.supplier.aboutpartner_web import PROVIDER_NAME as ABOUTPARTNER
 from src.adapter.supplier.aboutpartner_web import AboutPartnerWebProvider
@@ -30,10 +35,14 @@ from src.adapter.supplier.gisp_registry import PROVIDER_NAME as GISP_REGISTRY
 from src.adapter.supplier.gisp_registry import GispRegistryProvider
 from src.adapter.supplier.moscow_suppliers import PROVIDER_NAME as MOSCOW_SUPPLIERS
 from src.adapter.supplier.moscow_suppliers import MoscowSuppliersProvider
+from src.adapter.supplier.offer_identity import OfferIdentityRules
 from src.adapter.supplier.optkatalog_web import PROVIDER_NAME as OPTKATALOG
 from src.adapter.supplier.optkatalog_web import OptKatalogWebProvider
 from src.adapter.supplier.productcenter_web import PROVIDER_NAME as PRODUCTCENTER
 from src.adapter.supplier.productcenter_web import ProductCenterWebProvider
+from src.adapter.supplier.pulscen_web import PROVIDER_NAME as PULSCEN
+from src.adapter.supplier.pulscen_web import PulscenSnapshotProvider, PulscenWebProvider
+from src.adapter.supplier.pulscen_web.snapshot import PROVIDER_NAME as PULSCEN_SNAPSHOT
 from src.adapter.supplier.schema_org_web import PROVIDER_NAME as SCHEMA_ORG
 from src.adapter.supplier.schema_org_web import SchemaOrgWebProvider
 from src.adapter.supplier.supplier_dataset import PROVIDER_NAME as SUPPLIER_DATASET
@@ -45,7 +54,11 @@ from src.adapter.supplier.yml_feed import YmlFeedProvider
 from src.application.config import AppConfig
 from src.models.enums import SourceType
 from src.models.source import Source
+from src.service.classifier import OfferClassifier
+from src.service.normalizer import OfferNormalizer
+from src.service.supplier.enrich import OfferEnrichmentService
 from src.service.supplier.protocols import SupplierProvider
+from src.service.supplier.reidentify import OfferReidentifyService
 from src.service.supplier.worker import SupplierSyncWorker
 
 
@@ -64,6 +77,9 @@ class Container:
         self._config = config
         self._versions = VersionSequencer()
         self._gateway: ConnectGateway | None = None
+        # Справочники читаются один раз на процесс: они не меняются на ходу.
+        self._normalizer: OfferNormalizer | None = None
+        self._classifier: OfferClassifier | None = None
 
     @property
     def config(self) -> AppConfig:
@@ -85,14 +101,69 @@ class Container:
     async def journal(self) -> ClickHouseJournalRepository:
         return ClickHouseJournalRepository(await self.gateway(), self._config.clickhouse.database)
 
+    async def offers(self) -> ClickHouseOfferRepository:
+        return ClickHouseOfferRepository(
+            await self.gateway(), self._versions, self._config.clickhouse.database
+        )
+
     async def package_repository(self) -> ClickHousePackageRepository:
         database = self._config.clickhouse.database
         gateway = await self.gateway()
         return ClickHousePackageRepository(
             sources=await self.sources(),
             suppliers=ClickHouseSupplierRepository(gateway, self._versions, database),
-            offers=ClickHouseOfferRepository(gateway, self._versions, database),
+            offers=await self.offers(),
             batch_size=self._config.write_batch_size,
+        )
+
+    async def normalizer(self) -> OfferNormalizer:
+        """Нормализатор знает только свои справочники и правила."""
+        if self._normalizer is None:
+            reference = await load_normalizer_reference(self._config.reference_dir)
+            self._normalizer = OfferNormalizer(reference.units, reference.rules)
+        return self._normalizer
+
+    async def classifier(self) -> OfferClassifier:
+        """Ключ сравнения названий берётся у нормализатора: он один на систему."""
+        if self._classifier is None:
+            normalizer = await self.normalizer()
+            reference = await load_classifier_reference(
+                normalizer.name_key, normalizer.name_stems, self._config.reference_dir
+            )
+            archive = None
+            if self._config.use_archive_channel:
+                archive = ClickHouseArchiveRepository(
+                    await self.gateway(), self._config.clickhouse.database
+                )
+            self._classifier = OfferClassifier(
+                okpd2=reference.okpd2,
+                rubrics=reference.rubrics,
+                lexicon=reference.lexicon,
+                categories=reference.categories,
+                archive=archive,
+                archive_limit=self._config.archive_limit,
+                name_key=normalizer.name_key,
+            )
+        return self._classifier
+
+    async def enrichment(self) -> OfferEnrichmentService:
+        return OfferEnrichmentService(
+            sources=await self.sources(),
+            offers=await self.offers(),
+            normalizer=await self.normalizer(),
+            classifier=await self.classifier(),
+            clock=SystemClock(),
+            batch_size=self._config.write_batch_size,
+        )
+
+    async def reidentify(self) -> OfferReidentifyService:
+        """Перевод сохранённых позиций на действующее правило ключа."""
+        return OfferReidentifyService(
+            sources=await self.sources(),
+            offers=await self.offers(),
+            identity=OfferIdentityRules(),
+            clock=SystemClock(),
+            page_size=self._config.write_batch_size,
         )
 
     def providers(self) -> list[SupplierProvider]:
@@ -214,9 +285,11 @@ class Container:
                         source_type=SourceType.DIRECTORY,
                         provider_name=PRODUCTCENTER,
                     ),
-                    max_concurrent=config.parallel_requests,
+                    max_concurrent=config.productcenter_parallel_requests,
                     http_timeout=config.request_timeout,
                     max_cards=config.productcenter_max_cards or None,
+                    connection_retries=config.productcenter_connection_retries,
+                    request_interval=config.productcenter_request_interval,
                     cache_dir=config.productcenter_cache_dir,
                 )
             )
@@ -257,6 +330,33 @@ class Container:
                 )
             )
 
+        if config.use_pulscen_provider:
+            providers.append(
+                PulscenWebProvider(
+                    source_defaults=_source(
+                        name="Пульс цен",
+                        base_url="https://www.pulscen.ru/",
+                        source_type=SourceType.DIRECTORY,
+                        provider_name=PULSCEN,
+                    ),
+                    delay_seconds=config.pulscen_delay_seconds,
+                    http_timeout=config.request_timeout,
+                )
+            )
+
+        if config.pulscen_snapshot_path is not None:
+            providers.append(
+                PulscenSnapshotProvider(
+                    source_defaults=_source(
+                        name="Пульс цен (диагностический снимок)",
+                        base_url="https://www.pulscen.ru/",
+                        source_type=SourceType.DIRECTORY,
+                        provider_name=PULSCEN_SNAPSHOT,
+                    ),
+                    snapshot_path=config.pulscen_snapshot_path,
+                )
+            )
+
         return providers
 
     async def supplier_worker(self) -> SupplierSyncWorker:
@@ -265,6 +365,8 @@ class Container:
             storage=await self.package_repository(),
             journal=await self.journal(),
             clock=SystemClock(),
+            normalizer=await self.normalizer(),
+            classifier=await self.classifier(),
             interval_seconds=self._config.sync_interval_seconds,
             max_parallel_sources=self._config.parallel_sources,
         )

@@ -69,11 +69,15 @@ jobs:
       - run: python backend/tests/supplier/worker_smoke.py
       - run: python backend/tests/supplier/productcenter_smoke.py
       - run: python backend/tests/supplier/productcenter_job_smoke.py
+      - run: python backend/tests/supplier/productcenter_resume_smoke.py
       - run: python backend/tests/supplier/gisp_registry.py
       - run: python backend/tests/supplier/gisp_api.py
       - run: python backend/tests/supplier/moscow_suppliers_smoke.py
       - run: python backend/tests/supplier/eis_registry_smoke.py
       - run: python backend/tests/embedding/smoke.py
+      - run: python backend/tests/embedding/batching_smoke.py
+      - run: python backend/tests/search/smoke.py
+      - run: python backend/tests/search/clickhouse_smoke.py
 
   ml:
     runs-on: ubuntu-24.04
@@ -126,7 +130,7 @@ jobs:
     timeout-minutes: 15
     environment:
       name: production
-      url: http://${{ vars.DEPLOY_HOST }}:8081
+      url: ${{ vars.DEPLOY_URL }}
     steps:
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0
         with:
@@ -147,6 +151,7 @@ jobs:
         if: steps.revision.outputs.current == 'true'
         env:
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_URL: ${{ vars.DEPLOY_URL }}
           DEPLOY_USER: ${{ vars.DEPLOY_USER }}
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
@@ -154,6 +159,7 @@ jobs:
           set -euo pipefail
           umask 077
           test -n "$DEPLOY_HOST"
+          test -n "$DEPLOY_URL"
           test -n "$DEPLOY_USER"
           test -n "$DEPLOY_SSH_KEY"
           mkdir -p "$HOME/.ssh"
@@ -168,4 +174,4 @@ jobs:
           ssh "${options[@]}" "$target" \
             "cd '$incoming' && sha256sum -c SHA256SUMS && bash activate.sh '$GITHUB_SHA' '$GITHUB_RUN_ID'"
           curl --fail --silent --show-error --retry 5 --retry-all-errors \
-            --connect-timeout 10 --max-time 20 "http://$DEPLOY_HOST:8081/nginx-health"
+            --connect-timeout 10 --max-time 20 "$DEPLOY_URL/nginx-health"

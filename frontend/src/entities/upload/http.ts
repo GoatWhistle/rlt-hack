@@ -9,7 +9,7 @@ import {
 } from "./parse"
 
 export const UPLOADS_PATH = "/uploads"
-export const HTTP_MAX_NOTICES = 1_000_000
+export const HTTP_MAX_NOTICES = 20
 
 function uploadPath(uploadId: string): string {
   return `${UPLOADS_PATH}/${encodeURIComponent(uploadId)}`
@@ -17,7 +17,6 @@ function uploadPath(uploadId: string): string {
 
 export function createHttpGateway(client: HttpClient): UploadGateway {
   return {
-    demo: false,
     maxNotices: HTTP_MAX_NOTICES,
     list: () => client.get(UPLOADS_PATH, { parse: parseUploadList }),
     get: (uploadId) => client.get(uploadPath(uploadId), { parse: parseUploadDetail }),

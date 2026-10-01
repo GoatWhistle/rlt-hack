@@ -16,3 +16,7 @@ class SourceUnavailableError(ProviderError):
 
 class ContentFormatError(ProviderError):
     """Документ получен, но не разобран: содержимое не соответствует формату."""
+
+
+class BotProtectionError(SourceUnavailableError):
+    """Источник отвечает проверкой на робота: обход не обходит защиту и завершается."""
