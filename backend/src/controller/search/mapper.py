@@ -1,3 +1,4 @@
+import re
 from uuid import UUID
 
 from src.controller.http.schema import plain_decimal, score
@@ -24,7 +25,7 @@ from src.controller.search.dto import (
 )
 from src.models.candidate import Highlight, ProductMatch, SupplierCandidate
 from src.models.enums import ItemType, Locale
-from src.models.evidence import Evidence
+from src.models.evidence import Evidence, is_web_url
 from src.models.purchase import PurchaseRecord, PurchaseSummary
 from src.models.query_item import QueryItem
 from src.models.scoring import ScoreBreakdown
@@ -32,6 +33,8 @@ from src.models.search import CandidateLimit, SearchFilters, SearchQuery, Search
 from src.models.search_result import SearchResult, SearchSummary
 from src.models.supplier import Supplier
 from src.service.errors import SearchNotFoundError
+
+EMAIL = re.compile(r"[^@\s?&#/:]+@[^@\s?&#/:]+\.[^@\s?&#/:]+")
 
 FILTER_ITEM_TYPES: dict[ItemType, FilterItemType] = {
     ItemType.GOODS: "goods",
@@ -71,10 +74,19 @@ def source_dto(evidence: Evidence | None) -> SourceDto | None:
     )
 
 
+def web_site(raw: str) -> str:
+    return raw.strip() if is_web_url(raw) else ""
+
+
+def email_address(raw: str) -> str:
+    value = raw.strip()
+    return value if EMAIL.fullmatch(value) else ""
+
+
 def contacts_dto(supplier: Supplier) -> ContactsDto:
     return ContactsDto(
-        site=supplier.website,
-        email=supplier.contacts.get("email") or "",
+        site=web_site(supplier.website),
+        email=email_address(supplier.contacts.get("email") or ""),
         phone=supplier.contacts.get("phone") or "",
     )
 
