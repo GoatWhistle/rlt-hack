@@ -7,6 +7,7 @@
 import argparse
 import asyncio
 import dataclasses
+import json
 import logging
 import sys
 from collections.abc import Sequence
@@ -33,6 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("providers", help="показать подключённые адаптеры источников")
     commands.add_parser("sources", help="показать источники, уже записанные в хранилище")
     commands.add_parser("sync-products", help="обойти каталог продуктов СТЕ")
+    commands.add_parser("probe-products", help="проверить первую страницу СТЕ без записи")
 
     runs = commands.add_parser("runs", help="последние обходы источника")
     runs.add_argument("--source", required=True, help="UUID источника")
@@ -95,8 +97,26 @@ async def _dispatch(arguments: argparse.Namespace, config: AppConfig) -> int:
         async with Container(config) as container:
             result = await (await container.product_worker()).run_once()
             print(
-                f"run={result.run_id} products={result.product_count} pages={result.pages_fetched}"
+                f"run={result.run_id} products={result.product_count} "
+                f"pages={result.pages_fetched} names_changed={result.names_changed} "
+                f"summary_only={result.summary_only_count}"
             )
+            return 0
+    if arguments.command == "probe-products":
+        async with Container(config) as container:
+            provider = container.product_provider()
+            page = await provider.sample()
+            first = page.items[0] if page.items else None
+            print(f"total={page.total} returned={len(page.items)}")
+            if first is not None:
+                fields = ",".join(sorted(json.loads(first.raw_json)))
+                print(f"first_id={first.external_id} fields={fields}")
+                card = await provider.card(first)
+                print(
+                    f"card_id={card.external_id} type={card.item_type} "
+                    f"category_depth={len(card.category_path)} "
+                    f"attributes={len(card.attributes)} images={len(card.image_urls)}"
+                )
             return 0
     async with Container(config) as container:
         if arguments.command == "providers":

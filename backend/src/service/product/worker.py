@@ -12,6 +12,8 @@ class ProductSyncResult:
     run_id: UUID
     product_count: int
     pages_fetched: int
+    names_changed: bool
+    summary_only_count: int
 
 
 class ProductSyncWorker:
@@ -24,31 +26,37 @@ class ProductSyncWorker:
         count = 0
         pages = 0
         expected: int | None = None
-        digest = hashlib.sha256()
-        async for page in self._provider.pages():
+        identities = hashlib.sha256()
+        first_names = hashlib.sha256()
+        async for page in self._provider.listing_pages():
             expected = page.total
-            await self._storage.stage(run_id, page.items)
             for item in page.items:
-                digest.update(item.external_id.encode())
-                digest.update(b"\0")
-                digest.update(item.content_hash.encode())
-                digest.update(b"\n")
+                identities.update(item.external_id.encode())
+                identities.update(b"\n")
+                first_names.update(item.name.strip().encode())
+                first_names.update(b"\n")
             count += len(page.items)
             pages += 1
         if expected is None or count == 0 or count != expected:
             raise ValueError("неполный обход каталога СТЕ")
-        verified = hashlib.sha256()
+        verified_ids = hashlib.sha256()
+        current_names = hashlib.sha256()
         verified_count = 0
+        summary_only_count = 0
         async for page in self._provider.pages():
+            pages += 1
             if page.total != expected:
                 raise ValueError("счётчик СТЕ изменился при повторной сверке")
             for item in page.items:
-                verified.update(item.external_id.encode())
-                verified.update(b"\0")
-                verified.update(item.content_hash.encode())
-                verified.update(b"\n")
+                verified_ids.update(item.external_id.encode())
+                verified_ids.update(b"\n")
+                current_names.update(item.name.strip().encode())
+                current_names.update(b"\n")
+                summary_only_count += item.detail_status == "summary_only"
+            await self._storage.stage(run_id, page.items)
             verified_count += len(page.items)
-        if verified_count != count or verified.digest() != digest.digest():
-            raise ValueError("каталог СТЕ изменился между двумя полными обходами")
+        if verified_count != count or verified_ids.digest() != identities.digest():
+            raise ValueError("состав СТЕ изменился между двумя полными обходами")
         await self._storage.publish(run_id, self._provider.source_id, count)
-        return ProductSyncResult(run_id, count, pages)
+        changed = current_names.digest() != first_names.digest()
+        return ProductSyncResult(run_id, count, pages, changed, summary_only_count)

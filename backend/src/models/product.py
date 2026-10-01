@@ -24,5 +24,6 @@ class Product:
     manufacturer: str = ""
     country: str = ""
     image_urls: tuple[str, ...] = ()
+    detail_status: str = "summary_only"
     raw_json: str = ""
     content_hash: str = ""

@@ -86,7 +86,7 @@ class AppConfig:
     use_moscow_suppliers_provider: bool = False
     moscow_suppliers_export_url: str = ""
     use_moscow_products_provider: bool = False
-    moscow_products_page_size: int = 100
+    moscow_products_page_size: int = 500
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -129,5 +129,5 @@ class AppConfig:
             use_moscow_suppliers_provider=_bool("MOSCOW_SUPPLIERS_PROVIDER", False),
             moscow_suppliers_export_url=os.getenv("MOSCOW_SUPPLIERS_EXPORT_URL", ""),
             use_moscow_products_provider=_bool("MOSCOW_PRODUCTS_PROVIDER", False),
-            moscow_products_page_size=_int("MOSCOW_PRODUCTS_PAGE_SIZE", 100),
+            moscow_products_page_size=_int("MOSCOW_PRODUCTS_PAGE_SIZE", 500),
         )

@@ -25,6 +25,7 @@ COLUMNS = (
     "manufacturer",
     "country",
     "image_urls",
+    "detail_status",
     "raw_json",
     "content_hash",
 )
@@ -58,6 +59,7 @@ class ClickHouseMoscowProductRepository:
                     item.manufacturer,
                     item.country,
                     list(item.image_urls),
+                    item.detail_status,
                     item.raw_json,
                     item.content_hash,
                 )

@@ -318,14 +318,18 @@ class Container:
             max_parallel_sources=self._config.parallel_sources,
         )
 
-    async def product_worker(self) -> ProductSyncWorker:
-        if not self._config.use_moscow_products_provider:
-            raise ValueError("MOSCOW_PRODUCTS_PROVIDER выключен")
-        provider = MoscowProductProvider(
+    def product_provider(self) -> MoscowProductProvider:
+        return MoscowProductProvider(
             source_id=identity.source_id("https://zakupki.mos.ru/", "moscow_products"),
             page_size=self._config.moscow_products_page_size,
             timeout=self._config.request_timeout,
+            max_concurrent=self._config.parallel_requests,
         )
+
+    async def product_worker(self) -> ProductSyncWorker:
+        if not self._config.use_moscow_products_provider:
+            raise ValueError("MOSCOW_PRODUCTS_PROVIDER выключен")
+        provider = self.product_provider()
         storage = ClickHouseMoscowProductRepository(
             await self.gateway(), self._config.clickhouse.database
         )

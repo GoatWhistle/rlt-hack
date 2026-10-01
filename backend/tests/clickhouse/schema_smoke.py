@@ -70,9 +70,10 @@ async def main():
                     "completed_at": "2026-10-01 10:00:00.000",
                 },
             )
-            assert rows("SELECT product_id FROM supplier_search.moscow_products_current") == [
-                {"product_id": product_id}
-            ]
+            visible = rows(
+                "SELECT product_id, detail_status FROM supplier_search.moscow_products_current"
+            )
+            assert visible == [{"product_id": product_id, "detail_status": "summary_only"}]
 
             supplier = "00000000-0000-0000-0000-000000000001"
             offer = "00000000-0000-0000-0000-000000000002"

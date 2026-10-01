@@ -29,6 +29,10 @@ class Provider:
         for page in self.traversals.pop(0):
             yield page
 
+    async def listing_pages(self) -> AsyncIterator[Page]:
+        for page in self.traversals.pop(0):
+            yield page
+
 
 class Storage:
     def __init__(self) -> None:
@@ -50,16 +54,26 @@ async def main() -> None:
     stable_provider = Provider([[Page(1, (first,))], [Page(1, (first,))]])
     result = await ProductSyncWorker(stable_provider, storage).run_once()
     assert result.product_count == 1 and len(storage.published) == 1
+    assert result.pages_fetched == 2 and not result.names_changed
+    assert result.summary_only_count == 1
+    assert storage.staged == [first]
 
     storage = Storage()
     worker = ProductSyncWorker(Provider([[Page(1, (first,))], [Page(1, (changed,))]]), storage)
+    result = await worker.run_once()
+    assert result.names_changed and storage.staged == [changed]
+    assert len(storage.published) == 1
+
+    storage = Storage()
+    other = parse_product(source, {"id": 2, "name": "Другой товар"})
+    worker = ProductSyncWorker(Provider([[Page(1, (first,))], [Page(1, (other,))]]), storage)
     try:
         await worker.run_once()
     except ValueError as error:
-        assert "изменился" in str(error)
+        assert "состав" in str(error)
     else:
         raise AssertionError("изменившийся снимок опубликован")
-    assert storage.staged == [first] and storage.published == []
+    assert storage.staged == [other] and storage.published == []
 
     storage = Storage()
     try:
