@@ -41,7 +41,39 @@ async def main():
             objects = rows(
                 "SELECT count() AS n FROM system.tables WHERE database = 'supplier_search'"
             )
-            assert int(objects[0]["n"]) == 26, objects
+            assert int(objects[0]["n"]) == 29, objects
+
+            product_run = "00000000-0000-0000-0000-000000000101"
+            product_id = "00000000-0000-0000-0000-000000000102"
+            product_source = "00000000-0000-0000-0000-000000000103"
+            insert(
+                "moscow_products",
+                {
+                    "run_id": product_run,
+                    "product_id": product_id,
+                    "source_id": product_source,
+                    "external_id": "42",
+                    "url": "https://zakupki.mos.ru/sku/view/42",
+                    "name": "Тестовая СТЕ",
+                    "item_type": "goods",
+                    "raw_json": '{"id":42}',
+                    "content_hash": "test",
+                },
+            )
+            assert rows("SELECT product_id FROM supplier_search.moscow_products_current") == []
+            insert(
+                "moscow_product_publications",
+                {
+                    "run_id": product_run,
+                    "source_id": product_source,
+                    "product_count": 1,
+                    "completed_at": "2026-10-01 10:00:00.000",
+                },
+            )
+            visible = rows(
+                "SELECT product_id, detail_status FROM supplier_search.moscow_products_current"
+            )
+            assert visible == [{"product_id": product_id, "detail_status": "summary_only"}]
 
             supplier = "00000000-0000-0000-0000-000000000001"
             offer = "00000000-0000-0000-0000-000000000002"

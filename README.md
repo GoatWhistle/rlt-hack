@@ -95,6 +95,10 @@ ProductCenter включается флагом `PRODUCTCENTER_WEB_PROVIDER=true
 Для живой проверки без записи в ClickHouse используйте команду из
 [backend/README.md](backend/README.md); отчёт и кеш размещаются вне Git.
 
+Там же приведены команды полного браузерного экспорта ГИСП и его загрузки
+из локального снимка в ClickHouse. Для экспорта нужен Google Chrome и `npm ci`
+в `backend/`; файлы снимка хранятся вне Git.
+
 ## Применение миграций без Docker
 
 ```sh
@@ -143,6 +147,7 @@ uv run --no-project --python 3.13 python backend/tests/normalizer/normalizer_smo
 uv run --no-project --python 3.13 python backend/tests/classifier/classifier_smoke.py
 uv run --no-project --python 3.13 --with lxml python backend/tests/registry/registry_smoke.py
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/registry/registry_store_smoke.py
+uv run --no-project --python 3.13 --with httpx --with openpyxl python backend/tests/supplier/gisp_snapshot.py
 ```
 
 Проверки используют временные каталоги, встроенный движок chDB и подготовленные

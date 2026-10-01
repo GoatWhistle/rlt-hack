@@ -7,10 +7,11 @@
 import argparse
 import asyncio
 import dataclasses
+import json
 import logging
 import sys
 from collections.abc import Sequence
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from src.application.config import AppConfig
 from src.application.container import Container
@@ -36,6 +37,11 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("migrations", help="показать применённые миграции")
     commands.add_parser("providers", help="показать подключённые адаптеры источников")
     commands.add_parser("sources", help="показать источники, уже записанные в хранилище")
+    commands.add_parser("sync-products", help="обойти каталог продуктов СТЕ")
+    collect = commands.add_parser("collect-products", help="накопить страницы СТЕ без публикации")
+    collect.add_argument("--run-id", type=UUID, help="UUID предыдущей партии для продолжения")
+    collect.add_argument("--pages", type=int, default=1, help="число страниц за запуск")
+    commands.add_parser("probe-products", help="проверить первую страницу СТЕ без записи")
 
     runs = commands.add_parser("runs", help="последние обходы источника")
     runs.add_argument("--source", required=True, help="UUID источника")
@@ -103,6 +109,43 @@ def main(argv: Sequence[str] | None = None) -> int:
 async def _dispatch(arguments: argparse.Namespace, config: AppConfig) -> int:
     if arguments.command == "sync":
         return await _sync(arguments, config)
+    if arguments.command == "sync-products":
+        async with Container(config) as container:
+            result = await (await container.product_worker()).run_once()
+            print(
+                f"run={result.run_id} products={result.product_count} "
+                f"pages={result.pages_fetched} names_changed={result.names_changed} "
+                f"summary_only={result.summary_only_count}"
+            )
+            return 0
+    if arguments.command == "collect-products":
+        if arguments.pages < 1:
+            raise ValueError("--pages должен быть положительным")
+        async with Container(config) as container:
+            worker = await container.product_collection_worker()
+            result = await worker.run_pages(arguments.run_id or uuid4(), arguments.pages)
+            print(
+                f"run={result.run_id} staged={result.staged_count} "
+                f"pages={result.pages_fetched} source_total={result.source_total} "
+                f"last_id={result.last_id}"
+            )
+            return 0
+    if arguments.command == "probe-products":
+        async with Container(config) as container:
+            provider = container.product_provider()
+            page = await provider.sample()
+            first = page.items[0] if page.items else None
+            print(f"total={page.total} returned={len(page.items)}")
+            if first is not None:
+                fields = ",".join(sorted(json.loads(first.raw_json)))
+                print(f"first_id={first.external_id} fields={fields}")
+                card = await provider.card(first)
+                print(
+                    f"card_id={card.external_id} type={card.item_type} "
+                    f"category_depth={len(card.category_path)} "
+                    f"attributes={len(card.attributes)} images={len(card.image_urls)}"
+                )
+            return 0
     async with Container(config) as container:
         if arguments.command == "providers":
             for provider in container.providers():

@@ -45,3 +45,4 @@ ignore = ["RUF001", "RUF002", "RUF003"]
 [tool.ruff.lint.per-file-ignores]
 # Проверки добавляют корень проекта в sys.path до импортов.
 "tests/**" = ["E402"]
+"tests/supplier/eis_registry_smoke.py" = ["E501"]

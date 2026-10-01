@@ -64,8 +64,10 @@ jobs:
       - run: uv pip install --system -r backend/pyproject.toml --extra test 'ruff>=0.14,<1'
       - run: ruff check backend
       - run: python backend/tests/clickhouse/schema_smoke.py
+      - run: python backend/tests/clickhouse/offer_batch_smoke.py
       - run: python backend/tests/supplier/job_smoke.py
       - run: python backend/tests/supplier/provider_smoke.py
+      - run: python backend/tests/supplier/batching_smoke.py
       - run: python backend/tests/supplier/worker_smoke.py
       - run: python backend/tests/supplier/productcenter_smoke.py
       - run: python backend/tests/supplier/productcenter_job_smoke.py
@@ -75,9 +77,16 @@ jobs:
       - run: python backend/tests/supplier/moscow_suppliers_smoke.py
       - run: python backend/tests/registry/registry_smoke.py
       - run: python backend/tests/registry/registry_store_smoke.py
+      - run: python backend/tests/supplier/eis_registry_smoke.py
+      - run: python backend/tests/supplier/gisp_snapshot.py
+      - run: python backend/tests/supplier/supl_biz_smoke.py
+      - run: python backend/tests/supplier/supl_biz_balanced_smoke.py
+      - run: python backend/tests/product/moscow_smoke.py
+      - run: python backend/tests/product/worker_smoke.py
       - run: python backend/tests/embedding/smoke.py
       - run: python backend/tests/embedding/inference_smoke.py
       - run: python backend/tests/embedding/batching_smoke.py
+      - run: python backend/tests/embedding/document_smoke.py
       - run: python backend/tests/search/smoke.py
       - run: python backend/tests/search/clickhouse_smoke.py
       - run: python backend/tests/search/history_smoke.py

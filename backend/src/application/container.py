@@ -14,11 +14,13 @@ from types import TracebackType
 
 from src.adapter.client.msp_registry import MspRegistryDump
 from src.adapter.clock import SystemClock
+from src.adapter.product.moscow.provider import MoscowProductProvider
 from src.adapter.repository.clickhouse.archive import ClickHouseArchiveRepository
 from src.adapter.repository.clickhouse.client import create_client
 from src.adapter.repository.clickhouse.gateway import ConnectGateway
 from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepository
 from src.adapter.repository.clickhouse.migrator import Migrator
+from src.adapter.repository.clickhouse.moscow_product import ClickHouseMoscowProductRepository
 from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
 from src.adapter.repository.clickhouse.package import ClickHousePackageRepository
 from src.adapter.repository.clickhouse.registry import ClickHouseMspRegistryRepository
@@ -33,6 +35,8 @@ from src.adapter.repository.reference import (
 from src.adapter.supplier import identity
 from src.adapter.supplier.aboutpartner_web import PROVIDER_NAME as ABOUTPARTNER
 from src.adapter.supplier.aboutpartner_web import AboutPartnerWebProvider
+from src.adapter.supplier.eis_registry import PROVIDER_NAME as EIS_REGISTRY
+from src.adapter.supplier.eis_registry import EisRegistryProvider
 from src.adapter.supplier.gisp_registry import PROVIDER_NAME as GISP_REGISTRY
 from src.adapter.supplier.gisp_registry import GispRegistryProvider
 from src.adapter.supplier.moscow_suppliers import PROVIDER_NAME as MOSCOW_SUPPLIERS
@@ -47,6 +51,8 @@ from src.adapter.supplier.pulscen_web import PulscenSnapshotProvider, PulscenWeb
 from src.adapter.supplier.pulscen_web.snapshot import PROVIDER_NAME as PULSCEN_SNAPSHOT
 from src.adapter.supplier.schema_org_web import PROVIDER_NAME as SCHEMA_ORG
 from src.adapter.supplier.schema_org_web import SchemaOrgWebProvider
+from src.adapter.supplier.supl_biz_web import PROVIDER_NAME as SUPL_BIZ
+from src.adapter.supplier.supl_biz_web import SuplBizWebProvider
 from src.adapter.supplier.supplier_dataset import PROVIDER_NAME as SUPPLIER_DATASET
 from src.adapter.supplier.supplier_dataset import SupplierDatasetProvider
 from src.adapter.supplier.texzakaz_web import PROVIDER_NAME as TEXZAKAZ
@@ -58,6 +64,7 @@ from src.models.enums import SourceType
 from src.models.source import Source
 from src.service.classifier import OfferClassifier
 from src.service.normalizer import OfferNormalizer
+from src.service.product.worker import ProductCollectionWorker, ProductSyncWorker
 from src.service.registry import RegistryImportService, SupplierRegistryEnricher
 from src.service.supplier.enrich import OfferEnrichmentService
 from src.service.supplier.protocols import SupplierProvider
@@ -329,6 +336,28 @@ class Container:
                 )
             )
 
+        if config.use_eis_registry_provider:
+            providers.append(
+                EisRegistryProvider(
+                    source_defaults=_source(
+                        name="ЕИС: реестр контрактов",
+                        base_url="https://zakupki.gov.ru/",
+                        source_type=SourceType.REGISTRY,
+                        provider_name=EIS_REGISTRY,
+                    ),
+                    period_start=config.eis_period_start,
+                    period_days=config.eis_period_days,
+                    max_contracts=config.eis_max_contracts or None,
+                    http_timeout=config.request_timeout,
+                    max_concurrent=config.parallel_requests,
+                    min_interval=config.eis_request_interval,
+                    proxy=config.eis_proxy,
+                    verify=(
+                        config.eis_ca_bundle if config.eis_ca_bundle else config.eis_verify_tls
+                    ),
+                )
+            )
+
         if config.use_pulscen_provider:
             providers.append(
                 PulscenWebProvider(
@@ -356,6 +385,21 @@ class Container:
                 )
             )
 
+        if config.use_supl_biz_provider:
+            providers.append(
+                SuplBizWebProvider(
+                    source_defaults=_source(
+                        name="Supl.biz",
+                        base_url="https://supl.biz/",
+                        source_type=SourceType.DIRECTORY,
+                        provider_name=SUPL_BIZ,
+                    ),
+                    max_cards=config.supl_biz_max_cards or None,
+                    max_concurrent=config.parallel_requests,
+                    http_timeout=config.request_timeout,
+                )
+            )
+
         return providers
 
     async def supplier_worker(self) -> SupplierSyncWorker:
@@ -369,7 +413,35 @@ class Container:
             classifier=await self.classifier(),
             interval_seconds=self._config.sync_interval_seconds,
             max_parallel_sources=self._config.parallel_sources,
+            batch_size=self._config.sync_batch_size,
+            package_batch_size=self._config.write_batch_size,
         )
+
+    def product_provider(self) -> MoscowProductProvider:
+        return MoscowProductProvider(
+            source_id=identity.source_id("https://zakupki.mos.ru/", "moscow_products"),
+            page_size=self._config.moscow_products_page_size,
+            timeout=self._config.request_timeout,
+            max_concurrent=self._config.parallel_requests,
+            retry_attempts=self._config.moscow_products_retry_attempts,
+        )
+
+    async def product_worker(self) -> ProductSyncWorker:
+        if not self._config.use_moscow_products_provider:
+            raise ValueError("MOSCOW_PRODUCTS_PROVIDER выключен")
+        provider = self.product_provider()
+        storage = ClickHouseMoscowProductRepository(
+            await self.gateway(), self._config.clickhouse.database
+        )
+        return ProductSyncWorker(provider, storage)
+
+    async def product_collection_worker(self) -> ProductCollectionWorker:
+        if not self._config.use_moscow_products_provider:
+            raise ValueError("MOSCOW_PRODUCTS_PROVIDER выключен")
+        storage = ClickHouseMoscowProductRepository(
+            await self.gateway(), self._config.clickhouse.database
+        )
+        return ProductCollectionWorker(self.product_provider(), storage)
 
     async def aclose(self) -> None:
         if self._gateway is not None:

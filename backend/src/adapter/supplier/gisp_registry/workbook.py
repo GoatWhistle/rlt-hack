@@ -199,6 +199,7 @@ def parse_workbook(content: bytes, source: Source) -> SupplierPackage:
                     _value(row, columns, "basis_number"),
                     company_key,
                     product,
+                    _value(row, columns, "conclusion_document"),
                 )
                 url = source.base_url
                 offer = Offer(

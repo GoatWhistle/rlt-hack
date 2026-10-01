@@ -11,8 +11,18 @@ def registry_external_id(
     basis_number: str,
     company_key: str,
     product: str,
+    document_url: str = "",
+    writeout_url: str = "",
 ) -> str:
-    immutable_key = (number, introduced, basis_number, company_key, product)
+    immutable_key = (
+        number,
+        introduced,
+        basis_number,
+        company_key,
+        product,
+        document_url,
+        writeout_url,
+    )
     digest = hashlib.sha256(json.dumps(immutable_key, ensure_ascii=False).encode()).hexdigest()
     return f"{number}:{digest[:20]}"
 
