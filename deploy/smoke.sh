@@ -39,6 +39,10 @@ curl --fail --silent --show-error http://127.0.0.1:8081/nginx-health
 curl --fail --silent --show-error http://127.0.0.1:8081/api/health/live
 curl --fail --silent --show-error http://127.0.0.1:8081/ > "$scratch/index.html"
 grep -q 'type="module"' "$scratch/index.html"
+headers=$(curl --fail --silent --show-error --head http://127.0.0.1:8081/)
+grep -qi '^referrer-policy:' <<<"$headers"
+grep -qi '^content-security-policy:' <<<"$headers"
+if grep -qi '^server:.*[0-9]' <<<"$headers"; then exit 1; fi
 codes=$(seq 30 | xargs -P 15 -I{} curl --silent --output /dev/null \
   --write-out '%{http_code}\n' --request POST --header 'Content-Type: application/json' \
   --data '{"text":"бумага офисная"}' http://127.0.0.1:8081/api/searches)
