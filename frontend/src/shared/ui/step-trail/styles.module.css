@@ -23,8 +23,8 @@
   width: var(--icon-md);
   height: var(--icon-md);
   border-radius: var(--radius-pill);
-  background: var(--success-soft);
-  color: var(--success-text);
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
 }
 
 .link {

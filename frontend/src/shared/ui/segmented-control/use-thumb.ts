@@ -22,6 +22,7 @@ export function placeThumb(group: HTMLElement): boolean {
 }
 
 export function useThumb(ref: RefObject<HTMLElement | null>, value: string): void {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the thumb moves when the checked value changes
   useLayoutEffect(() => {
     const group = ref.current
     if (!group || !placeThumb(group)) return

@@ -6,7 +6,6 @@
   "notices_other": "{{count, number}} notices",
   "download": "Download results",
   "processing": {
-    "label": "Processing progress",
     "running": "Processing: {{processed, number}} of {{total, number}} ready",
     "hint": "Finished purchases can be opened already.",
     "done_one": "Processing finished: {{count, number}} purchase",

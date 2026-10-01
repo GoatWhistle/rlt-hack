@@ -53,10 +53,6 @@
   background: var(--accent-soft);
 }
 
-.row[data-selected="true"] .link {
-  color: var(--accent-strong);
-}
-
 .check {
   width: var(--target-touch);
 }
@@ -111,6 +107,10 @@
 
 .link:focus-visible {
   outline: none;
+  color: var(--accent-strong);
+}
+
+.row[data-selected="true"] .link {
   color: var(--accent-strong);
 }
 

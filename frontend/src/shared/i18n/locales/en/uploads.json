@@ -24,7 +24,6 @@
     "notices_one": "{{count, number}} notice",
     "notices_other": "{{count, number}} notices",
     "processing": "Processed {{processed, number}} of {{total, number}}",
-    "progress": "Processing {{name}}",
     "done": "Processing finished",
     "ready": "ready: {{count, number}}",
     "needsCheck": "need clarifying: {{count, number}}",

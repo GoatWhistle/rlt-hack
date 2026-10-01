@@ -17,6 +17,7 @@ export function ProgressBar({
 }: ProgressBarProps) {
   const share = max > 0 ? Math.min(1, Math.max(0, value / max)) : 0
   return (
+    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: role is progressbar or meter, both take a label and values
     <span
       role={role}
       aria-label={label}

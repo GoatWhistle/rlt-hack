@@ -8,7 +8,6 @@
   "notices_other": "{{count, number}} извещения",
   "download": "Скачать результаты",
   "processing": {
-    "label": "Ход обработки",
     "running": "Обработка: готово {{processed, number}} из {{total, number}}",
     "hint": "Готовые закупки уже можно открыть.",
     "done_one": "Обработка завершена: {{count, number}} закупка",
