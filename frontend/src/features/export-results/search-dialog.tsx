@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useCheckReasonText, useHighlightText } from "@/entities/evidence/labels"
+import { useCheckReasonText } from "@/entities/evidence/candidate-labels"
+import { useHighlightText } from "@/entities/evidence/labels"
 import type { SearchResult } from "@/entities/search/model"
 import { saveTextFile } from "@/shared/download/save-text-file"
 import { Button } from "@/shared/ui/button"

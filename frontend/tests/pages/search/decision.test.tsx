@@ -34,17 +34,17 @@ describe("deciding on a search result", () => {
     const { user, unmount } = await openResult()
     const grounds = screen.getByRole("article", { name: /Северный Провиант/ })
     await user.click(
-      within(grounds).getByRole("button", { name: en("evidence.choose", "search") }),
+      within(grounds).getByRole("button", { name: en("panel.choose", "candidate") }),
     )
     expect(
-      within(grounds).getByRole("button", { name: en("evidence.chosen", "search") }),
+      within(grounds).getByRole("button", { name: en("panel.chosen", "candidate") }),
     ).toBeVisible()
     const card = within(candidates()).getByRole("button", { name: /Северный Провиант/ })
-    expect(within(card).getByText(en("candidates.chosen", "search"))).toBeVisible()
+    expect(within(card).getByText(en("card.chosen", "candidate"))).toBeVisible()
     unmount()
     await openResult()
     const again = within(candidates()).getByRole("button", { name: /Северный Провиант/ })
-    expect(within(again).getByText(en("candidates.chosen", "search"))).toBeVisible()
+    expect(within(again).getByText(en("card.chosen", "candidate"))).toBeVisible()
   })
 
   it("downloads only the chosen candidates by default", async () => {
@@ -53,9 +53,16 @@ describe("deciding on a search result", () => {
     await user.click(screen.getByRole("button", { name: /Зерновой Двор/ }))
     const grounds = screen.getByRole("article", { name: /Зерновой Двор/ })
     await user.click(
-      within(grounds).getByRole("button", { name: en("evidence.choose", "search") }),
+      within(grounds).getByRole("button", { name: en("panel.choose", "candidate") }),
     )
-    await user.click(screen.getByRole("button", { name: en("header.export", "search") }))
+    const bar = screen.getByRole("region", { name: en("selection.label", "candidate") })
+    expect(bar).toHaveTextContent("1 chosen")
+    expect(
+      within(bar).getByRole("button", { name: en("selection.compare", "candidate") }),
+    ).toHaveAttribute("aria-disabled", "true")
+    await user.click(
+      within(bar).getByRole("button", { name: en("selection.exportShort", "candidate") }),
+    )
     const dialog = screen.getByRole("dialog", { name: en("search.title", "export") })
     expect(
       within(dialog).getByRole("radio", { name: "Only the ones you chose (1)" }),
@@ -72,6 +79,31 @@ describe("deciding on a search result", () => {
     expect(
       (await screen.findAllByText(`File downloaded: ${searchFileName(SEARCH)}`)).length,
     ).toBeGreaterThan(0)
+  })
+
+  it("compares two chosen candidates and clears the choice", async () => {
+    const { user } = await openResult()
+    const choose = () =>
+      user.click(screen.getByRole("button", { name: en("panel.choose", "candidate") }))
+    await choose()
+    await user.click(within(candidates()).getByRole("button", { name: /Зерновой Двор/ }))
+    await choose()
+    const exportButton = screen.getByRole("button", { name: en("header.export", "search") })
+    expect(exportButton).toHaveTextContent("2")
+    const bar = screen.getByRole("region", { name: en("selection.label", "candidate") })
+    expect(bar).toHaveTextContent("2 chosen")
+    await user.click(
+      within(bar).getByRole("button", { name: en("selection.compare", "candidate") }),
+    )
+    const dialog = await screen.findByRole("dialog", { name: en("compare.title", "candidate") })
+    const headers = within(within(dialog).getByRole("table")).getAllByRole("columnheader")
+    expect(headers).toHaveLength(3)
+    expect(headers[1]).toHaveTextContent("Северный Провиант")
+    await user.click(within(dialog).getByRole("button", { name: en("action.close") }))
+    await user.click(
+      within(bar).getByRole("button", { name: en("selection.clear", "candidate") }),
+    )
+    expect(screen.queryAllByText(en("card.chosen", "candidate"))).toHaveLength(0)
   })
 
   it("downloads everyone when nobody is chosen", async () => {

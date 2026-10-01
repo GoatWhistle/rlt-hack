@@ -41,7 +41,7 @@ describe("the candidates column", () => {
     expect(within(north).getByText("5 of 5 · 11 purchases")).toBeInTheDocument()
     expect(
       within(north).getByRole("img", {
-        name: "Match 5 of 5: stock confirmed — 1, in the catalogue — 3, assumed — 1",
+        name: "Match 5 of 5: in a price list — 1, in the catalog — 3, assumed — 1",
       }),
     ).toBeInTheDocument()
     expect(within(north).getByText("01")).toBeInTheDocument()

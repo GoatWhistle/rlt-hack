@@ -1,83 +1,71 @@
 .header {
   display: grid;
   grid-template-areas:
-    "back back"
-    "query actions"
-    "meta actions";
+    "query export"
+    "meta meta";
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-2) var(--space-5);
+  align-items: start;
+  gap: var(--space-2) var(--space-3);
 }
 
-.back {
-  grid-area: back;
-  justify-self: start;
+.heading {
+  position: absolute;
 }
 
 .query {
-  display: grid;
   grid-area: query;
-  gap: var(--space-1);
   min-width: 0;
-  margin-block-start: var(--space-1);
-}
-
-.eyebrow {
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-}
-
-.title {
-  display: -webkit-box;
   max-width: var(--measure-hero);
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+}
+
+.export {
+  grid-area: export;
+  min-height: calc(
+    var(--text-md) *
+    var(--leading-normal) +
+    2 *
+    var(--space-3) +
+    2 *
+    var(--line-width)
+  );
+}
+
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--icon-md);
+  padding-inline: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+  animation: var(--motion-pop-in);
 }
 
 .meta {
   display: flex;
   flex-wrap: wrap;
   grid-area: meta;
-  align-items: baseline;
-  gap: var(--space-1) var(--space-4);
+  gap: 0 var(--space-3);
   color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.fact {
-  white-space: nowrap;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  grid-area: actions;
-  justify-self: end;
-  gap: var(--space-2);
+  font-size: var(--text-xs);
 }
 
 @media (max-width: 47.99rem) {
-  .header {
-    grid-template-areas:
-      "back"
-      "query"
-      "meta"
-      "actions";
-    grid-template-columns: minmax(0, 1fr);
+  .export {
+    position: relative;
+    width: var(--target-touch);
+    padding-inline: 0;
   }
 
-  .title {
-    font-size: var(--text-xl);
+  .exportLabel {
+    display: none;
   }
 
-  .fact {
-    white-space: normal;
-  }
-
-  .actions {
-    justify-self: start;
-    margin-block-start: var(--space-1);
+  .count {
+    position: absolute;
+    inset-block-start: calc(var(--space-1) * -1);
+    inset-inline-end: calc(var(--space-1) * -1);
   }
 }

@@ -4,14 +4,17 @@ import styles from "./styles.module.css"
 
 export type EvidenceFrameProps = {
   readonly label: string
+  readonly swapKey: string
   readonly actions: ReactNode
   readonly children: ReactNode
 }
 
-export function EvidenceFrame({ label, actions, children }: EvidenceFrameProps) {
+export function EvidenceFrame({ label, swapKey, actions, children }: EvidenceFrameProps) {
   return (
     <article className={styles.panel} aria-label={label}>
-      {children}
+      <div key={swapKey} className={styles.content}>
+        {children}
+      </div>
       <div className={styles.actions}>{actions}</div>
     </article>
   )
@@ -39,7 +42,7 @@ export function EvidenceAction({
       aria-label={shortLabel ? label : undefined}
       onClick={onClick}
     >
-      {icon}
+      {icon ? <span className={styles.icon}>{icon}</span> : null}
       {shortLabel ? (
         <>
           <span className={styles.full}>{label}</span>

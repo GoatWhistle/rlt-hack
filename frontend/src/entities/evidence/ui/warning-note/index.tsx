@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next"
-import type { SearchWarning } from "@/entities/search/model"
+import type { SearchWarning } from "@/entities/evidence/model"
 import { Icon } from "@/shared/ui/icon"
 import styles from "./styles.module.css"
 
 export function WarningNote({ warnings }: { readonly warnings: readonly SearchWarning[] }) {
-  const { t } = useTranslation("search")
+  const { t } = useTranslation("candidate")
   const codes = [...new Set(warnings.map((warning) => warning.code))]
   return (
     <div className={styles.note} role="note" aria-label={t("warning.title")}>

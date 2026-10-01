@@ -1,0 +1,7 @@
+.reveal {
+  min-width: 0;
+}
+
+.reveal[data-active] {
+  animation: var(--motion-swap);
+}

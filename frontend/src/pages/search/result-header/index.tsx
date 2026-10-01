@@ -1,64 +1,66 @@
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router"
 import type { SearchResult } from "@/entities/search/model"
-import { useSearchShortlist } from "@/entities/shortlist/store"
-import { SearchExportDialog } from "@/features/export-results"
-import { SEARCH_PATH, searchDraftPath } from "@/shared/config/paths"
+import { SearchBox } from "@/features/search-box"
+import { searchPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
-import { BackLink } from "@/shared/ui/back-link"
-import { Button, ButtonLink } from "@/shared/ui/button"
+import { Button } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
-import { PageTitle } from "@/shared/ui/page-title"
+import { VisuallyHidden } from "@/shared/ui/visually-hidden"
 import styles from "./styles.module.css"
 
-export function ResultHeader({ result }: { readonly result: SearchResult }) {
+export type ResultHeaderProps = {
+  readonly result: SearchResult
+  readonly inputId: string
+  readonly chosen: number
+  readonly onExport: () => void
+}
+
+export function ResultHeader({ result, inputId, chosen, onExport }: ResultHeaderProps) {
   const { t } = useTranslation("search")
-  const { dateTime } = useFormatters()
-  const shortlist = useSearchShortlist(result.searchId)
-  const [exporting, setExporting] = useState(false)
+  const { dateTime, number } = useFormatters()
+  const navigate = useNavigate()
   const recommended = result.candidates.filter((item) => item.status === "recommended").length
   const facts = [
     t("items.count", { count: result.items.length }),
     t("recent.candidates", { count: result.candidates.length }),
     ...(recommended > 0 ? [t("recent.recommended", { count: recommended })] : []),
-    t("header.created", { date: dateTime(result.createdAt) }),
   ]
   return (
     <header className={styles.header}>
-      <div className={styles.back}>
-        <BackLink to={SEARCH_PATH}>{t("header.back")}</BackLink>
-      </div>
+      <h1 className={styles.heading}>
+        <VisuallyHidden>{t("header.title", { query: result.query.text })}</VisuallyHidden>
+      </h1>
       <div className={styles.query}>
-        <p className={styles.eyebrow}>{t("header.label")}</p>
-        <PageTitle size="record" className={styles.title} title={result.query.text}>
-          {result.query.text}
-        </PageTitle>
+        <SearchBox
+          key={result.searchId}
+          compact
+          inputId={inputId}
+          showExamples={false}
+          initialText={result.query.text}
+          onFound={(next) => navigate(searchPath(next.searchId), { viewTransition: true })}
+        />
       </div>
+      {result.candidates.length > 0 ? (
+        <Button
+          variant="secondary"
+          className={styles.export}
+          aria-label={t("header.export")}
+          onClick={onExport}
+        >
+          <Icon name="download" />
+          <span className={styles.exportLabel}>{t("header.export")}</span>
+          {chosen > 0 ? (
+            <span key={chosen} className={styles.count}>
+              {number(chosen)}
+            </span>
+          ) : null}
+        </Button>
+      ) : null}
       <p className={styles.meta}>
-        {facts.map((fact) => (
-          <span key={fact} className={styles.fact}>
-            {fact}
-          </span>
-        ))}
+        <span>{facts.join(" · ")}</span>
+        <time dateTime={result.createdAt}>{dateTime(result.createdAt)}</time>
       </p>
-      <div className={styles.actions}>
-        <ButtonLink variant="secondary" to={searchDraftPath(result.query.text)}>
-          <Icon name="pencil" />
-          {t("header.edit")}
-        </ButtonLink>
-        {result.candidates.length > 0 ? (
-          <Button variant="secondary" onClick={() => setExporting(true)}>
-            <Icon name="download" />
-            {t("header.export")}
-          </Button>
-        ) : null}
-      </div>
-      <SearchExportDialog
-        open={exporting}
-        onClose={() => setExporting(false)}
-        result={result}
-        chosen={shortlist.ids}
-      />
     </header>
   )
 }

@@ -29,6 +29,7 @@ export function EvidencePanel({
   return (
     <EvidenceFrame
       label={company.name}
+      swapKey={company.id}
       actions={
         <>
           <EvidenceAction

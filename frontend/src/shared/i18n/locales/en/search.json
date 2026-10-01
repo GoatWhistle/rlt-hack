@@ -16,7 +16,12 @@
       "office": "Office paper A4 80 gsm, 300 reams; blue ballpoint pens, 500 pcs",
       "medical": "Nitrile examination gloves size M, 2000 pairs; three-layer medical masks, 5000 pcs"
     },
-    "progress": "Picking out the items and looking for companies…"
+    "stage": {
+      "parse": "Reading the request…",
+      "companies": "Looking for companies…",
+      "evidence": "Gathering the evidence…",
+      "slow": "This is taking longer than usual — almost there"
+    }
   },
   "recent": {
     "title": "Recent searches",
@@ -26,13 +31,13 @@
     "candidates_other": "{{count, number}} candidates",
     "recommended_one": "{{count, number}} recommended",
     "recommended_other": "{{count, number}} recommended",
-    "retry": "Try again"
+    "retry": "Try again",
+    "none": "no candidates",
+    "today": "Today",
+    "earlier": "Earlier"
   },
   "header": {
-    "back": "New search",
-    "edit": "Change the query",
-    "label": "Search query",
-    "created": "Searched {{date}}",
+    "title": "Search result: {{query}}",
     "export": "Download CSV"
   },
   "views": {
@@ -47,63 +52,33 @@
     "count_other": "{{count, number}} items",
     "quantity": "{{value}} {{unit}}",
     "okpd2": "OKPD2 {{code}}",
-    "covered_one": "{{count, number}} candidate",
-    "covered_other": "{{count, number}} candidates",
     "filter": "Show candidates for “{{name}}”",
     "origin": {
       "text": "From your text",
       "inferred": "Needs confirming",
       "user": "Specified by you"
     },
-    "hint": "Choose an item to keep only the candidates that cover it."
+    "hint": "Choose an item to see who covers it and on what basis.",
+    "all": "All items"
   },
   "candidates": {
     "title": "Candidates",
     "order": "by relevance",
-    "filtered": "Candidates for “{{name}}”",
-    "resetFilter": "Reset",
+    "filtered": "Who covers “{{name}}”",
     "noMatch": "No candidate has records for this item.",
-    "score": "Relevance",
-    "scoreValue": "{{value}} out of 1",
-    "showMore": "Show {{count, number}} more",
-    "showLess": "Show fewer",
-    "chosen": "Chosen"
-  },
-  "warning": {
-    "title": "Results may be incomplete",
-    "channelFailed": "One of the search channels did not answer, so some companies may be missing.",
-    "enrichmentFailed": "Some company details could not be loaded. Affected candidates are marked for checking.",
-    "archiveFailed": "The search was not saved: the link will not open later.",
-    "itemsInferred": "Some items were added by the system. Confirm them before contacting suppliers."
-  },
-  "evidence": {
-    "checkTitle": "Why it needs checking",
-    "matchesTitle": "Match for every item",
-    "matchesHint": "The match comes from catalogs and price lists, not from warehouse stock.",
-    "historyTitle": "Purchase history",
-    "historyAside_one": "{{count, number}} similar · wins: {{wins, number}}",
-    "historyAside_other": "{{count, number}} similar · wins: {{wins, number}}",
-    "historyNote": "Past participation and wins do not guarantee a future delivery.",
-    "noRecords": "No purchase examples.",
-    "lot": "Lot {{id}} · {{title}}",
-    "recordItems": "Items: {{names}}",
-    "companyTitle": "Company and contacts",
-    "role": "Role",
-    "roleBasis": "Role basis",
-    "noRoleBasis": "No source confirms the role",
-    "region": "Region",
-    "profile": "Company profile",
-    "profileShort": "Profile",
-    "summaryTitle": "Why we recommend it",
-    "noHighlights": "No supporting records.",
-    "figure": "Match by item",
-    "choose": "Choose candidate",
-    "chosen": "Remove from chosen"
+    "facets": {
+      "legend": "Show candidates",
+      "all": "All",
+      "recommended": "Recommended",
+      "check": "Needs checking"
+    }
   },
   "empty": {
     "title": "No suppliers found",
-    "text": "Nothing in the available records matches these items. Try naming the goods more generally, without brands and sizes, or put each item on its own line.",
-    "action": "Change the query"
+    "text": "Nothing in the available records matches these items. Name the goods more generally, without brands and sizes, or search for each item separately.",
+    "action": "Change the query",
+    "only": "Search only for “{{name}}”",
+    "upload": "Upload a purchase file"
   },
   "missing": {
     "title": "Search not found",
@@ -112,7 +87,7 @@
   },
   "guide": {
     "title": "How to read a result",
-    "stock": "There is a price list or stock record with a source and a check date.",
+    "stock": "The company sells the item: there is a price list with a source and a check date. Confirm warehouse stock with the company.",
     "catalog": "The product is in the company catalog; availability needs confirming.",
     "inferred": "There is no direct source, the system inferred it — check before contacting.",
     "none": "The company has no records about this item.",

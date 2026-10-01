@@ -4,6 +4,7 @@
   justify-content: center;
   width: var(--target-touch);
   height: var(--target-touch);
+  padding: 0;
   border: var(--line-width) solid var(--line-control);
   border-radius: var(--radius-md);
   background: var(--surface-base);

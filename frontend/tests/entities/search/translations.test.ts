@@ -32,13 +32,15 @@ const UPLOAD_ERRORS = [
 ] as const
 
 const FAMILIES: readonly Family[] = [
-  ["evidence", "checkReason", CHECK_REASONS],
+  ["candidate", "reasonShort", CHECK_REASONS],
+  ["candidate", "reasonText", CHECK_REASONS],
   ["evidence", "highlight", HIGHLIGHT_CODES],
+  ["candidate", "clarify.reason", CHECK_REASONS],
   ["lots", "status", LOT_STATUSES],
   ["lots", "filter", FILTERS],
   ["uploads", "list", RESULT_STATUSES],
   ["errors", "", UPLOAD_ERRORS],
-  ["search", "warning", WARNING_CODES],
+  ["candidate", "warning", WARNING_CODES],
   ["search", "items.origin", ITEM_ORIGINS],
   ["evidence", "role", COMPANY_ROLES],
   ["evidence", "basis", MATCH_BASES],
@@ -72,7 +74,7 @@ describe("every code from the search and upload contracts", () => {
   })
 
   it("speaks human language, not codes", () => {
-    expect(text("ru", "evidence", "checkReason.innMissing")).not.toContain("innMissing")
+    expect(text("ru", "candidate", "reasonText.innMissing")).not.toContain("innMissing")
     expect(text("en", "evidence", "role.serviceProvider")).toBe("Service provider")
   })
 })

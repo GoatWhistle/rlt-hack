@@ -1,4 +1,5 @@
 import type { Locale } from "./locale"
+import enCandidate from "./locales/en/candidate.json"
 import enCommon from "./locales/en/common.json"
 import enErrors from "./locales/en/errors.json"
 import enEvidence from "./locales/en/evidence.json"
@@ -9,6 +10,7 @@ import enNotices from "./locales/en/notices.json"
 import enSearch from "./locales/en/search.json"
 import enSupplier from "./locales/en/supplier.json"
 import enUploads from "./locales/en/uploads.json"
+import ruCandidate from "./locales/ru/candidate.json"
 import ruCommon from "./locales/ru/common.json"
 import ruErrors from "./locales/ru/errors.json"
 import ruEvidence from "./locales/ru/evidence.json"
@@ -29,6 +31,7 @@ export const NAMESPACES = [
   "lot",
   "export",
   "evidence",
+  "candidate",
   "search",
   "supplier",
 ] as const
@@ -47,6 +50,7 @@ export const resources = {
     lot: ruLot,
     export: ruExport,
     evidence: ruEvidence,
+    candidate: ruCandidate,
     search: ruSearch,
     supplier: ruSupplier,
   },
@@ -59,6 +63,7 @@ export const resources = {
     lot: enLot,
     export: enExport,
     evidence: enEvidence,
+    candidate: enCandidate,
     search: enSearch,
     supplier: enSupplier,
   },

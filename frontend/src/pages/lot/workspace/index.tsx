@@ -88,7 +88,6 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
   )
   const evidencePane = (
     <EvidencePanel
-      key={selected.id}
       company={selected}
       products={products}
       chosen={shortlist.ids.includes(selected.id)}

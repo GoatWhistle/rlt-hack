@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest"
 import type { SearchGateway } from "@/entities/search/gateway"
 import { SearchGatewayProvider } from "@/entities/search/gateway-context"
 import { MAX_QUERY_LENGTH } from "@/entities/search/model"
-import { COUNTER_FROM, SearchBox } from "@/features/search-box"
+import { COUNTER_FROM, PICK_TO_FIELD, SearchBox } from "@/features/search-box"
 import { ApiError } from "@/shared/api/api-error"
 
 function renderBox(gateway: SearchGateway = stubSearch(), initialText = "") {
@@ -35,6 +35,23 @@ describe("the search box", () => {
     expect(gateway.search).not.toHaveBeenCalled()
     await user.type(field, "{Control>}{Enter}{/Control}")
     await waitFor(() => expect(gateway.search).toHaveBeenCalledTimes(1))
+  })
+
+  it("puts an example into the field on a narrow screen and waits for Enter", async () => {
+    Object.assign(window, {
+      matchMedia: (query: string) => ({
+        matches: query === PICK_TO_FIELD,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }),
+    })
+    const { user, field, gateway } = renderBox()
+    const example = en("box.example.groats", "search")
+    await user.click(screen.getByRole("button", { name: example }))
+    expect(field).toHaveValue(example)
+    expect(field).toHaveFocus()
+    expect(gateway.search).not.toHaveBeenCalled()
+    Object.assign(window, { matchMedia: undefined })
   })
 
   it("searches right away from an example and keeps it in the field", async () => {
@@ -94,11 +111,31 @@ describe("the search box", () => {
     expect(button).toHaveAttribute("aria-disabled", "true")
     await user.type(field, "{Enter}")
     expect(search).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole("status")).toHaveTextContent(en("box.stage.parse", "search"))
+    const example = screen.getByRole("button", { name: en("box.example.office", "search") })
+    expect(example).toHaveAttribute("aria-disabled", "true")
+    await user.click(example)
+    expect(field).toHaveValue("rice")
     expect(
-      await screen.findByText(en("box.progress", "search"), undefined, { timeout: 2000 }),
+      await screen.findByText(en("box.stage.companies", "search"), undefined, {
+        timeout: 2000,
+      }),
     ).toBeVisible()
     finish(contractResult())
-    await waitFor(() => expect(button).toHaveAttribute("aria-busy", "false"))
-    expect(screen.queryByText(en("box.progress", "search"))).toBeNull()
+    await waitFor(() => expect(button).not.toHaveAttribute("aria-busy"))
+    expect(screen.queryByText(en("box.stage.companies", "search"))).toBeNull()
+    expect(screen.getByRole("status")).toBeEmptyDOMElement()
+  })
+
+  it("names the field without a visible label in its compact form", () => {
+    renderWithProviders(
+      <SearchGatewayProvider gateway={stubSearch()}>
+        <SearchBox compact showExamples={false} inputId="query" onFound={vi.fn()} />
+      </SearchGatewayProvider>,
+    )
+    const field = screen.getByRole("textbox", { name: en("box.label", "search") })
+    expect(field).toHaveAttribute("id", "query")
+    expect(field).toHaveAttribute("rows", "1")
+    expect(screen.queryByText(en("box.hint", "search"))).toBeNull()
   })
 })

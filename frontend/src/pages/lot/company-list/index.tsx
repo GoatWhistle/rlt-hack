@@ -83,6 +83,7 @@ export type CompanyListProps = {
 export function CompanyList(props: CompanyListProps) {
   const { companies, ranks, products, selectedId, chosen, filter, onSelect, onCompare } = props
   const { t } = useTranslation("lot")
+  const { t: rankText } = useTranslation("candidate")
   const [expanded, setExpanded] = useState(false)
   const hidden = companies.length - VISIBLE_COMPANIES
   const visible = expanded || hidden <= 0 ? companies : companies.slice(0, VISIBLE_COMPANIES)
@@ -103,6 +104,7 @@ export function CompanyList(props: CompanyListProps) {
             title={company.name}
             subtitle={company.role}
             rank={ranks.get(company.id) ?? 0}
+            rankLabel={rankText("card.rank", { index: ranks.get(company.id) ?? 0 })}
             selected={company.id === selectedId}
             onSelect={() => onSelect(company.id)}
           >

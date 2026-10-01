@@ -18,9 +18,12 @@ import { ExportDialog } from "@/features/export-results"
 import { isApiError } from "@/shared/api/api-error"
 import { UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
 import { useLocale } from "@/shared/i18n/locale-provider"
+import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { Button, ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
+import { Icon } from "@/shared/ui/icon"
+import { SelectionBar } from "@/shared/ui/selection-bar"
 import { TextButton } from "@/shared/ui/text-button"
 import { LotsControls } from "./lots-controls"
 import { LotsHeader } from "./lots-header"
@@ -28,7 +31,6 @@ import { LotsSkeleton } from "./lots-skeleton"
 import { LotsTable } from "./lots-table"
 import { Pagination } from "./pagination"
 import { ProcessingLine } from "./processing-line"
-import { SelectionBar } from "@/shared/ui/selection-bar"
 import styles from "./styles.module.css"
 
 type ExportState = { readonly open: boolean; readonly session: number }
@@ -52,6 +54,8 @@ export function LotsPage() {
     }))
   const [exporting, setExporting] = useState<ExportState>({ open: false, session: 0 })
   const query = readQuery(params)
+  const { t: common } = useTranslation()
+  useDocumentTitle([upload.data?.fileName, common("title.lots")])
 
   useEffect(() => {
     if (upload.data) rememberUpload(upload.data.id)
@@ -157,12 +161,19 @@ export function LotsPage() {
       )}
       <SelectionBar
         count={selected.size}
-        onExport={() => openExport()}
+        label={t("selection.label")}
+        countText={(count) => t("selection.count", { count })}
+        clearLabel={t("selection.clear")}
         onClear={() => {
           setSelected(() => NOTHING)
           pageToggle.current?.focus()
         }}
-      />
+      >
+        <Button variant="strong" onClick={() => openExport()}>
+          <Icon name="download" />
+          {t("selection.export")}
+        </Button>
+      </SelectionBar>
       <ExportDialog
         key={exporting.session}
         open={exporting.open}

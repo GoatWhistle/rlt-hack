@@ -8,11 +8,22 @@
   border-radius: var(--radius-lg);
   background: var(--surface-base);
   text-align: start;
-  transition: var(--transition-control);
+  transition: var(--transition-surface);
 }
 
 .card:active {
-  transform: scale(var(--press-scale));
+  transform: scale(var(--press-scale-surface));
+}
+
+.card[data-reveal] {
+  animation: var(--motion-slide-in);
+  animation-delay: calc(var(--reveal-index) * var(--stagger-step));
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 .card:focus-visible {

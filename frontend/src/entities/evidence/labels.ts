@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next"
 import { useFormatters } from "@/shared/i18n/formatters"
 import {
   type CandidateStatus,
-  type CheckReason,
   type CompanyRole,
   countMatches,
   type Highlight,
@@ -32,11 +31,6 @@ export function useHighlightText(): (highlight: Highlight) => string {
     if (code === "verifiedIdentity") return t("highlight.verifiedIdentity")
     return t(`highlight.${code}`, { count: params.count ?? 0 })
   }
-}
-
-export function useCheckReasonText(): (reason: CheckReason) => string {
-  const { t } = useTranslation("evidence")
-  return (reason) => t(`checkReason.${reason}`)
 }
 
 export function useInnText(): (inn: string) => string {

@@ -84,9 +84,9 @@
     "checkTitle": "Why it needs checking",
     "mainClarify": "Key thing to clarify.",
     "matchesTitle": "Match for every product",
-    "matchesHint": "by records, not warehouse stock",
+    "matchesHint": "Price lists and catalogs show the company sells the item. Confirm stock and delivery time with the company.",
     "basis": {
-      "stock": "Stock confirmed",
+      "stock": "In a price list",
       "catalog": "In the catalogue",
       "inferred": "System assumption"
     },
@@ -121,7 +121,7 @@
     "profile": "Company profile"
   },
   "meter": {
-    "label": "Match {{matched, number}} of {{total, number}}: stock confirmed — {{stock, number}}, in the catalogue — {{catalog, number}}, assumed — {{inferred, number}}"
+    "label": "Match {{matched, number}} of {{total, number}}: in a price list — {{stock, number}}, in the catalog — {{catalog, number}}, assumed — {{inferred, number}}"
   },
   "profile": {
     "requisites": "Details",

@@ -1,22 +1,28 @@
 import { clsx } from "clsx"
-import { type FormEvent, type KeyboardEvent, useEffect, useId, useRef, useState } from "react"
+import { type FormEvent, type KeyboardEvent, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { invalidQuery } from "@/entities/search/gateway"
 import { DEFAULT_LIMIT, MAX_QUERY_LENGTH, type SearchResult } from "@/entities/search/model"
 import { useRunSearch } from "@/entities/search/queries"
 import { useErrorMessage } from "@/shared/errors/use-error-message"
+import { useMediaQuery } from "@/shared/media/use-media-query"
 import { Button } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
+import { Spinner } from "@/shared/ui/spinner"
 import { ExampleChips } from "./example-chips"
+import { StageLine, SweepBar } from "./stage-line"
 import styles from "./styles.module.css"
 import { useAutoHeight } from "./use-auto-height"
+import { type SearchStage, useStage } from "./use-stage"
 
 export const COUNTER_FROM = 3600
-export const SLOW_SEARCH_MS = 1000
+export const PICK_TO_FIELD = "(max-width: 47.99rem)"
 
 export type SearchBoxProps = {
   readonly initialText?: string
   readonly showExamples?: boolean
+  readonly compact?: boolean
+  readonly inputId?: string
   readonly onFound: (result: SearchResult) => void
 }
 
@@ -31,34 +37,79 @@ function wantsSubmit(event: KeyboardEvent<HTMLTextAreaElement>): boolean {
   return event.metaKey || event.ctrlKey || !event.shiftKey
 }
 
-export function SearchBox({ initialText = "", showExamples = true, onFound }: SearchBoxProps) {
+function joinIds(ids: readonly string[]): string | undefined {
+  return ids.filter(Boolean).join(" ") || undefined
+}
+
+type FieldBarProps = {
+  readonly compact: boolean
+  readonly stage: SearchStage | null
+  readonly hintId: string
+  readonly counterId: string
+  readonly length: number
+  readonly pending: boolean
+}
+
+function FieldBar({ compact, stage, hintId, counterId, length, pending }: FieldBarProps) {
+  const { t } = useTranslation("search")
+  return (
+    <div className={styles.bar}>
+      {compact ? null : <StageLine stage={stage} />}
+      {stage || compact ? null : (
+        <span id={hintId} className={styles.hint}>
+          {t("box.hint")}
+        </span>
+      )}
+      {length >= COUNTER_FROM ? (
+        <span
+          id={counterId}
+          className={clsx(styles.counter, length > MAX_QUERY_LENGTH && styles.over)}
+        >
+          {t("box.counter", { count: length, limit: MAX_QUERY_LENGTH })}
+        </span>
+      ) : null}
+      <Button
+        type="submit"
+        className={styles.submit}
+        aria-disabled={pending}
+        aria-busy={pending}
+      >
+        {pending ? <Spinner /> : <Icon name="search" />}
+        {t("box.submit")}
+      </Button>
+    </div>
+  )
+}
+
+export function SearchBox({
+  initialText = "",
+  showExamples = true,
+  compact = false,
+  inputId,
+  onFound,
+}: SearchBoxProps) {
   const { t } = useTranslation("search")
   const errorMessage = useErrorMessage()
   const search = useRunSearch()
   const [text, setText] = useState(initialText)
   const [problem, setProblem] = useState<unknown>(null)
   const fieldRef = useRef<HTMLTextAreaElement>(null)
-  const fieldId = useId()
+  const ownId = useId()
+  const fieldId = inputId ?? ownId
   const hintId = useId()
   const counterId = useId()
   const errorId = useId()
-  const [slow, setSlow] = useState(false)
+  const pickToField = useMediaQuery(PICK_TO_FIELD)
+  const stage = useStage(search.isPending)
   useAutoHeight(fieldRef, text)
-
-  useEffect(() => {
-    if (!search.isPending) {
-      setSlow(false)
-      return
-    }
-    const timer = window.setTimeout(() => setSlow(true), SLOW_SEARCH_MS)
-    return () => window.clearTimeout(timer)
-  }, [search.isPending])
 
   const error = problem ?? search.error
   const showCounter = text.length >= COUNTER_FROM
-  const describedBy = [hintId, showCounter ? counterId : "", error ? errorId : ""]
-    .filter(Boolean)
-    .join(" ")
+  const describedBy = joinIds([
+    compact ? "" : hintId,
+    showCounter ? counterId : "",
+    error ? errorId : "",
+  ])
 
   function submit(value = text) {
     if (search.isPending) return
@@ -79,13 +130,18 @@ export function SearchBox({ initialText = "", showExamples = true, onFound }: Se
   }
 
   function pick(example: string) {
+    if (search.isPending) return
     change(example)
+    if (pickToField) {
+      fieldRef.current?.focus()
+      return
+    }
     submit(example)
   }
 
   return (
     <form
-      className={styles.box}
+      className={clsx(styles.box, compact && styles.compact)}
       noValidate
       aria-busy={search.isPending}
       onSubmit={(event: FormEvent) => {
@@ -93,17 +149,20 @@ export function SearchBox({ initialText = "", showExamples = true, onFound }: Se
         submit()
       }}
     >
-      <label htmlFor={fieldId} className={styles.label}>
-        {t("box.label")}
-      </label>
+      {compact ? null : (
+        <label htmlFor={fieldId} className={styles.label}>
+          {t("box.label")}
+        </label>
+      )}
       <div className={clsx(styles.field, error ? styles.invalid : undefined)}>
         <textarea
           id={fieldId}
           ref={fieldRef}
           className={styles.input}
-          rows={2}
+          rows={compact ? 1 : 2}
           value={text}
           placeholder={t("box.placeholder")}
+          aria-label={compact ? t("box.label") : undefined}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           onChange={(event) => change(event.target.value)}
@@ -113,43 +172,24 @@ export function SearchBox({ initialText = "", showExamples = true, onFound }: Se
             submit()
           }}
         />
-        <div className={styles.bar}>
-          <span role="status" className={styles.progress}>
-            {slow ? t("box.progress") : null}
-          </span>
-          <span id={hintId} className={clsx(styles.hint, slow && styles.hidden)}>
-            {t("box.hint")}
-          </span>
-          {showCounter ? (
-            <span
-              id={counterId}
-              className={clsx(styles.counter, text.length > MAX_QUERY_LENGTH && styles.over)}
-            >
-              {t("box.counter", { count: text.length, limit: MAX_QUERY_LENGTH })}
-            </span>
-          ) : null}
-          <Button
-            type="submit"
-            className={styles.submit}
-            aria-disabled={search.isPending}
-            aria-busy={search.isPending}
-          >
-            {search.isPending ? (
-              <span className={styles.spinner} aria-hidden="true" />
-            ) : (
-              <Icon name="search" />
-            )}
-            {t("box.submit")}
-          </Button>
-        </div>
+        <FieldBar
+          compact={compact}
+          stage={stage}
+          hintId={hintId}
+          counterId={counterId}
+          length={text.length}
+          pending={search.isPending}
+        />
+        {search.isPending ? <SweepBar /> : null}
       </div>
+      {compact ? <StageLine stage={stage} /> : null}
       {error ? (
         <p id={errorId} role="alert" className={styles.error}>
           <Icon name="warning" size="sm" />
           {errorMessage(error)}
         </p>
       ) : null}
-      {showExamples ? <ExampleChips onPick={pick} /> : null}
+      {showExamples ? <ExampleChips disabled={search.isPending} onPick={pick} /> : null}
     </form>
   )
 }

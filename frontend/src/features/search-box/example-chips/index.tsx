@@ -6,7 +6,12 @@ import styles from "./styles.module.css"
 
 export const EXAMPLES = ["groats", "office", "medical"] as const
 
-export function ExampleChips({ onPick }: { readonly onPick: (text: string) => void }) {
+export type ExampleChipsProps = {
+  readonly disabled?: boolean
+  readonly onPick: (text: string) => void
+}
+
+export function ExampleChips({ disabled = false, onPick }: ExampleChipsProps) {
   const { t } = useTranslation("search")
   const id = useId()
   return (
@@ -23,12 +28,13 @@ export function ExampleChips({ onPick }: { readonly onPick: (text: string) => vo
                 type="button"
                 className={styles.chip}
                 title={text}
+                aria-disabled={disabled || undefined}
                 onClick={() => onPick(text)}
               >
                 <span className={styles.icon} aria-hidden="true">
                   <Icon name="search" size="sm" />
                 </span>
-                <Truncate>{text}</Truncate>
+                <Truncate className={styles.text}>{text}</Truncate>
               </button>
             </li>
           )

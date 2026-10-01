@@ -16,10 +16,9 @@
     "retry": "Try again",
     "reload": "Reload the page",
     "home": "Go to uploads",
-    "lots": "Go to purchases",
-    "back": "Go back",
     "showAll": "Show all {{count, number}}",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "newSearch": "New search"
   },
   "language": {
     "legend": "Interface language",
@@ -32,7 +31,7 @@
   },
   "notFound": {
     "title": "Page not found",
-    "description": "The address is outdated or contains a typo. Check the link or go back to uploads."
+    "description": "The address is outdated or mistyped. Start a new search or open something recent."
   },
   "routeError": {
     "title": "The page could not open"
@@ -54,5 +53,14 @@
   "recent": {
     "title": "Recent",
     "search": "last search"
+  },
+  "title": {
+    "separator": " — ",
+    "search": "Search",
+    "uploads": "Uploads",
+    "lots": "Purchases",
+    "lot": "Lot {{id}}",
+    "notFound": "Page not found",
+    "error": "Error"
   }
 }

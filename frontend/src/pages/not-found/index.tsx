@@ -1,15 +1,14 @@
 import { useTranslation } from "react-i18next"
-import { useLocation, useNavigate } from "react-router"
 import { RecentPlaces } from "@/features/recent-places"
-import { LOTS_ENTRY_PATH } from "@/shared/config/paths"
-import { Button, ButtonLink } from "@/shared/ui/button"
+import { SEARCH_PATH, UPLOADS_PATH } from "@/shared/config/paths"
+import { useDocumentTitle } from "@/shared/routing/use-document-title"
+import { ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
+import { Icon } from "@/shared/ui/icon"
 
 export function NotFoundPage() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const canGoBack = location.key !== "default"
+  useDocumentTitle([t("title.notFound")])
   return (
     <EmptyState
       icon="compass"
@@ -17,16 +16,13 @@ export function NotFoundPage() {
       description={t("notFound.description")}
       actions={
         <>
-          <ButtonLink to="/">{t("action.home")}</ButtonLink>
-          {canGoBack ? (
-            <Button variant="secondary" onClick={() => navigate(-1)}>
-              {t("action.back")}
-            </Button>
-          ) : (
-            <ButtonLink to={LOTS_ENTRY_PATH} variant="secondary">
-              {t("action.lots")}
-            </ButtonLink>
-          )}
+          <ButtonLink to={SEARCH_PATH}>
+            <Icon name="search" />
+            {t("action.newSearch")}
+          </ButtonLink>
+          <ButtonLink to={UPLOADS_PATH} variant="secondary">
+            {t("action.home")}
+          </ButtonLink>
         </>
       }
     >

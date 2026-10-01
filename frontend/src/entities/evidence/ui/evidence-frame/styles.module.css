@@ -3,12 +3,15 @@
   border: var(--line-width) solid var(--line-hairline);
   border-radius: var(--radius-xl);
   background: var(--surface-base);
+}
+
+.content {
   animation: var(--motion-swap);
 }
 
 .actions {
   position: sticky;
-  inset-block-end: 0;
+  inset-block-end: var(--dock-offset);
   z-index: 1;
   display: flex;
   flex-wrap: wrap;
@@ -22,11 +25,16 @@
   white-space: nowrap;
 }
 
+.icon {
+  display: inline-flex;
+  animation: var(--motion-pop-in);
+}
+
 .short {
   display: none;
 }
 
-@media (max-width: 29.99rem) {
+@media (max-width: 63.99rem) {
   .actions {
     flex-wrap: nowrap;
     padding-inline: var(--space-3);

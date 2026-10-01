@@ -30,3 +30,24 @@ export function IconLink({ to, icon, label, shortcut }: IconLinkProps) {
     </Link>
   )
 }
+
+export type IconButtonProps = {
+  readonly icon: IconName
+  readonly label: string
+  readonly onClick?: () => void
+}
+
+export function IconButton({ icon, label, onClick }: IconButtonProps) {
+  if (!onClick) {
+    return (
+      <span className={clsx(styles.link, styles.disabled)} aria-hidden="true">
+        <Icon name={icon} size="sm" />
+      </span>
+    )
+  }
+  return (
+    <button type="button" className={styles.link} aria-label={label} onClick={onClick}>
+      <Icon name={icon} size="sm" />
+    </button>
+  )
+}

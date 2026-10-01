@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router"
 import { SearchBox } from "@/features/search-box"
 import { SEARCH_TEXT_PARAM, searchPath } from "@/shared/config/paths"
+import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { PageTitle } from "@/shared/ui/page-title"
 import { ReadingGuide } from "../reading-guide"
 import { RecentList } from "../recent-list"
@@ -10,6 +11,8 @@ import styles from "./styles.module.css"
 
 export function SearchPage() {
   const { t } = useTranslation("search")
+  const { t: common } = useTranslation()
+  useDocumentTitle([common("title.search")])
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const titleId = useId()
@@ -24,7 +27,7 @@ export function SearchPage() {
         <SearchBox
           key={draft}
           initialText={draft}
-          onFound={(result) => navigate(searchPath(result.searchId))}
+          onFound={(result) => navigate(searchPath(result.searchId), { viewTransition: true })}
         />
       </section>
       <RecentList empty={<ReadingGuide />} />

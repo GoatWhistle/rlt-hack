@@ -1,19 +1,25 @@
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
+import { type ReactNode, useState } from "react"
 import { usePresence } from "@/shared/motion/use-presence"
-import { Button } from "@/shared/ui/button"
-import { Icon } from "@/shared/ui/icon"
 import { TextButton } from "@/shared/ui/text-button"
 import styles from "./styles.module.css"
 
 export type SelectionBarProps = {
   readonly count: number
-  readonly onExport: () => void
+  readonly label: string
+  readonly countText: (count: number) => string
+  readonly clearLabel: string
   readonly onClear: () => void
+  readonly children: ReactNode
 }
 
-export function SelectionBar({ count, onExport, onClear }: SelectionBarProps) {
-  const { t } = useTranslation("lots")
+export function SelectionBar({
+  count,
+  label,
+  countText,
+  clearLabel,
+  onClear,
+  children,
+}: SelectionBarProps) {
   const open = count > 0
   const { isMounted, state, onAnimationEnd } = usePresence(open)
   const [shown, setShown] = useState(count)
@@ -22,21 +28,20 @@ export function SelectionBar({ count, onExport, onClear }: SelectionBarProps) {
   return (
     <section
       className={styles.bar}
-      aria-label={t("selection.label")}
+      aria-label={label}
       data-state={state}
       inert={!open}
       onAnimationEnd={onAnimationEnd}
     >
       <span className={styles.count} aria-live="polite">
-        {t("selection.count", { count: shown })}
+        <span key={shown} className={styles.number}>
+          {countText(shown)}
+        </span>
       </span>
       <TextButton className={styles.clear} onClick={onClear}>
-        {t("selection.clear")}
+        {clearLabel}
       </TextButton>
-      <Button variant="strong" className={styles.export} onClick={onExport}>
-        <Icon name="download" />
-        {t("selection.export")}
-      </Button>
+      <span className={styles.actions}>{children}</span>
     </section>
   )
 }

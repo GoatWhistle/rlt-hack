@@ -49,18 +49,36 @@
   transition: var(--transition-control);
 }
 
-.chip:active {
+.chip[aria-disabled="true"] {
+  opacity: var(--disabled-opacity);
+  cursor: progress;
+}
+
+.chip:active:not([aria-disabled="true"]) {
   transform: scale(var(--press-scale));
 }
 
+@media (max-width: 47.99rem) {
+  .chip {
+    border-radius: var(--radius-md);
+  }
+
+  .chip .text {
+    display: -webkit-box;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .chip:hover {
+  .chip:not([aria-disabled="true"]):hover {
     border-color: var(--accent-muted);
     background: var(--accent-tint);
     color: var(--accent-strong);
   }
 
-  .chip:hover .icon {
+  .chip:not([aria-disabled="true"]):hover .icon {
     color: var(--accent);
   }
 }

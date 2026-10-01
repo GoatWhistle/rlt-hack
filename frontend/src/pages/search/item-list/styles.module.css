@@ -99,11 +99,11 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .item:not(.active):hover {
+  button.item:not(.active):hover {
     background: var(--surface-raised);
   }
 
-  .item:hover .name {
+  button.item:hover .name {
     color: var(--accent-strong);
   }
 

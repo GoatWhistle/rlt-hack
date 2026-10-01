@@ -88,9 +88,9 @@
     "checkTitle": "Почему нужна проверка",
     "mainClarify": "Главное уточнение.",
     "matchesTitle": "Соответствие всем товарам",
-    "matchesHint": "по сведениям, не остатки на складе",
+    "matchesHint": "Прайс и каталог показывают, что компания продаёт товар. Наличие на складе и срок поставки уточняйте у неё.",
     "basis": {
-      "stock": "Наличие подтверждено",
+      "stock": "Есть в прайсе",
       "catalog": "Есть в каталоге",
       "inferred": "Предположение системы"
     },
@@ -129,7 +129,7 @@
     "profile": "Профиль компании"
   },
   "meter": {
-    "label": "Совпадение {{matched, number}} из {{total, number}}: наличие подтверждено — {{stock, number}}, в каталоге — {{catalog, number}}, предположение — {{inferred, number}}"
+    "label": "Совпадение {{matched, number}} из {{total, number}}: в прайсе — {{stock, number}}, в каталоге — {{catalog, number}}, предположение — {{inferred, number}}"
   },
   "profile": {
     "requisites": "Реквизиты",
