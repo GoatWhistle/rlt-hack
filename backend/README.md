@@ -154,6 +154,9 @@ uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx \
   python tests/supplier/provider_smoke.py
 uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx \
   python tests/supplier/productcenter_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
+  --with lxml --with cssselect --with httpx \
+  python tests/supplier/productcenter_job_smoke.py
 uv run --no-project --python 3.13 python tests/supplier/worker_smoke.py
 ```
 

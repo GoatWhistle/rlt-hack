@@ -78,7 +78,11 @@ def pages() -> dict[str, bytes]:
             "@type": "Product",
             "name": "Товар",
             "description": "Описание",
-            "offers": {"price": "100", "priceCurrency": "RUB"},
+            "offers": {
+                "price": "100",
+                "priceCurrency": "RUB",
+                "availability": "https://schema.org/InStock",
+            },
         }
         maps[url] = (
             f'<html><h1>Товар</h1><script type="application/ld+json">{json.dumps(data)}</script>'
