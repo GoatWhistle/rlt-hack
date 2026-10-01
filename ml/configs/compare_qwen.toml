@@ -3,8 +3,13 @@ max_queries = 1000
 max_length = 256
 top_k = 100
 query_instruction = "Given a Russian procurement notice, retrieve supplier activity profiles relevant to fulfilling this procurement."
-models = ["Qwen/Qwen3-Embedding-0.6B", "Qwen/Qwen3-Embedding-4B"]
+models = [
+  "Qwen/Qwen3-Embedding-0.6B",
+  "Qwen/Qwen3-Embedding-4B",
+  "Qwen/Qwen3-Embedding-8B",
+]
 batch_size = 4
 
 # В 4B-run параметр batch_size переопределяется на 1.
 # Две модели применяются параллельно; индексы остаются в RAM.
+# 8B запускается отдельно в NF4 после завершения обоих BF16 экспериментов.

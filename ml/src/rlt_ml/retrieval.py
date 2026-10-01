@@ -160,7 +160,13 @@ def evaluate(data: Path, out: Path, split: str, model_id: str, config: dict,
             torch.cuda.set_per_process_memory_fraction(float(config.get("gpu_memory_fraction", 1)))
             torch.cuda.reset_peak_memory_stats()
         model_start = time.monotonic()
-        encoder = TextEncoder(model_id, config["max_length"], config["query_instruction"], device)
+        encoder = TextEncoder(
+            model_id,
+            config["max_length"],
+            config["query_instruction"],
+            device,
+            quantization=config.get("quantization", "none"),
+        )
         encoder.model.eval()
         timings["model_load_seconds"] = round(time.monotonic() - model_start, 2)
         batch_size = config["batch_size"]
@@ -218,6 +224,10 @@ def evaluate(data: Path, out: Path, split: str, model_id: str, config: dict,
             timings["warm_single_query_p95_ms"] = round(float(np.percentile(latencies, 95)) * 1000, 2)
             timings["latency_queries"] = len(latencies)
         runtime = {"torch": torch.__version__, "torch_cuda": torch.version.cuda}
+        if config.get("quantization") == "nf4":
+            import bitsandbytes
+
+            runtime["bitsandbytes"] = bitsandbytes.__version__
         if device == "cuda":
             runtime.update({
                 "gpu": torch.cuda.get_device_name(),
@@ -279,15 +289,21 @@ def main() -> None:
     parser.add_argument("--input-mode", choices=["notice_text", "known_products"], default="notice_text")
     parser.add_argument("--device", choices=["cuda", "cpu"], default="cuda")
     parser.add_argument("--batch-size", type=int)
-    parser.add_argument("--gpu-memory-fraction", type=float, default=1)
-    parser.add_argument("--cpu-threads", type=int, default=4)
+    parser.add_argument("--quantization", choices=["none", "nf4"], default="none")
+    parser.add_argument("--gpu-memory-fraction", type=float)
+    parser.add_argument("--cpu-threads", type=int)
     args = parser.parse_args()
     config = read_config(args.config)
     if args.batch_size is not None:
         config["batch_size"] = args.batch_size
-    config["gpu_memory_fraction"] = args.gpu_memory_fraction
-    config["cpu_threads"] = args.cpu_threads
-    if config["batch_size"] < 1 or not 0 < args.gpu_memory_fraction <= 1:
+    if args.gpu_memory_fraction is not None:
+        config["gpu_memory_fraction"] = args.gpu_memory_fraction
+    if args.cpu_threads is not None:
+        config["cpu_threads"] = args.cpu_threads
+    config.setdefault("gpu_memory_fraction", 1)
+    config.setdefault("cpu_threads", 4)
+    config["quantization"] = args.quantization
+    if config["batch_size"] < 1 or not 0 < config["gpu_memory_fraction"] <= 1:
         parser.error("batch-size > 0; 0 < gpu-memory-fraction <= 1")
     print(evaluate(args.data, args.out, args.split, args.model,
                    config, args.input_mode, args.device, args.hybrid))

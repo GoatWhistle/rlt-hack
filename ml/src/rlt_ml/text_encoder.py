@@ -41,7 +41,7 @@ def pool(hidden, mask, kind: str):
 
 class TextEncoder:
     def __init__(self, model_id: str, max_length: int, instruction: str, device: str = "cuda",
-                 offline: bool = True):
+                 offline: bool = True, quantization: str = "none"):
         model_path = Path(model_id)
         adapter = model_path.is_dir() and (model_path / "adapter_config.json").exists()
         metadata = {}
@@ -63,9 +63,32 @@ class TextEncoder:
         self.tokenizer = AutoTokenizer.from_pretrained(
             source, padding_side="left" if self.kind == "qwen" else "right", **options
         )
-        self.model = AutoModel.from_pretrained(
-            source, torch_dtype=dtype, attn_implementation="sdpa", **options
-        )
+        if quantization == "nf4":
+            if device != "cuda":
+                raise ValueError("NF4 quantization is supported here only on CUDA")
+            from transformers import BitsAndBytesConfig
+
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_compute_dtype=dtype,
+            )
+            self.model = AutoModel.from_pretrained(
+                source,
+                torch_dtype=dtype,
+                attn_implementation="sdpa",
+                quantization_config=quantization_config,
+                device_map={"": 0},
+                **options,
+            )
+        elif quantization == "none":
+            self.model = AutoModel.from_pretrained(
+                source, torch_dtype=dtype, attn_implementation="sdpa", **options
+            )
+            self.model.to(device)
+        else:
+            raise ValueError(f"Unknown quantization: {quantization}")
         self.base_revision = metadata.get("base_revision") or getattr(self.model.config, "_commit_hash", None)
         if adapter:
             from peft import PeftModel
@@ -73,7 +96,6 @@ class TextEncoder:
             self.model = PeftModel.from_pretrained(self.model, str(model_path))
         if hasattr(self.model.config, "use_cache"):
             self.model.config.use_cache = False
-        self.model.to(device)
 
     def __call__(self, texts: list[str], query: bool):
         texts = [format_text(t, self.kind, query, self.instruction) for t in texts]
