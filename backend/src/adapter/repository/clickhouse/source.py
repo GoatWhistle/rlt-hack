@@ -19,7 +19,6 @@ COLUMNS = (
     "ownership_status",
     "ownership_evidence_url",
     "provider_name",
-    "enabled",
     "updated_at",
     "version",
     "is_deleted",
@@ -69,8 +68,6 @@ class ClickHouseSourceRepository:
                     str(source.ownership_status),
                     source.ownership_evidence_url,
                     source.provider_name,
-                    # Источник включается флагом адаптера, в таблице он всегда активен.
-                    1,
                     updated_at,
                     self._versions.next(),
                     0,

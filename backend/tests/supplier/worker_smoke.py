@@ -1,12 +1,14 @@
 """Проверка сервиса синхронизации: источники обходятся одновременно.
 
-ClickHouse и сеть не нужны: адаптеры и хранилище заменены заглушками.
-Проверяется, что все источники запускаются сразу, сбой одного не отменяет
-результаты остальных, ограничение одновременных обходов соблюдается, а итоги
-попадают в журнал обхода.
+ClickHouse и сеть не нужны: адаптеры, хранилище, нормализатор и классификатор
+заменены заглушками. Проверяется, что все источники запускаются сразу, сбой
+одного не отменяет результаты остальных, ограничение одновременных обходов
+соблюдается, итоги попадают в журнал обхода, а собранный пакет перед записью
+проходит нормализацию и только потом классификацию.
 """
 
 import asyncio
+import dataclasses
 import sys
 import time
 from datetime import UTC, datetime
@@ -16,8 +18,11 @@ from uuid import UUID
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from src.models.classification import Classification
 from src.models.enums import FetchStatus, SourceType
 from src.models.journal import CrawlRun
+from src.models.normalization import Normalization
+from src.models.offer import Offer
 from src.models.package import SupplierPackage
 from src.models.source import Source
 from src.models.supplier import Supplier
@@ -29,7 +34,13 @@ PROVIDER_DELAY = 0.2
 class FakeProvider:
     """Отдаёт готовый пакет через PROVIDER_DELAY или падает."""
 
-    def __init__(self, name: str, suppliers: int = 1, failing: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        suppliers: int = 1,
+        failing: bool = False,
+        offers: int = 0,
+    ) -> None:
         self._source = Source(
             source_id=UUID(int=abs(hash(name)) % (2**128)),
             name=name,
@@ -38,6 +49,7 @@ class FakeProvider:
             provider_name=name,
         )
         self._suppliers = suppliers
+        self._offers = offers
         self._failing = failing
         self.started_at = 0.0
 
@@ -54,7 +66,20 @@ class FakeProvider:
             Supplier(supplier_id=UUID(int=index + 1), name=f"{self._source.name}-{index}")
             for index in range(self._suppliers)
         )
-        return SupplierPackage(source=self._source, suppliers=suppliers)
+        moment = datetime.now(UTC)
+        offers = tuple(
+            Offer(
+                offer_id=UUID(int=index + 100),
+                source_id=self._source.source_id,
+                external_id=str(index),
+                url=f"{self._source.base_url}{index}",
+                name=f"Отвертка {index}",
+                first_seen_at=moment,
+                last_seen_at=moment,
+            )
+            for index in range(self._offers)
+        )
+        return SupplierPackage(source=self._source, suppliers=suppliers, offers=offers)
 
 
 class FakeStorage:
@@ -86,12 +111,58 @@ class FakeClock:
         return datetime.now(UTC)
 
 
-def worker(providers, storage, journal, max_parallel: int = 4) -> SupplierSyncWorker:
+class FakeNormalizer:
+    """Отмечает позиции нормализацией и записывает порядок вызова."""
+
+    version = "normalizer-test"
+
+    def __init__(self, calls: list[str]) -> None:
+        self._calls = calls
+
+    async def normalize(self, package: SupplierPackage) -> SupplierPackage:
+        self._calls.append("normalize")
+        offers = tuple(
+            dataclasses.replace(offer, normalization=Normalization(name=offer.name.lower()))
+            for offer in package.offers
+        )
+        return dataclasses.replace(package, offers=offers)
+
+
+class FakeClassifier:
+    """Проставляет код только нормализованным позициям."""
+
+    version = "classifier-test"
+
+    def __init__(self, calls: list[str]) -> None:
+        self._calls = calls
+
+    async def classify(self, package: SupplierPackage) -> SupplierPackage:
+        self._calls.append("classify")
+        offers = tuple(
+            dataclasses.replace(
+                offer,
+                classification=Classification(okpd2_code="25.73" if offer.normalization else ""),
+            )
+            for offer in package.offers
+        )
+        return dataclasses.replace(package, offers=offers)
+
+
+def worker(
+    providers,
+    storage,
+    journal,
+    max_parallel: int = 4,
+    calls: list[str] | None = None,
+) -> SupplierSyncWorker:
+    recorded = calls if calls is not None else []
     return SupplierSyncWorker(
         providers=providers,
         storage=storage,
         journal=journal,
         clock=FakeClock(),
+        normalizer=FakeNormalizer(recorded),
+        classifier=FakeClassifier(recorded),
         max_parallel_sources=max_parallel,
     )
 
@@ -153,7 +224,22 @@ async def check_journal_failure_keeps_data() -> None:
     assert not journal.runs
 
 
+async def check_enrichment_before_save() -> None:
+    calls: list[str] = []
+    storage = FakeStorage()
+    provider = FakeProvider("enriched", offers=2)
+    await worker([provider], storage, FakeJournal(), calls=calls).run_once()
+
+    # Классификатору нужно нормализованное название, поэтому порядок обязателен.
+    assert calls == ["normalize", "classify"], calls
+    saved = storage.packages[0].offers
+    assert len(saved) == 2, saved
+    assert all(offer.normalization is not None for offer in saved), saved
+    assert all(offer.classification.okpd2_code == "25.73" for offer in saved), saved
+
+
 async def main() -> None:
+    await check_enrichment_before_save()
     await check_concurrent_sources()
     await check_parallel_limit()
     await check_failure_isolated()

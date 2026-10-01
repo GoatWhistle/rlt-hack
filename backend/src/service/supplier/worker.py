@@ -10,6 +10,8 @@ from src.models.package import SupplierPackage
 from src.service.supplier.protocols import (
     Clock,
     CrawlJournal,
+    OfferClassifying,
+    OfferNormalizing,
     SupplierProvider,
     SupplierStorage,
 )
@@ -23,6 +25,9 @@ class SupplierSyncWorker:
     Адаптеры запускаются одновременно: медленный сайт не задерживает остальные,
     а сбой одного источника не отменяет чужие результаты. Число одновременных
     обходов ограничено, чтобы не упираться в сеть и запись в хранилище.
+
+    Собранный пакет перед записью проходит нормализацию и классификацию: обе
+    вызываются через интерфейс, их реализации сервису неизвестны.
     """
 
     def __init__(
@@ -31,6 +36,8 @@ class SupplierSyncWorker:
         storage: SupplierStorage,
         journal: CrawlJournal,
         clock: Clock,
+        normalizer: OfferNormalizing,
+        classifier: OfferClassifying,
         interval_seconds: float = 3600.0,
         max_parallel_sources: int = 4,
     ) -> None:
@@ -38,6 +45,8 @@ class SupplierSyncWorker:
         self._storage = storage
         self._journal = journal
         self._clock = clock
+        self._normalizer = normalizer
+        self._classifier = classifier
         self._interval = interval_seconds
         self._max_parallel_sources = max(1, max_parallel_sources)
 
@@ -70,6 +79,10 @@ class SupplierSyncWorker:
         package = SupplierPackage(source=source)
         try:
             package = await provider.fetch()
+            # Классификатору нужно нормализованное название, поэтому порядок
+            # шагов задан здесь, а не в реализациях.
+            package = await self._normalizer.normalize(package)
+            package = await self._classifier.classify(package)
             withdrawn = await self._storage.save_package(package)
             logger.info(
                 "Источник %s: компаний — %d, предложений — %d, снято с продажи — %d",

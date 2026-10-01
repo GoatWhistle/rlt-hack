@@ -1,4 +1,4 @@
-"""DTO команды синхронизации: разобранные аргументы командной строки."""
+"""DTO команд джобы: разобранные аргументы командной строки."""
 
 import argparse
 from dataclasses import dataclass
@@ -14,3 +14,15 @@ class SyncCommand:
     @classmethod
     def of(cls, arguments: argparse.Namespace) -> "SyncCommand":
         return cls(forever=bool(arguments.forever), parallel_sources=arguments.parallel)
+
+
+@dataclass(frozen=True, slots=True)
+class NormalizeCommand:
+    """Сколько сохранённых позиций пересчитать."""
+
+    limit: int | None = None
+
+    @classmethod
+    def of(cls, arguments: argparse.Namespace) -> "NormalizeCommand":
+        limit = arguments.limit
+        return cls(limit=limit if limit is None or limit > 0 else None)

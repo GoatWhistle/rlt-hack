@@ -41,7 +41,7 @@ async def main():
             objects = rows(
                 "SELECT count() AS n FROM system.tables WHERE database = 'supplier_search'"
             )
-            assert int(objects[0]["n"]) == 22, objects
+            assert int(objects[0]["n"]) == 23, objects
 
             supplier = "00000000-0000-0000-0000-000000000001"
             offer = "00000000-0000-0000-0000-000000000002"

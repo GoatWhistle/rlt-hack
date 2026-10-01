@@ -3,6 +3,8 @@
 from typing import Protocol
 from uuid import UUID
 
+from src.models.coverage import CoverageReport
+from src.models.enrichment import EnrichmentResult, ReidentifyResult
 from src.models.journal import CrawlRun, SyncResult
 from src.models.source import Source
 
@@ -21,6 +23,20 @@ class SourceCatalog(Protocol):
 
 class CrawlJournalReader(Protocol):
     async def last_runs(self, source_id: UUID, limit: int = 10) -> list[CrawlRun]: ...
+
+
+class OfferEnriching(Protocol):
+    async def run(self, limit: int | None = None) -> EnrichmentResult:
+        """Пересчитывает нормализацию и классификацию сохранённых позиций."""
+
+
+class OfferReidentifying(Protocol):
+    async def run(self) -> ReidentifyResult:
+        """Переводит сохранённые позиции на действующее правило ключа."""
+
+
+class CoverageReading(Protocol):
+    async def coverage(self) -> CoverageReport: ...
 
 
 class SchemaMigrator(Protocol):

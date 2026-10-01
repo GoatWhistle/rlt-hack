@@ -124,7 +124,7 @@ def product_card(content: str, url: str, source_id: UUID, now: datetime) -> Offe
         last_seen_at=now,
         supplier_id=owner_id,
         seller_status=VerificationStatus.VERIFIED,
-        seller_evidence_url=owner_url,
+        evidence_url=owner_url,
         description=description,
         item_type=ItemType.GOODS,
         brand=brand,
@@ -136,7 +136,6 @@ def product_card(content: str, url: str, source_id: UUID, now: datetime) -> Offe
         unit=unit,
         availability=availability,
         supplier_role=SupplierRole.MANUFACTURER,
-        role_evidence_url=owner_url,
         role_evidence_text="Карточка производителя ProductCenter",
         content_hash=identity.offer_content_hash(
             name, description, ItemType.GOODS, brand, article, unit, attributes=attributes

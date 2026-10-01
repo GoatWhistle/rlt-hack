@@ -211,13 +211,12 @@ def parse_workbook(content: bytes, source: Source) -> SupplierPackage:
                     last_seen_at=observed_at,
                     supplier_id=supplier_uuid,
                     seller_status=VerificationStatus.UNVERIFIED,
-                    seller_evidence_url=source.base_url,
+                    evidence_url=source.base_url,
                     description=_value(row, columns, "description"),
                     item_type=ItemType.GOODS,
                     okpd2_code=_value(row, columns, "okpd2"),
                     attributes=attributes,
                     supplier_role=SupplierRole.MANUFACTURER if active else SupplierRole.UNKNOWN,
-                    role_evidence_url=source.base_url if active else "",
                     role_evidence_text=(
                         "Действующая запись реестра российской промышленной продукции"
                         if active

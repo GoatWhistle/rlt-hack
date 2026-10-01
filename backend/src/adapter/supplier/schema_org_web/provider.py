@@ -148,7 +148,10 @@ class SchemaOrgWebProvider:
         offer_data = jsonld.first(product.get("offers"))
         url = jsonld.text(offer_data.get("url")) or jsonld.text(product.get("url")) or page_url
         sku = jsonld.text(product.get("sku")) or jsonld.text(offer_data.get("sku"))
-        external_id = jsonld.text(product.get("productID")) or sku or url
+        # На карточке одна позиция, поэтому отпечаток названия не нужен.
+        external_id = identity.external_id(
+            source_key=jsonld.text(product.get("productID")) or sku, url=url
+        )
         item_type = ItemType.SERVICE if "Service" in jsonld.type_names(product) else ItemType.GOODS
         name = jsonld.text(product.get("name"))
         description = jsonld.text(product.get("description"))
@@ -167,7 +170,7 @@ class SchemaOrgWebProvider:
             last_seen_at=observed_at,
             supplier_id=supplier.supplier_id,
             seller_status=self._source.ownership_status,
-            seller_evidence_url=self._source.ownership_evidence_url or self._source.base_url,
+            evidence_url=self._source.ownership_evidence_url or self._source.base_url,
             description=description,
             item_type=item_type,
             brand=brand,
@@ -180,7 +183,6 @@ class SchemaOrgWebProvider:
             availability=_availability(offer_data.get("availability")),
             # Сайт компании подтверждает продавца, но не роль в поставке товара.
             supplier_role=SupplierRole.UNKNOWN,
-            role_evidence_url=page_url,
             content_hash=identity.offer_content_hash(
                 name=name,
                 description=description,
