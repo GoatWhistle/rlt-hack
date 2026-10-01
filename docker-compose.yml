@@ -156,6 +156,11 @@ services:
 
   # Обход включённых источников: `docker compose run --rm sync-job sync`.
   sync-job:
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     build:
       context: ./backend
     profiles: ["jobs"]
