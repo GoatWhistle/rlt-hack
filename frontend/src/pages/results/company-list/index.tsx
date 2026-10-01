@@ -1,21 +1,23 @@
 import { clsx } from "clsx"
 import { useTranslation } from "react-i18next"
-import type { Company, CompanyStatus } from "@/entities/recommendation/model"
+import type { Company } from "@/entities/recommendation/model"
 import { Caption } from "@/shared/ui/caption"
 import { Stack } from "@/shared/ui/stack"
 import { Tag } from "@/shared/ui/tag"
 import { ResultSection } from "../section"
+import { statusText } from "../status"
 import styles from "./styles.module.css"
 
-export function StatusTag({ status }: { readonly status: CompanyStatus }) {
+export function StatusTag({ company }: { readonly company: Company }) {
   const { t } = useTranslation()
+  const recommended = company.status === "recommended"
   return (
-    <Tag>
+    <Tag tone={recommended ? "solid" : "tentative"}>
       <span
         aria-hidden="true"
-        className={clsx(styles.dot, status === "recommended" ? styles.filled : styles.hollow)}
+        className={clsx(styles.dot, recommended ? styles.filled : styles.hollow)}
       />
-      {t(`results.companies.status.${status}`)}
+      {statusText(company, t)}
     </Tag>
   )
 }
@@ -35,7 +37,7 @@ export function CompanyList({
 }: CompanyListProps) {
   const { t } = useTranslation()
   return (
-    <ResultSection title={t("results.companies.title")} width="medium">
+    <ResultSection title={t("results.companies.title")}>
       <Stack>
         {companies.map((company, index) => (
           <button
@@ -45,27 +47,21 @@ export function CompanyList({
             className={clsx(styles.company, company.id === selectedId && styles.selected)}
             onClick={() => onSelect(company.id)}
           >
-            <span className={styles.head}>
-              <span className={styles.identity}>
-                <span className={styles.rank}>{index + 1}</span>
+            <span className={styles.rank}>{index + 1}</span>
+            <span className={styles.body}>
+              <span className={styles.name}>{company.name}</span>
+              <Caption>{company.role}</Caption>
+              <span className={styles.facts}>
+                <StatusTag company={company} />
                 <span>
-                  <span className={styles.name}>{company.name}</span>
-                  <Caption>
-                    {t("results.companies.inn", { inn: company.inn })} · {company.role}
-                  </Caption>
+                  {t("results.companies.matchCount", {
+                    matched: company.matches.length,
+                    total: totalProducts,
+                  })}
                 </span>
-              </span>
-              <StatusTag status={company.status} />
-            </span>
-            <span className={styles.stats}>
-              <span>
-                {t("results.companies.covered", {
-                  covered: company.coveredProductIds.length,
-                  total: totalProducts,
-                })}
-              </span>
-              <span>
-                {t("results.companies.purchases", { count: company.similarPurchases })}
+                <span>
+                  {t("results.companies.purchases", { count: company.similarPurchases })}
+                </span>
               </span>
             </span>
           </button>

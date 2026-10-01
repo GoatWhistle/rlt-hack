@@ -82,51 +82,94 @@
       "description": "Upload a procurement file to see the candidates.",
       "action": "Upload a file"
     },
-    "chain": {
-      "label": "Reasoning chain",
-      "request": "01 · Request",
-      "products": "02 · Products",
-      "companies": "03 · Companies",
-      "evidence": "04 · Grounds",
-      "lotFromFile": "{{lot}} from the file",
-      "productCount_one": "{{count}} item",
-      "productCount_other": "{{count}} items",
-      "originSummary": "{{notice}} from the notice · {{inferred}} inferred · {{user}} confirmed",
+    "header": {
+      "downloadCsv": "Download CSV",
+      "productCount_one": "{{count}} product",
+      "productCount_other": "{{count}} products",
       "companyCount_one": "{{count}} candidate",
       "companyCount_other": "{{count}} candidates",
-      "statusSummary": "{{recommended}} recommended · {{check}} to check",
-      "evidenceSummary_one": "{{count}} source · {{clarify}} to clarify",
-      "evidenceSummary_other": "{{count}} sources · {{clarify}} to clarify"
+      "checkCount_one": "{{count}} needs checking",
+      "checkCount_other": "{{count}} need checking"
+    },
+    "chain": {
+      "label": "Reasoning chain",
+      "request": "Request",
+      "products": "Products",
+      "companies": "Companies",
+      "evidence": "Grounds"
     },
     "products": {
-      "title": "Identified products",
+      "title": "Products",
       "origin": {
-        "notice": "Stated in the notice",
-        "inferred": "Inferred from similar purchases",
-        "user": "Confirmed by the user"
+        "notice": "From the notice",
+        "inferred": "Needs confirming",
+        "user": "Confirmed by you"
+      },
+      "originNote": {
+        "notice": "The item and its OKPD2 code come from the procurement notice.",
+        "inferred": "The system added this item from similar purchases. Confirm it before contacting suppliers.",
+        "user": "The item was specified by the user."
       }
     },
     "companies": {
-      "title": "Matching companies",
-      "inn": "Tax ID {{inn}}",
-      "covered": "{{covered}} of {{total}} products",
+      "title": "Candidates",
+      "matchCount": "{{matched}} of {{total}} products",
       "purchases_one": "{{count}} similar purchase",
       "purchases_other": "{{count}} similar purchases",
       "status": {
         "recommended": "Recommended",
-        "check": "To check"
+        "check": "Needs checking"
       }
     },
     "evidence": {
-      "title": "Why this company",
-      "coverage": "Product coverage",
-      "covered": "in the catalogue",
-      "missing": "not confirmed",
-      "why": "Why it fits",
-      "proof": "What confirms it",
-      "clarify": "What needs clarifying",
+      "title": "Grounds",
+      "inn": "Tax ID {{inn}}",
+      "summaryTitle": "Why we recommend it",
+      "checkTitle": "Why it needs checking",
+      "mainClarify": "Key thing to clarify",
+      "matchesTitle": "Product match",
+      "matchesCount": "{{matched}} of {{total}} items",
+      "matchesHint": "A match by available records, not confirmed warehouse stock. Stock is confirmed only where stated.",
+      "basis": {
+        "stock": "Stock confirmed",
+        "catalog": "In the catalogue",
+        "inferred": "System assumption"
+      },
+      "notFound": "Not found",
+      "noSource": "No source given",
+      "checkedAt": "checked {{date}}",
+      "sourceKind": {
+        "catalog": "Catalogue",
+        "price": "Price list",
+        "purchase": "Purchase",
+        "registry": "Registry"
+      },
+      "purchasesTitle": "Purchase history",
+      "purchasesSummary_one": "{{count}} similar purchase, wins: {{wins}}",
+      "purchasesSummary_other": "{{count}} similar purchases, wins: {{wins}}",
+      "outcome": {
+        "winner": "Winner",
+        "participant": "Participant"
+      },
+      "purchasesNote": "Past participation and wins do not guarantee a future delivery or win.",
+      "noPurchases": "No purchase examples with a source.",
+      "clarifyTitle": "What to clarify",
+      "noClarify": "Nothing significant to clarify.",
+      "showAll": "Show all ({{count}})",
+      "showLess": "Show less",
       "shortlist": "Add to shortlist",
       "exclude": "Exclude"
+    },
+    "csv": {
+      "rank": "Rank",
+      "company": "Company",
+      "inn": "Tax ID",
+      "role": "Role",
+      "status": "Status",
+      "matched": "Product match",
+      "purchases": "Similar purchases",
+      "wins": "Wins",
+      "summary": "Why recommended"
     }
   }
 }

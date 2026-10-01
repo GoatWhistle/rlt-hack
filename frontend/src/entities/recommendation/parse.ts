@@ -1,98 +1,96 @@
 import {
+  count,
+  list,
+  oneOf,
+  optionalText,
+  plainText,
+  record,
+  text,
+  withOptional,
+} from "./fields"
+import {
   COMPANY_STATUSES,
   type Company,
-  type Evidence,
+  MATCH_BASES,
   PRODUCT_ORIGINS,
   type Product,
+  type ProductMatch,
+  PURCHASE_OUTCOMES,
+  type Purchase,
   type Recommendation,
+  SOURCE_KINDS,
+  type Source,
 } from "./model"
 
-export class RecommendationFormatError extends Error {
-  constructor(path: string) {
-    super(`unexpected recommendation payload at ${path}`)
-    this.name = "RecommendationFormatError"
-  }
-}
+export { RecommendationFormatError } from "./fields"
 
-type Fields = Readonly<Record<string, unknown>>
-
-function record(value: unknown, path: string): Fields {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new RecommendationFormatError(path)
-  }
-  return value as Fields
-}
-
-function text(fields: Fields, key: string, path: string): string {
-  const value = fields[key]
-  if (typeof value !== "string") throw new RecommendationFormatError(`${path}.${key}`)
-  return value
-}
-
-function count(fields: Fields, key: string, path: string): number {
-  const value = fields[key]
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    throw new RecommendationFormatError(`${path}.${key}`)
-  }
-  return value
-}
-
-function list<T>(
-  fields: Fields,
-  key: string,
-  path: string,
-  item: (value: unknown, at: string) => T,
-): T[] {
-  const value = fields[key]
-  if (!Array.isArray(value)) throw new RecommendationFormatError(`${path}.${key}`)
-  return value.map((entry, index) => item(entry, `${path}.${key}[${index}]`))
-}
-
-function oneOf<T extends string>(options: readonly T[], value: string, path: string): T {
-  const found = options.find((option) => option === value)
-  if (!found) throw new RecommendationFormatError(path)
-  return found
-}
-
-function plainText(value: unknown, path: string): string {
-  if (typeof value !== "string") throw new RecommendationFormatError(path)
-  return value
+function source(value: unknown, path: string): Source | undefined {
+  if (value === undefined || value === null) return undefined
+  const fields = record(value, path)
+  return withOptional(
+    {
+      kind: oneOf(SOURCE_KINDS, fields, "kind", path),
+      title: text(fields, "title", path),
+      url: text(fields, "url", path),
+    },
+    { checkedAt: optionalText(fields, "checkedAt", path) },
+  )
 }
 
 function product(value: unknown, path: string): Product {
   const fields = record(value, path)
-  return {
-    id: text(fields, "id", path),
-    name: text(fields, "name", path),
-    okpd2: text(fields, "okpd2", path),
-    origin: oneOf(PRODUCT_ORIGINS, text(fields, "origin", path), `${path}.origin`),
-  }
+  return withOptional(
+    {
+      id: text(fields, "id", path),
+      name: text(fields, "name", path),
+      okpd2: text(fields, "okpd2", path),
+      origin: oneOf(PRODUCT_ORIGINS, fields, "origin", path),
+    },
+    { originNote: optionalText(fields, "originNote", path) },
+  )
 }
 
-function evidence(value: unknown, path: string): Evidence {
+function match(value: unknown, path: string): ProductMatch {
   const fields = record(value, path)
-  return {
-    kind: text(fields, "kind", path),
-    title: text(fields, "title", path),
-    url: text(fields, "url", path),
-    meta: text(fields, "meta", path),
-  }
+  return withOptional(
+    {
+      productId: text(fields, "productId", path),
+      basis: oneOf(MATCH_BASES, fields, "basis", path),
+    },
+    { source: source(fields.source, `${path}.source`) },
+  )
+}
+
+function purchase(value: unknown, path: string): Purchase {
+  const fields = record(value, path)
+  return withOptional(
+    {
+      title: text(fields, "title", path),
+      year: count(fields, "year", path),
+      outcome: oneOf(PURCHASE_OUTCOMES, fields, "outcome", path),
+    },
+    { source: source(fields.source, `${path}.source`) },
+  )
 }
 
 function company(value: unknown, path: string): Company {
   const fields = record(value, path)
-  return {
-    id: text(fields, "id", path),
-    name: text(fields, "name", path),
-    inn: text(fields, "inn", path),
-    role: text(fields, "role", path),
-    status: oneOf(COMPANY_STATUSES, text(fields, "status", path), `${path}.status`),
-    coveredProductIds: list(fields, "coveredProductIds", path, plainText),
-    similarPurchases: count(fields, "similarPurchases", path),
-    why: list(fields, "why", path, plainText),
-    evidence: list(fields, "evidence", path, evidence),
-    clarify: list(fields, "clarify", path, plainText),
-  }
+  return withOptional(
+    {
+      id: text(fields, "id", path),
+      name: text(fields, "name", path),
+      inn: text(fields, "inn", path),
+      role: text(fields, "role", path),
+      status: oneOf(COMPANY_STATUSES, fields, "status", path),
+      summary: text(fields, "summary", path),
+      matches: list(fields, "matches", path, match),
+      similarPurchases: count(fields, "similarPurchases", path),
+      wins: count(fields, "wins", path),
+      purchases: list(fields, "purchases", path, purchase),
+      clarify: list(fields, "clarify", path, plainText),
+    },
+    { checkReason: optionalText(fields, "checkReason", path) },
+  )
 }
 
 export function parseRecommendation(value: unknown): Recommendation {

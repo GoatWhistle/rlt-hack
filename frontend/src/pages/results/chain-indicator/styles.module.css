@@ -1,0 +1,20 @@
+.chain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  list-style: none;
+}
+
+.step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.step:last-child {
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+}

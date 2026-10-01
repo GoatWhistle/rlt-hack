@@ -4,18 +4,41 @@ export type ProductOrigin = (typeof PRODUCT_ORIGINS)[number]
 export const COMPANY_STATUSES = ["recommended", "check"] as const
 export type CompanyStatus = (typeof COMPANY_STATUSES)[number]
 
+export const MATCH_BASES = ["stock", "catalog", "inferred"] as const
+export type MatchBasis = (typeof MATCH_BASES)[number]
+
+export const SOURCE_KINDS = ["catalog", "price", "purchase", "registry"] as const
+export type SourceKind = (typeof SOURCE_KINDS)[number]
+
+export const PURCHASE_OUTCOMES = ["winner", "participant"] as const
+export type PurchaseOutcome = (typeof PURCHASE_OUTCOMES)[number]
+
+export type Source = {
+  readonly kind: SourceKind
+  readonly title: string
+  readonly url: string
+  readonly checkedAt?: string
+}
+
 export type Product = {
   readonly id: string
   readonly name: string
   readonly okpd2: string
   readonly origin: ProductOrigin
+  readonly originNote?: string
 }
 
-export type Evidence = {
-  readonly kind: string
+export type ProductMatch = {
+  readonly productId: string
+  readonly basis: MatchBasis
+  readonly source?: Source
+}
+
+export type Purchase = {
   readonly title: string
-  readonly url: string
-  readonly meta: string
+  readonly year: number
+  readonly outcome: PurchaseOutcome
+  readonly source?: Source
 }
 
 export type Company = {
@@ -24,10 +47,12 @@ export type Company = {
   readonly inn: string
   readonly role: string
   readonly status: CompanyStatus
-  readonly coveredProductIds: readonly string[]
+  readonly checkReason?: string
+  readonly summary: string
+  readonly matches: readonly ProductMatch[]
   readonly similarPurchases: number
-  readonly why: readonly string[]
-  readonly evidence: readonly Evidence[]
+  readonly wins: number
+  readonly purchases: readonly Purchase[]
   readonly clarify: readonly string[]
 }
 

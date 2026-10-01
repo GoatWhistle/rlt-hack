@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router"
 import type { Recommendation } from "@/entities/recommendation/model"
@@ -6,12 +6,13 @@ import { parseRecommendation } from "@/entities/recommendation/parse"
 import { ButtonLink } from "@/shared/ui/button"
 import { Caption } from "@/shared/ui/caption"
 import { EmptyState } from "@/shared/ui/empty-state"
-import { Stack } from "@/shared/ui/stack"
-import { ChainBar } from "./chain-bar"
 import { CompanyList } from "./company-list"
 import { EvidencePanel } from "./evidence-panel"
 import { ProductList } from "./product-list"
+import { ResultHeader } from "./result-header"
 import styles from "./styles.module.css"
+
+export const STACKED_LAYOUT = "(max-width: 64rem)"
 
 function readRecommendation(state: unknown): Recommendation | null {
   try {
@@ -26,6 +27,7 @@ export function ResultsPage() {
   const location = useLocation()
   const [recommendation] = useState(() => readRecommendation(location.state))
   const [selectedId, setSelectedId] = useState(recommendation?.companies[0]?.id)
+  const grounds = useRef<HTMLDivElement>(null)
   const selected =
     recommendation?.companies.find((company) => company.id === selectedId) ??
     recommendation?.companies[0]
@@ -40,24 +42,31 @@ export function ResultsPage() {
     )
   }
 
+  function select(id: string) {
+    setSelectedId(id)
+    if (window.matchMedia?.(STACKED_LAYOUT).matches) {
+      grounds.current?.scrollIntoView({ block: "start" })
+    }
+  }
+
   return (
     <div className={styles.page}>
-      <Stack>
-        <Caption>
-          {recommendation.fileName} · {recommendation.lotLabel}
-        </Caption>
-        <h1 className={styles.title}>{recommendation.requestTitle}</h1>
-      </Stack>
-      <ChainBar recommendation={recommendation} selected={selected} />
+      <ResultHeader recommendation={recommendation} />
       <div className={styles.columns}>
         <ProductList products={recommendation.products} />
         <CompanyList
           companies={recommendation.companies}
           totalProducts={recommendation.products.length}
           selectedId={selected.id}
-          onSelect={setSelectedId}
+          onSelect={select}
         />
-        <EvidencePanel company={selected} products={recommendation.products} />
+        <div ref={grounds} className={styles.grounds}>
+          <EvidencePanel
+            key={selected.id}
+            company={selected}
+            products={recommendation.products}
+          />
+        </div>
       </div>
       <div className={styles.footer}>
         <Caption muted>{t("results.demoNote")}</Caption>

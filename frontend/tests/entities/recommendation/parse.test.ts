@@ -20,6 +20,19 @@ describe("parseRecommendation", () => {
     )
   })
 
+  it("treats null optional fields as absent", () => {
+    const payload = changed(["companies", 0, "checkReason"], null)
+    const withNullSource = (payload as Node).companies as Node[]
+    ;(withNullSource[0]?.matches as Node[])[0] = {
+      productId: "sugar",
+      basis: "inferred",
+      source: null,
+    }
+    const parsed = parseRecommendation(payload)
+    expect(parsed.companies[0]).not.toHaveProperty("checkReason")
+    expect(parsed.companies[0]?.matches[0]).not.toHaveProperty("source")
+  })
+
   it.each([
     ["a non-object payload", null, "$"],
     ["an array payload", [], "$"],
@@ -31,19 +44,45 @@ describe("parseRecommendation", () => {
       "$.products[0].origin",
     ],
     [
+      "a note that is not text",
+      changed(["products", 1, "originNote"], 3),
+      "$.products[1].originNote",
+    ],
+    [
       "an unknown company status",
       changed(["companies", 1, "status"], "maybe"),
       "$.companies[1].status",
     ],
     [
-      "a purchase count that is not a number",
-      changed(["companies", 0, "similarPurchases"], "1"),
+      "a negative purchase count",
+      changed(["companies", 0, "similarPurchases"], -1),
       "$.companies[0].similarPurchases",
     ],
+    ["a fractional win count", changed(["companies", 0, "wins"], 1.5), "$.companies[0].wins"],
     [
-      "a reason that is not text",
-      changed(["companies", 0, "why"], [1]),
-      "$.companies[0].why[0]",
+      "an unknown match basis",
+      changed(["companies", 0, "matches", 0, "basis"], "rumour"),
+      "$.companies[0].matches[0].basis",
+    ],
+    [
+      "an unknown source kind",
+      changed(["companies", 0, "matches", 1, "source", "kind"], "blog"),
+      "$.companies[0].matches[1].source.kind",
+    ],
+    [
+      "a source that is not an object",
+      changed(["companies", 0, "purchases", 0, "source"], "link"),
+      "$.companies[0].purchases[0].source",
+    ],
+    [
+      "an unknown purchase outcome",
+      changed(["companies", 0, "purchases", 0, "outcome"], "lost"),
+      "$.companies[0].purchases[0].outcome",
+    ],
+    [
+      "a clarification that is not text",
+      changed(["companies", 0, "clarify"], [1]),
+      "$.companies[0].clarify[0]",
     ],
   ])("rejects %s", (_, payload, path) => {
     expect(() => parseRecommendation(payload)).toThrow(

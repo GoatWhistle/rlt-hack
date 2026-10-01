@@ -1,0 +1,102 @@
+{
+  "id": "c1",
+  "name": "ООО «Северный Провиант»",
+  "inn": "7800000011",
+  "role": "Поставщик · дистрибьютор",
+  "status": "recommended",
+  "summary": "Закрывает 6 из 7 позиций по сведениям каталога и прайс-листа и регулярно участвует в закупках питания для школ.",
+  "matches": [
+    {
+      "productId": "grechka",
+      "basis": "stock",
+      "source": {
+        "kind": "price",
+        "title": "Прайс-лист с остатками",
+        "url": "#",
+        "checkedAt": "2026-09-29"
+      }
+    },
+    {
+      "productId": "klyukva",
+      "basis": "catalog",
+      "source": {
+        "kind": "catalog",
+        "title": "Каталог: замороженные ягоды",
+        "url": "#",
+        "checkedAt": "2026-09-28"
+      }
+    },
+    {
+      "productId": "manka",
+      "basis": "catalog",
+      "source": {
+        "kind": "catalog",
+        "title": "Каталог: крупы и бакалея",
+        "url": "#",
+        "checkedAt": "2026-09-28"
+      }
+    },
+    {
+      "productId": "perlovka",
+      "basis": "catalog",
+      "source": {
+        "kind": "catalog",
+        "title": "Каталог: крупы и бакалея",
+        "url": "#",
+        "checkedAt": "2026-09-28"
+      }
+    },
+    {
+      "productId": "krahmal",
+      "basis": "catalog",
+      "source": {
+        "kind": "catalog",
+        "title": "Каталог: крупы и бакалея",
+        "url": "#",
+        "checkedAt": "2026-09-28"
+      }
+    },
+    {
+      "productId": "sahar",
+      "basis": "inferred"
+    }
+  ],
+  "similarPurchases": 11,
+  "wins": 4,
+  "purchases": [
+    {
+      "title": "Лот 4749586 · Поставка продуктов питания",
+      "year": 2024,
+      "outcome": "winner",
+      "source": {
+        "kind": "purchase",
+        "title": "Протокол итогов, АИС ГЗ",
+        "url": "#"
+      }
+    },
+    {
+      "title": "Лот 4749587 · Поставка продуктов питания",
+      "year": 2024,
+      "outcome": "winner",
+      "source": {
+        "kind": "purchase",
+        "title": "Протокол итогов, АИС ГЗ",
+        "url": "#"
+      }
+    },
+    {
+      "title": "Лот 4760048 · Поставка продуктов питания",
+      "year": 2025,
+      "outcome": "participant",
+      "source": {
+        "kind": "purchase",
+        "title": "Протокол итогов, АИС ГЗ",
+        "url": "#"
+      }
+    }
+  ],
+  "clarify": [
+    "Наличие клюквы замороженной: в каталоге нет остатка.",
+    "Сроки доставки в район заказчика."
+  ]
+}

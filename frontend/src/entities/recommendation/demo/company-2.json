@@ -1,0 +1,78 @@
+{
+  "id": "c2",
+  "name": "АО «Крупяной Двор»",
+  "inn": "7800000022",
+  "role": "Производитель",
+  "status": "recommended",
+  "summary": "Производитель круп: 4 профильные позиции из 7, две из них с подтверждённым остатком.",
+  "matches": [
+    {
+      "productId": "grechka",
+      "basis": "stock",
+      "source": {
+        "kind": "price",
+        "title": "Складские остатки на сайте",
+        "url": "#",
+        "checkedAt": "2026-09-30"
+      }
+    },
+    {
+      "productId": "manka",
+      "basis": "stock",
+      "source": {
+        "kind": "price",
+        "title": "Складские остатки на сайте",
+        "url": "#",
+        "checkedAt": "2026-09-30"
+      }
+    },
+    {
+      "productId": "perlovka",
+      "basis": "catalog",
+      "source": {
+        "kind": "catalog",
+        "title": "Страница «Продукция»",
+        "url": "#",
+        "checkedAt": "2026-09-28"
+      }
+    },
+    {
+      "productId": "krahmal",
+      "basis": "catalog",
+      "source": {
+        "kind": "catalog",
+        "title": "Страница «Продукция»",
+        "url": "#",
+        "checkedAt": "2026-09-28"
+      }
+    }
+  ],
+  "similarPurchases": 6,
+  "wins": 2,
+  "purchases": [
+    {
+      "title": "Лот 4749585 · Поставка продуктов питания",
+      "year": 2024,
+      "outcome": "participant",
+      "source": {
+        "kind": "purchase",
+        "title": "Протокол итогов, АИС ГЗ",
+        "url": "#"
+      }
+    },
+    {
+      "title": "Лот 4652745 · Поставка круп",
+      "year": 2024,
+      "outcome": "winner",
+      "source": {
+        "kind": "purchase",
+        "title": "Протокол итогов, АИС ГЗ",
+        "url": "#"
+      }
+    }
+  ],
+  "clarify": [
+    "Не закрывает ягоды, сахар и кофейный напиток: нужен второй поставщик.",
+    "Минимальный объём партии."
+  ]
+}

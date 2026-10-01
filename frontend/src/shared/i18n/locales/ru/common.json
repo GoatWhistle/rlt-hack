@@ -82,59 +82,104 @@
       "description": "Загрузите файл закупки, чтобы увидеть кандидатов.",
       "action": "Загрузить файл"
     },
-    "chain": {
-      "label": "Цепочка вывода",
-      "request": "01 · Запрос",
-      "products": "02 · Товары",
-      "companies": "03 · Компании",
-      "evidence": "04 · Основания",
-      "lotFromFile": "{{lot}} из файла",
-      "productCount_one": "{{count}} позиция",
-      "productCount_few": "{{count}} позиции",
-      "productCount_many": "{{count}} позиций",
-      "productCount_other": "{{count}} позиции",
-      "originSummary": "{{notice}} из извещения · {{inferred}} предположено · {{user}} уточнено",
+    "header": {
+      "downloadCsv": "Скачать CSV",
+      "productCount_one": "{{count}} товар",
+      "productCount_few": "{{count}} товара",
+      "productCount_many": "{{count}} товаров",
+      "productCount_other": "{{count}} товара",
       "companyCount_one": "{{count}} кандидат",
       "companyCount_few": "{{count}} кандидата",
       "companyCount_many": "{{count}} кандидатов",
       "companyCount_other": "{{count}} кандидата",
-      "statusSummary": "{{recommended}} рекомендуем · {{check}} проверить",
-      "evidenceSummary_one": "{{count}} подтверждение · {{clarify}} к уточнению",
-      "evidenceSummary_few": "{{count}} подтверждения · {{clarify}} к уточнению",
-      "evidenceSummary_many": "{{count}} подтверждений · {{clarify}} к уточнению",
-      "evidenceSummary_other": "{{count}} подтверждения · {{clarify}} к уточнению"
+      "checkCount_one": "{{count}} требует проверки",
+      "checkCount_few": "{{count}} требуют проверки",
+      "checkCount_many": "{{count}} требуют проверки",
+      "checkCount_other": "{{count}} требуют проверки"
+    },
+    "chain": {
+      "label": "Цепочка вывода",
+      "request": "Запрос",
+      "products": "Товары",
+      "companies": "Компании",
+      "evidence": "Основания"
     },
     "products": {
-      "title": "Определённые товары",
+      "title": "Товары",
       "origin": {
-        "notice": "Указано в извещении",
-        "inferred": "Предположено по похожим закупкам",
-        "user": "Уточнено пользователем"
+        "notice": "Из извещения",
+        "inferred": "Нужно подтвердить",
+        "user": "Уточнено вами"
+      },
+      "originNote": {
+        "notice": "Позиция и код ОКПД2 взяты из извещения.",
+        "inferred": "Система добавила позицию по похожим закупкам. Подтвердите её перед запросом поставщикам.",
+        "user": "Позицию уточнил пользователь."
       }
     },
     "companies": {
-      "title": "Подходящие компании",
-      "inn": "ИНН {{inn}}",
-      "covered": "{{covered}} из {{total}} товаров",
+      "title": "Кандидаты",
+      "matchCount": "{{matched}} из {{total}} товаров",
       "purchases_one": "{{count}} похожая закупка",
       "purchases_few": "{{count}} похожие закупки",
       "purchases_many": "{{count}} похожих закупок",
       "purchases_other": "{{count}} похожей закупки",
       "status": {
         "recommended": "Рекомендуем",
-        "check": "Проверить"
+        "check": "Требует проверки"
       }
     },
     "evidence": {
-      "title": "Почему эта компания",
-      "coverage": "Покрытие товаров",
-      "covered": "есть в каталоге",
-      "missing": "не подтверждено",
-      "why": "Почему подходит",
-      "proof": "Чем подтверждено",
-      "clarify": "Что требует уточнения",
+      "title": "Основания",
+      "inn": "ИНН {{inn}}",
+      "summaryTitle": "Почему рекомендуем",
+      "checkTitle": "Почему нужна проверка",
+      "mainClarify": "Главное уточнение",
+      "matchesTitle": "Соответствие товарам",
+      "matchesCount": "{{matched}} из {{total}} позиций",
+      "matchesHint": "Совпадение по имеющимся сведениям, а не подтверждённое наличие на складе. Наличие подтверждено только там, где это указано.",
+      "basis": {
+        "stock": "Наличие подтверждено",
+        "catalog": "Есть в каталоге",
+        "inferred": "Предположение системы"
+      },
+      "notFound": "Не найдено",
+      "noSource": "Источник не указан",
+      "checkedAt": "проверено {{date}}",
+      "sourceKind": {
+        "catalog": "Каталог",
+        "price": "Прайс-лист",
+        "purchase": "Закупка",
+        "registry": "Реестр"
+      },
+      "purchasesTitle": "Опыт закупок",
+      "purchasesSummary_one": "{{count}} похожая закупка, побед: {{wins}}",
+      "purchasesSummary_few": "{{count}} похожие закупки, побед: {{wins}}",
+      "purchasesSummary_many": "{{count}} похожих закупок, побед: {{wins}}",
+      "purchasesSummary_other": "{{count}} похожей закупки, побед: {{wins}}",
+      "outcome": {
+        "winner": "Победитель",
+        "participant": "Участник"
+      },
+      "purchasesNote": "Прошлые участия и победы не гарантируют будущую поставку или победу.",
+      "noPurchases": "Примеров закупок с источником нет.",
+      "clarifyTitle": "Что уточнить",
+      "noClarify": "Существенных уточнений нет.",
+      "showAll": "Показать все ({{count}})",
+      "showLess": "Свернуть",
       "shortlist": "Добавить в shortlist",
       "exclude": "Исключить"
+    },
+    "csv": {
+      "rank": "Место",
+      "company": "Компания",
+      "inn": "ИНН",
+      "role": "Роль",
+      "status": "Статус",
+      "matched": "Совпадение по товарам",
+      "purchases": "Похожих закупок",
+      "wins": "Побед",
+      "summary": "Почему рекомендуем"
     }
   }
 }

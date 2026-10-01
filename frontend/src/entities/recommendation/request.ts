@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query"
 import { apiClient } from "@/shared/api/client"
 import type { HttpClient } from "@/shared/api/http-client"
 import { env } from "@/shared/config/env"
-import demoResult from "./demo-result.json"
+import { demoPayload } from "./demo"
 import type { Recommendation } from "./model"
 import { parseRecommendation } from "./parse"
 
@@ -22,7 +22,7 @@ export async function requestRecommendation(
 ): Promise<Recommendation> {
   if (source.demoMode) {
     await new Promise((resolve) => setTimeout(resolve, DEMO_DELAY_MS))
-    return parseRecommendation({ ...demoResult, fileName: file.name })
+    return parseRecommendation({ ...demoPayload, fileName: file.name })
   }
   const body = new FormData()
   body.append("file", file)

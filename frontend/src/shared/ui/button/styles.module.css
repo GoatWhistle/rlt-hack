@@ -12,6 +12,10 @@
   transition: var(--transition-control);
 }
 
+.button:active:not(:disabled) {
+  transform: scale(var(--press-scale));
+}
+
 .button:disabled {
   cursor: not-allowed;
   background: var(--text-disabled);
