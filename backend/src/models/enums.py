@@ -42,6 +42,17 @@ class SupplierRole(StrEnum):
     SERVICE_PROVIDER = "service_provider"
 
 
+class ClassificationMethod(StrEnum):
+    """Канал, которым получен код ОКПД2: от самого надёжного к запасному."""
+
+    NONE = "none"
+    GOLD = "gold"
+    REFERENCE = "reference"
+    ARCHIVE = "archive"
+    SOURCE_MAP = "source_map"
+    LEXICON = "lexicon"
+
+
 class FetchStatus(StrEnum):
     """Итог обхода одного источника."""
 

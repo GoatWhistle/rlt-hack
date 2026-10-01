@@ -7,7 +7,6 @@ import { ExportDialog } from "@/features/export-results"
 import { isApiError } from "@/shared/api/api-error"
 import { lotPath, UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
 import { ButtonLink } from "@/shared/ui/button"
-import { Caption } from "@/shared/ui/caption"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
 import { LoadingState } from "@/shared/ui/loading-state"
@@ -83,7 +82,6 @@ export function LotPage() {
       ) : (
         <EmptyState headingLevel={2} title={t("queued.title")} description={t("queued.text")} />
       )}
-      <Caption muted>{t("demoNote")}</Caption>
       <ExportDialog
         key={exporting.session}
         open={exporting.open}

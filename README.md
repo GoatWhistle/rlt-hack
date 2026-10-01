@@ -13,19 +13,28 @@
 ## Состав решения
 
 - [Схема таблиц и всех связей (PDF)](docs/schema-relations.pdf)
+- [Идея нормализатора и классификатора](context/normalization-and-classification.md) ([PDF](docs/normalization-and-classification.pdf))
 - [Миграции ClickHouse](backend/migration)
+- [Справочники ОКПД2, рубрик, словаря и ОКЕИ](backend/reference)
 - [Джоба сбора: контракт источника, адаптеры и команды](backend/README.md)
 - [Дизайн-система фронтенда](frontend/DESIGN.md)
 
-Нормализация и HTTP API ещё не реализованы: сейчас в репозитории фронтенд в
-демонстрационном режиме, хранилище и джоба сбора данных. Код backend
-асинхронный: сервисы сбора готовы к вызову из будущего API на FastAPI.
+Добавлены HTTP API на FastAPI и поиск по историческим профилям поставщиков.
+Фронтенд использует только HTTP-ответы; демонстрационные карточки удалены.
 
-Для пересборки PDF по миграциям нужен Python, `reportlab==5.0.1` и шрифт
-Arial или DejaVu Sans с кириллицей:
+Нормализация и классификация подключены к джобе сбора через интерфейсы и
+вызываются сразу после обхода источника: сначала приведение позиции к единой
+форме, затем код ОКПД2, рубрика и тип. Классификатор не угадывает — позиция без
+сработавшего канала остаётся без кода, и это видно в отчёте о покрытии. Правила
+и замысел описаны в [отдельном документе](context/normalization-and-classification.md).
+
+Для пересборки PDF нужен Python, `reportlab==5.0.1` и шрифт Arial или
+DejaVu Sans с кириллицей. Первая команда рисует схему по миграциям, вторая
+собирает PDF из описания нормализатора в `context/`:
 
 ```sh
 uv run --no-project --with 'reportlab==5.0.1' python docs/generate_schema_pdf.py
+uv run --no-project --with 'reportlab==5.0.1' python docs/generate_normalization_pdf.py
 ```
 
 ## Требования
@@ -41,6 +50,9 @@ cp .env.example .env                         # переменные окруже
 docker compose up -d --build                 # фронтенд, ClickHouse с веб-интерфейсом и применение миграций
 docker compose run --rm sync-job providers   # подключённые адаптеры источников
 docker compose run --rm sync-job sync        # обход включённых источников
+docker compose run --rm sync-job normalize   # пересчёт нормализации и классификации
+docker compose run --rm sync-job coverage    # отчёт о покрытии
+docker compose run --rm sync-job reidentify  # перевод позиций на новое правило ключа
 ```
 
 Фронтенд будет доступен на `http://localhost:8080`, веб-интерфейс ClickHouse —
@@ -67,6 +79,13 @@ Compose читает их из `.env` в корне проекта и из ок�
 
 Назначение переменных джобы сбора подробнее описано в
 [backend/README.md](backend/README.md).
+ProductCenter включается флагом `PRODUCTCENTER_WEB_PROVIDER=true` только для
+полного обхода: `PRODUCTCENTER_MAX_CARDS=0`. Положительный лимит останавливает
+обход без записи неполного снимка.
+Успешные страницы ProductCenter хранятся в томе Docker `productcenter-cache`
+до 24 часов для продолжения обхода после обрыва сети.
+Для живой проверки без записи в ClickHouse используйте команду из
+[backend/README.md](backend/README.md); отчёт и кеш размещаются вне Git.
 
 ## Применение миграций без Docker
 
@@ -79,15 +98,41 @@ for file in backend/migration/*.sql; do clickhouse-client --multiquery < "$file"
 миграций: его ведёт только команда `migrate` из джобы, которая пишет
 контрольные суммы в таблицу `supplier_search.schema_migrations`.
 
+## CI/CD
+
+Запуск парсера и локального эмбеддера, ограничения ресурсов и команды поиска:
+[воркеры и векторизация](deploy/WORKERS.md).
+
+GitHub Actions проверяет frontend, backend и ML на искусственных данных,
+собирает контейнеры и после успешного push в `main` разворачивает проверенный
+выпуск на сервере. Production использует отдельный Compose-проект, резервную
+копию ClickHouse перед миграциями и откат frontend при неуспешном запуске.
+Production-конфигурация использует frontend на порту 8081 и search-api
+на внутреннем порту 8080; запросы `/api/` проксируются к search-api.
+
+Настройка GitHub Secrets, команды эксплуатации и ограничения отката описаны
+в [инструкции развёртывания](deploy/README.md).
+
 ## Проверки backend
 
 Без сервера ClickHouse, Docker и сети, через `uv`:
 
 ```sh
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/clickhouse/schema_smoke.py
-uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' --with lxml --with cssselect --with httpx python backend/tests/supplier/job_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/clickhouse/normalization_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' --with lxml --with cssselect --with httpx --with openpyxl python backend/tests/supplier/job_smoke.py
 uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx python backend/tests/supplier/provider_smoke.py
+uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx python backend/tests/supplier/productcenter_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' --with lxml --with cssselect --with httpx python backend/tests/supplier/productcenter_job_smoke.py
+uv run --no-project --python 3.13 --with httpx python backend/tests/supplier/moscow_suppliers_smoke.py
 uv run --no-project --python 3.13 python backend/tests/supplier/worker_smoke.py
+uv run --no-project --python 3.13 --with httpx --with openpyxl python backend/tests/supplier/gisp_registry.py
+uv run --no-project --python 3.13 --with httpx --with openpyxl python backend/tests/supplier/gisp_api.py
+uv run --no-project --python 3.13 python backend/tests/supplier/enrich_smoke.py
+uv run --no-project --python 3.13 python backend/tests/supplier/identity_smoke.py
+uv run --no-project --python 3.13 python backend/tests/supplier/reidentify_smoke.py
+uv run --no-project --python 3.13 python backend/tests/normalizer/normalizer_smoke.py
+uv run --no-project --python 3.13 python backend/tests/classifier/classifier_smoke.py
 ```
 
 Проверки используют временные каталоги, встроенный движок chDB и подготовленные
@@ -121,7 +166,6 @@ npm run dev
 | --- | --- |
 | `VITE_API_BASE_URL` | Базовый URL API, по умолчанию `/api` |
 | `VITE_API_PROXY` | Адрес backend для прокси `/api` в dev-режиме |
-| `VITE_DEMO_MODE` | `false` отключает демонстрационные данные |
 
 Дизайн-система (цвета, шрифт, отступы, компоненты) описана в [frontend/DESIGN.md](frontend/DESIGN.md).
 
@@ -161,6 +205,20 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 rlt-evaluate-retrieval \
 В текущем сравнении выбран Qwen3-Embedding-4B BF16 + BM25/RRF. Отдельный Qwen3-Embedding-8B NF4 прогон был остановлен до завершения индекса; качество не измерялось, поэтому 8B не входит в рабочий pipeline. Зафиксированный частичный запуск указан в [журнале экспериментов](ml/EXPERIMENTS.md).
 
 GPU-проверка запускается через `rlt-gpu-check`. Замеры качества и ресурсов, ограничения метрик и фактические результаты ведутся в [журнале экспериментов](ml/EXPERIMENTS.md).
+
+Для оценки CatBoost поверх готового retrieval-пула используйте только validation
+прогнозы и модель, обученную на train. Команда строит признаки по validation-ТРУ
+и считает метрики с пропуском победителя, если его нет в пуле; это oracle-режим
+для upstream предсказания ТРУ:
+
+```bash
+cd /root/rlt/work/ml
+PYTHONPATH=src /root/rlt/.venv312/bin/python -m rlt_ml.candidate_ranker \
+  --data /root/rlt/ready-v1 \
+  --predictions /root/rlt/backups/embedding-results/run-20261001/qwen-4b/predictions.jsonl \
+  --model /root/rlt/runs/ranker-20261001-b/ranker.cbm \
+  --out /root/rlt/runs/full-chain-ranker-validation
+```
 
 ### Эксперимент с карточками поставщиков
 
@@ -215,3 +273,21 @@ PYTHONPATH=src /root/rlt/.venv/bin/python -m rlt_ml.compare_cards \
   --variants AD \
   --out /root/rlt/runs/card-retrieval/paired-comparison.json
 ```
+# Проверка поиска поставщиков
+
+Тестовый файл: [`test-supplier-search.csv`](test-supplier-search.csv), пять
+искусственных закупок. Откройте https://rlt.goatwhistle.ru/, загрузите CSV,
+откройте результат закупки. Поиск использует исторические профили по ИНН;
+актуальный ассортимент, названия компаний и контакты требуют проверки.
+
+Тестовый HTTP режим принимает до 20 закупок и 2 МБ в одном CSV. Результаты
+сохраняются на сервере и доступны в том же браузере (cookie сессии).
+Прямой запрос: `POST /api/suppliers/search` с JSON
+`{"query":"Поставка офисной бумаги А4","limit":10}`.
+Проверка API: `GET /api/health`.
+
+Для локального запуска готовый индекс монтируется через `SUPPLIER_INDEX_PATH`
+(каталог с `card_vectors.npy`, `cards.parquet`, `report.json`, `manifest.json`),
+затем `docker compose --profile search --profile ml up -d search-api embedder`.
+Модель должна быть заранее загружена в кеш. API слушает `127.0.0.1:18082`.
+Проверки на искусственном индексе: `cd backend && uv run python tests/search/smoke.py`.

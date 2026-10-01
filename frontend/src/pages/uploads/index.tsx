@@ -1,8 +1,6 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useUploadGateway } from "@/entities/upload/gateway-context"
 import { useUploads } from "@/entities/upload/queries"
-import { Caption } from "@/shared/ui/caption"
 import { ErrorState } from "@/shared/ui/error-state"
 import { LoadingState } from "@/shared/ui/loading-state"
 import { Intro } from "./intro"
@@ -19,7 +17,6 @@ type DialogState = {
 export function UploadsPage() {
   const { t } = useTranslation()
   const uploads = useUploads()
-  const gateway = useUploadGateway()
   const [dialog, setDialog] = useState<DialogState>({ open: false, file: null, session: 0 })
 
   function openDialog(file: File | null) {
@@ -40,7 +37,6 @@ export function UploadsPage() {
       ) : (
         <UploadList uploads={uploads.data} onUpload={() => openDialog(null)} />
       )}
-      {gateway.demo ? <Caption muted>{t("demoNote")}</Caption> : null}
       <UploadDialog
         key={dialog.session}
         open={dialog.open}

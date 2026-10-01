@@ -49,7 +49,7 @@ class ModelBuilder:
             last_seen_at=observed_at,
             supplier_id=self.supplier_id(seller.company_id) if seller else None,
             seller_status=VerificationStatus.UNVERIFIED,
-            seller_evidence_url=product.url if seller else "",
+            evidence_url=product.url if seller else "",
             item_type=ItemType.GOODS,
             price=product.price,
             currency=product.currency,

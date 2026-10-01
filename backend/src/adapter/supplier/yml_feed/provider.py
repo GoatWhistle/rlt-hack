@@ -41,7 +41,6 @@ class YmlFeedProvider:
         source_defaults: Source,
         feed_url: str = "",
         supplier_inn: str = "",
-        delivery_regions: tuple[str, ...] = (),
         supplier_role: SupplierRole = SupplierRole.UNKNOWN,
         http_timeout: float = 30.0,
         transport: httpx.AsyncBaseTransport | None = None,
@@ -49,7 +48,6 @@ class YmlFeedProvider:
         self._source = source_defaults
         self._feed_url = feed_url or source_defaults.base_url
         self._supplier_inn = supplier_inn
-        self._delivery_regions = delivery_regions
         self._supplier_role = supplier_role
         self._http_timeout = http_timeout
         self._transport = transport
@@ -121,10 +119,11 @@ class YmlFeedProvider:
         offers: list[Offer] = []
         for element in shop.iterfind("offers/offer"):
             url = _text(element, "url")
-            external_id = element.get("id") or url
-            if not external_id:
+            if not element.get("id") and not url:
                 # Без устойчивого ключа предложение нельзя обновлять повторно.
                 continue
+            # Фид отдаёт свой идентификатор товара: он надёжнее адреса.
+            external_id = identity.external_id(source_key=element.get("id") or "", url=url)
             name = _name(element)
             description = _text(element, "description")
             brand = _text(element, "vendor")
@@ -142,7 +141,7 @@ class YmlFeedProvider:
                     last_seen_at=observed_at,
                     supplier_id=supplier.supplier_id,
                     seller_status=self._source.ownership_status,
-                    seller_evidence_url=self._source.ownership_evidence_url,
+                    evidence_url=self._source.ownership_evidence_url,
                     description=description,
                     item_type=ItemType.GOODS,
                     brand=brand,
@@ -153,7 +152,6 @@ class YmlFeedProvider:
                     currency=_text(element, "currencyId"),
                     unit=unit,
                     # Фид редко указывает географию: регионы берутся из настроек источника.
-                    delivery_regions=self._delivery_regions,
                     availability=_availability(element),
                     supplier_role=self._supplier_role,
                     content_hash=identity.offer_content_hash(

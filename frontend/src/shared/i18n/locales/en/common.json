@@ -47,6 +47,5 @@
   },
   "notifications": {
     "label": "Notifications"
-  },
-  "demoNote": "Demo mode: the file is processed in the browser, candidates and evidence are artificial."
+  }
 }

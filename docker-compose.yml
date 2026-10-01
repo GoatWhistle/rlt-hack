@@ -1,5 +1,39 @@
 # Локальный запуск: фронтенд, хранилище ClickHouse с веб-интерфейсом, миграции и джоба сбора поставщиков.
 services:
+  search-api:
+    build:
+      context: ./backend
+    profiles: ["search"]
+    restart: unless-stopped
+    entrypoint: ["python", "-m", "uvicorn"]
+    command: ["src.controller.search.api:app", "--host", "0.0.0.0", "--port", "8080", "--proxy-headers", "--forwarded-allow-ips", "*", "--limit-concurrency", "8"]
+    environment:
+      SUPPLIER_INDEX_DIR: /data/index
+      SUPPLIER_INDEX_ID: ${SUPPLIER_INDEX_ID:-}
+      CLICKHOUSE_HOST: clickhouse
+      CLICKHOUSE_PORT: 8123
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-}
+      CLICKHOUSE_DATABASE: ${CLICKHOUSE_DATABASE:-supplier_search}
+      UPLOADS_DIR: /data/uploads
+      EMBEDDING_URL: http://embedder:11434
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-qwen3-embedding:4b}
+      EMBEDDING_MODEL_DIGEST: ${EMBEDDING_MODEL_DIGEST:-}
+      OPENBLAS_NUM_THREADS: 2
+      OMP_NUM_THREADS: 2
+    volumes:
+      - ${SUPPLIER_INDEX_PATH:-./data/supplier-index}:/data/index:ro
+      - search-uploads:/data/uploads
+    ports:
+      - "127.0.0.1:${SEARCH_API_PORT:-18082}:8080"
+    mem_limit: 2200m
+    cpus: 2
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=2)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
   # frontend:
   #   build:
   #     context: .
@@ -7,7 +41,6 @@ services:
   #     target: runtime
   #     args:
   #       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
-  #       VITE_DEMO_MODE: ${VITE_DEMO_MODE:-true}
   #   ports:
   #     - "${WEB_PORT:-8080}:8080"
   #   restart: unless-stopped
@@ -77,6 +110,13 @@ services:
       TEXZAKAZ_WEB_PROVIDER: ${TEXZAKAZ_WEB_PROVIDER:-true}
       PULSCEN_WEB_PROVIDER: ${PULSCEN_WEB_PROVIDER:-false}
       PULSCEN_DELAY_SECONDS: ${PULSCEN_DELAY_SECONDS:-10}
+      GISP_REGISTRY_PROVIDER: ${GISP_REGISTRY_PROVIDER:-false}
+      GISP_EXPORT_LOCATION: ${GISP_EXPORT_LOCATION:-}
+      PRODUCTCENTER_WEB_PROVIDER: ${PRODUCTCENTER_WEB_PROVIDER:-false}
+      PRODUCTCENTER_MAX_CARDS: ${PRODUCTCENTER_MAX_CARDS:-0}
+      PRODUCTCENTER_CACHE_DIR: ${PRODUCTCENTER_CACHE_DIR:-/data/productcenter-cache}
+      MOSCOW_SUPPLIERS_PROVIDER: ${MOSCOW_SUPPLIERS_PROVIDER:-false}
+      MOSCOW_SUPPLIERS_EXPORT_URL: ${MOSCOW_SUPPLIERS_EXPORT_URL:-}
       SYNC_PARALLEL_SOURCES: ${SYNC_PARALLEL_SOURCES:-4}
       SYNC_PARALLEL_REQUESTS: ${SYNC_PARALLEL_REQUESTS:-4}
       SYNC_WRITE_BATCH: ${SYNC_WRITE_BATCH:-500}
@@ -86,6 +126,7 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes: &job-volumes
       - ./task/data:/data/task:ro
+      - productcenter-cache:${PRODUCTCENTER_CACHE_DIR:-/data/productcenter-cache}
     depends_on:
       clickhouse:
         condition: service_healthy
@@ -103,6 +144,61 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  parser-worker:
+    extends:
+      service: sync-job
+    profiles: ["workers"]
+    restart: unless-stopped
+    command: ["sync", "--forever"]
+    mem_limit: 768m
+    cpus: 1
+
+  embedder:
+    image: ollama/ollama:0.34.2
+    profiles: ["ml"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${EMBEDDING_PORT:-11435}:11434"
+    environment:
+      OLLAMA_NO_CLOUD: "true"
+      OLLAMA_MAX_LOADED_MODELS: 1
+      OLLAMA_NUM_PARALLEL: 1
+      OLLAMA_CONTEXT_LENGTH: 512
+    volumes:
+      - embedding-models:/root/.ollama
+    mem_limit: 3500m
+    cpus: 2
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  embedding-worker:
+    build:
+      context: ./backend
+    profiles: ["ml"]
+    restart: unless-stopped
+    entrypoint: ["python", "-m", "src.controller.embedding.cli"]
+    command: ["index", "--forever"]
+    environment:
+      <<: *job-environment
+      EMBEDDING_URL: http://embedder:11434
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-qwen3-embedding:4b}
+      EMBEDDING_MODEL_DIGEST: ${EMBEDDING_MODEL_DIGEST:-}
+      EMBEDDING_DIMENSIONS: ${EMBEDDING_DIMENSIONS:-2560}
+      EMBEDDING_CONTEXT_LENGTH: ${EMBEDDING_CONTEXT_LENGTH:-512}
+    mem_limit: 256m
+    cpus: 0.5
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      embedder:
+        condition: service_healthy
+
 volumes:
+  search-uploads:
   clickhouse-data:
   clickhouse-ui-data:
+  productcenter-cache:
+  embedding-models:

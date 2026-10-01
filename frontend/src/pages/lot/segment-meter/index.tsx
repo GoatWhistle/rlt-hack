@@ -24,6 +24,7 @@ export type SegmentMeterProps = {
 
 export function SegmentMeter({ company, products, size = "sm" }: SegmentMeterProps) {
   const { t } = useTranslation("lot")
+  if (products.length === 0) return null
   const bases = products.map((product) => basisOf(company, product))
   const count = (basis: MeterBasis) => bases.filter((item) => item === basis).length
   const label = t("meter.label", {

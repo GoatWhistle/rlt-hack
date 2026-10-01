@@ -228,7 +228,9 @@ class OptKatalogWebProvider:
         )
 
     def _offer(self, name: str, url: str, supplier: Supplier, role: SupplierRole) -> Offer:
-        external_id = f"{url}#{name}"
+        # На странице компании перечислено много позиций, поэтому ключ —
+        # адрес с отпечатком названия, а не само название.
+        external_id = identity.external_id(url=url, name=name)
         observed_at = datetime.now(UTC)
         return Offer(
             offer_id=identity.offer_id(self._source.source_id, external_id),
@@ -240,11 +242,10 @@ class OptKatalogWebProvider:
             last_seen_at=observed_at,
             supplier_id=supplier.supplier_id,
             seller_status=VerificationStatus.UNVERIFIED,
-            seller_evidence_url=url,
+            evidence_url=url,
             item_type=ItemType.GOODS,
             # Роль объявлена самой компанией в свойстве «Тип компании».
             supplier_role=role,
-            role_evidence_url=url,
             role_evidence_text=supplier.contacts.get("company_type", ""),
             content_hash=identity.offer_content_hash(name=name, item_type=str(ItemType.GOODS)),
         )

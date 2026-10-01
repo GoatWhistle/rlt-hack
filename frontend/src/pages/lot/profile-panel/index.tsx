@@ -105,10 +105,12 @@ function Profile({ company, products }: ProfileProps) {
       <section className={styles.section}>
         <h3 className={styles.heading}>{t("profile.history")}</h3>
         <p>
-          {t("evidence.purchasesSummary", {
-            count: company.similarPurchases,
-            wins: company.wins,
-          })}
+          {company.similarPurchases === null || company.wins === null
+            ? t("compare.unknown")
+            : t("evidence.purchasesSummary", {
+                count: company.similarPurchases,
+                wins: company.wins,
+              })}
         </p>
         <Caption>{t("evidence.purchasesNote")}</Caption>
       </section>

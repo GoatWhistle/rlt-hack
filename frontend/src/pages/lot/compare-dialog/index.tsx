@@ -55,8 +55,12 @@ export function CompareDialog({ open, companies, products, onClose }: CompareDia
     { id: "inferred", label: t("evidence.basis.inferred"), value: (c) => count(c, "inferred") },
     { id: "missing", label: t("compare.missing"), value: unmatched },
     { id: "status", label: t("compare.status"), value: statusText },
-    { id: "purchases", label: t("compare.purchases"), value: (c) => c.similarPurchases },
-    { id: "wins", label: t("compare.wins"), value: (c) => c.wins },
+    {
+      id: "purchases",
+      label: t("compare.purchases"),
+      value: (c) => c.similarPurchases ?? t("compare.unknown"),
+    },
+    { id: "wins", label: t("compare.wins"), value: (c) => c.wins ?? t("compare.unknown") },
     {
       id: "clarify",
       label: t("compare.clarify"),

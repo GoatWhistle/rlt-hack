@@ -115,10 +115,4 @@ describe("env", () => {
     expect(readEnv({ VITE_API_BASE_URL: "  " }).apiBaseUrl).toBe(DEFAULT_API_BASE_URL)
     expect(readEnv({}).apiBaseUrl).toBe(DEFAULT_API_BASE_URL)
   })
-
-  it("keeps demo data on unless it is switched off", () => {
-    expect(readEnv({}).demoMode).toBe(true)
-    expect(readEnv({ VITE_DEMO_MODE: "true" }).demoMode).toBe(true)
-    expect(readEnv({ VITE_DEMO_MODE: " false " }).demoMode).toBe(false)
-  })
 })

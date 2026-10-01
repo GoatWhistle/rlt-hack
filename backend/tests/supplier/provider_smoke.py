@@ -93,7 +93,6 @@ async def check_yml_feed() -> None:
         feed_source,
         feed_url=feed_url,
         supplier_inn=SHOP_INN,
-        delivery_regions=("Санкт-Петербург",),
         transport=transport({feed_url: FEED_FULL}),
     )
     package = await provider.fetch()
@@ -112,7 +111,6 @@ async def check_yml_feed() -> None:
     assert paper.availability == Availability.AVAILABLE
     assert paper.attributes["Плотность"] == "80 г/м2"
     assert paper.source_category == "Бумага"
-    assert paper.delivery_regions == ("Санкт-Петербург",)
     assert paper.supplier_id == supplier.supplier_id
     assert paper.seller_status == VerificationStatus.VERIFIED
     a3 = next(offer for offer in package.offers if offer.external_id == "A-2")

@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from src.adapter.repository.clickhouse.config import ClickHouseConfig
+from src.adapter.repository.reference import REFERENCE_DIR
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
@@ -55,6 +56,11 @@ class AppConfig:
     """Только данные: конфигурация передаётся в контейнер зависимостей целиком."""
 
     clickhouse: ClickHouseConfig = field(default_factory=ClickHouseConfig)
+    # Каталог справочников ОКПД2, рубрик, словаря, разделов каталогов и ОКЕИ.
+    reference_dir: Path = REFERENCE_DIR
+    # Канал переноса кода из архива закупок: без загруженного архива он пуст.
+    use_archive_channel: bool = True
+    archive_limit: int = 500_000
     dataset_path: Path = field(default_factory=_dataset_path)
     dataset_region: str = ""
     # Адреса фидов и сайтов поставщиков: по адаптеру на адрес.
@@ -82,6 +88,13 @@ class AppConfig:
     pulscen_delay_seconds: float = 10.0
     # Диагностический снимок страниц Пульса цен из JSON-файла: пусто — выключен.
     pulscen_snapshot_path: Path | None = None
+    use_gisp_registry_provider: bool = False
+    gisp_export_location: str = ""
+    use_productcenter_provider: bool = False
+    productcenter_max_cards: int = 0
+    productcenter_cache_dir: Path | None = None
+    use_moscow_suppliers_provider: bool = False
+    moscow_suppliers_export_url: str = ""
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -94,6 +107,9 @@ class AppConfig:
                 database=os.getenv("CLICKHOUSE_DATABASE", "supplier_search"),
                 secure=_bool("CLICKHOUSE_SECURE", False),
             ),
+            reference_dir=Path(os.getenv("REFERENCE_DIR") or REFERENCE_DIR),
+            use_archive_channel=_bool("CLASSIFIER_ARCHIVE_CHANNEL", True),
+            archive_limit=_int("CLASSIFIER_ARCHIVE_LIMIT", 500_000),
             dataset_path=_dataset_path(),
             dataset_region=os.getenv("SUPPLIER_DATASET_REGION", ""),
             feed_urls=_urls("SUPPLIER_FEED_URLS"),
@@ -114,4 +130,13 @@ class AppConfig:
             use_pulscen_provider=_bool("PULSCEN_WEB_PROVIDER", False),
             pulscen_delay_seconds=_float("PULSCEN_DELAY_SECONDS", 10.0),
             pulscen_snapshot_path=_optional_path("PULSCEN_SNAPSHOT_PATH"),
+            use_gisp_registry_provider=_bool("GISP_REGISTRY_PROVIDER", False),
+            gisp_export_location=os.getenv("GISP_EXPORT_LOCATION", ""),
+            use_productcenter_provider=_bool("PRODUCTCENTER_WEB_PROVIDER", False),
+            productcenter_max_cards=_int("PRODUCTCENTER_MAX_CARDS", 0),
+            productcenter_cache_dir=(
+                Path(value) if (value := os.getenv("PRODUCTCENTER_CACHE_DIR")) else None
+            ),
+            use_moscow_suppliers_provider=_bool("MOSCOW_SUPPLIERS_PROVIDER", False),
+            moscow_suppliers_export_url=os.getenv("MOSCOW_SUPPLIERS_EXPORT_URL", ""),
         )

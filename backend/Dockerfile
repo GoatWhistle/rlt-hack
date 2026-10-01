@@ -19,6 +19,8 @@ COPY pyproject.toml ./
 RUN uv pip install --system --no-cache -r pyproject.toml
 
 COPY migration ./migration
+# Справочники ОКПД2, рубрик, словаря и ОКЕИ нужны нормализатору и классификатору.
+COPY reference ./reference
 COPY src ./src
 COPY main.py ./
 

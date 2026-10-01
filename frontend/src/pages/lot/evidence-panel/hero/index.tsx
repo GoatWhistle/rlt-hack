@@ -27,9 +27,11 @@ export function Hero({ company, products }: HeroProps) {
             <span className={styles.inn}>{t("evidence.inn", { inn: company.inn })}</span>
           </p>
         </div>
-        <span className={styles.score}>
-          {company.matches.length}/{products.length}
-        </span>
+        {products.length > 0 ? (
+          <span className={styles.score}>
+            {company.matches.length}/{products.length}
+          </span>
+        ) : null}
       </div>
       <p className={styles.summary}>{company.summary}</p>
       <SegmentMeter company={company} products={products} size="lg" />
