@@ -298,8 +298,8 @@ ProductCenter дополнительно реализует `StreamingSupplierPr
 
 Каталог продуктов СТЕ хранится отдельно от компаний и оферт. Экспериментальный
 обход запускается `MOSCOW_PRODUCTS_PROVIDER=true ... python main.py sync-products`
-после миграций `0007_moscow_products.sql` и
-`0008_moscow_product_detail_status.sql`. В Docker Compose доступны
+после миграций `0009_moscow_products.sql` и
+`0010_moscow_product_detail_status.sql`. В Docker Compose доступны
 `MOSCOW_PRODUCTS_PROVIDER` (по умолчанию `false`) и
 `MOSCOW_PRODUCTS_PAGE_SIZE` (по умолчанию 500, проверено живым запросом) и
 `MOSCOW_PRODUCTS_RETRY_ATTEMPTS` (по умолчанию 12 попыток для временных сетевых

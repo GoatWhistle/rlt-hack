@@ -33,7 +33,7 @@ def main() -> None:
                 for column in columns:
                     session.query(f"ALTER TABLE supplier_search.{table} DROP COLUMN {column}")
             for statement in split_statements(
-                (MIGRATION_DIR / "20261001_restore_supplier_metadata.sql").read_text()
+                (MIGRATION_DIR / "0011_restore_supplier_metadata.sql").read_text()
             ):
                 session.query(statement)
             for table, expected in (

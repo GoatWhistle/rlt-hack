@@ -64,8 +64,8 @@ from src.models.enums import SourceType
 from src.models.source import Source
 from src.service.classifier import OfferClassifier
 from src.service.normalizer import OfferNormalizer
-from src.service.registry import RegistryImportService, SupplierRegistryEnricher
 from src.service.product.worker import ProductCollectionWorker, ProductSyncWorker
+from src.service.registry import RegistryImportService, SupplierRegistryEnricher
 from src.service.supplier.enrich import OfferEnrichmentService
 from src.service.supplier.protocols import SupplierProvider
 from src.service.supplier.reidentify import OfferReidentifyService
