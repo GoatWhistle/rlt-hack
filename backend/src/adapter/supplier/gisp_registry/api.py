@@ -102,7 +102,13 @@ def parse_product(
         if value
     }
     external_id = registry_external_id(
-        number, introduced, _value(item, "_basedondoc_num"), company_key, name
+        number,
+        introduced,
+        _value(item, "_basedondoc_num"),
+        company_key,
+        name,
+        _value(item, "_res_scan_url"),
+        _value(item, "_product_writeout_url"),
     )
     offer = Offer(
         offer_id=identity.offer_id(source.source_id, external_id),

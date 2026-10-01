@@ -163,7 +163,7 @@ class OfferClassifying(Protocol):
 | `OptKatalogWebProvider` | `optkatalog_web` | компании и номенклатуру optkatalog.ru | `OPTKATALOG_WEB_PROVIDER` |
 | `AboutPartnerWebProvider` | `aboutpartner_web` | компании и товары aboutpartner.ru | `ABOUTPARTNER_WEB_PROVIDER` |
 | `TexZakazWebProvider` | `texzakaz_web` | производителей и их продукцию texzakaz.ru | `TEXZAKAZ_WEB_PROVIDER` |
-| `GispRegistryProvider` | `gisp_registry` | записи полного XLSX-экспорта ПП 719 ГИСП | `GISP_REGISTRY_PROVIDER` |
+| `GispRegistryProvider` | `gisp_registry` | организации и продукцию реестра ПП 719 ГИСП | `GISP_REGISTRY_PROVIDER` |
 | `ProductCenterWebProvider` | `productcenter_web` | производителей и товары productcenter.ru | `PRODUCTCENTER_WEB_PROVIDER` (выкл.) |
 | `MoscowSuppliersProvider` | `moscow_suppliers` | полный нормализованный экспорт поставщиков и оферт zakupki.mos.ru | `MOSCOW_SUPPLIERS_PROVIDER` (выкл.) |
 | `PulscenSnapshotProvider` | `pulscen_snapshot` | диагностический снимок страниц pulscen.ru из JSON-файла | `PULSCEN_SNAPSHOT_PATH` (пусто — выключен) |
@@ -287,18 +287,29 @@ JSON-страницы перечня производителей и реест�
 сообщал 8 118 организаций и 1 084 900 записей продукции; ответ продукции
 ограничен 100 строками на страницу. Провайдер проверяет количество строк
 каждой страницы и повторно сверяет общий объём перед публикацией пакета.
-Вместо реестра продукции API можно задать полный XLSX-экспорт по HTTPS или
-`file:///...`; перечень организаций всё равно читается через API, включая
-организации без продукции. Если этот запрос закрыт проверкой доступа, весь
-обход завершается ошибкой.
-Для локального файла
-смонтируйте каталог вне Git в контейнер `sync-job` и задайте путь внутри
-контейнера. Пустая настройка или неполный/неизвестный формат завершает обход
-ошибкой без записи снимка. Начало официального XLSX и 22 000 реальных строк
-проверены, но полная передача XLSX с текущего адреса обрывается. Полный обход
-JSON-интерфейса остановился на HTML-проверке доступа вместо JSON. Провайдер
-завершает такой ответ ошибкой без записи снимка. До полного обхода провайдер
-не включайте.
+Прямой HTTP-клиент может получить HTML-проверку доступа. Для воспроизводимого
+полного сбора через браузер нужен установленный Google Chrome:
+
+```sh
+cd backend
+npm ci
+npm run gisp:export -- /tmp/gisp-snapshot
+SUPPLIER_DATASET_PROVIDER=false GISP_REGISTRY_PROVIDER=true \
+  GISP_EXPORT_LOCATION=file:///tmp/gisp-snapshot SYNC_WRITE_BATCH=5000 \
+  uv run --python 3.13 python main.py sync --parallel 1
+```
+
+Экспорт создаёт `organizations.jsonl`, `products.jsonl` и `manifest.json`
+вне Git. После обрыва он продолжает с контрольной точки, сверив число записей
+и первую страницу. Провайдер принимает каталог по `file:///...` только при
+совпадении числа строк и SHA-256 каждого файла с манифестом; неполный файл не
+передаётся в хранилище. Каталог можно смонтировать в контейнер `sync-job` и
+задать путь внутри контейнера. Полный живой сбор 1 октября 2026 года дал
+8 118 организаций, 1 084 900 записей продукции и пакет из 11 028 компаний и
+1 084 900 предложений. Прямая полная передача XLSX с текущего адреса обрывалась;
+полный XLSX по HTTPS или `file:///...` по-прежнему поддерживается, но для него
+отдельный перечень организаций читается через API.
+
 `PRODUCTCENTER_MAX_CARDS=0` означает полный обход. Положительный лимит
 останавливает обход ошибкой без сохранения неполного пакета и годится только
 для диагностики. ProductCenter выключен по умолчанию до полного живого прогона.
