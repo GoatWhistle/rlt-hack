@@ -26,14 +26,10 @@ export function PurchaseBlock({ company }: { readonly company: Company }) {
   return (
     <Fold
       title={t("evidence.purchasesTitle")}
-      aside={
-        company.similarPurchases === null || company.wins === null
-          ? t("compare.unknown")
-          : t("evidence.purchasesSummary", {
-              count: company.similarPurchases,
-              wins: company.wins,
-            })
-      }
+      aside={t("evidence.purchasesSummary", {
+        count: company.similarPurchases,
+        wins: company.wins,
+      })}
     >
       {company.purchases.length > 0 ? (
         <CollapsibleList

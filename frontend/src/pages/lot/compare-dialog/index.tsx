@@ -64,9 +64,9 @@ export function CompareDialog({ open, companies, products, onClose }: CompareDia
     {
       id: "purchases",
       label: t("compare.purchases"),
-      value: (c) => (c.similarPurchases === null ? t("compare.unknown") : number(c.similarPurchases)),
+      value: (c) => number(c.similarPurchases),
     },
-    { id: "wins", label: t("compare.wins"), value: (c) => (c.wins === null ? t("compare.unknown") : number(c.wins)) },
+    { id: "wins", label: t("compare.wins"), value: (c) => number(c.wins) },
     {
       id: "clarify",
       label: t("compare.clarify"),

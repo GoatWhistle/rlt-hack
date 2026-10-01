@@ -1,11 +1,9 @@
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router"
-import { useSearchGateway } from "@/entities/search/gateway-context"
 import { useSearchResult } from "@/entities/search/queries"
 import { isApiError } from "@/shared/api/api-error"
 import { SEARCH_PATH } from "@/shared/config/paths"
 import { ButtonLink } from "@/shared/ui/button"
-import { Caption } from "@/shared/ui/caption"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
 import { WorkspaceSkeleton } from "@/shared/ui/workspace-skeleton"
@@ -18,7 +16,6 @@ export function SearchResultPage() {
   const { t } = useTranslation("search")
   const { searchId = "" } = useParams()
   const result = useSearchResult(searchId)
-  const gateway = useSearchGateway()
 
   if (result.isPending) return <WorkspaceSkeleton label={t("loading")} />
   if (result.isError) {
@@ -41,7 +38,6 @@ export function SearchResultPage() {
       <ResultHeader result={data} />
       {data.warnings.length > 0 ? <WarningNote warnings={data.warnings} /> : null}
       <SearchWorkspace key={data.searchId} result={data} />
-      {gateway.demo ? <Caption muted>{t("demoNote")}</Caption> : null}
     </div>
   )
 }

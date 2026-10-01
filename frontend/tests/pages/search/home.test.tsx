@@ -1,6 +1,6 @@
-import { screen, within } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import { en } from "@tests/support/dictionaries"
-import { contract, demoSearch, renderSearch, stubSearch } from "@tests/support/search"
+import { contract, contractResult, renderSearch, stubSearch } from "@tests/support/search"
 import { describe, expect, it, vi } from "vitest"
 import { parseRecentSearches } from "@/entities/search/parse"
 import { ApiError } from "@/shared/api/api-error"
@@ -41,14 +41,16 @@ describe("the search page", () => {
   })
 
   it("prefills a query from the address and opens the result after the search", async () => {
-    const gateway = demoSearch()
+    const gateway = stubSearch()
     const { user, router } = renderSearch("/search?q=buckwheat%20500%20kg", { gateway })
     const field = screen.getByRole("textbox", { name: en("box.label", "search") })
     expect(field).toHaveValue("buckwheat 500 kg")
     await user.type(field, "{Enter}")
-    expect(
-      await screen.findByRole("heading", { level: 1, name: "buckwheat 500 kg" }),
-    ).toBeInTheDocument()
-    expect(router.state.location.pathname).toMatch(/^\/search\/.+/)
+    expect(gateway.search).toHaveBeenCalledWith(
+      expect.objectContaining({ text: "buckwheat 500 kg" }),
+    )
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(`/search/${contractResult().searchId}`),
+    )
   })
 })

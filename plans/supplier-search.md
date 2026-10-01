@@ -440,9 +440,8 @@ Accept-Language: ru
 frontend/src/entities/search/
   model.ts              SearchResult, Candidate, Match, Evidence, Highlight — по DTO
   parse.ts              строгий разбор ответа
-  gateway.ts            SearchGateway { demo, search, get, recent }
+  gateway.ts            SearchGateway { search, get, recent }
   http.ts               POST/GET /api/searches
-  demo/                 демо-шлюз и данные на ru/en
   queries.ts            TanStack Query: ключи с локалью
 frontend/src/features/search-box/
                         поле «Опишите, что нужно» с подсказками, Enter/⌘Enter, история
@@ -453,7 +452,7 @@ frontend/src/pages/search/
 - Точка входа: поле поиска на странице «Загрузки» над зоной CSV и отдельная вкладка «Поиск» в шапке (третья вкладка, индикатор переезжает).
 - Результат открывается в рабочем пространстве `pages/lot`: колонка «Позиции» из `items`, «Кандидаты», «Основания». Общие части (`company-list`, `evidence-panel`, `segment-meter`) выносятся из `pages/lot` в `widgets`-уровень `features/candidate-workspace`, чтобы обе страницы использовали один код.
 - `highlights` и `checkReasons` переводятся словарями `search.json`; новые коды без перевода — тест падает.
-- `VITE_DEMO_MODE` переключает демо-шлюз поиска так же, как загрузки.
+- Демо-режим удалён: поиск, профили и загрузки работают только через HTTP API; тесты используют примеры из `contracts/`.
 
 ## 10. Работа двух агентов
 
@@ -521,6 +520,13 @@ frontend/src/pages/search/
 - [x] Тесты: модели, сервис с фейками портов (частичные отказы, повторы, дообработка после перезапуска), CSV на искусственных файлах, store на chDB, контроллер через `ASGITransport`, сквозной chDB-тест CSV → закупки → результаты → `GET`. Live-проверка — ниже.
 - [ ] Год и ссылка на протокол для прошлых закупок (`purchases[].year`, `source`) — нужны дата и URL в `lot_participations`; сейчас `null`.
 - [ ] ML-извлечение позиций из текста закупки — после валидации экстрактора (общая задача с фазой 3).
+
+**Фаза 5 — слияние с main (2026-10-01).**
+
+- [x] Ветка перенесена на актуальный main. API поиска и загрузок — из этой ветки; из main сохранены нормализатор, классификатор, адаптеры ГИСП, ProductCenter и портала поставщиков Москвы, векторизация предложений, CI/CD. Параллельный `search-api` main удалён, деплой и nginx переведены на сервис `api`.
+- [x] Миграции ветки перенумерованы в `0007`–`0009`, код поиска приведён к схеме `0006_schema_cleanup` (`evidence_url`, без `delivery_regions`, `role_evidence_url`, `legal_status`).
+- [x] Демо-шлюзы и `VITE_DEMO_MODE` удалены из фронтенда; e2e работают на фикстурах из `contracts/`.
+- [x] Проверено на Windows: backend `ruff`, `mypy`, `pytest` (тесты chDB пропущены — пакет недоступен на Windows, их гоняет CI), фронтенд `npm run verify` (312 тестов) и `npm run e2e` (28 тестов).
 
 Проверка фазы 4 (2026-10-01):
 

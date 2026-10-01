@@ -1,6 +1,5 @@
 {
   "loading": "Loading the search",
-  "demoNote": "Demo data: companies, INNs (Russian taxpayer numbers), contacts and links are placeholders.",
   "home": {
     "title": "Find suppliers",
     "lead": "Describe the goods or services in your own words. LOTIVE picks out the items and suggests companies, with sources and checks for each one."

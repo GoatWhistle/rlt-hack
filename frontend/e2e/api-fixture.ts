@@ -12,6 +12,10 @@ export async function installApiFixture(page: Page) {
   ].map((id) => ({
     id,
     title: id,
+    subject: null,
+    customerInn: null,
+    publishDate: null,
+    startPrice: null,
     status: "ready",
     products: recommendationFixture.products.length,
     candidates: recommendationFixture.companies.length,
@@ -22,9 +26,8 @@ export async function installApiFixture(page: Page) {
     createdAt: "2026-10-01T10:00:00Z",
     total: lots.length,
     processed: lots.length,
-    counts: { ready: lots.length, needsCheck: 0, noCandidates: 0 },
+    counts: { ready: lots.length, needsCheck: 0, noCandidates: 0, failed: 0 },
     rejected: 0,
-    stored: true,
   }
   const result = (lot: (typeof lots)[number]) => ({
     lot,

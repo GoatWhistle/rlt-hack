@@ -79,9 +79,7 @@ export function CompanyList(props: CompanyListProps) {
                 ) : null}
               </span>
               <span className={styles.history}>
-                {company.similarPurchases === null
-                  ? t("compare.unknown")
-                  : t("companies.purchases", { count: company.similarPurchases })}
+                {t("companies.purchases", { count: company.similarPurchases })}
               </span>
             </span>
           </PickCard>

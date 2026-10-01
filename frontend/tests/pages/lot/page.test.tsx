@@ -4,7 +4,7 @@ import { lotSummary, renderPage, stubGateway, uploadDetail } from "@tests/suppor
 import { describe, expect, it, vi } from "vitest"
 import { ApiError } from "@/shared/api/api-error"
 import { LONG_NAME, recommendationFixture } from "../../entities/recommendation/fixture"
-import { LOTS, lotDetail, lotGateway, openLot } from "./open-lot"
+import { LOTS, lotDetail, openLot } from "./open-lot"
 
 describe("the purchase header", () => {
   it("names the purchase once with its lot, customer, price and date", async () => {
@@ -181,4 +181,3 @@ describe("in russian", () => {
     expect(screen.getByText(text("ru", "lot", "evidence.summaryTitle"))).toBeInTheDocument()
   })
 })
-

@@ -34,9 +34,7 @@ async function uploadSample(page: Page) {
   await expect(page.getByText(/processing finished/i)).toBeVisible({ timeout: 20_000 })
 }
 
-test("goes from a csv file to a reviewed purchase and two result files", async ({
-  page,
-}) => {
+test("goes from a csv file to a reviewed purchase and two result files", async ({ page }) => {
   await uploadSample(page)
   await expectAccessible(page)
   await page.getByRole("searchbox").fill("test_paper")

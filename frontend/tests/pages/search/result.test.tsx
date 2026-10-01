@@ -1,6 +1,6 @@
 import { screen, within } from "@testing-library/react"
 import { en } from "@tests/support/dictionaries"
-import { demoSearch, renderSearch, stubSearch } from "@tests/support/search"
+import { contractResult, renderSearch, stubSearch } from "@tests/support/search"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { ApiError } from "@/shared/api/api-error"
 import { NARROW_LAYOUT } from "@/shared/ui/workspace-layout"
@@ -19,10 +19,13 @@ async function openContract() {
   return view
 }
 
-async function openDemo(text: string) {
-  const gateway = demoSearch()
-  const found = await gateway.search({ text })
-  const view = renderSearch(`/search/${found.searchId}`, { gateway })
+async function openVariant(
+  change: (payload: Record<string, unknown>) => Record<string, unknown>,
+) {
+  const result = contractResult(change)
+  const view = renderSearch(`/search/${result.searchId}`, {
+    gateway: stubSearch({ get: vi.fn(async () => result) }),
+  })
   await screen.findByRole("heading", { level: 1 })
   return view
 }
@@ -94,19 +97,33 @@ describe("a search result", () => {
   })
 
   it("warns quietly when the result may be incomplete and shows more on request", async () => {
-    const { user } = await openDemo("office paper and pens")
+    const { user } = await openVariant((payload) => {
+      const [first, ...rest] = payload.items as Record<string, unknown>[]
+      return {
+        ...payload,
+        items: [{ ...first, origin: "inferred" }, ...rest],
+        warnings: [{ code: "itemsInferred", subject: "" }],
+      }
+    })
     expect(screen.getByRole("note", { name: en("warning.title", "search") })).toHaveTextContent(
       en("warning.itemsInferred", "search"),
     )
     expect(screen.getByText(en("items.origin.inferred", "search"))).toBeVisible()
-    await user.click(screen.getByRole("button", { name: /Sokol Paper Mill/ }))
-    expect(screen.getByRole("article", { name: /Sokol Paper Mill/ })).toHaveTextContent(
+    await user.click(screen.getByRole("button", { name: /Зерновой Двор/ }))
+    expect(screen.getByRole("article", { name: /Зерновой Двор/ })).toHaveTextContent(
       en("checkReason.rangeUnconfirmed", "evidence"),
     )
   })
 
   it("suggests rephrasing when nobody matches", async () => {
-    await openDemo("tractor tyres; engine oil")
+    await openVariant((payload) => ({
+      ...payload,
+      query: {
+        ...(payload.query as Record<string, unknown>),
+        text: "tractor tyres; engine oil",
+      },
+      candidates: [],
+    }))
     expect(
       screen.getByRole("heading", { level: 2, name: en("empty.title", "search") }),
     ).toBeVisible()
@@ -117,14 +134,14 @@ describe("a search result", () => {
   })
 
   it("opens the company profile with current offers", async () => {
-    const { user } = await openDemo("buckwheat")
+    const { user } = await openContract()
     await user.click(screen.getByRole("button", { name: en("evidence.profile", "search") }))
-    const dialog = await screen.findByRole("dialog", { name: "Severny Proviant LLC" })
+    const dialog = await screen.findByRole("dialog", { name: "ООО «Северный Провиант»" })
     expect(
-      await within(dialog).findByText("Buckwheat groats, grade 1, 50 kg bag"),
+      await within(dialog).findByText("Крупа гречневая ядрица 1 сорт, мешок 50 кг"),
     ).toBeVisible()
-    expect(within(dialog).getByText("RUB 84.50 per kg")).toBeVisible()
-    expect(within(dialog).getByText(en("availability.on_order", "supplier"))).toBeVisible()
+    expect(within(dialog).getByText("RUB 84.50 per кг")).toBeVisible()
+    expect(within(dialog).getByText(en("availability.available", "supplier"))).toBeVisible()
     expect(within(dialog).getByText(en("identity.verified", "supplier"))).toBeVisible()
   })
 

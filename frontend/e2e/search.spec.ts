@@ -1,6 +1,13 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, type Page, test } from "@playwright/test"
+import { installApiFixture } from "./api-fixture"
 import { chooseLanguage } from "./language"
+import { installSearchFixture } from "./search-fixture"
+
+test.beforeEach(async ({ page }) => {
+  await installApiFixture(page)
+  await installSearchFixture(page)
+})
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]
 const QUERY = "Buckwheat groats 500 kg; polished rice 200 kg"
@@ -46,8 +53,8 @@ test("finds suppliers from a description and keeps the result at its address", a
   await showView(page, /^candidates$/i)
   const candidates = page.getByRole("region", { name: /^candidates/i })
   await expect(candidates.getByRole("button", { pressed: true })).toBeVisible()
-  await candidates.getByRole("button", { name: /Zernovoy Dvor/ }).click()
-  const grounds = page.getByRole("article", { name: /Zernovoy Dvor/ })
+  await candidates.getByRole("button", { name: /Зерновой Двор/ }).click()
+  const grounds = page.getByRole("article", { name: /Зерновой Двор/ })
   await expect(grounds).toBeVisible()
   await expect(grounds.getByText(/no inn: the company cannot be identified/i)).toBeVisible()
   await expect(grounds.getByRole("heading", { name: /match for every item/i })).toBeVisible()
@@ -76,7 +83,7 @@ test("opens a company profile and returns to a recent search", async ({ page }) 
   await page.getByRole("button", { name: /^find suppliers$/i }).click()
   await expect(page.getByRole("note", { name: /may be incomplete/i })).toBeVisible()
   await page.getByRole("button", { name: /company profile/i }).click()
-  const profile = page.getByRole("dialog", { name: /OfficeSnab/ })
+  const profile = page.getByRole("dialog", { name: /Северный Провиант/ })
   await expect(profile.getByText(/current offers/i)).toBeVisible()
   await expectAccessible(page)
   await page.keyboard.press("Escape")

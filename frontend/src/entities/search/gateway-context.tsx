@@ -1,16 +1,12 @@
 import { createContext, type ReactNode, useContext } from "react"
 import { apiClient } from "@/shared/api/client"
-import { env } from "@/shared/config/env"
-import { createDemoSearchGateway } from "./demo/gateway"
 import type { SearchGateway } from "./gateway"
 import { createHttpSearchGateway } from "./http"
 
 let defaultGateway: SearchGateway | undefined
 
 export function appSearchGateway(): SearchGateway {
-  defaultGateway ??= env.demoMode
-    ? createDemoSearchGateway()
-    : createHttpSearchGateway(apiClient)
+  defaultGateway ??= createHttpSearchGateway(apiClient)
   return defaultGateway
 }
 

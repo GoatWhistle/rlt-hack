@@ -6,7 +6,6 @@ export const SEARCHES_PATH = "/searches"
 
 export function createHttpSearchGateway(client: HttpClient): SearchGateway {
   return {
-    demo: false,
     search: (request) =>
       client.post(SEARCHES_PATH, { body: request, parse: parseSearchResult }),
     get: (searchId) =>

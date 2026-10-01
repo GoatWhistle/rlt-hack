@@ -1,8 +1,5 @@
 import { contract } from "@tests/support/search"
 import { describe, expect, it, vi } from "vitest"
-import { SCENARIOS } from "@/entities/search/demo/catalog"
-import { records } from "@/entities/search/demo/localize"
-import { createDemoSupplierGateway } from "@/entities/supplier/demo/gateway"
 import { createHttpSupplierGateway, SUPPLIERS_PATH } from "@/entities/supplier/gateway"
 import { parseSupplierProfile } from "@/entities/supplier/parse"
 import { createHttpClient } from "@/shared/api/http-client"
@@ -54,16 +51,5 @@ describe("the supplier profile contract", () => {
     const gateway = createHttpSupplierGateway(createHttpClient({ baseUrl: "/api", fetcher }))
     expect((await gateway.profile("6c1e")).name).toBe("ООО «Северный Провиант»")
     expect(fetcher.mock.calls[0]?.[0]).toBe(`/api${SUPPLIERS_PATH}/6c1e`)
-  })
-
-  it("is built by the demo for every demo candidate", async () => {
-    const demo = createDemoSupplierGateway({ locale: () => "en" })
-    for (const scenario of SCENARIOS) {
-      for (const candidate of records(scenario.candidates)) {
-        const read = await demo.profile(String(candidate.id))
-        expect(read.id).toBe(candidate.id)
-      }
-    }
-    await expect(demo.profile("nobody")).rejects.toMatchObject({ code: "supplier_not_found" })
   })
 })

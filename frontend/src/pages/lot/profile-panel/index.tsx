@@ -75,12 +75,10 @@ function Profile({ company, products }: ProfileProps) {
       </SheetSection>
       <SheetSection title={t("profile.history")}>
         <p>
-          {company.similarPurchases === null || company.wins === null
-            ? t("compare.unknown")
-            : t("evidence.purchasesSummary", {
-                count: company.similarPurchases,
-                wins: company.wins,
-              })}
+          {t("evidence.purchasesSummary", {
+            count: company.similarPurchases,
+            wins: company.wins,
+          })}
         </p>
         <Caption>{t("evidence.purchasesNote")}</Caption>
       </SheetSection>

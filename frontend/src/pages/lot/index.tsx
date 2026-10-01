@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useParams } from "react-router"
-import { useUploadGateway } from "@/entities/upload/gateway-context"
 import { filtered, pageForIndex, readQuery, writeQuery } from "@/entities/upload/list-query"
 import { useLot, useUpload } from "@/entities/upload/queries"
 import { ExportDialog } from "@/features/export-results"
@@ -42,7 +41,6 @@ export function LotPage() {
   const query = readQuery(new URLSearchParams(location.search))
   const lot = useLot(uploadId, lotId)
   const upload = useUpload(uploadId)
-  const gateway = useUploadGateway()
   const { locale } = useLocale()
   const [exporting, setExporting] = useState({ open: false, session: 0 })
 

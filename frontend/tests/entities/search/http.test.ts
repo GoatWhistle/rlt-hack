@@ -16,7 +16,6 @@ describe("the http search gateway", () => {
     const gateway = createHttpSearchGateway(createHttpClient({ baseUrl: "/api", fetcher }))
     const request = contract("search/request.example.json") as { text: string }
     const result = await gateway.search(request)
-    expect(gateway.demo).toBe(false)
     expect(result.candidates).toHaveLength(2)
     const [url, init] = fetcher.mock.calls[0] as unknown as [string, RequestInit]
     expect(url).toBe(`/api${SEARCHES_PATH}`)
