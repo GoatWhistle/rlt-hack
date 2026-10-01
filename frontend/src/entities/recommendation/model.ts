@@ -58,8 +58,8 @@ export type Company = {
   readonly checkReason?: string
   readonly summary: string
   readonly matches: readonly ProductMatch[]
-  readonly similarPurchases: number
-  readonly wins: number
+  readonly similarPurchases: number | null
+  readonly wins: number | null
   readonly purchases: readonly Purchase[]
   readonly clarify: readonly string[]
 }

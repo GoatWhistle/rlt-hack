@@ -1,14 +1,12 @@
 import { createContext, type ReactNode, useContext } from "react"
 import { apiClient } from "@/shared/api/client"
-import { env } from "@/shared/config/env"
-import { createDemoGateway } from "./demo/gateway"
 import type { UploadGateway } from "./gateway"
 import { createHttpGateway } from "./http"
 
 let defaultGateway: UploadGateway | undefined
 
 export function appGateway(): UploadGateway {
-  defaultGateway ??= env.demoMode ? createDemoGateway() : createHttpGateway(apiClient)
+  defaultGateway ??= createHttpGateway(apiClient)
   return defaultGateway
 }
 

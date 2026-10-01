@@ -83,12 +83,16 @@ export function CompanyList(props: CompanyListProps) {
                 <Tag tone="accent">{t("companies.chosen")}</Tag>
               ) : null}
               <span>
-                {t("companies.matchCount", {
-                  matched: company.matches.length,
-                  total: products.length,
-                })}
+                {products.length === 0
+                  ? t("compare.unknown")
+                  : t("companies.matchCount", {
+                      matched: company.matches.length,
+                      total: products.length,
+                    })}
                 {" · "}
-                {t("companies.purchases", { count: company.similarPurchases })}
+                {company.similarPurchases === null
+                  ? t("compare.unknown")
+                  : t("companies.purchases", { count: company.similarPurchases })}
               </span>
             </span>
           </button>

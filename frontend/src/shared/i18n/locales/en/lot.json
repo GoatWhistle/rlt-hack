@@ -1,6 +1,5 @@
 {
   "loading": "Loading the purchase",
-  "demoNote": "Demo data: companies, tax IDs, contacts and links are placeholders.",
   "missing": {
     "title": "Purchase not found",
     "text": "This lot is not in the upload, or the upload is not available in this browser.",

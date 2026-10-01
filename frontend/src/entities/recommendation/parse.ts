@@ -98,8 +98,9 @@ function company(value: unknown, path: string): Company {
       status: oneOf(COMPANY_STATUSES, fields, "status", path),
       summary: text(fields, "summary", path),
       matches: list(fields, "matches", path, match),
-      similarPurchases: count(fields, "similarPurchases", path),
-      wins: count(fields, "wins", path),
+      similarPurchases:
+        fields.similarPurchases === null ? null : count(fields, "similarPurchases", path),
+      wins: fields.wins === null ? null : count(fields, "wins", path),
       purchases: list(fields, "purchases", path, purchase),
       clarify: list(fields, "clarify", path, plainText),
     },

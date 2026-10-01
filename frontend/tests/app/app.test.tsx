@@ -1,17 +1,27 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { en, text } from "@tests/support/dictionaries"
+import { stubGateway } from "@tests/support/gateway"
 import { createMemoryRouter } from "react-router"
 import { describe, expect, it } from "vitest"
 import { App } from "@/app/app"
 import { createAppRouter, routes } from "@/app/router"
+import { UploadGatewayProvider } from "@/entities/upload/gateway-context"
 
 function renderApp(entries: string[] = ["/"]) {
   const router = createMemoryRouter(routes, {
     initialEntries: entries,
     initialIndex: entries.length - 1,
   })
-  return { user: userEvent.setup(), router, ...render(<App router={router} />) }
+  return {
+    user: userEvent.setup(),
+    router,
+    ...render(
+      <UploadGatewayProvider gateway={stubGateway()}>
+        <App router={router} />
+      </UploadGatewayProvider>,
+    ),
+  }
 }
 
 describe("the application shell", () => {

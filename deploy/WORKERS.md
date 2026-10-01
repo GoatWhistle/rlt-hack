@@ -38,7 +38,8 @@ docker compose run --rm --no-deps embedding-worker search 'бумага для �
 Эмбеддер: localhost:11435, 2 CPU, 3500 MiB; парсер: 1 CPU, 768 MiB;
 воркер векторизации: 256 MiB. Для сервера с 8 ГБ RAM в production env задан
 `CLICKHOUSE_MEMORY_LIMIT=1500m`. Векторы имеют 2560 измерений, контекст 512,
-батч 1. Поиск пока доступен через CLI; подключения к frontend HTTP API нет.
+батч 1. CLI ищет по предложениям парсера. HTTP API сайта отдельно ищет по
+историческим профилям поставщиков из готового индекса.
 
 `EMBEDDING_MODEL_DIGEST` позволяет закрепить SHA-256 весов из `ollama list`
 или `/api/tags`. В `model_key` всегда записываются фактический digest, версия

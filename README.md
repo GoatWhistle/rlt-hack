@@ -17,9 +17,8 @@
 - [Джоба сбора: контракт источника, адаптеры и команды](backend/README.md)
 - [Дизайн-система фронтенда](frontend/DESIGN.md)
 
-Нормализация и HTTP API ещё не реализованы: сейчас в репозитории фронтенд в
-демонстрационном режиме, хранилище и джоба сбора данных. Код backend
-асинхронный: сервисы сбора готовы к вызову из будущего API на FastAPI.
+Добавлены HTTP API на FastAPI и поиск по историческим профилям поставщиков.
+Фронтенд использует только HTTP-ответы; демонстрационные карточки удалены.
 
 Для пересборки PDF по миграциям нужен Python, `reportlab==5.0.1` и шрифт
 Arial или DejaVu Sans с кириллицей:
@@ -95,8 +94,8 @@ GitHub Actions проверяет frontend, backend и ML на искусств�
 собирает контейнеры и после успешного push в `main` разворачивает проверенный
 выпуск на сервере. Production использует отдельный Compose-проект, резервную
 копию ClickHouse перед миграциями и откат frontend при неуспешном запуске.
-Production-конфигурация использует порт 8081 и демонстрационный режим фронтенда,
-пока HTTP API не реализован.
+Production-конфигурация использует frontend на порту 8081 и search-api
+на внутреннем порту 8080; запросы `/api/` проксируются к search-api.
 
 Настройка GitHub Secrets, команды эксплуатации и ограничения отката описаны
 в [инструкции развёртывания](deploy/README.md).
@@ -147,7 +146,6 @@ npm run dev
 | --- | --- |
 | `VITE_API_BASE_URL` | Базовый URL API, по умолчанию `/api` |
 | `VITE_API_PROXY` | Адрес backend для прокси `/api` в dev-режиме |
-| `VITE_DEMO_MODE` | `false` отключает демонстрационные данные |
 
 Дизайн-система (цвета, шрифт, отступы, компоненты) описана в [frontend/DESIGN.md](frontend/DESIGN.md).
 
@@ -255,3 +253,21 @@ PYTHONPATH=src /root/rlt/.venv/bin/python -m rlt_ml.compare_cards \
   --variants AD \
   --out /root/rlt/runs/card-retrieval/paired-comparison.json
 ```
+# Проверка поиска поставщиков
+
+Тестовый файл: [`test-supplier-search.csv`](test-supplier-search.csv), пять
+искусственных закупок. Откройте https://rlt.goatwhistle.ru/, загрузите CSV,
+откройте результат закупки. Поиск использует исторические профили по ИНН;
+актуальный ассортимент, названия компаний и контакты требуют проверки.
+
+Тестовый HTTP режим принимает до 20 закупок и 2 МБ в одном CSV. Результаты
+сохраняются на сервере и доступны в том же браузере (cookie сессии).
+Прямой запрос: `POST /api/suppliers/search` с JSON
+`{"query":"Поставка офисной бумаги А4","limit":10}`.
+Проверка API: `GET /api/health`.
+
+Для локального запуска готовый индекс монтируется через `SUPPLIER_INDEX_PATH`
+(каталог с `card_vectors.npy`, `cards.parquet`, `report.json`, `manifest.json`),
+затем `docker compose --profile search --profile ml up -d search-api embedder`.
+Модель должна быть заранее загружена в кеш. API слушает `127.0.0.1:18082`.
+Проверки на искусственном индексе: `cd backend && uv run python tests/search/smoke.py`.

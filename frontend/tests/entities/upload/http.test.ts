@@ -33,7 +33,6 @@ describe("the http gateway", () => {
   it("lists, reads and creates uploads", async () => {
     const http = client({ uploads: [summary] })
     const gateway = createHttpGateway(http)
-    expect(gateway.demo).toBe(false)
     expect(await gateway.list()).toEqual([{ ...summary, stored: true }])
     expect(http.get).toHaveBeenCalledWith(UPLOADS_PATH, expect.anything())
 

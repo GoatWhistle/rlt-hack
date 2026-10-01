@@ -8,7 +8,7 @@ mkdir -p "$output"
 
 docker build --label "org.opencontainers.image.revision=$revision" \
   --file deploy/frontend.Dockerfile --target runtime \
-  --build-arg VITE_DEMO_MODE=true --tag "rlt/frontend:$revision" .
+  --tag "rlt/frontend:$revision" .
 docker build --label "org.opencontainers.image.revision=$revision" \
   --tag "rlt/backend:$revision" backend
 docker save "rlt/frontend:$revision" "rlt/backend:$revision" | gzip > "$output/images.tar.gz"
