@@ -4,6 +4,9 @@ services:
     build:
       context: ./backend
     profiles: ["search"]
+    env_file:
+      - path: ${EMBEDDING_ENV_FILE:-./.env.embedding.local}
+        required: false
     restart: unless-stopped
     entrypoint: ["python", "-m", "uvicorn"]
     command: ["src.controller.search.api:app", "--host", "0.0.0.0", "--port", "8080", "--proxy-headers", "--forwarded-allow-ips", "*", "--limit-concurrency", "8"]
@@ -198,6 +201,9 @@ services:
     build:
       context: ./backend
     profiles: ["ml"]
+    env_file:
+      - path: ${EMBEDDING_ENV_FILE:-./.env.embedding.local}
+        required: false
     restart: unless-stopped
     entrypoint: ["python", "-m", "src.controller.embedding.cli"]
     command: ["index", "--forever", "--batch-size", "${EMBEDDING_BATCH_SIZE:-16}", "--interval", "${EMBEDDING_BATCH_WAIT_SECONDS:-5}"]

@@ -83,6 +83,7 @@ jobs:
       - run: python backend/tests/product/moscow_smoke.py
       - run: python backend/tests/product/worker_smoke.py
       - run: python backend/tests/embedding/smoke.py
+      - run: python backend/tests/embedding/inference_smoke.py
       - run: python backend/tests/embedding/batching_smoke.py
       - run: python backend/tests/embedding/document_smoke.py
       - run: python backend/tests/search/smoke.py
