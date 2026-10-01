@@ -52,40 +52,6 @@ SUPPLIERS_CSV = """lot_id,supplier_inn,supplier_kpp,is_winner
 4652720,0000000000,781401001,false
 """
 
-DIRECTORY_LISTING = """<!doctype html>
-<html><body>
-  <ul class="companies">
-    <li><a href="/company/kanctorg">ООО «Канцторг»</a></li>
-    <li><a href="/company/kanctorg">ООО «Канцторг»</a></li>
-  </ul>
-  <a class="next" href="/katalog/bumaga?page=2">Следующая</a>
-</body></html>
-"""
-
-DIRECTORY_LISTING_PAGE_2 = """<!doctype html>
-<html><body>
-  <ul class="companies">
-    <li><a href="/company/papirus">АО «Папирус»</a></li>
-  </ul>
-</body></html>
-"""
-
-COMPANY_PAGE = """<!doctype html>
-<html><body>
-  <h1>ООО «Канцторг»</h1>
-  <div class="region">Санкт-Петербург</div>
-  <div class="requisites">ИНН: 7804428656, КПП 780601001</div>
-  <a href="https://kanctorg.test/">Сайт компании</a>
-  <table class="goods">
-    <tr class="item"><td><a href="/company/kanctorg/paper-a4">Бумага А4</a></td>
-        <td class="price">350,50 ₽</td><td class="note">Склад в Санкт-Петербурге</td></tr>
-    <tr class="item"><td><a href="/company/kanctorg/pen">Ручка шариковая</a></td>
-        <td class="price">25 ₽</td><td class="note"></td></tr>
-  </table>
-  <script>var tracker = 1;</script>
-</body></html>
-"""
-
 SITEMAP_INDEX = """<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap><loc>https://kanctorg.test/sitemap-goods.xml</loc></sitemap>
@@ -117,24 +83,6 @@ PRODUCT_PAGE = """<!doctype html>
 </body></html>
 """
 
-DIRECTORY_HOME = """<!doctype html>
-<html><body>
-  <nav>
-    <a href="/katalog/bumaga">Бумага и картон</a>
-    <a href="/about">О сайте</a>
-  </nav>
-</body></html>
-"""
-
-COMPANY_PAGE_PAPIRUS = """<!doctype html>
-<html><body>
-  <h1>АО «Папирус»</h1>
-  <div class="region">Москва</div>
-  <div class="requisites">ИНН 7707049388 КПП 770701001</div>
-  <a href="https://papirus.test/">papirus.test</a>
-</body></html>
-"""
-
 # Третий обход: фид отдал пустой каталог — снимать предложения по нему нельзя.
 FEED_EMPTY = """<?xml version="1.0" encoding="UTF-8"?>
 <yml_catalog date="2026-10-03 09:00">
@@ -146,4 +94,145 @@ FEED_EMPTY = """<?xml version="1.0" encoding="UTF-8"?>
     </offers>
   </shop>
 </yml_catalog>
+"""
+
+# Каталоги читаются по sitemap, поэтому фикстуры повторяют разметку живых
+# страниц: перечень адресов и разметку карточки каждого источника.
+
+OPTKATALOG_SITEMAP = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://optkatalog.ru/</loc></url>
+  <url><loc>https://optkatalog.ru/postavschiki/</loc></url>
+  <url><loc>https://optkatalog.ru/postavschiki/bumaga/ofisnaya/</loc></url>
+  <url><loc>https://optkatalog.ru/postavschiki/bumaga/ofisnaya/kanctorg/</loc></url>
+  <url><loc>https://optkatalog.ru/postavschiki/bumaga/ofisnaya/papirus/</loc></url>
+</urlset>
+"""
+
+OPTKATALOG_CARD = """<!doctype html>
+<html><body>
+  <h1>ООО «Канцторг»</h1>
+  <div class="ty-product-feature">
+    <span class="ty-product-feature__label">Тип компании:</span>
+    <div class="ty-product-feature__value">Производитель</div>
+  </div>
+  <div class="ty-product-feature">
+    <span class="ty-product-feature__label">Город:</span>
+    <div class="ty-product-feature__value"><ul>
+      <li>Санкт-Петербург</li><li>Москва</li>
+    </ul></div>
+  </div>
+  <div id="content_description" class="content-description"><div>
+    <h2>О компании</h2>
+    <p>Поставки офисной бумаги с 2001 года.</p>
+    <h3>Юридическое наименование</h3>
+    <p>ООО "Канцторг"</p>
+    <h3>ИНН/ОГРН</h3>
+    <p>7804428656</p>
+    <h3>Год основания</h3>
+    <p>2001</p>
+    <h2>Товары, услуги</h2>
+    <p>Бумага А4 500 листов<br/>Ручка шариковая</p>
+    <h2>Адрес</h2>
+    <p>Россия, г. Всеволожск, Ленинградская обл., ул. Заводская 1</p>
+    <h2>Контакты</h2>
+    <details>
+      <p><a href="https://kanctorg.test/" rel="nofollow">САЙТ</a></p>
+      <p><a href="tel:78120000000">+7 (812) 000-00-00</a></p>
+      <p><a href="mailto:sales@kanctorg.test">sales@kanctorg.test</a></p>
+    </details>
+  </div></div>
+  <script>var tracker = 1;</script>
+</body></html>
+"""
+
+# Второй вариант разметки: реквизиты строками «Метка: значение», другой
+# заголовок блока ассортимента, длинный абзац вместо перечня позиций и несколько
+# типов компании в одном свойстве.
+OPTKATALOG_CARD_INLINE = """<!doctype html>
+<html><body>
+  <h1>АО «Папирус»</h1>
+  <div class="ty-product-feature">
+    <span class="ty-product-feature__label">Тип компании:</span>
+    <div class="ty-product-feature__value">Дистрибьютор, Оптовый поставщик</div>
+  </div>
+  <div id="content_description" class="content-description"><div>
+    <h3>Юридическое наименование</h3>
+    <p>АО "Папирус"</p>
+    <p>Год основания: 1996</p>
+    <p>ИНН/ОГРН: 7707049388/1027700132195</p>
+    <h2>Продукция, услуги</h2>
+    <p>Картон переплётный<br/>Компания поставляет картон и бумагу оптом по всей России
+       со склада в Москве, работает с отсрочкой платежа и собственным автопарком.</p>
+    <h2>Адрес</h2>
+    <p>Россия, Москва, ул. Тверская 1</p>
+  </div></div>
+</body></html>
+"""
+
+ABOUTPARTNER_SITEMAP = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://aboutpartner.ru/producers</loc></url>
+  <url><loc>https://aboutpartner.ru/producer/crmindex-servicespbx</loc></url>
+  <url><loc>https://aboutpartner.ru/producer/pc-producer-1</loc></url>
+</urlset>
+"""
+
+ABOUTPARTNER_CARD = """<!doctype html>
+<html><body>
+  <h1>ООО «Канцторг»</h1>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": ["Organization", "LocalBusiness"],
+   "name": "ООО «Канцторг»", "legalName": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \\"КАНЦТОРГ\\"",
+   "taxID": "7804428656", "telephone": "+7 (812) 000-00-00", "email": "sales@kanctorg.test",
+   "sameAs": ["https://vk.com/kanctorg", "https://kanctorg.test"],
+   "address": {"@type": "PostalAddress", "streetAddress": "ул. Заводская 1",
+               "addressLocality": "Всеволожск", "addressRegion": "Ленинградская область"}}
+  </script>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "ItemList",
+   "itemListElement": [
+     {"@type": "ListItem", "position": 1,
+      "item": {"@type": "Product", "name": "Бумага А4 500 листов",
+               "url": "https://aboutpartner.ru/product/pc-product-1",
+               "description": "Офисная бумага 80 г/м2.",
+               "brand": {"@type": "Brand", "name": "Светокопи"}}},
+     {"@type": "ListItem", "position": 2,
+      "item": {"@type": "Product", "name": "Ручка шариковая",
+               "url": "https://aboutpartner.ru/product/pc-product-2"}}]}
+  </script>
+</body></html>
+"""
+
+# Карточка сервиса: компании на ней нет, поэтому в пакет она не попадает.
+ABOUTPARTNER_SERVICE = """<!doctype html>
+<html><body>
+  <h1>Виртуальная АТС</h1>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "Виртуальная АТС"}
+  </script>
+</body></html>
+"""
+
+TEXZAKAZ_SITEMAP = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://texzakaz.ru/proizvoditeli</loc></url>
+  <url><loc>https://texzakaz.ru/p/10</loc></url>
+</urlset>
+"""
+
+TEXZAKAZ_CARD = """<!doctype html>
+<html><body>
+  <h1>Канцторг</h1>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@graph": [
+    {"@type": "Organization", "name": "Канцторг",
+     "alternateName": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \\"КАНЦТОРГ\\"",
+     "taxID": "7804428656",
+     "address": {"@type": "PostalAddress", "addressCountry": "RU",
+                 "addressLocality": "Всеволожск", "addressRegion": "Ленинградская область"},
+     "knowsAbout": ["Бумага А4 500 листов", "Ручка шариковая"]},
+    {"@type": "BreadcrumbList", "itemListElement": []}]}
+  </script>
+</body></html>
 """
