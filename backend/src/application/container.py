@@ -413,6 +413,7 @@ class Container:
             classifier=await self.classifier(),
             interval_seconds=self._config.sync_interval_seconds,
             max_parallel_sources=self._config.parallel_sources,
+            batch_size=self._config.sync_batch_size,
         )
 
     def product_provider(self) -> MoscowProductProvider:

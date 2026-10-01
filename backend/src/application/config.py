@@ -78,6 +78,8 @@ class AppConfig:
     # Сколько запросов к одному источнику выполняет его адаптер одновременно.
     parallel_requests: int = 4
     write_batch_size: int = 500
+    # Порция обогащения, нормализации, классификации и записи за один шаг.
+    sync_batch_size: int = 32
     sync_interval_seconds: float = 3600.0
     # Сколько карточек берёт с источника один обход: каталоги публикуют тысячи.
     max_cards_per_source: int = 500
@@ -142,6 +144,7 @@ class AppConfig:
             parallel_sources=_int("SYNC_PARALLEL_SOURCES", 4),
             parallel_requests=_int("SYNC_PARALLEL_REQUESTS", 4),
             write_batch_size=_int("SYNC_WRITE_BATCH", 500),
+            sync_batch_size=_int("SYNC_BATCH_SIZE", 32),
             max_cards_per_source=_int("SYNC_MAX_CARDS", 500),
             sync_interval_seconds=_float("SYNC_INTERVAL_SECONDS", 3600.0),
             log_level=os.getenv("LOG_LEVEL", "INFO"),

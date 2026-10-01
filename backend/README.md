@@ -284,6 +284,48 @@ ProductCenter дополнительно реализует `StreamingSupplierPr
 идентификаторы в запросе нельзя — пакет каталога содержит их тысячи, а параметры
 запроса уходят в HTTP-форму ClickHouse с ограниченной длиной поля.
 
+## Порции обработки
+
+Обход, разбор и запись идут порциями `SYNC_BATCH_SIZE` (32 по умолчанию) для
+всех источников. Потоковый адаптер отдаёт порции сам по `batches()` и начинает
+запись ещё во время обхода; остальные собирают пакет целиком, после чего
+`package_batches` делит его на такие же порции. Компании идут первыми и отдельно
+от предложений: обогащение работает только с компаниями, нормализация и
+классификация — только с предложениями, поэтому разделение не меняет результат
+ни одного шага, а компания записывается один раз вместо повтора в каждой порции.
+
+Деление собранного пакета не делает обход потоковым: адаптер по-прежнему держит
+его в памяти целиком. Оно выравнивает порции разбора и записи, чтобы все
+источники шли через хранилище одинаково. Потоковую отдачу из адаптера
+поддерживает пока только `productcenter_web`.
+
+Внутри порции запись в ClickHouse идёт пачками `SYNC_WRITE_BATCH` (500) — один
+INSERT на пачку. Снятие отсутствующих предложений с продажи выполняется один раз
+после успешного завершения всего обхода: порция этого не делает, иначе
+незаконченный обход снял бы с продажи ещё не прочитанные позиции. Пустой пакет
+ничего не снимает — это чаще сломанный разбор, чем исчезновение ассортимента.
+
+Эмбеддер работает отдельной джобой и тоже порциями: `EMBEDDING_BATCH_SIZE` (16)
+документов за запрос к энкодеру, неполная порция отправляется через
+`EMBEDDING_BATCH_WAIT_SECONDS` (5) секунд, векторы пишутся одним INSERT на
+порцию. После ошибки незаписанная порция остаётся в выборке и обрабатывается
+повторно.
+
+## Что попадает в вектор
+
+`document_text` собирает подписанный текст из названия, ядра названия, типа
+позиции, бренда, артикула, характеристик, единицы, раздела каталога, кода ОКПД2,
+рубрики, названия компании, её роли и её местоположения — региона вместе с
+адресом из контактов. Подписи нужны, чтобы модель отличала регион от бренда.
+Цена и наличие в текст не входят: они меняются часто и предмет не уточняют.
+
+Свежесть вектора считается по хешу всего этого набора, а не по `content_hash`
+предложения: иначе переезд компании или правка её названия не пересчитали бы
+вектор, в который они входят. Хеш считает SQL одним выражением `DOCUMENT_HASH`
+на чтении очереди и на поиске, поэтому он не расходится с набором полей,
+которые читает тот же запрос. `content_hash` предложения входит в него отдельным
+слагаемым: смена правил разбора тоже обязана пересчитать вектор.
+
 ## Конкурентность
 
 `SupplierSyncWorker.run_once` запускает все включённые адаптеры одновременно,
@@ -355,7 +397,7 @@ uv run --python 3.13 python main.py registry-import      # загрузка ре
 `CLICKHOUSE_PASSWORD`, `CLICKHOUSE_DATABASE`, `CLICKHOUSE_SECURE`,
 `TASK_DATA_DIR`, `SUPPLIER_DATASET_PATH`, `SUPPLIER_DATASET_REGION`,
 `SUPPLIER_FEED_URLS`, `SUPPLIER_SITE_URLS`, флаги адаптеров из таблицы выше,
-`SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`,
+`SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`, `SYNC_BATCH_SIZE`,
 `SYNC_MAX_CARDS`, `SUPL_BIZ_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `REFERENCE_DIR`,
 `CLASSIFIER_ARCHIVE_CHANNEL`, `CLASSIFIER_ARCHIVE_LIMIT`, `LOG_LEVEL`,
 `MSP_REGISTRY_PATH` (ZIP-выгрузка реестра МСП; в Compose каталог
@@ -493,6 +535,9 @@ uv run --no-project --python 3.13 python tests/classifier/classifier_smoke.py
 uv run --no-project --python 3.13 --with lxml python tests/registry/registry_smoke.py
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
   python tests/registry/registry_store_smoke.py
+uv run --no-project --python 3.13 python tests/supplier/batching_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
+  python tests/embedding/document_smoke.py
 uv run --no-project --python 3.13 --with httpx python tests/supplier/supl_biz_smoke.py
 PYTHONPATH=. uv run --no-project --python 3.13 --with httpx python tests/supplier/supl_biz_balanced_smoke.py
 ```

@@ -38,7 +38,7 @@ class Encoder:
 
 
 def document():
-    return EmbeddingDocument(uuid4(), "hash", "synthetic", "", "", "", {})
+    return EmbeddingDocument(uuid4(), "hash", "synthetic")
 
 
 async def check():

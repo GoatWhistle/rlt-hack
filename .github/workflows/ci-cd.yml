@@ -66,6 +66,7 @@ jobs:
       - run: python backend/tests/clickhouse/schema_smoke.py
       - run: python backend/tests/supplier/job_smoke.py
       - run: python backend/tests/supplier/provider_smoke.py
+      - run: python backend/tests/supplier/batching_smoke.py
       - run: python backend/tests/supplier/worker_smoke.py
       - run: python backend/tests/supplier/productcenter_smoke.py
       - run: python backend/tests/supplier/productcenter_job_smoke.py
@@ -83,6 +84,7 @@ jobs:
       - run: python backend/tests/product/worker_smoke.py
       - run: python backend/tests/embedding/smoke.py
       - run: python backend/tests/embedding/batching_smoke.py
+      - run: python backend/tests/embedding/document_smoke.py
       - run: python backend/tests/search/smoke.py
       - run: python backend/tests/search/clickhouse_smoke.py
       - run: python backend/tests/search/history_smoke.py

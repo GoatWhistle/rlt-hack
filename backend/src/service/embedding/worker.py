@@ -10,20 +10,51 @@ from src.service.errors import ServiceError
 logger = logging.getLogger(__name__)
 
 
+# Тип позиции и роль компании хранятся кодами: в тексте вектора они заменяются
+# словом, потому что запросы приходят словами, а не кодами схемы.
+ITEM_TYPES = {"goods": "товар", "work": "работа", "service": "услуга"}
+ROLES = {
+    "manufacturer": "производитель",
+    "distributor": "дистрибьютор",
+    "reseller": "перепродавец",
+    "service_provider": "исполнитель услуг",
+}
+MAX_DOCUMENT_LENGTH = 12000
+
+
 def document_text(document: EmbeddingDocument) -> str:
+    """Текст для энкодера: всё, что отличает позицию, включая место поставщика.
+
+    Поля подписаны, потому что без подписи модель не отличает регион от бренда.
+    Цена и наличие в текст не входят: они меняются часто и предмет не уточняют,
+    поэтому их изменение не должно пересчитывать вектор.
+    """
     attributes = "; ".join(f"{key}: {value}" for key, value in sorted(document.attributes.items()))
-    return "\n".join(
-        filter(
-            None,
-            (
-                document.name,
-                document.brand,
-                document.article,
-                attributes,
-                document.description,
-            ),
-        )
-    )[:12000]
+    location = ", ".join(dict.fromkeys(filter(None, (document.region, document.address))))
+    parts = (
+        document.name,
+        _labelled("Предмет", document.normalized_name)
+        if document.normalized_name != document.name
+        else "",
+        _labelled("Тип", ITEM_TYPES.get(document.item_type, document.item_type)),
+        _labelled("Бренд", document.brand),
+        _labelled("Артикул", document.article),
+        _labelled("Характеристики", attributes),
+        _labelled("Единица", document.unit),
+        _labelled("Раздел каталога", document.source_category),
+        _labelled("ОКПД2", document.okpd2_code),
+        _labelled("Рубрика", document.rubric_name),
+        _labelled("Поставщик", document.supplier_name),
+        _labelled("Роль", ROLES.get(document.supplier_role, "")),
+        _labelled("Местоположение", location),
+        document.description,
+    )
+    return "\n".join(filter(None, parts))[:MAX_DOCUMENT_LENGTH]
+
+
+def _labelled(label: str, value: str) -> str:
+    value = " ".join(value.split())
+    return f"{label}: {value}" if value else ""
 
 
 class EmbeddingWorker:
