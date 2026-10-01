@@ -1,0 +1,22 @@
+model = "Qwen/Qwen3-Embedding-0.6B"
+seed = 42
+max_length = 256
+batch_size = 8
+gradient_accumulation = 8
+gradient_checkpointing = true
+learning_rate = 0.0001
+weight_decay = 0.01
+epochs = 1
+temperature = 0.05
+precision = "bf16"
+max_steps = 200
+save_every = 100
+max_train_pairs = 100000
+lora_rank = 16
+lora_alpha = 32
+lora_dropout = 0.05
+lora_target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
+query_instruction = "Given a Russian procurement notice, retrieve supplier activity profiles relevant to fulfilling this procurement."
+
+# Только короткий прогон по умолчанию; полный: --max-steps 0.
+# Накопление градиентов не увеличивает пул отрицательных примеров внутри батча.

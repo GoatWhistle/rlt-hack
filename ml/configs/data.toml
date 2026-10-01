@@ -1,0 +1,24 @@
+seed = 42
+threads = 2
+memory_limit = "2GB"
+examples_per_card = 5
+max_cards_per_supplier = 8
+max_pairs_per_supplier = 100
+
+[[splits]]
+name = "train"
+history_before = "2024-06-01"
+start = "2024-07-01"
+end = "2025-01-01"
+
+[[splits]]
+name = "validation"
+history_before = "2024-12-01"
+start = "2025-01-01"
+end = "2025-07-01"
+
+[[splits]]
+name = "test"
+history_before = "2025-06-01"
+start = "2025-07-01"
+end = "2026-01-01"

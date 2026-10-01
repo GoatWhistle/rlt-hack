@@ -55,3 +55,22 @@ npm run dev
 | --- | --- |
 | `VITE_API_BASE_URL` | Базовый URL API, по умолчанию `/api` |
 | `VITE_API_PROXY` | Адрес backend для прокси `/api` в dev-режиме |
+
+## ML-пайплайн
+
+Датасет обрабатывается на сервере данных в `/root/rlt`; ZIP и производные таблицы не переносите на рабочий компьютер. Для окружения ML нужен Python 3.12. Все пути ниже показаны для сервера данных, кроме команды оценки на GPU.
+
+```bash
+cd /root/rlt/work/ml
+python3.12 -m venv /root/rlt/.venv312
+/root/rlt/.venv312/bin/pip install -e '.[dev]'
+/root/rlt/.venv312/bin/pytest
+/root/rlt/.venv312/bin/rlt-prepare \
+  --source '/root/rlt/Данные 24-25.zip' \
+  --out /root/rlt/ready-v1 \
+  --config configs/data.toml
+```
+
+Для baseline запустите `rlt-evaluate-retrieval --data /root/rlt/ready-v1 --out /root/rlt/runs/bm25-validation --split validation --model bm25 --config configs/compare_qwen.toml` на подготовленных валидационных данных. На GPU заранее закешируйте открытые веса командой `rlt-cache-models --model Qwen/Qwen3-Embedding-0.6B` (отдельно для 4B). После этого оценка может идти без сети, задайте `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1`.
+
+Две сравниваемые модели и общая выборка задаются в `configs/compare_qwen.toml`; для каждого процесса нужен свой `--out`, модели должны видеть один набор `validation` файлов. 0.6B запускается с batch 4, 4B — с batch 1. Для гибрида BM25+dense добавьте `--hybrid`. GPU-проверка запускается через `rlt-gpu-check`. Замеры качества и ресурсов, ограничения метрик и фактические результаты ведутся в [журнале экспериментов](ml/EXPERIMENTS.md).

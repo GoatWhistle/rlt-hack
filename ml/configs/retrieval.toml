@@ -1,0 +1,14 @@
+seed = 42
+max_queries = 1000
+max_length = 256
+batch_size = 8
+top_k = 100
+query_instruction = "Given a Russian procurement notice, retrieve supplier activity profiles relevant to fulfilling this procurement."
+models = [
+  "Qwen/Qwen3-Embedding-0.6B",
+  "BAAI/bge-m3",
+  "intfloat/multilingual-e5-base",
+]
+
+# Для отдельной оценки готового более крупного энкодера добавьте Qwen3-Embedding-4B.
+# Для 4B уменьшите batch_size до 1–2; полное дообучение 4B в 15 ГБ не планируется.

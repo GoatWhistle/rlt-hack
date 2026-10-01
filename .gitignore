@@ -30,3 +30,13 @@ venv/
 htmlcov/
 .coverage
 *.egg-info/
+.venv*/
+artifacts/
+ml/data/
+ml/runs/
+*.duckdb*
+*.cbm
+*.pt
+*.safetensors
+*.zip
+._*
