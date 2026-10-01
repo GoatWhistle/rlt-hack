@@ -100,6 +100,8 @@ class AppConfig:
     moscow_suppliers_export_url: str = ""
     # ZIP-выгрузка реестра МСП ФНС для команды registry-import.
     msp_registry_path: Path | None = None
+    use_supl_biz_provider: bool = False
+    supl_biz_max_cards: int = 0
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -150,4 +152,6 @@ class AppConfig:
             msp_registry_path=(
                 Path(value).expanduser() if (value := os.getenv("MSP_REGISTRY_PATH")) else None
             ),
+            use_supl_biz_provider=_bool("SUPL_BIZ_WEB_PROVIDER", False),
+            supl_biz_max_cards=_int("SUPL_BIZ_MAX_CARDS", 0),
         )

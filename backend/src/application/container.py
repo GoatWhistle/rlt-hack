@@ -47,6 +47,8 @@ from src.adapter.supplier.pulscen_web import PulscenSnapshotProvider, PulscenWeb
 from src.adapter.supplier.pulscen_web.snapshot import PROVIDER_NAME as PULSCEN_SNAPSHOT
 from src.adapter.supplier.schema_org_web import PROVIDER_NAME as SCHEMA_ORG
 from src.adapter.supplier.schema_org_web import SchemaOrgWebProvider
+from src.adapter.supplier.supl_biz_web import PROVIDER_NAME as SUPL_BIZ
+from src.adapter.supplier.supl_biz_web import SuplBizWebProvider
 from src.adapter.supplier.supplier_dataset import PROVIDER_NAME as SUPPLIER_DATASET
 from src.adapter.supplier.supplier_dataset import SupplierDatasetProvider
 from src.adapter.supplier.texzakaz_web import PROVIDER_NAME as TEXZAKAZ
@@ -353,6 +355,21 @@ class Container:
                         provider_name=PULSCEN_SNAPSHOT,
                     ),
                     snapshot_path=config.pulscen_snapshot_path,
+                )
+            )
+
+        if config.use_supl_biz_provider:
+            providers.append(
+                SuplBizWebProvider(
+                    source_defaults=_source(
+                        name="Supl.biz",
+                        base_url="https://supl.biz/",
+                        source_type=SourceType.DIRECTORY,
+                        provider_name=SUPL_BIZ,
+                    ),
+                    max_cards=config.supl_biz_max_cards or None,
+                    max_concurrent=config.parallel_requests,
+                    http_timeout=config.request_timeout,
                 )
             )
 

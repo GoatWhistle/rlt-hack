@@ -217,6 +217,7 @@ uv run --python 3.13 python main.py registry-import --path var/msp/rmsp.zip
 | `MoscowSuppliersProvider` | `moscow_suppliers` | полный нормализованный экспорт поставщиков и оферт zakupki.mos.ru | `MOSCOW_SUPPLIERS_PROVIDER` (выкл.) |
 | `PulscenSnapshotProvider` | `pulscen_snapshot` | диагностический снимок страниц pulscen.ru из JSON-файла | `PULSCEN_SNAPSHOT_PATH` (пусто — выключен) |
 | `PulscenWebProvider` | `pulscen_web` | компании и товары с ценой pulscen.ru по рубрикам sitemap | `PULSCEN_WEB_PROVIDER` (выкл.), пауза `PULSCEN_DELAY_SECONDS` |
+| `SuplBizWebProvider` | `supl_biz_web` | товары и продавцов supl.biz: sitemap товаров и профилей, состояние страниц | `SUPL_BIZ_WEB_PROVIDER` (выкл.), `SUPL_BIZ_MAX_CARDS` |
 
 Адреса фидов и сайтов задаются списками `SUPPLIER_FEED_URLS` и
 `SUPPLIER_SITE_URLS` — на каждый адрес создаётся свой адаптер. Сколько карточек
@@ -234,6 +235,25 @@ uv run --python 3.13 python main.py registry-import --path var/msp/rmsp.zip
 | `texzakaz.ru` | `sitemap.xml`, раздел `/p/` | JSON-LD `Organization`: ИНН в `taxID`, продукция в `knowsAbout` |
 | `aboutpartner.ru` | `sitemap-producers.xml`, раздел `/producer/` | JSON-LD `Organization` и `ItemList` с `Product` |
 | `optkatalog.ru` | `sitemap.xml`, листья дерева `/postavschiki/` | заголовки блока описания и список `ty-product-feature` |
+
+Supl.biz читается иначе: `sitemap.xml` ведёт на постраничные
+`sitemap-proposals.xml?p=N` по 500 товаров и на `sitemap-users.xml` с профилями.
+Страница товара содержит JSON `preloadedState` с товаром, ценой и продавцом
+вместе с ИНН, страница профиля — реквизиты и контакты; поэтому собираются и
+продавцы без товаров, а данные профиля главнее данных со страницы товара.
+Sitemap проверяется строго: документ обязан быть `sitemapindex` или `urlset` с
+адресами supl.biz, а служебный ответ, пустой файл или недоступная часть
+завершают обход ошибкой. Тип позиции остаётся `unknown`: страница не отличает
+товар от услуги. Лимит `SUPL_BIZ_MAX_CARDS` диагностический: если страниц больше,
+обход завершается ошибкой, а неполный пакет не сохраняется.
+
+Для диагностики Supl.biz есть выборка поровну по 24 корневым категориям:
+`PYTHONPATH=. uv run --no-project --python 3.13 --with httpx python
+scripts/supl_biz_balanced_sample.py --per-category 60 --concurrency 3 --out <файл вне Git>`.
+Внутри категории товары берутся по кругу из подкатегорий (первая страница каждой,
+листание закрыто в `robots.txt`), товары с более чем тремя категориями отсекаются
+как спам. Результат пишется только в файл, в ClickHouse он не попадает и полным
+снимком источника не является.
 
 Предложения каталогов идут без цены: источники публикуют номенклатуру, а не
 прайс. Цены приходят из YML-фидов и разметки `Offer` на сайтах поставщиков.
@@ -310,7 +330,7 @@ uv run --python 3.13 python main.py registry-import      # загрузка ре
 `TASK_DATA_DIR`, `SUPPLIER_DATASET_PATH`, `SUPPLIER_DATASET_REGION`,
 `SUPPLIER_FEED_URLS`, `SUPPLIER_SITE_URLS`, флаги адаптеров из таблицы выше,
 `SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`,
-`SYNC_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `REFERENCE_DIR`,
+`SYNC_MAX_CARDS`, `SUPL_BIZ_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `REFERENCE_DIR`,
 `CLASSIFIER_ARCHIVE_CHANNEL`, `CLASSIFIER_ARCHIVE_LIMIT`, `LOG_LEVEL`,
 `MSP_REGISTRY_PATH` (ZIP-выгрузка реестра МСП; в Compose каталог
 `MSP_REGISTRY_DIR`, по умолчанию `./var/msp`, монтируется в `/data/msp`),
@@ -418,6 +438,8 @@ uv run --no-project --python 3.13 python tests/classifier/classifier_smoke.py
 uv run --no-project --python 3.13 --with lxml python tests/registry/registry_smoke.py
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
   python tests/registry/registry_store_smoke.py
+uv run --no-project --python 3.13 --with httpx python tests/supplier/supl_biz_smoke.py
+PYTHONPATH=. uv run --no-project --python 3.13 --with httpx python tests/supplier/supl_biz_balanced_smoke.py
 ```
 
 Проверки нормализатора и классификатора используют настоящие справочники из
