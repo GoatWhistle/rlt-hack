@@ -2,6 +2,7 @@ import asyncio
 import math
 from datetime import UTC, datetime, timedelta, timezone
 
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -11,14 +12,14 @@ from src.adapter.text.rule_interpreter.interpreter import MAX_ITEMS, RuleQueryIn
 from src.controller.http.locale import parse_accept_language
 from src.controller.http.schema import rfc3339
 from src.models.enums import Locale
-from src.models.errors import DomainError, NoticeFileError, SearchTextTooLongError
+from src.models.errors import EmptySearchTextError, NoticeFileError, SearchTextTooLongError
 from src.models.scoring import Score
 from src.models.search import SearchQuery, SearchText
 
 ALPHABET = st.characters(
     codec="utf-8",
     categories=("L", "N", "P", "Z", "S"),
-    include_characters="​﻿½٣ ;,\n\t",
+    include_characters="".join(map(chr, (0x200B, 0xFEFF, 0xBD, 0x663, 0x3B, 0x2C, 0x0A, 0x09))),
 )
 TEXTS = st.text(ALPHABET, max_size=600)
 INTERPRETER = RuleQueryInterpreter(RussianAnalyzer())
@@ -26,13 +27,20 @@ INTERPRETER = RuleQueryInterpreter(RussianAnalyzer())
 
 @given(TEXTS)
 def test_search_text_is_normalized_once(raw: str) -> None:
-    try:
-        text = SearchText(raw)
-    except DomainError as error:
-        assert not " ".join(raw.split()) or isinstance(error, SearchTextTooLongError)
+    collapsed = " ".join(raw.split())
+    if not collapsed:
+        with pytest.raises(EmptySearchTextError):
+            SearchText(raw)
         return
+    text = SearchText(raw)
     assert SearchText(text.value) == text
-    assert 0 < len(text.value) <= SearchText.MAX_LENGTH
+    assert text.value == collapsed
+
+
+@given(st.integers(SearchText.MAX_LENGTH + 1, SearchText.MAX_LENGTH * 2))
+def test_search_text_rejects_long_input(length: int) -> None:
+    with pytest.raises(SearchTextTooLongError):
+        SearchText("а" * length)
 
 
 @settings(max_examples=150, deadline=None)
