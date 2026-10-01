@@ -26,5 +26,11 @@
   "too_many_rows": "The file has too many rows. Split it into several uploads.",
   "no_valid_lots": "The file has no rows that can be processed. Fix the errors and upload it again.",
   "upload_not_found": "This upload was not found. It may have been deleted.",
-  "lot_not_found": "This purchase is not in the upload."
+  "lot_not_found": "This purchase is not in the upload.",
+  "storage_unavailable": "The data storage is temporarily unavailable. Try again in a few seconds.",
+  "upload_queue_full": "Too many purchases are being processed right now. Upload the file in a minute.",
+  "rate_limited": "Too many requests in a row. Wait a second and try again.",
+  "not_found": "The requested data was not found.",
+  "method_not_allowed": "This action is not supported.",
+  "internal_error": "Something went wrong on the server. Please try again later."
 }
