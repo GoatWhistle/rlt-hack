@@ -77,6 +77,8 @@ class AppConfig:
     use_productcenter_provider: bool = False
     productcenter_max_cards: int = 0
     productcenter_cache_dir: Path | None = None
+    use_moscow_suppliers_provider: bool = False
+    moscow_suppliers_export_url: str = ""
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -113,4 +115,6 @@ class AppConfig:
             productcenter_cache_dir=(
                 Path(value) if (value := os.getenv("PRODUCTCENTER_CACHE_DIR")) else None
             ),
+            use_moscow_suppliers_provider=_bool("MOSCOW_SUPPLIERS_PROVIDER", False),
+            moscow_suppliers_export_url=os.getenv("MOSCOW_SUPPLIERS_EXPORT_URL", ""),
         )

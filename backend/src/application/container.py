@@ -26,6 +26,8 @@ from src.adapter.supplier.aboutpartner_web import PROVIDER_NAME as ABOUTPARTNER
 from src.adapter.supplier.aboutpartner_web import AboutPartnerWebProvider
 from src.adapter.supplier.gisp_registry import PROVIDER_NAME as GISP_REGISTRY
 from src.adapter.supplier.gisp_registry import GispRegistryProvider
+from src.adapter.supplier.moscow_suppliers import PROVIDER_NAME as MOSCOW_SUPPLIERS
+from src.adapter.supplier.moscow_suppliers import MoscowSuppliersProvider
 from src.adapter.supplier.optkatalog_web import PROVIDER_NAME as OPTKATALOG
 from src.adapter.supplier.optkatalog_web import OptKatalogWebProvider
 from src.adapter.supplier.productcenter_web import PROVIDER_NAME as PRODUCTCENTER
@@ -214,6 +216,20 @@ class Container:
                     http_timeout=config.request_timeout,
                     max_cards=config.productcenter_max_cards or None,
                     cache_dir=config.productcenter_cache_dir,
+                )
+            )
+
+        if config.use_moscow_suppliers_provider:
+            providers.append(
+                MoscowSuppliersProvider(
+                    source_defaults=_source(
+                        name="Портал поставщиков Москвы",
+                        base_url="https://zakupki.mos.ru/",
+                        source_type=SourceType.DIRECTORY,
+                        provider_name=MOSCOW_SUPPLIERS,
+                    ),
+                    export_url=config.moscow_suppliers_export_url,
+                    http_timeout=config.request_timeout,
                 )
             )
 

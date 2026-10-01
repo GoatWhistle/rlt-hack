@@ -49,6 +49,7 @@ class SupplierProvider(Protocol):
 | `TexZakazWebProvider` | `texzakaz_web` | производителей и их продукцию texzakaz.ru | `TEXZAKAZ_WEB_PROVIDER` |
 | `GispRegistryProvider` | `gisp_registry` | записи полного XLSX-экспорта ПП 719 ГИСП | `GISP_REGISTRY_PROVIDER` |
 | `ProductCenterWebProvider` | `productcenter_web` | производителей и товары productcenter.ru | `PRODUCTCENTER_WEB_PROVIDER` (выкл.) |
+| `MoscowSuppliersProvider` | `moscow_suppliers` | полный нормализованный экспорт поставщиков и оферт zakupki.mos.ru | `MOSCOW_SUPPLIERS_PROVIDER` (выкл.) |
 
 Адреса фидов и сайтов задаются списками `SUPPLIER_FEED_URLS` и
 `SUPPLIER_SITE_URLS` — на каждый адрес создаётся свой адаптер. Сколько карточек
@@ -129,6 +130,20 @@ uv run --python 3.13 python main.py runs --source <UUID>
 `GISP_REGISTRY_PROVIDER`, `GISP_EXPORT_LOCATION`,
 `PRODUCTCENTER_WEB_PROVIDER`, `PRODUCTCENTER_MAX_CARDS`, `PRODUCTCENTER_CACHE_DIR`.
 
+Московский адаптер включается только после получения проверенного полного
+экспорта: `MOSCOW_SUPPLIERS_PROVIDER=true` и `MOSCOW_SUPPLIERS_EXPORT_URL`.
+Это адрес JSON-потока, подготовленного из разрешённой выгрузки портала; адрес
+официального чтения оферт пока не подтверждён. Каждая страница содержит
+`complete: true`, постоянный `snapshot_id`,
+`totals: {"suppliers": N, "offers": M}`, массивы
+`suppliers`, `offers` и `next` (URL следующей страницы или `null`). У компании
+обязательны `id`, `name`, `url`; допустимы `inn`, `region`, `website`. У оферты
+обязательны `id`, `supplier_id`, `sku_id`, `name`, `url`, `price`; допустимы
+`item_type`, `availability`, `currency`, `unit`. Поставщик должен встретиться
+до своей оферты. Повтор страницы/ID, сбой запроса, неверный формат и
+расхождение контрольных чисел прерывают обход без сохранения пакета. СТЕ без
+оферты в поток не включается.
+
 ГИСП выключен по умолчанию. С пустым `GISP_EXPORT_LOCATION` он обходит открытые
 JSON-страницы перечня производителей и реестра продукции через официальные
 `/pp719v2/pub/org/b/` и `/pp719v2/pub/prod/b/`. На момент проверки API
@@ -178,6 +193,8 @@ uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx \
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
   --with lxml --with cssselect --with httpx \
   python tests/supplier/productcenter_job_smoke.py
+uv run --no-project --python 3.13 --with httpx \
+  python tests/supplier/moscow_suppliers_smoke.py
 uv run --no-project --python 3.13 python tests/supplier/worker_smoke.py
 uv run --no-project --python 3.13 --with httpx --with openpyxl \
   python tests/supplier/gisp_registry.py
