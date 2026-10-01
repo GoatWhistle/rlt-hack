@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 import { useId } from "react"
 import { VisuallyHidden } from "@/shared/ui/visually-hidden"
 import styles from "./styles.module.css"
@@ -6,7 +7,7 @@ export type SegmentedOption<T extends string> = {
   readonly value: T
   readonly label: string
   readonly description?: string
-  readonly count?: number
+  readonly count?: string
 }
 
 export type SegmentedControlProps<T extends string> = {
@@ -14,6 +15,8 @@ export type SegmentedControlProps<T extends string> = {
   readonly options: readonly SegmentedOption<T>[]
   readonly value: T
   readonly onChange: (value: T) => void
+  readonly scroll?: boolean
+  readonly block?: boolean
 }
 
 export function SegmentedControl<T extends string>({
@@ -21,10 +24,12 @@ export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
+  scroll = false,
+  block = false,
 }: SegmentedControlProps<T>) {
   const name = useId()
   return (
-    <fieldset className={styles.group}>
+    <fieldset className={clsx(styles.group, scroll && styles.scroll, block && styles.block)}>
       <VisuallyHidden as="legend">{legend}</VisuallyHidden>
       {options.map((option) => (
         <label key={option.value} className={styles.option}>

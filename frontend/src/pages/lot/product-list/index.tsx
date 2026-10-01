@@ -7,17 +7,25 @@ import { Tag } from "@/shared/ui/tag"
 import { ResultSection } from "../section"
 import styles from "./styles.module.css"
 
-const BARS: Record<ProductOrigin, string | undefined> = {
-  notice: undefined,
-  inferred: styles.inferredBar,
-  user: styles.userBar,
-}
-
 export function OriginLabel({ origin }: { readonly origin: ProductOrigin }) {
   const { t } = useTranslation("lot")
   const label = t(`products.origin.${origin}`)
-  if (origin === "inferred") return <Tag tone="warning">{label}</Tag>
-  if (origin === "user") return <Tag tone="accent">{label}</Tag>
+  if (origin === "inferred") {
+    return (
+      <Tag tone="warning">
+        <Icon name="warning" size="sm" />
+        {label}
+      </Tag>
+    )
+  }
+  if (origin === "user") {
+    return (
+      <Tag tone="accent">
+        <Icon name="pencil" size="sm" />
+        {label}
+      </Tag>
+    )
+  }
   return (
     <span className={styles.notice}>
       <Icon name="check" tone="confirmed" size="sm" />
@@ -32,37 +40,52 @@ type ProductRowProps = {
   readonly onFilter: () => void
 }
 
+function useOriginNote(): (product: Product) => string {
+  const { t } = useTranslation("lot")
+  return ({ origin, originNote }) => {
+    if (!originNote) return t(`products.originNote.${origin}`)
+    if (originNote.code === "userSpecified") return t("products.note.userSpecified")
+    return t("products.note.similarPurchases", {
+      hits: originNote.hits,
+      total: originNote.total,
+    })
+  }
+}
+
 function ProductRow({ product, active, onFilter }: ProductRowProps) {
   const { t } = useTranslation("lot")
+  const noteOf = useOriginNote()
   return (
     <li className={clsx(styles.item, active && styles.active)}>
       <details className={styles.details}>
         <summary className={styles.summary}>
-          <span className={clsx(styles.bar, BARS[product.origin])} aria-hidden="true" />
-          <span className={styles.body}>
-            <span className={styles.name}>{product.name}</span>
-            <span className={styles.meta}>
-              <OriginLabel origin={product.origin} />
-            </span>
-          </span>
           <span className={styles.chevron}>
             <Icon name="chevron" size="sm" />
+          </span>
+          <span className={styles.body}>
+            <span className={styles.name}>{product.name}</span>
+            <OriginLabel origin={product.origin} />
           </span>
         </summary>
         <div className={styles.note}>
           <span className={styles.code}>{t("products.okpd2", { code: product.okpd2 })}</span>
-          <p>{product.originNote ?? t(`products.originNote.${product.origin}`)}</p>
+          <p>{noteOf(product)}</p>
         </div>
       </details>
-      <button
-        type="button"
-        className={styles.filter}
-        aria-pressed={active}
-        aria-label={t("products.filter", { name: product.name })}
-        onClick={onFilter}
-      >
-        <Icon name="filter" size="sm" />
-      </button>
+      <span className={styles.tool}>
+        <button
+          type="button"
+          className={styles.filter}
+          aria-pressed={active}
+          aria-label={t("products.filter", { name: product.name })}
+          onClick={onFilter}
+        >
+          <Icon name="filter" size="sm" />
+        </button>
+        <span className={styles.tip} aria-hidden="true">
+          {active ? t("products.filterReset") : t("products.filterHint")}
+        </span>
+      </span>
     </li>
   )
 }

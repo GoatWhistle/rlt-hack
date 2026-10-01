@@ -1,28 +1,69 @@
+.region {
+  max-height: calc(100dvh - 15rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
 .table {
   width: 100%;
   min-width: 40rem;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: var(--text-sm);
 }
 
 .table th,
 .table td {
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border-block-end: var(--line-width) solid var(--line-subtle);
   text-align: start;
   vertical-align: top;
 }
 
+.table tr:last-child > * {
+  border-block-end: 0;
+}
+
+.table thead th {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  border-block-end-color: var(--line-hairline);
+  background: var(--surface-raised);
+}
+
 .criterion {
+  position: sticky;
+  inset-inline-start: 0;
   width: 12rem;
+  background: var(--surface-base);
   color: var(--text-secondary);
   font-weight: var(--weight-medium);
 }
 
+.table thead .criterion {
+  z-index: 2;
+  font-size: var(--text-xs);
+}
+
 .company {
   min-width: 12rem;
+  vertical-align: bottom;
+}
+
+.companyName {
+  display: block;
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
   overflow-wrap: anywhere;
+}
+
+.companyRole {
+  display: block;
+  margin-block-start: var(--space-1);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
 }
 
 .cell {
@@ -33,4 +74,14 @@
 .match {
   display: grid;
   gap: var(--space-2);
+}
+
+@media (max-width: 30rem) {
+  .criterion {
+    width: 7.5rem;
+  }
+
+  .table {
+    min-width: 32rem;
+  }
 }

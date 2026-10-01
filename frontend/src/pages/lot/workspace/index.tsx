@@ -1,5 +1,5 @@
 import { clsx } from "clsx"
-import { type ReactElement, useState } from "react"
+import { type ReactElement, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Recommendation } from "@/entities/recommendation/model"
 import { useShortlist } from "@/entities/shortlist/store"
@@ -33,6 +33,7 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
   const [filterId, setFilterId] = useState<string | null>(null)
   const [profileOpen, setProfileOpen] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
+  const stackRef = useRef<HTMLDivElement>(null)
 
   const ranks = new Map(companies.map((company, index) => [company.id, index + 1]))
   const filterProduct = products.find((product) => product.id === filterId)
@@ -44,14 +45,20 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
     shown[0] ??
     companies.find((company) => company.id === selectedId)
 
+  function show(next: View) {
+    setView(next)
+    const top = stackRef.current?.getBoundingClientRect().top ?? 0
+    if (top < 0) window.scrollBy({ top })
+  }
+
   function select(id: string) {
     setSelectedId(id)
-    if (narrow) setView("evidence")
+    if (narrow) show("evidence")
   }
 
   function filter(productId: string | null) {
     setFilterId(productId)
-    if (narrow && productId) setView("companies")
+    if (narrow && productId) show("companies")
   }
 
   const productPane = (
@@ -67,6 +74,7 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
       <div className={styles.empty}>
         {productPane}
         <EmptyState
+          icon="search"
           headingLevel={2}
           title={t("noCandidates.title")}
           description={t("noCandidates.text")}
@@ -108,13 +116,16 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
   return (
     <>
       {narrow ? (
-        <div className={styles.stacked}>
-          <SegmentedControl
-            legend={t("views.legend")}
-            value={view}
-            onChange={setView}
-            options={VIEWS.map((value) => ({ value, label: t(`views.${value}`) }))}
-          />
+        <div className={styles.stacked} ref={stackRef}>
+          <div className={styles.switcher}>
+            <SegmentedControl
+              block
+              legend={t("views.legend")}
+              value={view}
+              onChange={show}
+              options={VIEWS.map((value) => ({ value, label: t(`views.${value}`) }))}
+            />
+          </div>
           {panes[view]}
         </div>
       ) : (

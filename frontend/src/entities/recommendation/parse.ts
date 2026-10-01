@@ -2,6 +2,7 @@ import {
   count,
   list,
   oneOf,
+  optionalOneOf,
   optionalText,
   plainText,
   record,
@@ -9,12 +10,15 @@ import {
   withOptional,
 } from "@/shared/api/payload"
 import {
-  type CatalogOffer,
+  CHECK_REASONS,
+  COMPANY_ROLES,
   COMPANY_STATUSES,
   type Company,
   type Contacts,
   type History,
   MATCH_BASES,
+  ORIGIN_NOTE_CODES,
+  type OriginNote,
   PRODUCT_ORIGINS,
   type Product,
   type ProductMatch,
@@ -53,6 +57,14 @@ function contacts(value: unknown, path: string): Contacts | undefined {
   )
 }
 
+function originNote(value: unknown, path: string): OriginNote | undefined {
+  if (value === undefined || value === null) return undefined
+  const fields = record(value, path)
+  const code = oneOf(ORIGIN_NOTE_CODES, fields, "code", path)
+  if (code === "userSpecified") return { code }
+  return { code, hits: count(fields, "hits", path), total: count(fields, "total", path) }
+}
+
 function product(value: unknown, path: string): Product {
   const fields = record(value, path)
   return withOptional(
@@ -62,7 +74,7 @@ function product(value: unknown, path: string): Product {
       okpd2: text(fields, "okpd2", path),
       origin: oneOf(PRODUCT_ORIGINS, fields, "origin", path),
     },
-    { originNote: optionalText(fields, "originNote", path) },
+    { originNote: originNote(fields.originNote, `${path}.originNote`) },
   )
 }
 
@@ -85,7 +97,10 @@ function purchase(value: unknown, path: string): Purchase {
       year: count(fields, "year", path),
       outcome: oneOf(PURCHASE_OUTCOMES, fields, "outcome", path),
     },
-    { source: source(fields.source, `${path}.source`) },
+    {
+      lotId: optionalText(fields, "lotId", path),
+      source: source(fields.source, `${path}.source`),
+    },
   )
 }
 
@@ -115,7 +130,7 @@ function company(value: unknown, path: string): Company {
       id: text(fields, "id", path),
       name: text(fields, "name", path),
       inn: text(fields, "inn", path),
-      role: text(fields, "role", path),
+      role: oneOf(COMPANY_ROLES, fields, "role", path),
       status: oneOf(COMPANY_STATUSES, fields, "status", path),
       summary: text(fields, "summary", path),
       matches: list(fields, "matches", path, match),
@@ -126,11 +141,7 @@ function company(value: unknown, path: string): Company {
       clarify: list(fields, "clarify", path, plainText),
     },
     {
-      history: history(fields.history, `${path}.history`),
-      catalog:
-        fields.catalog === undefined ? undefined : list(fields, "catalog", path, catalogOffer),
-      identitySource: optionalText(fields, "identitySource", path),
-      checkReason: optionalText(fields, "checkReason", path),
+      checkReason: optionalOneOf(CHECK_REASONS, fields, "checkReason", path),
       roleSource: source(fields.roleSource, `${path}.roleSource`),
       contacts: contacts(fields.contacts, `${path}.contacts`),
     },

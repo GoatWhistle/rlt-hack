@@ -22,17 +22,18 @@
   },
   "header": {
     "back": "Purchases · {{file}}",
-    "neighbours": "Neighbouring purchases",
+    "neighbours": "Neighboring purchases",
     "prev": "Previous purchase",
     "next": "Next purchase",
-    "position": "{{index}} of {{total}}",
+    "position": "{{index, number}} of {{total, number}}",
     "lot": "Lot {{id}}",
     "customer": "Customer INN {{inn}}",
     "noCustomer": "Customer not given",
     "price": "Start price {{price}}",
     "noPrice": "Start price not given",
     "published": "Published {{date}}",
-    "export": "Download results"
+    "export": "Download results",
+    "exportShort": "Download"
   },
   "chain": {
     "label": "Reasoning chain",
@@ -53,33 +54,50 @@
       "inferred": "The system added this item from similar purchases. Confirm it before contacting suppliers.",
       "user": "The item was specified by the user."
     },
-    "count_one": "{{count}} item",
-    "count_other": "{{count}} items",
+    "note": {
+      "similarPurchases": "Not in the notice. Appears in {{hits, number}} of {{total, number}} similar purchases.",
+      "userSpecified": "You specified this item to match the technical specification."
+    },
+    "count_one": "{{count, number}} item",
+    "count_other": "{{count, number}} items",
     "okpd2": "OKPD2 {{code}}",
-    "filter": "Show candidates with “{{name}}”"
+    "filter": "Show candidates with “{{name}}”",
+    "filterHint": "Show only candidates with this product",
+    "filterReset": "Show all candidates"
   },
   "companies": {
     "title": "Candidates",
-    "matchCount": "{{matched}} of {{total}}",
-    "purchases_one": "{{count}} purchase",
-    "purchases_other": "{{count}} purchases",
+    "role": {
+      "manufacturer": "Manufacturer",
+      "distributor": "Distributor",
+      "supplier": "Supplier",
+      "supplierDistributor": "Supplier · distributor",
+      "unknown": "Role not determined"
+    },
+    "matchCount": "{{matched, number}} of {{total, number}}",
+    "purchases_one": "{{count, number}} purchase",
+    "purchases_other": "{{count, number}} purchases",
     "status": {
       "recommended": "Recommended",
       "check": "Needs checking",
       "historical": "Procurement history"
+    },
+    "checkReason": {
+      "roleUnconfirmed": "Role not confirmed",
+      "rangeUnconfirmed": "Product range not confirmed"
     },
     "order": "by relevance",
     "filtered": "Candidates with “{{name}}”",
     "resetFilter": "Reset",
     "noMatch": "No candidate has records for this product.",
     "chosen": "Chosen",
-    "showMore": "Show {{count}} more",
+    "showMore": "Show {{count, number}} more",
     "showLess": "Show fewer",
-    "compare": "Compare chosen ({{count}})",
+    "compare": "Compare chosen ({{count, number}})",
     "compareHint": "Choose two or more candidates in the grounds to compare them."
   },
   "evidence": {
-    "inn": "Tax ID {{inn}}",
+    "inn": "INN {{inn}}",
     "summaryTitle": "Why we recommend it",
     "checkTitle": "Why it needs checking",
     "mainClarify": "Key thing to clarify.",
@@ -87,21 +105,22 @@
     "matchesHint": "by records, not warehouse stock",
     "basis": {
       "stock": "Stock confirmed",
-      "catalog": "In the catalogue",
+      "catalog": "In the catalog",
       "inferred": "System assumption"
     },
     "notFound": "Not found",
     "noSource": "No source given",
     "checkedAt": "checked {{date}}",
     "sourceKind": {
-      "catalog": "Catalogue",
+      "catalog": "Catalog",
       "price": "Price list",
       "purchase": "Purchase",
       "registry": "Registry"
     },
     "purchasesTitle": "Purchase history",
-    "purchasesSummary_one": "{{count}} similar · wins: {{wins}}",
-    "purchasesSummary_other": "{{count}} similar · wins: {{wins}}",
+    "purchaseLot": "Lot {{id}} · {{title}}",
+    "purchasesSummary_one": "{{count, number}} similar · wins: {{wins, number}}",
+    "purchasesSummary_other": "{{count, number}} similar · wins: {{wins, number}}",
     "outcome": {
       "winner": "Winner",
       "participant": "Participant"
@@ -112,16 +131,17 @@
     "noClarify": "Nothing significant to clarify.",
     "confirmations": "Key confirmations",
     "noConfirmations": "No confirming sources: the match rests on assumptions.",
-    "unmatched_one": "No records for {{count}} product: {{names}}",
-    "unmatched_other": "No records for {{count}} products: {{names}}",
-    "matchesAside": "{{matched}} of {{total}}",
-    "clarifyAside": "{{count}}",
+    "unmatched_one": "No records for {{count, number}} product: {{names}}",
+    "unmatched_other": "No records for {{count, number}} products: {{names}}",
+    "matchesAside": "{{matched, number}} of {{total, number}}",
+    "clarifyAside": "{{count, number}}",
     "choose": "Choose candidate",
     "chosen": "Remove from chosen",
-    "profile": "Company profile"
+    "profile": "Company profile",
+    "profileShort": "Profile"
   },
   "meter": {
-    "label": "Match {{matched}} of {{total}}: stock confirmed — {{stock}}, in the catalogue — {{catalog}}, assumed — {{inferred}}"
+    "label": "Match {{matched, number}} of {{total, number}}: stock confirmed — {{stock, number}}, in the catalog — {{catalog, number}}, assumed — {{inferred, number}}"
   },
   "profile": {
     "requisites": "Details",

@@ -1,0 +1,13 @@
+.mark {
+  flex-shrink: 0;
+  width: var(--mark-size);
+  height: var(--mark-size);
+}
+
+.letter {
+  fill: var(--accent);
+}
+
+.facet {
+  fill: var(--warning);
+}

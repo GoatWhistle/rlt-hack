@@ -32,15 +32,19 @@ describe("the purchases of a file", () => {
       .map((cell) => cell.textContent)
     expect(headers.slice(1)).toEqual([
       "Purchase",
+      "Status",
       "Start price",
       "Products",
       "Candidates",
-      "Status",
     ])
     expect(within(table).getAllByRole("row")).toHaveLength(PAGE_SIZE + 1)
     const milk = within(table).getByRole("link", { name: "Milk for schools" })
     expect(milk).toHaveAttribute("href", "/uploads/u1/lots/100")
     expect(screen.getByText(`1–${PAGE_SIZE} of 25`)).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Page 1" })).toHaveAttribute("aria-current", "page")
+    expect(screen.queryByRole("link", { name: en("pages.prev", "lots") })).toBeNull()
+    const row = within(table).getByRole("row", { name: /Milk for schools/ })
+    expect(within(row).getByText("RUB 1,000 · 5 products · 3 candidates")).toBeInTheDocument()
     expect(readLastUpload()).toBe("u1")
   })
 
@@ -62,7 +66,15 @@ describe("the purchases of a file", () => {
       "/uploads/u1/lots/100?q=milk&status=needsCheck",
     )
     await user.type(screen.getByRole("searchbox"), "zzz")
-    expect(screen.getByRole("heading", { name: en("empty.title", "lots") })).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "Nothing found for “milkzzz”" }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Only purchases with the status “Need clarifying”/),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: en("empty.allStatuses", "lots") }))
+    expect(router.state.location.search).toBe("?q=milkzzz")
+    expect(screen.getByText(/Check the spelling/)).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: en("empty.reset", "lots") }))
     expect(router.state.location.search).toBe("")
   })
@@ -82,7 +94,9 @@ describe("the purchases of a file", () => {
     expect(within(dialog).getByRole("radio", { name: `Selected (${PAGE_SIZE})` })).toBeChecked()
     await user.click(within(dialog).getByRole("button", { name: en("action.close") }))
     await user.click(pageBox)
-    expect(screen.queryByRole("region", { name: en("selection.label", "lots") })).toBeNull()
+    await waitFor(() =>
+      expect(screen.queryByRole("region", { name: en("selection.label", "lots") })).toBeNull(),
+    )
   })
 
   it("clears the selection on request and opens the full export from the header", async () => {
@@ -90,7 +104,9 @@ describe("the purchases of a file", () => {
     await screen.findByRole("table")
     await user.click(screen.getByRole("checkbox", { name: "Select lot 100" }))
     await user.click(screen.getByRole("button", { name: en("selection.clear", "lots") }))
-    expect(screen.queryByRole("region", { name: en("selection.label", "lots") })).toBeNull()
+    await waitFor(() =>
+      expect(screen.queryByRole("region", { name: en("selection.label", "lots") })).toBeNull(),
+    )
     await user.click(screen.getByRole("button", { name: en("download", "lots") }))
     const dialog = await screen.findByRole("dialog")
     expect(
@@ -111,12 +127,15 @@ describe("the purchases of a file", () => {
         issues: [{ row: 7, code: "missingTitle" }],
       }),
     )
-    expect(await screen.findByText(/Processing: 1 of 2 ready/)).toBeInTheDocument()
+    expect(await screen.findByText("Processing: 1 of 2 ready")).toBeInTheDocument()
+    expect(screen.getByRole("status")).toHaveTextContent("Processing: 1 of 2 ready")
+    expect(screen.getByText(en("processing.hint", "lots"))).toBeInTheDocument()
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuemax", "2")
     const queued = screen.getByRole("row", { name: /Purchase 2/ })
     expect(within(queued).getByText(en("status.queued", "lots"))).toBeInTheDocument()
     expect(within(queued).getByText(en("table.noPrice", "lots"))).toBeInTheDocument()
     expect(within(queued).getByText(/customer not given/)).toBeInTheDocument()
+    expect(within(queued).getByText(en("table.priceMissing", "lots"))).toBeInTheDocument()
     await user.click(screen.getByText("1 row was not processed because of errors"))
     expect(screen.getByText("Row 7")).toBeVisible()
   })

@@ -11,17 +11,17 @@ export const TEXT_ATTRIBUTES = new Set([
 
 const LETTER = /\p{L}/u
 
-function literalAttribute(node: ts.Node): boolean {
-  if (!ts.isJsxAttribute(node) || !node.initializer) return false
-  const name = node.name.getText()
-  return TEXT_ATTRIBUTES.has(name) && ts.isStringLiteral(node.initializer)
+function literalAttributeText(node: ts.Node): string {
+  if (!ts.isJsxAttribute(node) || !node.initializer) return ""
+  if (!TEXT_ATTRIBUTES.has(node.name.getText())) return ""
+  return ts.isStringLiteral(node.initializer) ? node.initializer.text : ""
 }
 
 function inspect(file: SourceFile): Violation[] {
   const found: Violation[] = []
   walk(parse(file.path, file.content), (node) => {
     const text = ts.isJsxText(node) && LETTER.test(node.getText())
-    const attribute = literalAttribute(node) && LETTER.test(node.getText())
+    const attribute = LETTER.test(literalAttributeText(node))
     if (!text && !attribute) return
     found.push({
       rule: "jsx-text",

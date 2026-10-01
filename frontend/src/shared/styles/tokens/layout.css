@@ -19,7 +19,7 @@
   --icon-md: 1.125rem;
   --icon-lg: 2rem;
   --badge-size: 2.75rem;
-  --mark-size: 1.875rem;
+  --mark-size: 0.95em;
   --step-size: 1.75rem;
   --meter-height: 0.375rem;
   --meter-height-lg: 0.625rem;
@@ -31,14 +31,35 @@
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
   --target-touch: 2.75rem;
-  --layout-max: 80rem;
+  --menu-width: 11rem;
+  --menu-item-height: 2.5rem;
+  --flag-width: 1.25rem;
+  --radius-flag: 0.125rem;
+  --radius-switch: 0.5rem;
+  --tool-size: 2rem;
   --measure-prose: 62ch;
   --measure-hero: 52rem;
   --toast-width: 24rem;
   --dialog-width: 32rem;
   --dialog-wide-width: 64rem;
   --drawer-width: 30rem;
+  --z-menu: 300;
   --z-toast: 500;
-  --layout-gutter: var(--space-5);
+  --layout-gutter: clamp(var(--space-4), 0.5rem + 2vw, var(--space-7));
+  --pane-products: clamp(15rem, 19vw, 22rem);
+  --pane-companies: clamp(18rem, 23vw, 26rem);
+  --pane-offset: var(--space-4);
   --z-skip-link: 600;
+  --indicator-height: 2px;
+  --skeleton-line: 0.875rem;
+}
+
+:root {
+  --state-badge: 3.5rem;
+  --state-offset: clamp(var(--space-6), 12vh, var(--space-9));
+  --tip-width: 12rem;
+  --marker-size: 1.125rem;
+  --skeleton-line: 0.75rem;
+  --skeleton-title: 1.75rem;
+  --skeleton-hero: 12rem;
 }

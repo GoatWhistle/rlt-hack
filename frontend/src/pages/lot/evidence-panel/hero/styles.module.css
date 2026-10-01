@@ -18,32 +18,35 @@
 }
 
 .identity {
+  display: grid;
+  gap: var(--space-1);
   min-width: 0;
 }
 
-.kicker {
-  color: var(--accent-strong);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-}
-
 .name {
-  margin-block-start: var(--space-1);
   font-size: var(--text-2xl);
   font-weight: var(--weight-bold);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .meta {
-  margin-block-start: var(--space-1);
   color: var(--text-secondary);
   font-size: var(--text-xs);
 }
 
 .inn {
   font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.result {
+  display: grid;
+  flex-shrink: 0;
+  justify-items: end;
+  gap: var(--space-1);
 }
 
 .score {
@@ -54,9 +57,39 @@
   line-height: 1;
 }
 
+.scoreLabel {
+  color: var(--text-secondary);
+  font-size: var(--text-2xs);
+  text-align: end;
+}
+
+.verdict {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+}
+
+.verdict > :last-child {
+  justify-self: stretch;
+}
+
+.reason {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.reasonTitle {
+  color: var(--accent-strong);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
 .summary {
-  font-size: var(--text-lg);
+  max-width: var(--measure-prose);
+  color: var(--text-primary);
+  font-size: var(--text-md);
   line-height: var(--leading-relaxed);
+  text-wrap: pretty;
 }
 
 .callout {
@@ -64,7 +97,7 @@
   align-items: flex-start;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--warning-soft);
   color: var(--warning-ink);
   font-size: var(--text-sm);
@@ -74,7 +107,22 @@
   font-weight: var(--weight-semibold);
 }
 
-.check .kicker,
+.check .reasonTitle,
 .check .score {
   color: var(--warning-text);
+}
+
+@media (max-width: 30rem) {
+  .hero {
+    padding: var(--space-4);
+  }
+
+  .name,
+  .score {
+    font-size: var(--text-xl);
+  }
+
+  .scoreLabel {
+    display: none;
+  }
 }

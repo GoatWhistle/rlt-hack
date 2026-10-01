@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs"
 import { join, resolve } from "node:path"
 import { leaves, type Tree } from "@tests/support/dictionaries"
 import { describe, expect, it } from "vitest"
-import { LOCALES } from "@/shared/i18n/locale"
+import { LOCALE_TAGS, LOCALES, type Locale } from "@/shared/i18n/locale"
 import { NAMESPACES, resources } from "@/shared/i18n/resources"
 
 const ROOT = resolve(process.cwd(), "src")
@@ -10,6 +10,74 @@ const LOCALES_ROOT = join(ROOT, "shared", "i18n", "locales")
 const PLURAL = /_(zero|one|two|few|many|other)$/
 const CALL = /\bt\(\s*["'`]([^"'`$]+)["'`]/g
 const NAMESPACE = /useTranslation\(\s*["']([a-z]+)["']\s*\)/
+const PARAM = /\{\{\s*([a-zA-Z]+)\s*(?:,\s*([a-zA-Z]+)\s*)?\}\}/g
+const CYRILLIC = /\p{Script=Cyrillic}/u
+const NUMERIC_PARAMS = new Set([
+  "count",
+  "total",
+  "processed",
+  "from",
+  "to",
+  "page",
+  "pages",
+  "index",
+  "matched",
+  "wins",
+  "limit",
+  "hits",
+  "stock",
+  "catalog",
+  "inferred",
+])
+const TEXT_PARAMS = new Set([
+  "code",
+  "columns",
+  "date",
+  "file",
+  "filter",
+  "id",
+  "inn",
+  "name",
+  "names",
+  "price",
+  "query",
+  "row",
+  "title",
+  "value",
+])
+const CYRILLIC_ALLOWED_IN_EN = new Set(["common:language.ru"])
+
+function messages(locale: Locale) {
+  return NAMESPACES.flatMap((namespace) =>
+    leaves(resources[locale][namespace] as Tree).map(([path, value]) => ({
+      id: `${namespace}:${path}`,
+      value,
+    })),
+  )
+}
+
+function params(value: string) {
+  return [...value.matchAll(PARAM)].map((match) => ({
+    name: match[1] ?? "",
+    format: match[2],
+  }))
+}
+
+function wellFormatted(name: string, format: string | undefined): boolean {
+  if (NUMERIC_PARAMS.has(name)) return format === "number"
+  return TEXT_PARAMS.has(name) && format === undefined
+}
+
+function pluralFamilies(locale: Locale): Map<string, string[]> {
+  const families = new Map<string, string[]>()
+  for (const { id } of messages(locale)) {
+    const form = PLURAL.exec(id)?.[1]
+    if (!form) continue
+    const base = id.replace(PLURAL, "")
+    families.set(base, [...(families.get(base) ?? []), form])
+  }
+  return families
+}
 
 function keys(locale: (typeof LOCALES)[number], namespace: (typeof NAMESPACES)[number]) {
   return [
@@ -96,5 +164,58 @@ describe("dictionaries", () => {
     expect(requested.length).toBeGreaterThan(15)
     const missing = requested.filter(({ namespace, key }) => !resolves(namespace, key))
     expect(missing).toEqual([])
+  })
+
+  it("give every plural family exactly the forms its language needs", () => {
+    for (const locale of LOCALES) {
+      const needed = [
+        ...new Intl.PluralRules(LOCALE_TAGS[locale]).resolvedOptions().pluralCategories,
+      ]
+      for (const [base, forms] of pluralFamilies(locale)) {
+        expect(forms.sort(), `${locale}/${base}`).toEqual([...needed].sort())
+      }
+    }
+    expect(pluralFamilies("ru").size).toBeGreaterThan(10)
+  })
+
+  it("show the count in every Russian plural form, since one also covers 21, 31…", () => {
+    const blind = messages("ru").filter(
+      ({ id, value }) => PLURAL.test(id) && !params(value).some((p) => p.name === "count"),
+    )
+    expect(blind.map(({ id }) => id)).toEqual([])
+  })
+
+  it("keep Cyrillic out of English copy", () => {
+    const leaked = messages("en").filter(
+      ({ id, value }) => CYRILLIC.test(value) && !CYRILLIC_ALLOWED_IN_EN.has(id),
+    )
+    expect(leaked.map(({ id }) => id)).toEqual([])
+  })
+
+  it("format every numeric parameter for the language and classify every parameter", () => {
+    const misused = LOCALES.flatMap((locale) =>
+      messages(locale).flatMap(({ id, value }) =>
+        params(value)
+          .filter(({ name, format }) => !wellFormatted(name, format))
+          .map(
+            ({ name, format }) => `${locale}/${id}: {{${name}${format ? `, ${format}` : ""}}}`,
+          ),
+      ),
+    )
+    expect(misused).toEqual([])
+  })
+
+  it("interpolate the same parameters in every language", () => {
+    const names = (locale: Locale) =>
+      new Map(
+        messages(locale).map(({ id, value }) => [
+          id.replace(PLURAL, ""),
+          new Set(params(value).map((p) => p.name)),
+        ]),
+      )
+    const ru = names("ru")
+    for (const [id, used] of names("en")) {
+      for (const name of used) expect(ru.get(id)?.has(name), `${id}: ${name}`).toBe(true)
+    }
   })
 })

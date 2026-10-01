@@ -1,6 +1,7 @@
 import { render, renderHook, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { text } from "@tests/support/dictionaries"
+import { chooseLanguage, LANGUAGE_TRIGGER } from "@tests/support/language"
 import { useTranslation } from "react-i18next"
 import { describe, expect, it } from "vitest"
 import { LocaleSwitch } from "@/features/locale-switch"
@@ -42,15 +43,16 @@ describe("locale provider", () => {
     expect(screen.getByTestId("probe")).toHaveTextContent(
       `${text("en", "common", "nav.uploads")}|en`,
     )
-    await user.click(screen.getByRole("radio", { name: text("en", "common", "language.ru") }))
+    await chooseLanguage(user, "ru")
     expect(await screen.findByTestId("probe")).toHaveTextContent(
       `${text("ru", "common", "nav.uploads")}|ru`,
     )
     expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe("ru")
     expect(document.documentElement.lang).toBe("ru")
+    await user.click(screen.getByRole("button", { name: LANGUAGE_TRIGGER }))
     expect(
-      screen.getByRole("radio", { name: text("ru", "common", "language.ru") }),
-    ).toBeChecked()
+      screen.getByRole("menuitemradio", { name: text("ru", "common", "language.ru") }),
+    ).toHaveAttribute("aria-checked", "true")
   })
 
   it("refuses to be used without a provider", () => {
@@ -70,5 +72,18 @@ describe("formatters", () => {
     expect(ru.money(10)).toContain("₽")
     expect(en.date("2025-03-01T00:00:00Z")).toBe("Mar 1, 2025")
     expect(en.date(new Date(Date.UTC(2025, 0, 2)))).toBe("Jan 2, 2025")
+    expect(en.dateTime(new Date(2025, 0, 2, 15, 4))).toBe("Jan 2, 2025, 3:04 PM")
+    expect(ru.dateTime("2025-01-02T12:00:00")).toMatch(/^2 янв\. 2025 г\., 12:00$/u)
+  })
+
+  it("join lists the way each language does", () => {
+    expect(createFormatters("en").list(["Rice", "Sugar", "Tea"])).toBe("Rice, Sugar, and Tea")
+    expect(createFormatters("ru").list(["Рис", "Сахар", "Чай"])).toBe("Рис, Сахар и Чай")
+    expect(createFormatters("en").list(["Rice"])).toBe("Rice")
+  })
+
+  it("build each locale's formatters once", () => {
+    expect(createFormatters("en")).toBe(createFormatters("en"))
+    expect(createFormatters("en").money(1, "USD")).toBe(createFormatters("en").money(1, "USD"))
   })
 })

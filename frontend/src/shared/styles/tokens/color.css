@@ -76,4 +76,5 @@
   --accent-source: var(--accent);
   --state-success: var(--success);
   --state-danger: var(--warning-text);
+  --skeleton: var(--palette-empty);
 }

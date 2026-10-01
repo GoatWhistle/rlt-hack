@@ -2,6 +2,7 @@ import { clsx } from "clsx"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Company, Product } from "@/entities/recommendation/model"
+import { useFormatters } from "@/shared/i18n/formatters"
 import { Button } from "@/shared/ui/button"
 import { Caption } from "@/shared/ui/caption"
 import { Icon } from "@/shared/ui/icon"
@@ -10,7 +11,7 @@ import { Tag } from "@/shared/ui/tag"
 import { TextButton } from "@/shared/ui/text-button"
 import { ResultSection } from "../section"
 import { SegmentMeter } from "../segment-meter"
-import { useStatusText } from "../status"
+import { useRoleText, useStatusText } from "../status"
 import styles from "./styles.module.css"
 
 export const VISIBLE_COMPANIES = 4
@@ -45,6 +46,8 @@ export type CompanyListProps = {
 export function CompanyList(props: CompanyListProps) {
   const { companies, ranks, products, selectedId, chosen, filter, onSelect, onCompare } = props
   const { t } = useTranslation("lot")
+  const roleText = useRoleText()
+  const { number } = useFormatters()
   const [expanded, setExpanded] = useState(false)
   const hidden = companies.length - VISIBLE_COMPANIES
   const visible = expanded || hidden <= 0 ? companies : companies.slice(0, VISIBLE_COMPANIES)
@@ -72,34 +75,35 @@ export function CompanyList(props: CompanyListProps) {
             <span className={styles.head}>
               <span className={styles.identity}>
                 <span className={styles.name}>{company.name}</span>
-                <span className={styles.role}>{company.role}</span>
+                <span className={styles.role}>{roleText(company)}</span>
               </span>
               <span className={styles.rank}>
                 {String(ranks.get(company.id) ?? 0).padStart(2, "0")}
               </span>
             </span>
-            <SegmentMeter company={company} products={products} />
-            <span className={styles.facts}>
-              <StatusTag company={company} />
-              {chosen.includes(company.id) ? (
-                <Tag tone="accent">{t("companies.chosen")}</Tag>
-              ) : null}
-              {company.history ? (
-                <span>{t("history.examples", { count: company.history.examples.length })}</span>
-              ) : (
-                <span>
-                  {products.length === 0
-                    ? t("compare.unknown")
-                    : t("companies.matchCount", {
-                        matched: company.matches.length,
-                        total: products.length,
-                      })}
-                  {" · "}
-                  {company.similarPurchases === null
-                    ? t("compare.unknown")
-                    : t("companies.purchases", { count: company.similarPurchases })}
+            <span className={styles.match}>
+              <SegmentMeter company={company} products={products} />
+              {products.length > 0 ? (
+                <span className={styles.score} aria-hidden="true">
+                  {number(company.matches.length)}/{number(products.length)}
                 </span>
-              )}
+              ) : null}
+            </span>
+            <span className={styles.facts}>
+              <span className={styles.tags}>
+                <StatusTag company={company} />
+                {chosen.includes(company.id) ? (
+                  <Tag tone="accent">
+                    <Icon name="check" size="sm" />
+                    {t("companies.chosen")}
+                  </Tag>
+                ) : null}
+              </span>
+              <span className={styles.history}>
+                {company.similarPurchases === null
+                  ? t("compare.unknown")
+                  : t("companies.purchases", { count: company.similarPurchases })}
+              </span>
             </span>
           </button>
         ))}

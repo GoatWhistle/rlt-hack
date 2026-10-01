@@ -1,48 +1,60 @@
 .header {
   display: grid;
-  gap: var(--space-3);
+  grid-template-areas:
+    "back pager"
+    "title actions"
+    "meta actions"
+    "trail trail";
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
 }
 
-.top {
+.back {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
+  grid-area: back;
+  min-width: 0;
 }
 
 .neighbours {
   display: inline-flex;
+  grid-area: pager;
   align-items: center;
-  gap: var(--space-2);
+  justify-self: end;
+  gap: var(--space-1);
   color: var(--text-secondary);
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
 }
 
+.gap {
+  width: var(--target-touch);
+}
+
 .position {
   min-width: 4.5rem;
   text-align: center;
-}
-
-.titles {
-  display: grid;
-  flex: 1 1 32rem;
-  gap: var(--space-2);
-  min-width: 0;
+  white-space: nowrap;
 }
 
 .title {
+  grid-area: title;
+  align-self: end;
+  margin-block-start: var(--space-1);
   font-size: var(--text-2xl);
   font-weight: var(--weight-bold);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .meta {
   display: flex;
   flex-wrap: wrap;
+  grid-area: meta;
+  align-self: start;
+  align-items: baseline;
   gap: var(--space-1) var(--space-4);
   color: var(--text-secondary);
   font-size: var(--text-sm);
@@ -52,4 +64,61 @@
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-weight: var(--weight-semibold);
+}
+
+.fact {
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  grid-area: actions;
+  align-self: center;
+}
+
+.trail {
+  grid-area: trail;
+  margin-block-start: var(--space-2);
+}
+
+.short {
+  display: none;
+}
+
+@media (max-width: 47.99rem) {
+  .header {
+    grid-template-areas:
+      "back back"
+      "title title"
+      "meta meta"
+      "actions pager";
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .title {
+    font-size: var(--text-xl);
+  }
+
+  .fact {
+    white-space: normal;
+  }
+
+  .actions,
+  .neighbours {
+    margin-block-start: var(--space-2);
+  }
+
+  .position {
+    min-width: 0;
+    padding-inline: var(--space-1);
+  }
+
+  .trail,
+  .full {
+    display: none;
+  }
+
+  .short {
+    display: inline;
+  }
 }

@@ -5,6 +5,7 @@ import { Dialog } from "@/shared/ui/dialog"
 import { Stack } from "@/shared/ui/stack"
 import { HistoryBlock } from "../evidence-panel/history-block"
 import { SourceLine } from "../evidence-panel/source-line"
+import { useRoleText } from "../status"
 import styles from "./styles.module.css"
 
 export type ProfilePanelProps = {
@@ -67,6 +68,7 @@ type ProfileProps = Pick<ProfilePanelProps, "company" | "products">
 
 function Profile({ company, products }: ProfileProps) {
   const { t } = useTranslation("lot")
+  const roleText = useRoleText()
   const names = new Map(products.map((product) => [product.id, product.name]))
   const sources = sourcesOf(company)
   return (
@@ -85,7 +87,7 @@ function Profile({ company, products }: ProfileProps) {
             </>
           ) : null}
           <dt>{t("profile.role")}</dt>
-          <dd>{company.role}</dd>
+          <dd>{roleText(company)}</dd>
           <dt>{t("profile.roleBasis")}</dt>
           <dd>
             {company.roleSource ? (

@@ -44,9 +44,34 @@ describe("parseRecommendation", () => {
       "$.products[0].origin",
     ],
     [
-      "a note that is not text",
+      "a note that is not an object",
       changed(["products", 1, "originNote"], 3),
       "$.products[1].originNote",
+    ],
+    [
+      "an unknown note code",
+      changed(["products", 1, "originNote", "code"], "hunch"),
+      "$.products[1].originNote.code",
+    ],
+    [
+      "a similar-purchases note without counts",
+      changed(["products", 1, "originNote", "hits"], undefined),
+      "$.products[1].originNote.hits",
+    ],
+    [
+      "an unknown company role",
+      changed(["companies", 0, "role"], "Supplier"),
+      "$.companies[0].role",
+    ],
+    [
+      "a free-text check reason",
+      changed(["companies", 1, "checkReason"], "Range not confirmed"),
+      "$.companies[1].checkReason",
+    ],
+    [
+      "a purchase lot that is not text",
+      changed(["companies", 0, "purchases", 0, "lotId"], 42),
+      "$.companies[0].purchases[0].lotId",
     ],
     [
       "an unknown company status",

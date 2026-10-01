@@ -1,4 +1,3 @@
-import { clsx } from "clsx"
 import { type ChangeEvent, type DragEvent, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Icon } from "@/shared/ui/icon"
@@ -30,19 +29,28 @@ export function Dropzone({ onSelect }: DropzoneProps) {
     setDragging(true)
   }
 
+  function dragLeave(event: DragEvent<HTMLElement>) {
+    const next = event.relatedTarget
+    if (next instanceof Node && event.currentTarget.contains(next)) return
+    setDragging(false)
+  }
+
   return (
     <section
       aria-label={t("drop.title")}
-      className={clsx(styles.zone, dragging && styles.active)}
+      className={styles.zone}
+      data-dragging={dragging || undefined}
       onDragOver={dragOver}
-      onDragLeave={() => setDragging(false)}
+      onDragLeave={dragLeave}
       onDrop={drop}
     >
-      <span className={styles.tile}>
+      <span className={styles.badge}>
         <Icon name="upload" size="lg" tone="source" />
       </span>
-      <p className={styles.title}>{t("drop.title")}</p>
-      <p className={styles.hint}>{t("drop.hint")}</p>
+      <span className={styles.copy}>
+        <span className={styles.title}>{dragging ? t("drop.release") : t("drop.title")}</span>
+        <span className={styles.hint}>{t("drop.hint")}</span>
+      </span>
       <label className={styles.picker}>
         {t("drop.choose")}
         <input

@@ -1,0 +1,105 @@
+.skeleton {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.bone {
+  display: block;
+  height: var(--skeleton-line);
+  border-radius: var(--radius-sm);
+  background: var(--meter-empty);
+  animation: var(--motion-pulse);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.back {
+  width: 14rem;
+}
+
+.title {
+  width: min(32rem, 80%);
+  height: var(--skeleton-title);
+}
+
+.meta {
+  width: min(40rem, 95%);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: var(--pane-products) var(--pane-companies) minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.panel {
+  display: grid;
+  align-self: start;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-xl);
+  background: var(--surface-base);
+}
+
+.stack {
+  display: grid;
+  align-self: start;
+  gap: var(--space-3);
+}
+
+.heading {
+  width: 6rem;
+}
+
+.row {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.line {
+  width: 85%;
+}
+
+.short {
+  width: 45%;
+}
+
+.card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--surface-base);
+}
+
+.hero {
+  height: var(--skeleton-hero);
+  border-radius: var(--radius-lg);
+  background: var(--surface-subtle);
+}
+
+@media (max-width: 74.99rem) {
+  .columns {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  }
+
+  .products {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .products,
+  .companies {
+    display: none;
+  }
+}

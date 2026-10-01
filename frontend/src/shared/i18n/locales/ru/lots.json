@@ -2,27 +2,30 @@
   "loading": "Загружаем закупки",
   "back": "Загрузки",
   "uploaded": "Загружен {{date}}",
-  "notices_one": "{{count}} извещение",
-  "notices_few": "{{count}} извещения",
-  "notices_many": "{{count}} извещений",
-  "notices_other": "{{count}} извещения",
+  "notices_one": "{{count, number}} извещение",
+  "notices_few": "{{count, number}} извещения",
+  "notices_many": "{{count, number}} извещений",
+  "notices_other": "{{count, number}} извещения",
   "download": "Скачать результаты",
   "processing": {
     "label": "Ход обработки",
-    "running": "Обработка: готово {{processed}} из {{total}}. Готовые закупки уже можно открыть.",
-    "done_one": "Обработка завершена: {{count}} закупка",
-    "done_few": "Обработка завершена: {{count}} закупки",
-    "done_many": "Обработка завершена: {{count}} закупок",
-    "done_other": "Обработка завершена: {{count}} закупки"
+    "running": "Обработка: готово {{processed, number}} из {{total, number}}",
+    "hint": "Готовые закупки уже можно открыть.",
+    "done_one": "Обработка завершена: {{count, number}} закупка",
+    "done_few": "Обработка завершена: {{count, number}} закупки",
+    "done_many": "Обработка завершена: {{count, number}} закупок",
+    "done_other": "Обработка завершена: {{count, number}} закупки"
   },
-  "rejected_one": "{{count}} строка не обработана из-за ошибок",
-  "rejected_few": "{{count}} строки не обработаны из-за ошибок",
-  "rejected_many": "{{count}} строк не обработаны из-за ошибок",
-  "rejected_other": "{{count}} строки не обработаны из-за ошибок",
+  "rejected_one": "{{count, number}} строка не обработана из-за ошибок",
+  "rejected_few": "{{count, number}} строки не обработаны из-за ошибок",
+  "rejected_many": "{{count, number}} строк не обработаны из-за ошибок",
+  "rejected_other": "{{count, number}} строки не обработаны из-за ошибок",
   "rejectedNote": "Исправьте эти строки в исходном файле и загрузите его снова. Уже обработанные результаты останутся в этой загрузке.",
   "search": {
     "label": "Поиск по закупкам",
-    "placeholder": "Название, ИНН заказчика или номер лота"
+    "placeholder": "Название, ИНН заказчика или номер лота",
+    "clear": "Очистить поиск",
+    "shortcut": "/"
   },
   "filter": {
     "legend": "Результат",
@@ -40,11 +43,20 @@
     "products": "Товары",
     "candidates": "Кандидаты",
     "status": "Статус",
-    "lot": "Лот {{id}}",
-    "customer": "ИНН заказчика {{inn}}",
+    "lot": "Лот",
+    "customer": "ИНН заказчика",
     "noCustomer": "заказчик не указан",
     "noPrice": "не указана",
-    "pending": "—"
+    "pending": "—",
+    "priceMissing": "цена не указана",
+    "productCount_one": "{{count, number}} товар",
+    "productCount_few": "{{count, number}} товара",
+    "productCount_many": "{{count, number}} товаров",
+    "productCount_other": "{{count, number}} товара",
+    "candidateCount_one": "{{count, number}} кандидат",
+    "candidateCount_few": "{{count, number}} кандидата",
+    "candidateCount_many": "{{count, number}} кандидатов",
+    "candidateCount_other": "{{count, number}} кандидата"
   },
   "status": {
     "queued": "В очереди",
@@ -54,23 +66,27 @@
   },
   "pages": {
     "label": "Страницы таблицы",
-    "range": "{{from}}–{{to}} из {{total}}",
-    "current": "Страница {{page}} из {{pages}}",
+    "range": "{{from, number}}–{{to, number}} из {{total, number}}",
+    "page": "Страница {{page, number}}",
+    "gap": "…",
     "prev": "Предыдущая страница",
     "next": "Следующая страница"
   },
   "selection": {
     "label": "Выбранные закупки",
-    "count_one": "Выбрана {{count}} закупка",
-    "count_few": "Выбрано {{count}} закупки",
-    "count_many": "Выбрано {{count}} закупок",
-    "count_other": "Выбрано {{count}} закупки",
+    "count_one": "Выбрана {{count, number}} закупка",
+    "count_few": "Выбрано {{count, number}} закупки",
+    "count_many": "Выбрано {{count, number}} закупок",
+    "count_other": "Выбрано {{count, number}} закупки",
     "export": "Скачать выбранные",
     "clear": "Снять выбор"
   },
   "empty": {
     "title": "Ничего не найдено",
-    "text": "Измените запрос или сбросьте фильтры: поиск идёт по всему файлу.",
+    "query": "По запросу «{{query}}» ничего не найдено",
+    "text": "Поиск идёт по всему файлу: названию закупки, ИНН заказчика и номеру лота. Проверьте написание или сократите запрос.",
+    "filtered": "Показаны только закупки со статусом «{{filter}}». Поиск идёт по всему файлу: названию закупки, ИНН заказчика и номеру лота.",
+    "allStatuses": "Искать во всех статусах",
     "reset": "Сбросить поиск и фильтры"
   },
   "missing": {

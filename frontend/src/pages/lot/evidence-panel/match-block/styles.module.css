@@ -4,24 +4,30 @@
   gap: var(--space-3);
 }
 
-.swatch {
+.marker {
+  display: inline-flex;
   flex-shrink: 0;
-  width: var(--swatch-width);
-  height: var(--swatch-height);
-  border-radius: var(--radius-sm);
-  background: var(--meter-empty);
+  align-items: center;
+  justify-content: center;
+  width: var(--marker-size);
+  height: var(--marker-size);
+  margin-block-start: 0.0625rem;
+  border: 1.5px dashed var(--line-tentative);
+  border-radius: var(--radius-pill);
 }
 
 .stock {
+  border: 0;
   background: var(--meter-stock);
+  color: var(--text-on-accent);
 }
 
 .catalog {
-  background: var(--meter-catalog);
+  border: 0.25rem solid var(--meter-catalog);
 }
 
 .inferred {
-  border: 1.5px dashed var(--meter-inferred-line);
+  border-color: var(--meter-inferred-line);
   background: var(--meter-inferred);
 }
 
@@ -44,6 +50,7 @@
 .product {
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
 }
 
 .basis {

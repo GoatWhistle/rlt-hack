@@ -4,7 +4,7 @@ import { renderPage, stubGateway, uploadDetail } from "@tests/support/gateway"
 import { describe, expect, it, vi } from "vitest"
 import { ApiError } from "@/shared/api/api-error"
 import { LONG_NAME, recommendationFixture } from "../../entities/recommendation/fixture"
-import { LOTS, lotDetail, openLot } from "./open-lot"
+import { LOTS, lotDetail, lotGateway, openLot } from "./open-lot"
 
 describe("the purchase header", () => {
   it("names the purchase once with its lot, customer, price and date", async () => {
@@ -40,6 +40,20 @@ describe("the purchase header", () => {
     )
   })
 
+  it("keeps the pager in place at the ends of the list", async () => {
+    const first = await openLot(lotDetail({ lot: LOTS[0] }), { path: "/uploads/u1/lots/9" })
+    const pager = await screen.findByRole("navigation", {
+      name: en("header.neighbours", "lot"),
+    })
+    expect(pager).toHaveTextContent("1 of 3")
+    expect(within(pager).queryByRole("link", { name: en("header.prev", "lot") })).toBeNull()
+    first.unmount()
+    await openLot(lotDetail({ lot: LOTS[2] }), { path: "/uploads/u1/lots/11" })
+    const last = await screen.findByRole("navigation", { name: en("header.neighbours", "lot") })
+    expect(last).toHaveTextContent("3 of 3")
+    expect(within(last).queryByRole("link", { name: en("header.next", "lot") })).toBeNull()
+  })
+
   it("explains a missing purchase and links back", async () => {
     const gateway = stubGateway({
       get: vi.fn(async () => uploadDetail(LOTS)),
@@ -56,6 +70,14 @@ describe("the purchase header", () => {
       "href",
       "/uploads",
     )
+  })
+
+  it("shows the workspace outline while the purchase loads", async () => {
+    const gateway = stubGateway({ lot: vi.fn(() => new Promise<never>(() => {})) })
+    renderPage("/uploads/u1/lots/10", gateway)
+    const status = await screen.findByRole("status")
+    expect(status).toHaveAttribute("aria-busy", "true")
+    expect(status).toHaveTextContent(en("loading", "lot"))
   })
 
   it("offers a retry when the purchase cannot load", async () => {
@@ -105,15 +127,19 @@ describe("the products column", () => {
     const sugar = within(products).getByText("Sugar").closest("details")
     await user.click(within(products).getByText("Sugar"))
     expect(sugar).toHaveAttribute("open")
-    expect(within(products).getByText("Seen in 8 of 10 similar purchases.")).toBeVisible()
+    expect(
+      within(products).getByText("Not in the notice. Appears in 8 of 10 similar purchases."),
+    ).toBeVisible()
     expect(within(products).getByText("OKPD2 10.81.12")).toBeVisible()
   })
 
   it("filters candidates by a product and shows how to reset", async () => {
     const { user } = await openLot()
     const filter = screen.getByRole("button", { name: "Show candidates with “Tea”" })
+    expect(filter.nextElementSibling).toHaveTextContent(en("products.filterHint", "lot"))
     await user.click(filter)
     expect(filter).toHaveAttribute("aria-pressed", "true")
+    expect(filter.nextElementSibling).toHaveTextContent(en("products.filterReset", "lot"))
     const companies = screen.getByRole("region", { name: en("companies.title", "lot") })
     expect(within(companies).getByText("Candidates with “Tea”")).toBeInTheDocument()
     expect(within(companies).getAllByRole("button", { pressed: false })).toHaveLength(1)
@@ -144,7 +170,8 @@ describe("in russian", () => {
   it("uses the right plural forms", async () => {
     await openLot(undefined, { locale: "ru" })
     expect(screen.getByText("5 позиций")).toBeInTheDocument()
-    expect(screen.getByText("5 из 5 · 11 закупок")).toBeInTheDocument()
+    expect(screen.getAllByText("11 закупок").length).toBeGreaterThan(0)
     expect(screen.getByText(text("ru", "lot", "evidence.summaryTitle"))).toBeInTheDocument()
   })
 })
+

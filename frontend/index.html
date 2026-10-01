@@ -2,22 +2,47 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (() => {
+        const supported = ["ru", "en"]
+        const pick = (value) => {
+          const base = String(value ?? "").split("-")[0].toLowerCase()
+          return supported.includes(base) ? base : null
+        }
+        let stored = null
+        try {
+          stored = pick(localStorage.getItem("rlt-locale"))
+        } catch {
+          stored = null
+        }
+        const languages = navigator.languages?.length ? navigator.languages : [navigator.language]
+        const detected = languages.map(pick).find(Boolean) ?? null
+        document.documentElement.lang = stored ?? detected ?? "ru"
+      })()
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
     />
-    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
-    <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg" />
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152x152.png" />
-    <link rel="apple-touch-icon" sizes="167x167" href="/icons/apple-touch-icon-167x167.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/apple-touch-icon-167x167.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-touch-icon-76x76.png" />
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#4f46e5" />
     <link rel="manifest" href="/site.webmanifest" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
     <meta name="application-name" content="LOTIVE" />
     <meta name="apple-mobile-web-app-title" content="LOTIVE" />
     <title>LOTIVE</title>

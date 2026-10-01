@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router"
 import { isProcessing, type UploadSummary } from "@/entities/upload/model"
@@ -10,53 +11,61 @@ import { Icon } from "@/shared/ui/icon"
 import { ProgressBar } from "@/shared/ui/progress-bar"
 import { SplitRow } from "@/shared/ui/split-row"
 import { Tag } from "@/shared/ui/tag"
+import { VisuallyHidden } from "@/shared/ui/visually-hidden"
 import styles from "./styles.module.css"
+
+function UploadState({ upload }: { readonly upload: UploadSummary }) {
+  const { t } = useTranslation("uploads")
+  if (!isProcessing(upload)) return <DoneNote>{t("list.done")}</DoneNote>
+  return (
+    <>
+      <span className={styles.progressText}>
+        {t("list.processing", { processed: upload.processed, total: upload.total })}
+      </span>
+      <ProgressBar
+        label={t("list.progress", { name: upload.fileName })}
+        value={upload.processed}
+        max={upload.total}
+      />
+    </>
+  )
+}
 
 function UploadRow({ upload }: { readonly upload: UploadSummary }) {
   const { t } = useTranslation("uploads")
-  const { date } = useFormatters()
-  const running = isProcessing(upload)
+  const { dateTime, number } = useFormatters()
+  const notices = t("list.notices", { count: upload.total })
   return (
-    <li className={styles.item}>
+    <li>
       <Link to={uploadPath(upload.id)} className={styles.row}>
-        <span className={styles.main}>
+        <span className={styles.file}>
           <span className={styles.name}>{upload.fileName}</span>
-          <span className={styles.meta}>
-            {t("list.date", { date: date(upload.createdAt) })}
-            {" · "}
-            {t("list.notices", { count: upload.total })}
-          </span>
-        </span>
-        <span className={styles.state}>
-          {running ? (
-            <>
-              <span className={styles.progressText}>
-                {t("list.processing", { processed: upload.processed, total: upload.total })}
-              </span>
-              <ProgressBar
-                label={t("list.progress", { name: upload.fileName })}
-                value={upload.processed}
-                max={upload.total}
-              />
-            </>
-          ) : (
-            <DoneNote>{t("list.done")}</DoneNote>
-          )}
-          <span className={styles.counts}>
-            <Tag tone="success">{t("list.ready", { count: upload.counts.ready })}</Tag>
-            <Tag tone="warning">
-              {t("list.needsCheck", { count: upload.counts.needsCheck })}
-            </Tag>
-            <Tag tone="tentative">
-              {t("list.noCandidates", { count: upload.counts.noCandidates })}
-            </Tag>
-          </span>
           {upload.rejected > 0 ? (
             <span className={styles.rejected}>
               {t("list.rejected", { count: upload.rejected })}
             </span>
           ) : null}
+        </span>
+        <span className={clsx(styles.meta, styles.compact)}>
+          {t("list.date", { date: dateTime(upload.createdAt) })}
+          {" · "}
+          {notices}
+        </span>
+        <span className={clsx(styles.date, styles.wide)}>{dateTime(upload.createdAt)}</span>
+        <span className={clsx(styles.count, styles.wide)}>
+          <span aria-hidden="true">{number(upload.total)}</span>
+          <VisuallyHidden>{notices}</VisuallyHidden>
+        </span>
+        <span className={styles.state}>
+          <UploadState upload={upload} />
           {upload.stored ? null : <Caption>{t("list.notStored")}</Caption>}
+        </span>
+        <span className={styles.results}>
+          <Tag tone="success">{t("list.ready", { count: upload.counts.ready })}</Tag>
+          <Tag tone="warning">{t("list.needsCheck", { count: upload.counts.needsCheck })}</Tag>
+          <Tag tone="tentative">
+            {t("list.noCandidates", { count: upload.counts.noCandidates })}
+          </Tag>
         </span>
         <span className={styles.chevron} aria-hidden="true">
           <Icon name="chevron" />
@@ -85,11 +94,20 @@ export function UploadList({ uploads, onUpload }: UploadListProps) {
           {t("list.upload")}
         </Button>
       </SplitRow>
-      <ul className={styles.list}>
-        {uploads.map((upload) => (
-          <UploadRow key={upload.id} upload={upload} />
-        ))}
-      </ul>
+      <div className={styles.table}>
+        <div className={clsx(styles.columns, styles.wide)} aria-hidden="true">
+          <span>{t("list.columns.file")}</span>
+          <span>{t("list.columns.uploaded")}</span>
+          <span className={styles.end}>{t("list.columns.notices")}</span>
+          <span>{t("list.columns.status")}</span>
+          <span>{t("list.columns.results")}</span>
+        </div>
+        <ul className={styles.list} aria-label={t("list.title")}>
+          {uploads.map((upload) => (
+            <UploadRow key={upload.id} upload={upload} />
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }

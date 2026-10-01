@@ -25,14 +25,15 @@
     "neighbours": "Соседние закупки",
     "prev": "Предыдущая закупка",
     "next": "Следующая закупка",
-    "position": "{{index}} из {{total}}",
+    "position": "{{index, number}} из {{total, number}}",
     "lot": "Лот {{id}}",
     "customer": "ИНН заказчика {{inn}}",
     "noCustomer": "Заказчик не указан",
     "price": "Начальная цена {{price}}",
     "noPrice": "Начальная цена не указана",
     "published": "Опубликовано {{date}}",
-    "export": "Скачать результаты"
+    "export": "Скачать результаты",
+    "exportShort": "Скачать"
   },
   "chain": {
     "label": "Цепочка вывода",
@@ -53,33 +54,50 @@
       "inferred": "Система добавила позицию по похожим закупкам. Подтвердите её перед запросом поставщикам.",
       "user": "Позицию уточнил пользователь."
     },
-    "count_one": "{{count}} позиция",
-    "count_few": "{{count}} позиции",
-    "count_many": "{{count}} позиций",
-    "count_other": "{{count}} позиции",
+    "note": {
+      "similarPurchases": "В извещении не указан. Встречается в {{hits, number}} из {{total, number}} похожих закупок.",
+      "userSpecified": "Вы уточнили позицию по техническому заданию."
+    },
+    "count_one": "{{count, number}} позиция",
+    "count_few": "{{count, number}} позиции",
+    "count_many": "{{count, number}} позиций",
+    "count_other": "{{count, number}} позиции",
     "okpd2": "ОКПД2 {{code}}",
-    "filter": "Показать кандидатов с товаром «{{name}}»"
+    "filter": "Показать кандидатов с товаром «{{name}}»",
+    "filterHint": "Показать только кандидатов с этим товаром",
+    "filterReset": "Показать всех кандидатов"
   },
   "companies": {
     "title": "Кандидаты",
-    "matchCount": "{{matched}} из {{total}}",
-    "purchases_one": "{{count}} закупка",
-    "purchases_few": "{{count}} закупки",
-    "purchases_many": "{{count}} закупок",
+    "role": {
+      "manufacturer": "Производитель",
+      "distributor": "Дистрибьютор",
+      "supplier": "Поставщик",
+      "supplierDistributor": "Поставщик · дистрибьютор",
+      "unknown": "Роль не определена"
+    },
+    "matchCount": "{{matched, number}} из {{total, number}}",
+    "purchases_one": "{{count, number}} закупка",
+    "purchases_few": "{{count, number}} закупки",
+    "purchases_many": "{{count, number}} закупок",
     "status": {
       "recommended": "Рекомендуем",
       "check": "Требует проверки",
       "historical": "Из истории закупок"
     },
+    "checkReason": {
+      "roleUnconfirmed": "Роль не подтверждена",
+      "rangeUnconfirmed": "Не подтверждён ассортимент"
+    },
     "order": "по релевантности",
-    "purchases_other": "{{count}} закупки",
+    "purchases_other": "{{count, number}} закупки",
     "filtered": "Кандидаты с товаром «{{name}}»",
     "resetFilter": "Сбросить",
     "noMatch": "Ни у одного кандидата нет сведений об этом товаре.",
     "chosen": "Выбран",
-    "showMore": "Показать ещё {{count}}",
+    "showMore": "Показать ещё {{count, number}}",
     "showLess": "Свернуть список",
-    "compare": "Сравнить выбранных ({{count}})",
+    "compare": "Сравнить выбранных ({{count, number}})",
     "compareHint": "Выберите двух и более кандидатов в основаниях, чтобы сравнить их."
   },
   "evidence": {
@@ -104,10 +122,11 @@
       "registry": "Реестр"
     },
     "purchasesTitle": "Опыт закупок",
-    "purchasesSummary_one": "{{count}} похожая · побед: {{wins}}",
-    "purchasesSummary_few": "{{count}} похожие · побед: {{wins}}",
-    "purchasesSummary_many": "{{count}} похожих · побед: {{wins}}",
-    "purchasesSummary_other": "{{count}} похожей · побед: {{wins}}",
+    "purchaseLot": "Лот {{id}} · {{title}}",
+    "purchasesSummary_one": "{{count, number}} похожая · побед: {{wins, number}}",
+    "purchasesSummary_few": "{{count, number}} похожие · побед: {{wins, number}}",
+    "purchasesSummary_many": "{{count, number}} похожих · побед: {{wins, number}}",
+    "purchasesSummary_other": "{{count, number}} похожей · побед: {{wins, number}}",
     "outcome": {
       "winner": "Победитель",
       "participant": "Участник"
@@ -118,18 +137,19 @@
     "noClarify": "Существенных уточнений нет.",
     "confirmations": "Ключевые подтверждения",
     "noConfirmations": "Подтверждающих источников нет: соответствие основано на предположениях.",
-    "unmatched_one": "Нет сведений по {{count}} товару: {{names}}",
-    "unmatched_few": "Нет сведений по {{count}} товарам: {{names}}",
-    "unmatched_many": "Нет сведений по {{count}} товарам: {{names}}",
-    "unmatched_other": "Нет сведений по {{count}} товара: {{names}}",
-    "matchesAside": "{{matched}} из {{total}}",
-    "clarifyAside": "{{count}}",
+    "unmatched_one": "Нет сведений по {{count, number}} товару: {{names}}",
+    "unmatched_few": "Нет сведений по {{count, number}} товарам: {{names}}",
+    "unmatched_many": "Нет сведений по {{count, number}} товарам: {{names}}",
+    "unmatched_other": "Нет сведений по {{count, number}} товара: {{names}}",
+    "matchesAside": "{{matched, number}} из {{total, number}}",
+    "clarifyAside": "{{count, number}}",
     "choose": "Выбрать кандидата",
     "chosen": "Убрать из выбранных",
-    "profile": "Профиль компании"
+    "profile": "Профиль компании",
+    "profileShort": "Профиль"
   },
   "meter": {
-    "label": "Совпадение {{matched}} из {{total}}: наличие подтверждено — {{stock}}, в каталоге — {{catalog}}, предположение — {{inferred}}"
+    "label": "Совпадение {{matched, number}} из {{total, number}}: наличие подтверждено — {{stock, number}}, в каталоге — {{catalog, number}}, предположение — {{inferred, number}}"
   },
   "profile": {
     "requisites": "Реквизиты",

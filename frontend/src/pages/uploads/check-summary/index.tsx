@@ -2,19 +2,33 @@ import { useTranslation } from "react-i18next"
 import { FileProblem } from "@/entities/notice/file-problem"
 import { IssueList } from "@/entities/notice/issue-list"
 import type { CheckedFile, FileCheck } from "@/entities/notice/model"
+import { useFormatters } from "@/shared/i18n/formatters"
 import { Caption } from "@/shared/ui/caption"
 import { Icon } from "@/shared/ui/icon"
+import { LoadingState } from "@/shared/ui/loading-state"
+import { Bone } from "@/shared/ui/skeleton"
 import { Tag } from "@/shared/ui/tag"
 import { PreviewTable } from "../preview-table"
 import styles from "./styles.module.css"
 
 function Accepted({ check }: { readonly check: CheckedFile }) {
   const { t } = useTranslation("uploads")
+  const { number } = useFormatters()
   const rejected = check.total - check.notices.length
   const stats = [
-    { id: "total", label: t("dialog.total"), value: check.total },
-    { id: "valid", label: t("dialog.valid"), value: check.notices.length },
-    { id: "invalid", label: t("dialog.invalid"), value: rejected },
+    { id: "total", label: t("dialog.total"), value: number(check.total), attention: false },
+    {
+      id: "valid",
+      label: t("dialog.valid"),
+      value: number(check.notices.length),
+      attention: false,
+    },
+    {
+      id: "invalid",
+      label: t("dialog.invalid"),
+      value: number(rejected),
+      attention: rejected > 0,
+    },
   ]
   return (
     <>
@@ -24,7 +38,11 @@ function Accepted({ check }: { readonly check: CheckedFile }) {
       </p>
       <dl className={styles.stats}>
         {stats.map((stat) => (
-          <div key={stat.id} className={styles.stat}>
+          <div
+            key={stat.id}
+            className={styles.stat}
+            data-attention={stat.attention || undefined}
+          >
             <dt className={styles.statLabel}>{stat.label}</dt>
             <dd className={styles.statValue}>{stat.value}</dd>
           </div>
@@ -64,6 +82,22 @@ function Accepted({ check }: { readonly check: CheckedFile }) {
         </section>
       ) : null}
     </>
+  )
+}
+
+export function CheckSkeleton({ label }: { readonly label: string }) {
+  return (
+    <LoadingState label={label}>
+      <div className={styles.skeleton}>
+        <Bone className={styles.boneFile} />
+        <div className={styles.stats}>
+          <Bone className={styles.boneStat} />
+          <Bone className={styles.boneStat} />
+          <Bone className={styles.boneStat} />
+        </div>
+        <Bone className={styles.boneBlock} />
+      </div>
+    </LoadingState>
   )
 }
 

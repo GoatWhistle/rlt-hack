@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useUploads } from "@/entities/upload/queries"
 import { ErrorState } from "@/shared/ui/error-state"
-import { LoadingState } from "@/shared/ui/loading-state"
+import { PageSkeleton } from "@/shared/ui/skeleton"
 import { Intro } from "./intro"
 import styles from "./styles.module.css"
 import { UploadDialog } from "./upload-dialog"
@@ -23,7 +23,7 @@ export function UploadsPage() {
     setDialog((current) => ({ open: true, file, session: current.session + 1 }))
   }
 
-  if (uploads.isPending) return <LoadingState label={t("state.loading")} />
+  if (uploads.isPending) return <PageSkeleton label={t("state.loading")} rows={3} />
   if (uploads.isError) {
     return (
       <ErrorState error={uploads.error} headingLevel={1} onRetry={() => uploads.refetch()} />

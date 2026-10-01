@@ -92,6 +92,11 @@ describe("jsx text", () => {
     expect(jsxText.check([file("src/a.tsx", source)])).toEqual([])
   })
 
+  it("accepts an empty alt on a decorative image", () => {
+    const source = 'export const A = () => <img src={flag} alt="" title={t("a")} />\n'
+    expect(jsxText.check([file("src/a.tsx", source)])).toEqual([])
+  })
+
   it("ignores tests and plain modules", () => {
     expect(
       jsxText.check([

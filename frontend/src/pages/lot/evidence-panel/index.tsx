@@ -37,12 +37,22 @@ export function EvidencePanel({
       ) : null}
       <ClarifyBlock items={company.clarify} />
       <div className={styles.actions}>
-        <Button variant={chosen ? "secondary" : "strong"} onClick={onChoose}>
+        <Button
+          variant={chosen ? "secondary" : "primary"}
+          className={styles.action}
+          onClick={onChoose}
+        >
           {chosen ? <Icon name="check" /> : null}
           {chosen ? t("evidence.chosen") : t("evidence.choose")}
         </Button>
-        <Button variant="secondary" onClick={onProfile}>
-          {t("evidence.profile")}
+        <Button
+          variant="secondary"
+          className={styles.action}
+          aria-label={t("evidence.profile")}
+          onClick={onProfile}
+        >
+          <span className={styles.full}>{t("evidence.profile")}</span>
+          <span className={styles.short}>{t("evidence.profileShort")}</span>
         </Button>
       </div>
     </article>

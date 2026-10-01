@@ -11,6 +11,9 @@ export const PURCHASE_LIMIT = 3
 function PurchaseRow({ purchase }: { readonly purchase: Purchase }) {
   const { t } = useTranslation("lot")
   const winner = purchase.outcome === "winner"
+  const title = purchase.lotId
+    ? t("evidence.purchaseLot", { id: purchase.lotId, title: purchase.title })
+    : purchase.title
   return (
     <div className={styles.row}>
       <span className={styles.year}>{purchase.year}</span>
@@ -20,10 +23,10 @@ function PurchaseRow({ purchase }: { readonly purchase: Purchase }) {
       />
       {purchase.source ? (
         <a href={purchase.source.url} className={styles.title}>
-          {purchase.title}
+          {title}
         </a>
       ) : (
-        <span className={styles.title}>{purchase.title}</span>
+        <span className={styles.title}>{title}</span>
       )}
       <span className={styles.outcome}>{t(`evidence.outcome.${purchase.outcome}`)}</span>
     </div>
@@ -48,7 +51,7 @@ export function PurchaseBlock({ company }: { readonly company: Company }) {
         <CollapsibleList
           items={company.purchases}
           limit={PURCHASE_LIMIT}
-          itemKey={(purchase) => purchase.title}
+          itemKey={(purchase) => `${purchase.lotId ?? ""}:${purchase.title}`}
           renderItem={(purchase) => <PurchaseRow purchase={purchase} />}
         />
       ) : (

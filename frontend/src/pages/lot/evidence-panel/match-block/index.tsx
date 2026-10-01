@@ -2,16 +2,17 @@ import { clsx } from "clsx"
 import { useTranslation } from "react-i18next"
 import type { Company, MatchBasis, Product, Source } from "@/entities/recommendation/model"
 import { Caption } from "@/shared/ui/caption"
+import { Icon } from "@/shared/ui/icon"
 import { Stack } from "@/shared/ui/stack"
 import { Fold } from "../fold"
 import { SourceLine } from "../source-line"
 import styles from "./styles.module.css"
 
 const BASIS_ORDER: Record<MatchBasis, number> = { stock: 0, catalog: 1, inferred: 2 }
-const BASIS_STYLES: Record<MatchBasis, { swatch?: string; label?: string }> = {
-  stock: { swatch: styles.stock, label: styles.stockLabel },
-  catalog: { swatch: styles.catalog },
-  inferred: { swatch: styles.inferred, label: styles.inferredLabel },
+const BASIS_STYLES: Record<MatchBasis, { marker?: string; label?: string }> = {
+  stock: { marker: styles.stock, label: styles.stockLabel },
+  catalog: { marker: styles.catalog },
+  inferred: { marker: styles.inferred, label: styles.inferredLabel },
 }
 
 export type MatchRowData = {
@@ -35,7 +36,9 @@ export function MatchRow({ row }: { readonly row: MatchRowData }) {
   const look = row.basis ? BASIS_STYLES[row.basis] : {}
   return (
     <div className={styles.row}>
-      <span className={clsx(styles.swatch, look.swatch)} aria-hidden="true" />
+      <span className={clsx(styles.marker, look.marker)} aria-hidden="true">
+        {row.basis === "stock" ? <Icon name="check" size="sm" /> : null}
+      </span>
       <div className={styles.body}>
         <div className={styles.head}>
           <span className={styles.product}>{row.product.name}</span>

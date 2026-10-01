@@ -1,7 +1,7 @@
 import type { Recommendation } from "@/entities/recommendation/model"
 
 export const LONG_NAME =
-  "South Trade House of Food Systems for the North-Western Region and Neighbouring Areas"
+  "South Trade House of Food Systems for the North-Western Region and Neighboring Areas"
 
 export const recommendationFixture: Recommendation = {
   fileName: "lot.xlsx",
@@ -14,9 +14,15 @@ export const recommendationFixture: Recommendation = {
       name: "Sugar",
       okpd2: "10.81.12",
       origin: "inferred",
-      originNote: "Seen in 8 of 10 similar purchases.",
+      originNote: { code: "similarPurchases", hits: 8, total: 10 },
     },
-    { id: "tea", name: "Tea", okpd2: "10.83.13", origin: "user" },
+    {
+      id: "tea",
+      name: "Tea",
+      okpd2: "10.83.13",
+      origin: "user",
+      originNote: { code: "userSpecified" },
+    },
     { id: "salt", name: "Salt", okpd2: "10.84.30", origin: "notice" },
     { id: "oil", name: "Oil", okpd2: "10.41.54", origin: "notice" },
   ],
@@ -25,9 +31,9 @@ export const recommendationFixture: Recommendation = {
       id: "north",
       name: "North Foods",
       inn: "7800000011",
-      role: "Supplier",
+      role: "supplier",
       status: "recommended",
-      summary: "Covers most items by catalogue.",
+      summary: "Covers most items by catalog.",
       matches: [
         { productId: "sugar", basis: "inferred" },
         {
@@ -60,7 +66,8 @@ export const recommendationFixture: Recommendation = {
       wins: 4,
       purchases: [
         {
-          title: "Lot 42",
+          lotId: "42",
+          title: "Food supply",
           year: 2024,
           outcome: "winner",
           source: { kind: "purchase", title: "Protocol 42", url: "#42" },
@@ -79,9 +86,9 @@ export const recommendationFixture: Recommendation = {
       id: "south",
       name: LONG_NAME,
       inn: "7800000022",
-      role: "Role not determined",
+      role: "unknown",
       status: "check",
-      checkReason: "Range not confirmed",
+      checkReason: "rangeUnconfirmed",
       summary: "Only tea was found.",
       matches: [{ productId: "tea", basis: "inferred" }],
       similarPurchases: 1,
@@ -93,7 +100,7 @@ export const recommendationFixture: Recommendation = {
       id: "west",
       name: "West Trade",
       inn: "7800000033",
-      role: "Distributor",
+      role: "distributor",
       status: "check",
       summary: "Partial match.",
       matches: [{ productId: "missing", basis: "catalog" }],

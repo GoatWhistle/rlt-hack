@@ -10,6 +10,25 @@ export type MatchBasis = (typeof MATCH_BASES)[number]
 export const SOURCE_KINDS = ["catalog", "price", "purchase", "registry"] as const
 export type SourceKind = (typeof SOURCE_KINDS)[number]
 
+export const COMPANY_ROLES = [
+  "manufacturer",
+  "distributor",
+  "supplier",
+  "supplierDistributor",
+  "unknown",
+] as const
+export type CompanyRole = (typeof COMPANY_ROLES)[number]
+
+export const CHECK_REASONS = ["roleUnconfirmed", "rangeUnconfirmed"] as const
+export type CheckReason = (typeof CHECK_REASONS)[number]
+
+export const ORIGIN_NOTE_CODES = ["similarPurchases", "userSpecified"] as const
+export type OriginNoteCode = (typeof ORIGIN_NOTE_CODES)[number]
+
+export type OriginNote =
+  | { readonly code: "similarPurchases"; readonly hits: number; readonly total: number }
+  | { readonly code: "userSpecified" }
+
 export const PURCHASE_OUTCOMES = ["winner", "participant"] as const
 export type PurchaseOutcome = (typeof PURCHASE_OUTCOMES)[number]
 
@@ -25,7 +44,7 @@ export type Product = {
   readonly name: string
   readonly okpd2: string
   readonly origin: ProductOrigin
-  readonly originNote?: string
+  readonly originNote?: OriginNote
 }
 
 export type ProductMatch = {
@@ -35,6 +54,7 @@ export type ProductMatch = {
 }
 
 export type Purchase = {
+  readonly lotId?: string
   readonly title: string
   readonly year: number
   readonly outcome: PurchaseOutcome
@@ -63,14 +83,11 @@ export type Company = {
   readonly id: string
   readonly name: string
   readonly inn: string
-  readonly role: string
+  readonly role: CompanyRole
   readonly roleSource?: Source
   readonly contacts?: Contacts
   readonly status: CompanyStatus
-  readonly history?: History
-  readonly catalog?: readonly CatalogOffer[]
-  readonly identitySource?: string
-  readonly checkReason?: string
+  readonly checkReason?: CheckReason
   readonly summary: string
   readonly matches: readonly ProductMatch[]
   readonly similarPurchases: number | null

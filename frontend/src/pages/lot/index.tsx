@@ -1,16 +1,18 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useParams } from "react-router"
+import { useUploadGateway } from "@/entities/upload/gateway-context"
 import { filtered, pageForIndex, readQuery, writeQuery } from "@/entities/upload/list-query"
 import { useLot, useUpload } from "@/entities/upload/queries"
 import { ExportDialog } from "@/features/export-results"
 import { isApiError } from "@/shared/api/api-error"
 import { lotPath, UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
+import { useLocale } from "@/shared/i18n/locale-provider"
 import { ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
-import { LoadingState } from "@/shared/ui/loading-state"
 import { LotHeader, type Neighbours } from "./lot-header"
+import { LotSkeleton } from "./lot-skeleton"
 import styles from "./styles.module.css"
 import { Workspace } from "./workspace"
 
@@ -21,13 +23,16 @@ export function LotPage() {
   const query = readQuery(new URLSearchParams(location.search))
   const lot = useLot(uploadId, lotId)
   const upload = useUpload(uploadId)
+  const gateway = useUploadGateway()
+  const { locale } = useLocale()
   const [exporting, setExporting] = useState({ open: false, session: 0 })
 
-  if (lot.isPending) return <LoadingState label={t("loading")} />
+  if (lot.isPending) return <LotSkeleton label={t("loading")} />
   if (lot.isError) {
     if (isApiError(lot.error) && lot.error.status === 404) {
       return (
         <EmptyState
+          icon="search"
           title={t("missing.title")}
           description={t("missing.text")}
           actions={
@@ -49,7 +54,7 @@ export function LotPage() {
   }
 
   const { upload: summary, lot: current, recommendation } = lot.data
-  const list = upload.data ? filtered(upload.data.lots, query) : []
+  const list = upload.data ? filtered(upload.data.lots, query, locale) : []
   const index = list.findIndex((item) => item.id === current.id)
   const listSearch = writeQuery({ ...query, page: pageForIndex(index) })
   const link = (target: number) => {
@@ -80,7 +85,12 @@ export function LotPage() {
           recommendation={recommendation}
         />
       ) : (
-        <EmptyState headingLevel={2} title={t("queued.title")} description={t("queued.text")} />
+        <EmptyState
+          icon="clock"
+          headingLevel={2}
+          title={t("queued.title")}
+          description={t("queued.text")}
+        />
       )}
       <ExportDialog
         key={exporting.session}

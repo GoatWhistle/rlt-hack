@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react"
+import { fireEvent, screen, waitFor, within } from "@testing-library/react"
 import { en } from "@tests/support/dictionaries"
 import {
   lotSummary,
@@ -8,7 +8,7 @@ import {
   uploadSummary,
 } from "@tests/support/gateway"
 import { describe, expect, it, vi } from "vitest"
-import { SAMPLE_PATH } from "@/pages/uploads/intro"
+import { SAMPLE_PATH } from "@/pages/uploads/format-help"
 
 const CSV = [
   "lot_id;procedure_name;start_price;extra",
@@ -34,10 +34,27 @@ describe("the first visit", () => {
       "href",
       SAMPLE_PATH,
     )
+    const zone = screen.getByRole("region", { name: en("drop.title", "uploads") })
+    fireEvent.dragOver(zone)
+    expect(zone).toHaveAttribute("data-dragging")
+    expect(within(zone).getByText(en("drop.release", "uploads"))).toBeInTheDocument()
+    const leave = (to: Element) =>
+      fireEvent(zone, new MouseEvent("dragleave", { bubbles: true, relatedTarget: to }))
+    leave(within(zone).getByText(en("drop.hint", "uploads")))
+    expect(zone).toHaveAttribute("data-dragging")
+    leave(document.body)
+    expect(zone).not.toHaveAttribute("data-dragging")
     await user.upload(screen.getByLabelText(en("drop.choose", "uploads")), csv())
 
     const dialog = await screen.findByRole("dialog", { name: en("dialog.title", "uploads") })
     expect(await within(dialog).findByText("notices.csv")).toBeInTheDocument()
+    const invalid = within(dialog).getByText(en("dialog.invalid", "uploads")).parentElement
+    expect(invalid).toHaveAttribute("data-attention")
+    expect(
+      within(dialog)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual([en("action.close"), en("dialog.otherFile", "uploads"), "Process 2 purchases"])
     const steps = within(dialog).getByRole("list", {
       name: en("dialog.steps.label", "uploads"),
     })
@@ -114,7 +131,9 @@ describe("the list of uploads", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: en("list.title", "uploads") }),
     ).toBeInTheDocument()
+    expect(screen.getByText(en("list.columns.results", "uploads"))).toBeInTheDocument()
     const done = screen.getByRole("link", { name: /done\.csv/ })
+    expect(within(done).getByText("3 notices")).toBeInTheDocument()
     expect(done).toHaveAttribute("href", "/uploads/a")
     expect(within(done).getByText(en("list.done", "uploads"))).toBeInTheDocument()
     expect(within(done).getByText("2 rows with errors were not processed")).toBeInTheDocument()
@@ -127,6 +146,13 @@ describe("the list of uploads", () => {
     expect(within(dialog).getByLabelText(en("drop.choose", "uploads"))).toBeInTheDocument()
     await user.click(within(dialog).getByRole("button", { name: en("action.close") }))
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
+  })
+
+  it("shows a skeleton of the page while the list loads", async () => {
+    renderPage("/uploads", stubGateway({ list: vi.fn(() => new Promise<never>(() => {})) }))
+    const status = await screen.findByRole("status")
+    expect(status).toHaveAttribute("aria-busy", "true")
+    expect(status).toHaveTextContent(en("state.loading"))
   })
 
   it("offers a retry when the list cannot load", async () => {

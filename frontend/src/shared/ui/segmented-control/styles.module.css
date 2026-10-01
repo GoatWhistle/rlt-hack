@@ -42,3 +42,42 @@
   font-variant-numeric: tabular-nums;
   opacity: 0.75;
 }
+
+.scroll {
+  flex-wrap: nowrap;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+.scroll .option {
+  flex: none;
+  white-space: nowrap;
+}
+
+.block {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  border-color: transparent;
+  background: var(--surface-subtle);
+}
+
+.block .option {
+  flex: 1 1 0;
+  justify-content: center;
+  min-width: 0;
+  padding-inline: var(--space-2);
+  border: var(--line-width) solid transparent;
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
+}
+
+.block .option:has(:checked) {
+  border-color: var(--line-hairline);
+  background: var(--surface-base);
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+}

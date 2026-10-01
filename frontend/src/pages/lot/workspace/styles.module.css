@@ -1,6 +1,6 @@
 .columns {
   display: grid;
-  grid-template-columns: minmax(0, 25fr) minmax(0, 30fr) minmax(0, 45fr);
+  grid-template-columns: var(--pane-products) var(--pane-companies) minmax(0, 1fr);
   align-items: start;
   gap: var(--space-4);
 }
@@ -9,13 +9,36 @@
   min-width: 0;
 }
 
+@media (min-width: 75rem) {
+  .columns .pane {
+    position: sticky;
+    inset-block-start: var(--pane-offset);
+    max-height: calc(100dvh - 2 * var(--pane-offset));
+    margin: calc(-1 * var(--space-1));
+    padding: var(--space-1);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+}
+
 .products {
   container-type: inline-size;
 }
 
 .stacked {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
+}
+
+.switcher {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 2;
+  margin-inline: calc(-1 * var(--layout-gutter));
+  padding: var(--space-2) var(--layout-gutter);
+  border-block-end: var(--line-width) solid var(--line-hairline);
+  background: var(--surface-canvas);
 }
 
 .empty {

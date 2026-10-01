@@ -9,13 +9,25 @@
 }
 
 .head th {
-  padding: var(--space-3) var(--space-4);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 2;
+  padding: var(--space-2) var(--space-4);
   border-block-end: var(--line-width) solid var(--line-hairline);
+  background: var(--surface-base);
   color: var(--text-secondary);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   text-align: start;
   white-space: nowrap;
+}
+
+.head th:first-child {
+  border-start-start-radius: var(--radius-lg);
+}
+
+.head th:last-child {
+  border-start-end-radius: var(--radius-lg);
 }
 
 .row {
@@ -33,32 +45,58 @@
   border-block-end: 0;
 }
 
+.row:has(:focus-visible) {
+  background: var(--surface-raised);
+}
+
 .row[data-selected="true"] {
   background: var(--accent-tint);
 }
 
 .check {
+  width: var(--target-touch);
+}
+
+.head .check,
+.row .check {
+  padding: 0 0 0 var(--space-2);
+}
+
+.row .check {
   position: relative;
   z-index: 1;
+}
+
+.boxArea {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: var(--target-touch);
+  min-height: var(--target-touch);
+  cursor: pointer;
 }
 
 .box {
   width: var(--checkbox-size);
   height: var(--checkbox-size);
+  margin: 0;
   accent-color: var(--accent);
+  cursor: pointer;
 }
 
 .lot {
-  width: 50%;
+  width: 100%;
+  min-width: 18rem;
 }
 
 .link {
   display: block;
   color: var(--text-primary);
   font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
   text-decoration: none;
   overflow-wrap: anywhere;
+  transition: var(--transition-control);
 }
 
 .link::after {
@@ -67,15 +105,26 @@
   content: "";
 }
 
+.link:focus-visible {
+  outline: none;
+  color: var(--accent-strong);
+}
+
+.link:focus-visible::after {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: calc(var(--focus-ring-width) * -1);
+}
+
 .meta {
   display: block;
   margin-block-start: var(--space-1);
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: var(--text-xs);
 }
 
 .code {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .table .number {
@@ -85,12 +134,21 @@
 }
 
 .status {
+  width: 11rem;
   white-space: nowrap;
+}
+
+.compact {
+  display: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .row:hover {
     background: var(--surface-raised);
+  }
+
+  .row[data-selected="true"]:hover {
+    background: var(--accent-soft);
   }
 
   .row:hover .link {
@@ -109,35 +167,49 @@
   }
 
   .row {
-    display: grid;
-    grid-template-columns: var(--target-touch) minmax(0, 1fr);
-    gap: var(--space-1) 0;
-    padding-block: var(--space-2);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4) var(--space-3) var(--target-touch);
     border-block-end: var(--line-width) solid var(--line-subtle);
   }
 
-  .row td {
-    padding: 0 var(--space-3);
+  .row:last-child {
     border-block-end: 0;
   }
 
-  .check {
-    grid-row: span 5;
-    padding-block-start: var(--space-1);
+  .row td {
+    padding: 0;
+    border-block-end: 0;
+  }
+
+  .row .check {
+    position: absolute;
+    inset-block-start: var(--space-1);
+    inset-inline-start: 0;
+    padding: 0;
   }
 
   .lot {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .status {
     width: auto;
   }
 
-  .number {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--space-3);
+  .wide {
+    display: none;
   }
 
-  .number::before {
+  .compact {
+    display: block;
+    flex: 1 1 100%;
+    min-width: 0;
     color: var(--text-secondary);
-    content: attr(data-label);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
   }
 }

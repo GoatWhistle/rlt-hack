@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next"
 import type { Company, Product } from "@/entities/recommendation/model"
+import { useFormatters } from "@/shared/i18n/formatters"
 import { Icon } from "@/shared/ui/icon"
 import { Stack } from "@/shared/ui/stack"
 import { Block } from "../block"
@@ -15,6 +16,7 @@ export type ConfirmationsProps = {
 
 export function Confirmations({ company, products }: ConfirmationsProps) {
   const { t } = useTranslation("lot")
+  const { list } = useFormatters()
   const rows = matchRows(company, products)
   const confirmed = rows.filter((row) => row.basis && row.source).slice(0, KEY_CONFIRMATIONS)
   const missing = rows.filter((row) => !row.basis).map((row) => row.product.name)
@@ -37,7 +39,7 @@ export function Confirmations({ company, products }: ConfirmationsProps) {
       {missing.length > 0 ? (
         <p className={styles.warning}>
           <Icon name="warning" size="sm" tone="warning" />
-          {t("evidence.unmatched", { count: missing.length, names: missing.join(", ") })}
+          {t("evidence.unmatched", { count: missing.length, names: list(missing) })}
         </p>
       ) : null}
     </Block>

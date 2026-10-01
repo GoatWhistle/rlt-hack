@@ -21,7 +21,7 @@ function extraCompanies(count: number): Company[] {
     id: `extra-${index}`,
     name: `Extra ${index}`,
     inn: `78000009${index}0`,
-    role: "Supplier",
+    role: "supplier",
     status: "recommended",
     summary: "Extra.",
     matches: [{ productId: "rice", basis: "catalog" }],
@@ -38,15 +38,16 @@ describe("the candidates column", () => {
     const companies = screen.getByRole("region", { name: en("companies.title", "lot") })
     const north = within(companies).getByRole("button", { name: /North Foods/ })
     expect(north).toHaveAttribute("aria-pressed", "true")
-    expect(within(north).getByText("5 of 5 · 11 purchases")).toBeInTheDocument()
+    expect(within(north).getByText("11 purchases")).toBeInTheDocument()
+    expect(within(north).getByText("5/5")).toHaveAttribute("aria-hidden", "true")
     expect(
       within(north).getByRole("img", {
-        name: "Match 5 of 5: stock confirmed — 1, in the catalogue — 3, assumed — 1",
+        name: "Match 5 of 5: stock confirmed — 1, in the catalog — 3, assumed — 1",
       }),
     ).toBeInTheDocument()
     expect(within(north).getByText("01")).toBeInTheDocument()
     const south = within(companies).getByRole("button", { name: new RegExp(LONG_NAME) })
-    expect(within(south).getByText("Range not confirmed")).toBeInTheDocument()
+    expect(within(south).getByText("Product range not confirmed")).toBeInTheDocument()
     const west = within(companies).getByRole("button", { name: /West Trade/ })
     expect(within(west).getByText(en("companies.status.check", "lot"))).toBeInTheDocument()
     expect(within(companies).getByText(en("companies.compareHint", "lot"))).toBeInTheDocument()
@@ -73,7 +74,7 @@ describe("the grounds panel", () => {
   it("leads with the reason, the main caveat and key confirmations with sources", async () => {
     await openLot()
     const grounds = panel("North Foods")
-    expect(within(grounds).getByText("Tax ID 7800000011")).toBeInTheDocument()
+    expect(within(grounds).getByText("INN 7800000011")).toBeInTheDocument()
     expect(within(grounds).getByText("5/5")).toBeInTheDocument()
     expect(
       within(grounds).getByRole("heading", {
@@ -105,7 +106,10 @@ describe("the grounds panel", () => {
     expect(within(grounds).getByText(en("evidence.basis.inferred", "lot"))).toBeVisible()
     expect(within(grounds).getByText(en("evidence.noSource", "lot"))).toBeVisible()
     await user.click(within(grounds).getByText(en("evidence.purchasesTitle", "lot")))
-    expect(within(grounds).getByRole("link", { name: "Lot 42" })).toHaveAttribute("href", "#42")
+    expect(within(grounds).getByRole("link", { name: "Lot 42 · Food supply" })).toHaveAttribute(
+      "href",
+      "#42",
+    )
     expect(within(grounds).getByText(en("evidence.purchasesNote", "lot"))).toBeVisible()
     await user.click(within(grounds).getByText(en("evidence.clarifyTitle", "lot")))
     expect(within(grounds).getByRole("checkbox", { name: "Delivery terms." })).not.toBeChecked()
@@ -123,7 +127,7 @@ describe("the grounds panel", () => {
     ).toBeInTheDocument()
     expect(within(grounds).getByText(en("evidence.noConfirmations", "lot"))).toBeInTheDocument()
     expect(
-      within(grounds).getByText("No records for 4 products: Rice, Sugar, Salt, Oil"),
+      within(grounds).getByText("No records for 4 products: Rice, Sugar, Salt, and Oil"),
     ).toBeInTheDocument()
     await user.click(within(grounds).getByText(en("evidence.purchasesTitle", "lot")))
     expect(within(grounds).getByText(en("evidence.noPurchases", "lot"))).toBeVisible()
@@ -148,15 +152,17 @@ describe("choosing, comparing and the profile", () => {
     await user.click(screen.getByRole("button", { name: "Compare chosen (2)" }))
     const dialog = await screen.findByRole("dialog", { name: en("compare.title", "lot") })
     const table = within(dialog).getByRole("table")
-    expect(
-      within(table)
-        .getAllByRole("columnheader")
-        .map((cell) => cell.textContent),
-    ).toEqual([en("compare.criterion", "lot"), "North Foods", "West Trade"])
+    const headers = within(table).getAllByRole("columnheader")
+    expect(headers.map((cell) => cell.firstChild?.textContent)).toEqual([
+      en("compare.criterion", "lot"),
+      "North Foods",
+      "West Trade",
+    ])
+    expect(headers[1]).toHaveTextContent(en("companies.role.supplier", "lot"))
     const missing = within(table)
       .getByRole("rowheader", { name: en("compare.missing", "lot") })
       .closest("tr")
-    expect(missing).toHaveTextContent("Rice, Sugar, Tea, Salt, Oil")
+    expect(missing).toHaveTextContent("Rice, Sugar, Tea, Salt, and Oil")
     expect(
       within(table)
         .getByRole("rowheader", { name: en("compare.contacts", "lot") })
@@ -220,11 +226,17 @@ describe("on a narrow screen", () => {
       removeEventListener: vi.fn(),
     }))
     Object.assign(window, { matchMedia })
+    const scrollBy = vi.fn()
+    Object.assign(window, { scrollBy })
     const { user } = await openLot()
     expect(matchMedia).toHaveBeenCalledWith(NARROW_LAYOUT)
     expect(screen.getByRole("radio", { name: en("views.evidence", "lot") })).toBeChecked()
     expect(screen.queryByRole("region", { name: en("products.title", "lot") })).toBeNull()
+    const stack = screen.getByRole("group", { name: en("views.legend", "lot") }).parentElement
+      ?.parentElement as HTMLElement
+    vi.spyOn(stack, "getBoundingClientRect").mockReturnValue({ top: -120 } as DOMRect)
     await user.click(screen.getByRole("radio", { name: en("views.products", "lot") }))
+    expect(scrollBy).toHaveBeenCalledWith({ top: -120 })
     await user.click(screen.getByRole("button", { name: "Show candidates with “Tea”" }))
     expect(screen.getByRole("radio", { name: en("views.companies", "lot") })).toBeChecked()
     await user.click(screen.getByRole("button", { name: new RegExp(LONG_NAME) }))

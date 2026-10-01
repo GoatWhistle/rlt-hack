@@ -15,8 +15,12 @@
   --leading-normal: 1.5;
   --leading-relaxed: 1.6;
   --tracking-tight: -0.02em;
+  --tracking-brand: -0.06em;
+  --text-brand: 2rem;
+  --gap-brand: 0.23em;
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
   --weight-bold: 700;
+  --text-page-title: clamp(1.75rem, 1.3rem + 1.1vw, 2.25rem);
 }

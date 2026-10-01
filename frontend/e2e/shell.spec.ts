@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, test } from "@playwright/test"
 import { installApiFixture } from "./api-fixture"
+import { chooseLanguage } from "./language"
 
 test.beforeEach(async ({ page }) => installApiFixture(page))
 
@@ -23,9 +24,9 @@ test.describe("application shell", () => {
 
   test("switches language and remembers it after a reload", async ({ page }) => {
     await page.goto("/")
-    await page.getByRole("radio", { name: /^(english)$/i }).check()
+    await chooseLanguage(page, /^english$/i)
     await expect(page.locator("html")).toHaveAttribute("lang", "en")
-    await page.getByRole("radio", { name: /^(русский)$/i }).check()
+    await chooseLanguage(page, /^русский$/i)
     await page.reload()
     await expect(page.locator("html")).toHaveAttribute("lang", "ru")
   })

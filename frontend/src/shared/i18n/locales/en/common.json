@@ -1,8 +1,9 @@
 {
   "app": {
-    "name": "Supplier search",
+    "name": "LOTIVE",
     "skipToContent": "Skip to content",
-    "mainNavigation": "Main navigation"
+    "mainNavigation": "Main navigation",
+    "repository": "Source code on GitHub"
   },
   "nav": {
     "uploads": "Uploads",
@@ -14,12 +15,14 @@
     "retry": "Try again",
     "reload": "Reload the page",
     "home": "Go to uploads",
+    "lots": "Go to purchases",
     "back": "Go back",
-    "showAll": "Show all {{count}}",
+    "showAll": "Show all {{count, number}}",
     "showLess": "Show less"
   },
   "language": {
     "legend": "Interface language",
+    "current": "Language: {{name}}",
     "ru": "Русский",
     "en": "English"
   },
@@ -31,8 +34,7 @@
     "description": "The address is outdated or contains a typo. Check the link or go back to uploads."
   },
   "routeError": {
-    "title": "The page could not open",
-    "description": "Please try again. If the error repeats, report the code below."
+    "title": "The page could not open"
   },
   "updateRequired": {
     "title": "A new version is available",

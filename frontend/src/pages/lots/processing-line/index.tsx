@@ -11,30 +11,34 @@ export function ProcessingLine({ upload }: { readonly upload: UploadDetail }) {
   const { t } = useTranslation("lots")
   const running = isProcessing(upload)
   return (
-    <section className={styles.line} aria-label={t("processing.label")}>
+    <div className={styles.line}>
       <div className={styles.progress}>
         {running ? (
-          <>
+          <span className={styles.bar}>
+            <ProgressBar
+              label={t("processing.label")}
+              value={upload.processed}
+              max={upload.total}
+            />
+          </span>
+        ) : null}
+        <p role="status" className={styles.status}>
+          {running ? (
             <span className={styles.text}>
               {t("processing.running", { processed: upload.processed, total: upload.total })}
             </span>
-            <span className={styles.bar}>
-              <ProgressBar
-                label={t("processing.label")}
-                value={upload.processed}
-                max={upload.total}
-              />
-            </span>
-          </>
-        ) : (
-          <DoneNote>{t("processing.done", { count: upload.total })}</DoneNote>
-        )}
+          ) : (
+            <DoneNote>{t("processing.done", { count: upload.total })}</DoneNote>
+          )}
+        </p>
       </div>
+      {running ? <Caption>{t("processing.hint")}</Caption> : null}
       {upload.issues.length > 0 ? (
         <details className={styles.issues}>
           <summary className={styles.summary}>
             <Icon name="warning" size="sm" tone="warning" />
             {t("rejected", { count: upload.rejected })}
+            <Icon name="chevron" size="sm" />
           </summary>
           <div className={styles.issueBody}>
             <Caption>{t("rejectedNote")}</Caption>
@@ -42,6 +46,6 @@ export function ProcessingLine({ upload }: { readonly upload: UploadDetail }) {
           </div>
         </details>
       ) : null}
-    </section>
+    </div>
   )
 }

@@ -30,6 +30,7 @@
 
 .side {
   width: min(var(--drawer-width), 100vw);
+  max-width: 100vw;
   max-height: none;
   height: 100dvh;
   margin: 0 0 0 auto;
@@ -55,9 +56,26 @@
   line-height: var(--leading-tight);
 }
 
+.title:focus {
+  outline: none;
+}
+
 .footer {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--space-3);
+}
+
+.footer > :last-child {
+  margin-inline-start: auto;
+}
+
+.side .footer {
+  position: sticky;
+  inset-block-end: 0;
+  margin: 0 calc(-1 * var(--space-5)) calc(-1 * var(--space-5));
+  padding: var(--space-3) var(--space-5);
+  border-block-start: var(--line-width) solid var(--line-hairline);
+  background: var(--surface-base);
 }

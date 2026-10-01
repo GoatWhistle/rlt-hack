@@ -1,5 +1,5 @@
 .panel {
-  overflow: hidden;
+  overflow: clip;
   border: var(--line-width) solid var(--line-hairline);
   border-radius: var(--radius-xl);
   background: var(--surface-base);
@@ -7,10 +7,41 @@
 }
 
 .actions {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  padding: var(--space-4) var(--space-5);
-  border-block-start: var(--line-width) solid var(--line-subtle);
-  background: var(--surface-raised);
+  padding: var(--space-3) var(--space-5);
+  border-block-start: var(--line-width) solid var(--line-hairline);
+  background: var(--surface-base);
+}
+
+.action {
+  white-space: nowrap;
+}
+
+.short {
+  display: none;
+}
+
+@media (max-width: 30rem) {
+  .actions {
+    flex-wrap: nowrap;
+    padding-inline: var(--space-3);
+  }
+
+  .action {
+    flex: 1 1 auto;
+    padding-inline: var(--space-3);
+  }
+
+  .full {
+    display: none;
+  }
+
+  .short {
+    display: inline;
+  }
 }

@@ -34,6 +34,7 @@ export function Dialog({
   const { t } = useTranslation()
   const titleId = useId()
   const ref = useRef<HTMLDialogElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
   const { isMounted, state, onAnimationEnd } = usePresence(open)
 
   useEffect(() => {
@@ -47,7 +48,10 @@ export function Dialog({
   useEffect(() => {
     const dialog = ref.current
     if (!isMounted || !dialog) return
-    if (!dialog.open) dialog.showModal()
+    if (!dialog.open) {
+      dialog.showModal()
+      titleRef.current?.focus()
+    }
     const closeOnBackdrop = (event: MouseEvent) => {
       if (event.target === dialog) onClose()
     }
@@ -72,15 +76,15 @@ export function Dialog({
       onAnimationEnd={onAnimationEnd}
     >
       <div className={styles.panel}>
-        <h2 id={titleId} className={styles.title}>
+        <h2 ref={titleRef} id={titleId} tabIndex={-1} className={styles.title}>
           {title}
         </h2>
         {children}
         <div className={styles.footer}>
-          {footer}
           <Button variant="secondary" onClick={onClose}>
             {t("action.close")}
           </Button>
+          {footer}
         </div>
       </div>
     </dialog>

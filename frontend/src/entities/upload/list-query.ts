@@ -1,3 +1,4 @@
+import { LOCALE_TAGS, type Locale } from "@/shared/i18n/locale"
 import type { LotStatus, LotSummary, ResultStatus } from "./model"
 
 export const PAGE_SIZE = 20
@@ -29,11 +30,11 @@ export function writeQuery(query: ListQuery): string {
   return search ? `?${search}` : ""
 }
 
-function matchesSearch(lot: LotSummary, search: string): boolean {
-  const needle = search.trim().toLocaleLowerCase()
+function matchesSearch(lot: LotSummary, search: string, tag: string): boolean {
+  const needle = search.trim().toLocaleLowerCase(tag)
   if (!needle) return true
   return [lot.title, lot.subject, lot.customerInn, lot.id].some((value) =>
-    value?.toLocaleLowerCase().includes(needle),
+    value?.toLocaleLowerCase(tag).includes(needle),
   )
 }
 
@@ -41,12 +42,23 @@ function matchesFilter(status: LotStatus, filter: Filter): boolean {
   return filter === "all" || status === filter
 }
 
-export function searched(lots: readonly LotSummary[], search: string): LotSummary[] {
-  return lots.filter((lot) => matchesSearch(lot, search))
+export function searched(
+  lots: readonly LotSummary[],
+  search: string,
+  locale: Locale,
+): LotSummary[] {
+  const tag = LOCALE_TAGS[locale]
+  return lots.filter((lot) => matchesSearch(lot, search, tag))
 }
 
-export function filtered(lots: readonly LotSummary[], query: ListQuery): LotSummary[] {
-  return searched(lots, query.search).filter((lot) => matchesFilter(lot.status, query.filter))
+export function filtered(
+  lots: readonly LotSummary[],
+  query: ListQuery,
+  locale: Locale,
+): LotSummary[] {
+  return searched(lots, query.search, locale).filter((lot) =>
+    matchesFilter(lot.status, query.filter),
+  )
 }
 
 export function filterCounts(lots: readonly LotSummary[]): Record<Filter, number> {

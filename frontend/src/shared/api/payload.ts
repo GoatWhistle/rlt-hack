@@ -68,6 +68,15 @@ export function oneOf<T extends string>(
   return found
 }
 
+export function optionalOneOf<T extends string>(
+  options: readonly T[],
+  fields: Fields,
+  key: string,
+  path: string,
+): T | undefined {
+  return absent(fields[key]) ? undefined : oneOf(options, fields, key, path)
+}
+
 export function plainText(value: unknown, path: string): string {
   if (typeof value !== "string") throw new PayloadFormatError(path)
   return value

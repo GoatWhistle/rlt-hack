@@ -16,7 +16,7 @@ import {
   toCsv,
 } from "@/features/export-results/csv"
 import * as download from "@/shared/download/save-text-file"
-import { recommendationFixture } from "../entities/recommendation/fixture"
+import { LONG_NAME, recommendationFixture } from "../entities/recommendation/fixture"
 
 const results: LotResult[] = [
   { lot: lotSummary("10"), recommendation: recommendationFixture },
@@ -36,9 +36,12 @@ describe("the result files", () => {
     expect(products).toContain("10;Sugar;10.81.12;inferred\r\n")
     const suppliers = suppliersCsv(results)
     expect(suppliers).toContain(
-      "10;1;7800000011;North Foods;Supplier;recommended;;5;5;1;3;1;11;4;",
+      "10;1;7800000011;North Foods;supplier;recommended;;5;5;1;3;1;11;4;",
     )
-    expect(suppliers).toContain("10;3;7800000033;West Trade;Distributor;check;;1;5;0;1;0;3;0;")
+    expect(suppliers).toContain(
+      `10;2;7800000022;${LONG_NAME};unknown;check;rangeUnconfirmed;1;5;0;0;1;1;0;`,
+    )
+    expect(suppliers).toContain("10;3;7800000033;West Trade;distributor;check;;1;5;0;1;0;3;0;")
     const chosen = suppliersCsv(results, { "10": ["west"] })
     expect(chosen).not.toContain("North Foods")
     expect(chosen).toContain("West Trade")

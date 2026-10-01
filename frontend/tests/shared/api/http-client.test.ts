@@ -85,6 +85,23 @@ describe("http client", () => {
     expect(timedOut).toMatchObject({ status: 0, code: "timeout" })
   })
 
+  it("tells the server the interface language", async () => {
+    let language = "ru-RU"
+    const fetcher = vi.fn<typeof fetch>(() => Promise.resolve(Response.json({})))
+    const client = createHttpClient({ baseUrl: "/api", fetcher, language: () => language })
+    await client.get("/a", { parse: identity })
+    language = "en-US"
+    await client.post("/b", { parse: identity, body: { a: 1 } })
+    expect(fetcher.mock.calls.map(([, init]) => init?.headers)).toEqual([
+      { Accept: "application/json", "Accept-Language": "ru-RU" },
+      {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "Accept-Language": "en-US",
+      },
+    ])
+  })
+
   it("rethrows an abort untouched", async () => {
     const abort = new DOMException("stop", "AbortError")
     await expect(clientWith(abort).client.get("/a", { parse: identity })).rejects.toBe(abort)

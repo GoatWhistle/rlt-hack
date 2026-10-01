@@ -1,42 +1,39 @@
 import { useTranslation } from "react-i18next"
-import { Link, NavLink, Outlet, ScrollRestoration, useMatch } from "react-router"
+import { Link, Outlet, ScrollRestoration } from "react-router"
+import { NavTabs } from "@/app/nav-tabs"
 import { LocaleSwitch } from "@/features/locale-switch"
-import { LOTS_ENTRY_PATH, UPLOADS_PATH } from "@/shared/config/paths"
-import { Icon } from "@/shared/ui/icon"
+import { REPOSITORY_URL } from "@/shared/config/links"
+import { UPLOADS_PATH } from "@/shared/config/paths"
+import { BrandMark } from "@/shared/ui/brand-mark"
+import { GithubMark } from "@/shared/ui/github-mark"
 import { SkipLink } from "@/shared/ui/skip-link"
+import { ToolLink } from "@/shared/ui/tool-button"
 import styles from "./styles.module.css"
 
 export const MAIN_CONTENT_ID = "main-content"
 
 export function AppShell() {
   const { t } = useTranslation()
-  const insideUpload = useMatch(`${UPLOADS_PATH}/:uploadId/*`)
-  const atEntry = useMatch(LOTS_ENTRY_PATH)
-  const lotsActive = insideUpload !== null || atEntry !== null
   return (
     <div className={styles.shell}>
       <SkipLink targetId={MAIN_CONTENT_ID} label={t("app.skipToContent")} />
       <header className={styles.header}>
         <div className={styles.bar}>
           <Link to={UPLOADS_PATH} className={styles.brand}>
-            <span className={styles.mark}>
-              <Icon name="logo" />
-            </span>
-            {t("app.name")}
+            <BrandMark />
+            <span className={styles.wordmark}>{t("app.name")}</span>
           </Link>
-          <nav aria-label={t("app.mainNavigation")} className={styles.nav}>
-            <NavLink to={UPLOADS_PATH} end className={styles.navLink}>
-              {t("nav.uploads")}
-            </NavLink>
-            <Link
-              to={LOTS_ENTRY_PATH}
-              aria-current={lotsActive ? "page" : undefined}
-              className={styles.navLink}
+          <NavTabs />
+          <div className={styles.tools}>
+            <LocaleSwitch />
+            <ToolLink
+              href={REPOSITORY_URL}
+              aria-label={t("app.repository")}
+              title={t("app.repository")}
             >
-              {t("nav.lots")}
-            </Link>
-          </nav>
-          <LocaleSwitch />
+              <GithubMark />
+            </ToolLink>
+          </div>
         </div>
       </header>
       <main id={MAIN_CONTENT_ID} tabIndex={-1} className={styles.main}>

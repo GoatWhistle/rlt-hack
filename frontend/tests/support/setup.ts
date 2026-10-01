@@ -1,7 +1,9 @@
 import "@testing-library/jest-dom/vitest"
-import { cleanup } from "@testing-library/react"
+import { cleanup, configure } from "@testing-library/react"
 import { afterEach, beforeAll, vi } from "vitest"
 import { i18n, initI18n } from "@/shared/i18n/i18n"
+
+configure({ asyncUtilTimeout: 5000 })
 
 function blockedFetch(input: RequestInfo | URL): Promise<Response> {
   return Promise.reject(

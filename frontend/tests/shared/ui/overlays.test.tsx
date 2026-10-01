@@ -36,6 +36,10 @@ describe("Dialog", () => {
     await user.click(screen.getByRole("button", { name: "open" }))
     const dialog = screen.getByRole("dialog", { name: "Details" })
     expect(dialog).toHaveAttribute("open")
+    expect(screen.getByRole("heading", { name: "Details" })).toHaveFocus()
+    expect(
+      Array.from(dialog.querySelectorAll("button, span")).map((node) => node.textContent),
+    ).toEqual([en("action.close"), "footer"])
     expect(dialog).toHaveAttribute("data-state", "open")
     await user.click(screen.getByRole("button", { name: en("action.close") }))
     expect(dialog).toHaveAttribute("data-state", "closed")

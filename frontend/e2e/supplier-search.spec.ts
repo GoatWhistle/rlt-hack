@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, type Page, test } from "@playwright/test"
 import { installApiFixture } from "./api-fixture"
+import { chooseLanguage } from "./language"
 
 test.beforeEach(async ({ page }) => installApiFixture(page))
 
@@ -15,10 +16,15 @@ async function expectAccessible(page: Page) {
   expect(blocking.map((violation) => violation.id)).toEqual([])
 }
 
+async function showView(page: Page, name: RegExp) {
+  const views = page.getByRole("group", { name: /review section/i })
+  if (await views.isVisible()) await views.getByRole("radio", { name }).check()
+}
+
 async function uploadSample(page: Page) {
   await page.emulateMedia({ reducedMotion: "reduce" })
   await page.goto("/uploads")
-  await page.getByRole("radio", { name: /^(english)$/i }).check()
+  await chooseLanguage(page, /^english$/i)
   await page.getByLabel(/choose file/i).setInputFiles(SAMPLE)
   const dialog = page.getByRole("dialog", { name: /new upload/i })
   await expect(dialog.getByText("notices-sample.csv")).toBeVisible()
@@ -30,7 +36,6 @@ async function uploadSample(page: Page) {
 
 test("goes from a csv file to a reviewed purchase and two result files", async ({
   page,
-  isMobile,
 }) => {
   await uploadSample(page)
   await expectAccessible(page)
@@ -45,7 +50,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
     .getByRole("article")
     .getByRole("button", { name: /choose candidate/i })
     .click()
-  if (isMobile) await page.getByRole("radio", { name: "Companies", exact: true }).check()
+  await showView(page, /^companies$/i)
   await page
     .getByRole("region", { name: /candidates/i })
     .getByRole("button")
@@ -55,7 +60,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
     .getByRole("article")
     .getByRole("button", { name: /choose candidate/i })
     .click()
-  if (isMobile) await page.getByRole("radio", { name: "Companies", exact: true }).check()
+  await showView(page, /^companies$/i)
   await page.getByRole("button", { name: /compare chosen \(2\)/i }).click()
   await expect(page.getByRole("dialog", { name: /compare/i }).getByRole("table")).toBeVisible()
   await expectAccessible(page)

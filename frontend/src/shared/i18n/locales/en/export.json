@@ -3,19 +3,19 @@
   "lots": {
     "legend": "Which purchases",
     "lot": "This purchase",
-    "selected_one": "Selected ({{count}})",
-    "selected_other": "Selected ({{count}})",
-    "file": "All purchases in the file ({{count}})"
+    "selected_one": "Selected ({{count, number}})",
+    "selected_other": "Selected ({{count, number}})",
+    "file": "All purchases in the file ({{count, number}})"
   },
   "candidates": {
     "legend": "Which candidates",
     "all": "All candidates",
-    "shortlist": "Only the ones you chose ({{count}})"
+    "shortlist": "Only the ones you chose ({{count, number}})"
   },
-  "scope_one": "{{count}} purchase with a finished result is included.",
-  "scope_other": "{{count}} purchases with a finished result are included.",
-  "pending_one": "{{count}} more is still processing and is not included — download later.",
-  "pending_other": "{{count}} more are still processing and are not included — download later.",
+  "scope_one": "{{count, number}} purchase with a finished result is included.",
+  "scope_other": "{{count, number}} purchases with a finished result are included.",
+  "pending_one": "{{count, number}} more is still processing and is not included — download later.",
+  "pending_other": "{{count, number}} more are still processing and are not included — download later.",
   "nothing": "No finished results in the chosen scope yet.",
   "noShortlist": "You have not chosen candidates in these purchases yet, so the supplier file will be empty. Candidates are chosen in the purchase review.",
   "files": "Two CSV files: products and suppliers. Rows link back to the source lot through lot_id.",

@@ -17,13 +17,14 @@ import { useUpload } from "@/entities/upload/queries"
 import { ExportDialog } from "@/features/export-results"
 import { isApiError } from "@/shared/api/api-error"
 import { UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
-import { ButtonLink } from "@/shared/ui/button"
+import { useLocale } from "@/shared/i18n/locale-provider"
+import { Button, ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
-import { LoadingState } from "@/shared/ui/loading-state"
 import { TextButton } from "@/shared/ui/text-button"
 import { LotsControls } from "./lots-controls"
 import { LotsHeader } from "./lots-header"
+import { LotsSkeleton } from "./lots-skeleton"
 import { LotsTable } from "./lots-table"
 import { Pagination } from "./pagination"
 import { ProcessingLine } from "./processing-line"
@@ -31,13 +32,23 @@ import { SelectionBar } from "./selection-bar"
 import styles from "./styles.module.css"
 
 type ExportState = { readonly open: boolean; readonly session: number }
+type Selection = { readonly uploadId: string; readonly ids: ReadonlySet<string> }
+
+const NOTHING: ReadonlySet<string> = new Set()
 
 export function LotsPage() {
   const { t } = useTranslation("lots")
   const { uploadId = "" } = useParams()
   const [params, setParams] = useSearchParams()
   const upload = useUpload(uploadId)
-  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
+  const { locale } = useLocale()
+  const [selection, setSelection] = useState<Selection>({ uploadId, ids: NOTHING })
+  const selected = selection.uploadId === uploadId ? selection.ids : NOTHING
+  const setSelected = (change: (current: ReadonlySet<string>) => ReadonlySet<string>) =>
+    setSelection((current) => ({
+      uploadId,
+      ids: change(current.uploadId === uploadId ? current.ids : NOTHING),
+    }))
   const [exporting, setExporting] = useState<ExportState>({ open: false, session: 0 })
   const query = readQuery(params)
 
@@ -45,7 +56,7 @@ export function LotsPage() {
     if (upload.data) rememberUpload(upload.data.id)
   }, [upload.data])
 
-  if (upload.isPending) return <LoadingState label={t("loading")} />
+  if (upload.isPending) return <LotsSkeleton />
   if (upload.isError) {
     if (isApiError(upload.error) && upload.error.status === 404) {
       return (
@@ -60,7 +71,7 @@ export function LotsPage() {
   }
 
   const data = upload.data
-  const visible = filtered(data.lots, query)
+  const visible = filtered(data.lots, query, locale)
   const pages = pageCount(visible.length)
   const page = Math.min(query.page, pages)
   const update = (next: Partial<ListQuery>) =>
@@ -85,24 +96,42 @@ export function LotsPage() {
 
   return (
     <div className={styles.page}>
-      <LotsHeader upload={data} onExport={() => openExport()} />
-      <ProcessingLine upload={data} />
+      <LotsHeader
+        upload={data}
+        onExport={() => openExport()}
+        status={<ProcessingLine upload={data} />}
+      />
       <LotsControls
         search={query.search}
         filter={query.filter}
-        counts={filterCounts(searched(data.lots, query.search))}
+        counts={filterCounts(searched(data.lots, query.search, locale))}
         onSearch={(search) => update({ search })}
         onFilter={(filter: Filter) => update({ filter })}
       />
       {visible.length === 0 ? (
         <EmptyState
           headingLevel={2}
-          title={t("empty.title")}
-          description={t("empty.text")}
+          title={
+            query.search.trim()
+              ? t("empty.query", { query: query.search.trim() })
+              : t("empty.title")
+          }
+          description={
+            query.filter === "all"
+              ? t("empty.text")
+              : t("empty.filtered", { filter: t(`filter.${query.filter}`) })
+          }
           actions={
-            <TextButton onClick={() => update({ search: "", filter: "all" })}>
-              {t("empty.reset")}
-            </TextButton>
+            <>
+              <Button variant="secondary" onClick={() => update({ search: "", filter: "all" })}>
+                {t("empty.reset")}
+              </Button>
+              {query.filter !== "all" && query.search.trim() ? (
+                <TextButton onClick={() => update({ filter: "all" })}>
+                  {t("empty.allStatuses")}
+                </TextButton>
+              ) : null}
+            </>
           }
         />
       ) : (
@@ -124,13 +153,11 @@ export function LotsPage() {
           />
         </>
       )}
-      {selected.size > 0 ? (
-        <SelectionBar
-          count={selected.size}
-          onExport={() => openExport()}
-          onClear={() => setSelected(new Set())}
-        />
-      ) : null}
+      <SelectionBar
+        count={selected.size}
+        onExport={() => openExport()}
+        onClear={() => setSelected(() => NOTHING)}
+      />
       <ExportDialog
         key={exporting.session}
         open={exporting.open}

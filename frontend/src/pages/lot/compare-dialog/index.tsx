@@ -1,11 +1,12 @@
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import type { Company, MatchBasis, Product } from "@/entities/recommendation/model"
+import { useFormatters } from "@/shared/i18n/formatters"
 import { Caption } from "@/shared/ui/caption"
 import { Dialog } from "@/shared/ui/dialog"
 import { ScrollRegion } from "@/shared/ui/scroll-region"
 import { SegmentMeter } from "../segment-meter"
-import { useStatusText } from "../status"
+import { useRoleText, useStatusText } from "../status"
 import styles from "./styles.module.css"
 
 export type CompareDialogProps = {
@@ -24,12 +25,14 @@ type Criterion = {
 export function CompareDialog({ open, companies, products, onClose }: CompareDialogProps) {
   const { t } = useTranslation("lot")
   const statusText = useStatusText()
+  const roleText = useRoleText()
+  const { list, number } = useFormatters()
   const count = (company: Company, basis: MatchBasis) =>
-    company.matches.filter((match) => match.basis === basis).length
+    number(company.matches.filter((match) => match.basis === basis).length)
   const unmatched = (company: Company) => {
     const found = new Set(company.matches.map((match) => match.productId))
     const names = products.filter((product) => !found.has(product.id)).map((p) => p.name)
-    return names.length > 0 ? names.join(", ") : t("compare.none")
+    return names.length > 0 ? list(names) : t("compare.none")
   }
   const contacts = (company: Company) => {
     const { site, email, phone } = company.contacts ?? {}
@@ -58,9 +61,9 @@ export function CompareDialog({ open, companies, products, onClose }: CompareDia
     {
       id: "purchases",
       label: t("compare.purchases"),
-      value: (c) => c.similarPurchases ?? t("compare.unknown"),
+      value: (c) => (c.similarPurchases === null ? t("compare.unknown") : number(c.similarPurchases)),
     },
-    { id: "wins", label: t("compare.wins"), value: (c) => c.wins ?? t("compare.unknown") },
+    { id: "wins", label: t("compare.wins"), value: (c) => (c.wins === null ? t("compare.unknown") : number(c.wins)) },
     {
       id: "clarify",
       label: t("compare.clarify"),
@@ -71,7 +74,7 @@ export function CompareDialog({ open, companies, products, onClose }: CompareDia
   ]
   return (
     <Dialog open={open} size="wide" title={t("compare.title")} onClose={onClose}>
-      <ScrollRegion label={t("compare.title")}>
+      <ScrollRegion label={t("compare.title")} className={styles.region}>
         <table className={styles.table}>
           <thead>
             <tr>
@@ -80,7 +83,8 @@ export function CompareDialog({ open, companies, products, onClose }: CompareDia
               </th>
               {companies.map((company) => (
                 <th key={company.id} scope="col" className={styles.company}>
-                  {company.name}
+                  <span className={styles.companyName}>{company.name}</span>
+                  <span className={styles.companyRole}>{roleText(company)}</span>
                 </th>
               ))}
             </tr>

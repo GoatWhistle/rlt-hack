@@ -2,4 +2,5 @@
   display: grid;
   gap: var(--space-5);
   min-height: 12rem;
+  padding-block: var(--space-2);
 }

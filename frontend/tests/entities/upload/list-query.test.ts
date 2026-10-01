@@ -31,11 +31,13 @@ describe("the list query", () => {
       lotSummary("3", { title: "Paper", status: "queued" }),
       lotSummary("4", { title: "Ink", subject: "Printer milk", status: "noCandidates" }),
     ]
-    expect(filtered(lots, { search: "MILK", filter: "all", page: 1 }).map((l) => l.id)).toEqual(
-      ["1", "4"],
-    )
-    expect(filtered(lots, { search: "7811", filter: "needsCheck", page: 1 })).toHaveLength(1)
-    expect(filtered(lots, { search: " ", filter: "ready", page: 1 })).toHaveLength(1)
+    expect(
+      filtered(lots, { search: "MILK", filter: "all", page: 1 }, "en").map((l) => l.id),
+    ).toEqual(["1", "4"])
+    expect(
+      filtered(lots, { search: "7811", filter: "needsCheck", page: 1 }, "en"),
+    ).toHaveLength(1)
+    expect(filtered(lots, { search: " ", filter: "ready", page: 1 }, "en")).toHaveLength(1)
     expect(filterCounts(lots)).toEqual({ all: 4, ready: 1, needsCheck: 1, noCandidates: 1 })
   })
 

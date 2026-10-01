@@ -9,9 +9,8 @@ import { useCreateUpload } from "@/entities/upload/queries"
 import { uploadPath } from "@/shared/config/paths"
 import { Button } from "@/shared/ui/button"
 import { Dialog } from "@/shared/ui/dialog"
-import { LoadingState } from "@/shared/ui/loading-state"
 import { StepTrail } from "@/shared/ui/step-trail"
-import { CheckSummary } from "../check-summary"
+import { CheckSkeleton, CheckSummary } from "../check-summary"
 import { Dropzone } from "../dropzone"
 import styles from "./styles.module.css"
 
@@ -115,7 +114,7 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
       />
       <div className={styles.body}>
         {phase.kind === "file" ? <Dropzone onSelect={(file) => void read(file)} /> : null}
-        {phase.kind === "reading" ? <LoadingState label={t("dialog.reading")} /> : null}
+        {phase.kind === "reading" ? <CheckSkeleton label={t("dialog.reading")} /> : null}
         {checked ? <CheckSummary check={checked.check} /> : null}
       </div>
     </Dialog>

@@ -5,11 +5,11 @@ import { readLastUpload } from "@/entities/upload/last-upload"
 import { NotFoundPage } from "@/pages/not-found"
 import { RouteErrorPage } from "@/pages/route-error"
 import { UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
-import { LoadingState } from "@/shared/ui/loading-state"
+import { PageSkeleton } from "@/shared/ui/skeleton"
 
 export function RouteLoading() {
   const { t } = useTranslation()
-  return <LoadingState label={t("state.loading")} />
+  return <PageSkeleton label={t("state.loading")} />
 }
 
 export function lastUploadRedirect() {
@@ -22,12 +22,12 @@ export const routes: RouteObject[] = [
     path: "/",
     Component: AppShell,
     ErrorBoundary: RouteErrorPage,
-    HydrateFallback: RouteLoading,
     children: [
       {
         ErrorBoundary: RouteErrorPage,
+        HydrateFallback: RouteLoading,
         children: [
-          { index: true, loader: () => redirect(UPLOADS_PATH) },
+          { index: true, loader: () => redirect(UPLOADS_PATH), element: null },
           {
             path: "uploads",
             lazy: async () => ({ Component: (await import("@/pages/uploads")).UploadsPage }),

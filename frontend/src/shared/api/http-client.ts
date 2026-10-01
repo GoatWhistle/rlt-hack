@@ -14,6 +14,7 @@ export type RequestOptions<T> = {
 export type HttpClientConfig = {
   readonly baseUrl: string
   readonly fetcher?: typeof fetch
+  readonly language?: () => string
 }
 
 export type HttpClient = {
@@ -64,7 +65,10 @@ function transportError(cause: unknown): ApiError {
   return new ApiError({ status: 0, code: timedOut ? "timeout" : "network", cause })
 }
 
-function encodeBody(body: unknown): Pick<RequestInit, "headers" | "body"> {
+function encodeBody(body: unknown): {
+  readonly headers: Record<string, string>
+  readonly body?: BodyInit
+} {
   if (body === undefined) return { headers: { Accept: "application/json" } }
   if (body instanceof FormData) return { headers: { Accept: "application/json" }, body }
   return {
@@ -73,18 +77,28 @@ function encodeBody(body: unknown): Pick<RequestInit, "headers" | "body"> {
   }
 }
 
+function withLanguage(
+  headers: Record<string, string>,
+  language: string | undefined,
+): Record<string, string> {
+  return language ? { ...headers, "Accept-Language": language } : headers
+}
+
 const globalFetch: typeof fetch = (input, init) => fetch(input, init)
 
 export function createHttpClient({
   baseUrl,
   fetcher = globalFetch,
+  language,
 }: HttpClientConfig): HttpClient {
   const request = async <T>(method: string, path: string, options: RequestOptions<T>) => {
+    const encoded = encodeBody(options.body)
     let response: Response
     try {
       response = await fetcher(buildUrl(baseUrl, path, options.query), {
         method,
-        ...encodeBody(options.body),
+        ...encoded,
+        headers: withLanguage(encoded.headers, language?.()),
         signal: options.signal,
       })
     } catch (cause) {

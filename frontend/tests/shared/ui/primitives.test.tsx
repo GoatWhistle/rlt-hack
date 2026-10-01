@@ -8,6 +8,7 @@ import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
 import { LoadingState } from "@/shared/ui/loading-state"
 import { SegmentedControl } from "@/shared/ui/segmented-control"
+import { PageSkeleton } from "@/shared/ui/skeleton"
 import { SkipLink } from "@/shared/ui/skip-link"
 
 describe("Button", () => {
@@ -63,6 +64,14 @@ describe("EmptyState", () => {
     expect(screen.getByRole("heading", { level: 2, name: "Nothing" })).toBeInTheDocument()
     expect(screen.queryByRole("alert")).not.toBeInTheDocument()
     expect(screen.getByText("x")).toBeInTheDocument()
+    expect(document.querySelector("svg")).toBeNull()
+  })
+
+  it("marks the state with an icon when one is given or the state is an error", () => {
+    const { container, rerender } = render(<EmptyState title="Lost" icon="compass" />)
+    expect(container.querySelector("svg")).toBeInTheDocument()
+    rerender(<EmptyState title="Broken" tone="error" />)
+    expect(screen.getByRole("alert")).toContainElement(container.querySelector("svg"))
   })
 })
 
@@ -97,5 +106,14 @@ describe("small primitives", () => {
     expect(screen.getByRole("link", { name: "Skip" })).toHaveAttribute("href", "#main")
     expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true")
     expect(screen.getByRole("status")).toHaveTextContent("Loading")
+  })
+
+  it("draws a page skeleton hidden from assistive technology", () => {
+    render(<PageSkeleton label="Loading page" rows={2} />)
+    const status = screen.getByRole("status")
+    expect(status).toHaveTextContent("Loading page")
+    const shape = status.querySelector("[aria-hidden='true']")
+    expect(shape).not.toBeNull()
+    expect(shape?.children[0]?.children[1]?.children).toHaveLength(3)
   })
 })

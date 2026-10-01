@@ -2,21 +2,24 @@
   "loading": "Loading purchases",
   "back": "Uploads",
   "uploaded": "Uploaded {{date}}",
-  "notices_one": "{{count}} notice",
-  "notices_other": "{{count}} notices",
+  "notices_one": "{{count, number}} notice",
+  "notices_other": "{{count, number}} notices",
   "download": "Download results",
   "processing": {
     "label": "Processing progress",
-    "running": "Processing: {{processed}} of {{total}} ready. Finished purchases can be opened already.",
-    "done_one": "Processing finished: {{count}} purchase",
-    "done_other": "Processing finished: {{count}} purchases"
+    "running": "Processing: {{processed, number}} of {{total, number}} ready",
+    "hint": "Finished purchases can be opened already.",
+    "done_one": "Processing finished: {{count, number}} purchase",
+    "done_other": "Processing finished: {{count, number}} purchases"
   },
-  "rejected_one": "{{count}} row was not processed because of errors",
-  "rejected_other": "{{count}} rows were not processed because of errors",
+  "rejected_one": "{{count, number}} row was not processed because of errors",
+  "rejected_other": "{{count, number}} rows were not processed because of errors",
   "rejectedNote": "Fix these rows in the source file and upload it again. Results already processed stay in this upload.",
   "search": {
     "label": "Search purchases",
-    "placeholder": "Name, customer INN or lot number"
+    "placeholder": "Name, customer INN or lot number",
+    "clear": "Clear search",
+    "shortcut": "/"
   },
   "filter": {
     "legend": "Result",
@@ -34,11 +37,16 @@
     "products": "Products",
     "candidates": "Candidates",
     "status": "Status",
-    "lot": "Lot {{id}}",
-    "customer": "customer INN {{inn}}",
+    "lot": "Lot",
+    "customer": "customer INN",
     "noCustomer": "customer not given",
     "noPrice": "not given",
-    "pending": "—"
+    "pending": "—",
+    "priceMissing": "price not given",
+    "productCount_one": "{{count, number}} product",
+    "productCount_other": "{{count, number}} products",
+    "candidateCount_one": "{{count, number}} candidate",
+    "candidateCount_other": "{{count, number}} candidates"
   },
   "status": {
     "queued": "Queued",
@@ -48,21 +56,25 @@
   },
   "pages": {
     "label": "Table pages",
-    "range": "{{from}}–{{to}} of {{total}}",
-    "current": "Page {{page}} of {{pages}}",
+    "range": "{{from, number}}–{{to, number}} of {{total, number}}",
+    "page": "Page {{page, number}}",
+    "gap": "…",
     "prev": "Previous page",
     "next": "Next page"
   },
   "selection": {
     "label": "Selected purchases",
-    "count_one": "{{count}} purchase selected",
-    "count_other": "{{count}} purchases selected",
+    "count_one": "{{count, number}} purchase selected",
+    "count_other": "{{count, number}} purchases selected",
     "export": "Download selected",
     "clear": "Clear selection"
   },
   "empty": {
     "title": "Nothing found",
-    "text": "Change the query or reset the filters: the search covers the whole file.",
+    "query": "Nothing found for “{{query}}”",
+    "text": "Search covers the whole file: purchase name, customer INN and lot number. Check the spelling or shorten the query.",
+    "filtered": "Only purchases with the status “{{filter}}” are shown. Search covers the whole file: purchase name, customer INN and lot number.",
+    "allStatuses": "Search in all statuses",
     "reset": "Reset search and filters"
   },
   "missing": {
