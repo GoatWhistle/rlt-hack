@@ -79,6 +79,9 @@ async def test_lists_and_details_match_the_contract(client: httpx.AsyncClient) -
     assert lot["recommendation"]["products"][0]["origin"] == "notice"
     assert lot["recommendation"]["companies"][0]["checkReasons"] == []
     assert lot["recommendation"]["lotLabel"] == "4257576"
+    company = lot["recommendation"]["companies"][0]
+    assert (company["similarPurchases"], company["wins"]) == (3, 1)
+    assert lot["recommendation"]["warnings"] == []
 
 
 async def test_results_are_returned_for_selected_lots(

@@ -67,6 +67,7 @@ CLEAN_ROOTS = (
     "tests/controller",
     "tests/application",
     "tests/fakes",
+    "tests/properties",
     "tests/conftest.py",
     "bench",
 )

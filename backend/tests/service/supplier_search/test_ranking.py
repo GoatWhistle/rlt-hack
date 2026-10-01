@@ -28,6 +28,19 @@ def test_evidence_averages_basis_weights_over_matched_items() -> None:
     assert evidence_score(()) == Score.zero()
 
 
+def test_catalog_weight_sits_between_stock_and_inferred() -> None:
+    backed = stock_match("i1")
+
+    def single(basis: MatchBasis) -> float:
+        evidence = None if basis == MatchBasis.INFERRED else backed.evidence
+        offer_id = None if basis == MatchBasis.INFERRED else backed.offer_id
+        return evidence_score((ProductMatch("i1", basis, offer_id, evidence),)).value
+
+    stock, catalog, inferred = (single(basis) for basis in MatchBasis)
+    assert (stock, catalog, inferred) == pytest.approx((1.0, 0.7, 0.2))
+    assert stock > catalog > inferred
+
+
 def test_coverage_counts_distinct_items() -> None:
     assert coverage_score((stock_match("i1"),), 4) == Score(0.25)
     assert coverage_score((), 0) == Score.zero()
@@ -39,6 +52,21 @@ def test_history_saturates_with_similar_purchases_and_wins() -> None:
     assert modest.value == pytest.approx(0.5)
     heavy = history_score(PurchaseSummary(similar=500, wins=200))
     assert modest < heavy < Score(1.0)
+
+
+def test_history_score_is_mean_of_saturations() -> None:
+    similar_only = history_score(PurchaseSummary(similar=5, wins=0))
+    assert similar_only.value == pytest.approx(0.25)
+    mixed = history_score(PurchaseSummary(similar=15, wins=2))
+    assert mixed.value == pytest.approx((15 / 20 + 2 / 4) / 2)
+
+
+def test_history_weight_moves_total() -> None:
+    ranker = CandidateRanker(ScoreWeights(fusion=0, coverage=0, evidence=0, history=1))
+    quiet = ranker.score(make_draft(history=PurchaseSummary()))
+    busy = ranker.score(make_draft(history=PurchaseSummary(similar=5, wins=2)))
+    assert quiet.total == Score.zero()
+    assert busy.total.value == pytest.approx(0.5)
 
 
 def test_total_is_the_weighted_mean_of_components() -> None:
@@ -75,3 +103,11 @@ def test_ranking_cuts_to_the_limit() -> None:
     drafts = [(make_draft(make_supplier(f"s{index}")), CLEAR) for index in range(5)]
     assert len(ranker.rank(drafts, 2)) == 2
     assert ranker.rank(drafts, 0) == ()
+
+
+def test_ties_break_by_inn_not_name() -> None:
+    ranker = CandidateRanker(ScoreWeights())
+    later = make_draft(make_supplier("aaa", inn="7800000034"), fusion=0.5)
+    earlier = make_draft(make_supplier("zzz", inn="7800000002"), fusion=0.5)
+    ranked = ranker.rank([(later, CLEAR), (earlier, CLEAR)], 10)
+    assert [candidate.supplier.inn for candidate in ranked] == ["7800000002", "7800000034"]

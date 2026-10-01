@@ -166,3 +166,20 @@ async def test_recent_limit_bounds(
         assert response.json()["code"] == "invalid_request"
     else:
         assert provider.searching.limits == [limit]
+
+
+async def test_ranks_are_passed_through(
+    client: httpx.AsyncClient, provider: FakeServiceProvider
+) -> None:
+    candidates = tuple(
+        make_candidate(make_supplier(name), rank=rank)
+        for rank, name in enumerate(("alpha", "beta", "gamma"), start=1)
+    )
+    provider.searching.result = replace(provider.searching.result, candidates=candidates)
+    body = (await client.post("/api/searches", json={"text": "рис"})).json()
+    assert [candidate["rank"] for candidate in body["candidates"]] == [1, 2, 3]
+    assert [candidate["name"] for candidate in body["candidates"]] == [
+        "ООО «alpha»",
+        "ООО «beta»",
+        "ООО «gamma»",
+    ]
