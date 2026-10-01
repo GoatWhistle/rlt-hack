@@ -14,10 +14,13 @@ class UploadSettings:
     resume_delay_seconds: float = 5.0
     resume_interval_seconds: float = 60.0
     max_selected_lots: int = 5000
+    max_backlog: int = 10000
 
     def __post_init__(self) -> None:
         if min(self.max_rows, self.concurrency, self.attempts, self.max_selected_lots) < 1:
             raise ValueError("rows, concurrency, attempts and selection must be positive")
+        if self.max_backlog < self.max_rows:
+            raise ValueError("the backlog must hold at least one full file")
         if not CandidateLimit.MIN <= self.candidates_per_lot <= CandidateLimit.MAX:
             raise ValueError("candidates per lot must fit the candidate limit")
         if self.lot_timeout_seconds <= 0:

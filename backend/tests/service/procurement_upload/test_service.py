@@ -5,7 +5,7 @@ import pytest
 from src.models.enums import LotStatus
 from src.models.errors import NoValidLotsError, TooManyNoticeRowsError
 from src.models.procurement import NoticeFile
-from src.service.errors import LotNotFoundError, UploadNotFoundError
+from src.service.errors import LotNotFoundError, UploadNotFoundError, UploadQueueFullError
 from src.service.procurement_upload.runner import LotRunner
 from src.service.procurement_upload.service import ProcurementUploadService
 from src.service.procurement_upload.settings import UploadSettings
@@ -104,3 +104,29 @@ async def test_files_without_valid_lots_are_rejected() -> None:
     with pytest.raises(TooManyNoticeRowsError):
         await build(reader, store).upload("n.csv", b"")
     assert store.uploads == {}
+
+
+async def test_rejects_upload_when_backlog_is_full() -> None:
+    settings = UploadSettings(retry_delay_seconds=0, max_rows=2, max_backlog=3)
+    store = MemoryUploadStore()
+    reader = FakeReader(make_notices(make_lot("1"), make_lot("2")))
+    runner = LotRunner(FakeProcessor(), store, FixedClock(), settings)
+    service = ProcurementUploadService(
+        reader=reader,
+        store=store,
+        runner=runner,
+        clock=FixedClock(),
+        ids=SequentialIds(),
+        settings=settings,
+    )
+    await service.upload("first.csv", b"1")
+    assert runner.backlog == 2
+    with pytest.raises(UploadQueueFullError) as raised:
+        await service.upload("second.csv", b"2")
+    assert raised.value.limit == 3
+    assert len(store.uploads) == 1
+
+
+def test_backlog_must_hold_a_full_file() -> None:
+    with pytest.raises(ValueError, match="backlog"):
+        UploadSettings(max_rows=10, max_backlog=9)

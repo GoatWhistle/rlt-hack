@@ -61,6 +61,12 @@ class UploadNotFoundError(UploadError):
         self.upload_id = upload_id
 
 
+class UploadQueueFullError(UploadError):
+    def __init__(self, limit: int) -> None:
+        super().__init__(f"more than {limit} lots are waiting for processing, retry later")
+        self.limit = limit
+
+
 class LotNotFoundError(UploadError):
     def __init__(self, upload_id: object, lot_id: str) -> None:
         super().__init__(f"lot {lot_id} not found in upload {upload_id}")

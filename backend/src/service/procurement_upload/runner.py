@@ -35,6 +35,10 @@ class LotRunner:
     def running(self) -> bool:
         return bool(self._tasks)
 
+    @property
+    def backlog(self) -> int:
+        return len(self._known)
+
     async def start(self) -> None:
         if self._tasks:
             return

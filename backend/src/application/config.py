@@ -112,17 +112,20 @@ class UploadConfig:
     attempts: int = 3
     lot_timeout_seconds: float = 30.0
     resume_interval_seconds: float = 60.0
+    max_backlog: int = 10000
 
 
 def _upload_config() -> UploadConfig:
+    max_rows = _int("UPLOAD_MAX_ROWS", 5000)
     return UploadConfig(
         max_bytes=_int("UPLOAD_MAX_BYTES", 10 * 1024 * 1024),
-        max_rows=_int("UPLOAD_MAX_ROWS", 5000),
+        max_rows=max_rows,
         candidates_per_lot=_int("UPLOAD_CANDIDATES", 20),
         concurrency=_int("UPLOAD_CONCURRENCY", 2),
         attempts=_int("UPLOAD_ATTEMPTS", 3),
         lot_timeout_seconds=_float("UPLOAD_LOT_TIMEOUT_SECONDS", 30.0),
         resume_interval_seconds=_float("UPLOAD_RESUME_INTERVAL_SECONDS", 60.0),
+        max_backlog=_int("UPLOAD_MAX_BACKLOG", max(10000, 2 * max_rows)),
     )
 
 

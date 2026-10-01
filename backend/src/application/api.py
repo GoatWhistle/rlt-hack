@@ -143,6 +143,7 @@ class ApiContainer:
             attempts=upload.attempts,
             lot_timeout_seconds=upload.lot_timeout_seconds,
             resume_interval_seconds=upload.resume_interval_seconds,
+            max_backlog=upload.max_backlog,
         )
         store = ClickHouseUploadStore(self._gateway, self.database)
         background = ClickHouseUploadStore(self._background, self.database)

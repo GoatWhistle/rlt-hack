@@ -310,6 +310,8 @@ API получает пул такого размера, и каналы пои�
 | 422 | `no_valid_lots` | ни одна строка не прошла проверку |
 | 404 | `upload_not_found` | нет загрузки с таким id |
 | 404 | `lot_not_found` | в загрузке нет закупки с таким номером |
+| 429 | `upload_queue_full` | в очереди больше `UPLOAD_MAX_BACKLOG` закупок; `Retry-After: 60` |
+| 429 | `rate_limited` | ограничение частоты nginx; `Retry-After: 1` |
 | 404 | `not_found` | неизвестный маршрут |
 | 405 | `method_not_allowed` | метод не поддерживается маршрутом |
 | 503 | `search_unavailable` | недоступны все каналы поиска |
@@ -319,6 +321,12 @@ API получает пул такого размера, и каналы пои�
 
 Логи пишутся в JSON; текст поискового запроса в них не попадает — только его
 длина и SHA-256.
+
+nginx фронтенда (`deploy/nginx.conf`) ограничивает частоту с одного адреса:
+`POST /api/searches` — 2 запроса в секунду с запасом 10, `POST /api/uploads` —
+6 в минуту с запасом 3 и не больше двух одновременных. Сверх лимита nginx
+отвечает `429 rate_limited` тем же JSON-телом ошибки. Адрес клиента берётся из
+`X-Forwarded-For` только от прокси из локальных и частных сетей (Caddy).
 
 ```sh
 curl -s -X POST http://localhost:8000/api/searches   -H 'Content-Type: application/json' -H 'Accept-Language: ru'   -d '{"text": "Крупа гречневая ядрица 500 кг; рис шлифованный 200 кг", "limit": 20}'
@@ -357,6 +365,7 @@ curl -s http://localhost:8000/api/health/ready
 | `UPLOAD_ATTEMPTS` | `3` | попыток на закупку, затем статус `failed` |
 | `UPLOAD_LOT_TIMEOUT_SECONDS` | `30` | таймаут обработки одной закупки |
 | `UPLOAD_RESUME_INTERVAL_SECONDS` | `60` | как часто незавершённые закупки снова ставятся в очередь |
+| `UPLOAD_MAX_BACKLOG` | `10000` | сколько закупок может ждать обработки; не меньше `2 × UPLOAD_MAX_ROWS` по умолчанию |
 
 ## Загрузка файла закупок
 

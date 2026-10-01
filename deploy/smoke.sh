@@ -39,6 +39,10 @@ curl --fail --silent --show-error http://127.0.0.1:8081/nginx-health
 curl --fail --silent --show-error http://127.0.0.1:8081/api/health/live
 curl --fail --silent --show-error http://127.0.0.1:8081/ > "$scratch/index.html"
 grep -q 'type="module"' "$scratch/index.html"
+codes=$(seq 30 | xargs -P 15 -I{} curl --silent --output /dev/null \
+  --write-out '%{http_code}\n' --request POST --header 'Content-Type: application/json' \
+  --data '{"text":"бумага офисная"}' http://127.0.0.1:8081/api/searches)
+grep -qx 429 <<<"$codes"
 test -s "$RLT_DEPLOY_ROOT/current/backup-before.txt"
 compose exec -T clickhouse clickhouse-client --user rlt --multiquery --query \
   'CREATE TABLE supplier_search.ci_guard (id UInt64) ENGINE = MergeTree ORDER BY id;

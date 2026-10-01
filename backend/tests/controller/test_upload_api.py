@@ -27,6 +27,7 @@ from src.models.errors import (
     UnsupportedNoticeFormatError,
 )
 from src.models.lot_result import LotResult
+from src.service.errors import UploadQueueFullError
 from tests.controller.test_contracts import key_paths
 from tests.fakes.domain import MOMENT, uid
 from tests.fakes.http import FakeServiceProvider
@@ -184,3 +185,12 @@ async def small_client(small_app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
         transport = httpx.ASGITransport(app=small_app, raise_app_exceptions=False)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
             yield client
+
+
+async def test_queue_full_maps_to_429(
+    client: httpx.AsyncClient, provider: FakeServiceProvider
+) -> None:
+    provider.uploads.error = UploadQueueFullError(10000)
+    response = await client.post("/api/uploads", files={"file": CSV})
+    assert (response.status_code, response.json()["code"]) == (429, "upload_queue_full")
+    assert response.headers["retry-after"] == "60"

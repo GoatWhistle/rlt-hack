@@ -12,7 +12,7 @@ from src.models.upload import (
     UploadResults,
     UploadSummary,
 )
-from src.service.errors import LotNotFoundError, UploadNotFoundError
+from src.service.errors import LotNotFoundError, UploadNotFoundError, UploadQueueFullError
 from src.service.procurement_upload.protocols import (
     Clock,
     IdGenerator,
@@ -52,6 +52,8 @@ class ProcurementUploadService:
         notices = await self._reader.read(content, self._settings.max_rows)
         if not notices.lots:
             raise NoValidLotsError
+        if self._runner.backlog + len(notices.lots) > self._settings.max_backlog:
+            raise UploadQueueFullError(self._settings.max_backlog)
         upload = Upload.of(self._ids.new(), file_name, self._clock.now(), notices)
         await self._store.create(upload, notices.lots)
         self._runner.submit([PendingLot(upload.upload_id, lot) for lot in notices.lots])

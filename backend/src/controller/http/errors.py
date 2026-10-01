@@ -36,6 +36,7 @@ from src.service.errors import (
     SupplierNotFoundError,
     UninterpretableQueryError,
     UploadNotFoundError,
+    UploadQueueFullError,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,6 +63,7 @@ class ErrorKind:
 
 
 RETRY_AFTER_SECONDS = 5
+QUEUE_RETRY_AFTER_SECONDS = 60
 
 INTERNAL = ErrorKind(HTTPStatus.INTERNAL_SERVER_ERROR, "internal_error")
 INVALID_REQUEST = ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "invalid_request")
@@ -77,6 +79,10 @@ UPLOAD_ERRORS: tuple[tuple[type[Exception], ErrorKind], ...] = (
     (TooManyNoticeRowsError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "too_many_rows")),
     (NoValidLotsError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "no_valid_lots")),
     (UploadNotFoundError, ErrorKind(HTTPStatus.NOT_FOUND, "upload_not_found")),
+    (
+        UploadQueueFullError,
+        ErrorKind(HTTPStatus.TOO_MANY_REQUESTS, "upload_queue_full", QUEUE_RETRY_AFTER_SECONDS),
+    ),
     (LotNotFoundError, ErrorKind(HTTPStatus.NOT_FOUND, "lot_not_found")),
 )
 
