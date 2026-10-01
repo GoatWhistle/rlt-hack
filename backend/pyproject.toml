@@ -1,7 +1,38 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "Поиск релевантных поставщиков: джоба сбора источников и хранилище ClickHouse"
 readme = "README.md"
-requires-python = ">=3.14"
-dependencies = []
+requires-python = ">=3.13"
+dependencies = [
+    "clickhouse-connect>=0.9",
+    "httpx>=0.28",
+    "lxml>=5.3",
+    "cssselect>=1.2",
+]
+
+[project.optional-dependencies]
+# Проверки без сервера ClickHouse: встроенный движок chDB.
+test = [
+    "chdb==4.1.2",
+    "chdb-core==26.9.0",
+]
+
+[project.scripts]
+sync-job = "src.controller.job.cli:main"
+
+[dependency-groups]
+dev = ["ruff>=0.14"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+# Кириллица в строках и комментариях — ожидаемая часть кода проекта.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+# Проверки добавляют корень проекта в sys.path до импортов.
+"tests/**" = ["E402"]

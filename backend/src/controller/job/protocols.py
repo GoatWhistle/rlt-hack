@@ -1,0 +1,29 @@
+"""Интерфейсы, которые потребляет команда запуска джобы."""
+
+from typing import Protocol
+from uuid import UUID
+
+from src.models.journal import CrawlRun, SyncResult
+from src.models.source import Source
+
+
+class SupplierSyncing(Protocol):
+    async def run_once(self) -> SyncResult:
+        """Обходит все подключённые источники один раз."""
+
+    async def run_forever(self) -> None:
+        """Повторяет обход с интервалом из конфигурации."""
+
+
+class SourceCatalog(Protocol):
+    async def list_all(self) -> list[Source]: ...
+
+
+class CrawlJournalReader(Protocol):
+    async def last_runs(self, source_id: UUID, limit: int = 10) -> list[CrawlRun]: ...
+
+
+class SchemaMigrator(Protocol):
+    async def apply_pending(self) -> list[str]: ...
+
+    async def applied_names(self) -> list[str]: ...

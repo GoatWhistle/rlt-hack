@@ -10,24 +10,86 @@
 Исходные данные задачи находятся в `task/data/` и хранятся через Git LFS.
 Перед клонированием установите Git LFS. После клонирования выполните `git lfs pull`, если данные не загрузились автоматически.
 
+## Состав решения
+
+- [Источники поставщиков и ассортимента](context/supplier-sources.md)
+- [Схема ClickHouse и примеры запросов](context/clickhouse-schema.md)
+- [Схема таблиц и всех связей (PDF)](docs/schema-relations.pdf)
+- [Миграции ClickHouse](backend/migration)
+- [Джоба сбора: контракт источника, адаптеры и команды](backend/README.md)
+- [Дизайн-система фронтенда](frontend/DESIGN.md)
+
+Нормализация и HTTP API ещё не реализованы: сейчас в репозитории фронтенд в
+демонстрационном режиме, хранилище и джоба сбора данных. Код backend
+асинхронный: сервисы сбора готовы к вызову из будущего API на FastAPI.
+
+Для пересборки PDF по миграциям нужен Python, `reportlab==5.0.1` и шрифт
+Arial или DejaVu Sans с кириллицей:
+
+```sh
+uv run --no-project --with 'reportlab==5.0.1' python docs/generate_schema_pdf.py
+```
+
 ## Требования
 
 - Node.js 24+
+- Python 3.13+ — для джобы сбора и проверок backend
 - Docker с Compose v2 — для запуска в контейнерах
 
 ## Запуск через Docker Compose
 
 ```bash
-docker compose up --build
+docker compose up -d --build                 # фронтенд, ClickHouse и применение миграций
+docker compose run --rm sync-job providers   # подключённые адаптеры источников
+docker compose run --rm sync-job sync        # обход включённых источников
 ```
 
 Фронтенд будет доступен на `http://localhost:8080`.
+
+Миграции применяются сервисом `migrate` при каждом `up`; повторный запуск
+ничего не меняет. Каждый источник включается своим флагом: адаптеры каталогов
+выключены, пока их селекторы не сверены с живыми страницами, а адаптер исходного
+CSV включён сразу и требует загруженных данных Git LFS.
 
 | Переменная | По умолчанию | Назначение |
 | --- | --- | --- |
 | `WEB_PORT` | `8080` | Порт фронтенда на хосте |
 | `VITE_API_BASE_URL` | `/api` | Базовый URL API при сборке |
 | `VITE_DEMO_MODE` | `true` | Показывать демонстрационный результат без backend; `false` — отправлять файл в `POST {VITE_API_BASE_URL}/recommendations` |
+
+Переменные окружения хранилища и джобы с значениями по умолчанию:
+`CLICKHOUSE_IMAGE`, `CLICKHOUSE_HTTP_PORT` (8123), `CLICKHOUSE_NATIVE_PORT`
+(9000), `CLICKHOUSE_USER` (default), `CLICKHOUSE_PASSWORD` (пусто),
+`CLICKHOUSE_DATABASE` (supplier_search), `SUPPLIER_DATASET_PROVIDER` (true),
+`SYNC_PARALLEL_SOURCES` (4), `SYNC_PARALLEL_REQUESTS` (4),
+`SYNC_INTERVAL_SECONDS` (3600), `REQUEST_TIMEOUT` (30), `LOG_LEVEL` (INFO).
+Полный список переменных джобы — в [backend/README.md](backend/README.md).
+
+## Применение миграций без Docker
+
+```sh
+for file in backend/migration/*.sql; do clickhouse-client --multiquery < "$file"; done
+```
+
+Адрес сервера и доступ задаются конфигурацией `clickhouse-client` или его
+флагами. Порядок файлов важен. Такой запуск не ведёт учёт применённых
+миграций: его ведёт только команда `migrate` из джобы, которая пишет
+контрольные суммы в таблицу `supplier_search.schema_migrations`.
+
+## Проверки backend
+
+Без сервера ClickHouse, Docker и сети, через `uv`:
+
+```sh
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/clickhouse/schema_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' --with lxml --with cssselect --with httpx python backend/tests/supplier/job_smoke.py
+uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx python backend/tests/supplier/provider_smoke.py
+uv run --no-project --python 3.13 python backend/tests/supplier/worker_smoke.py
+```
+
+Проверки используют временные каталоги, встроенный движок chDB и подготовленные
+документы вместо сетевых запросов, к рабочей БД не подключаются. Линтер и
+форматтер — `ruff`, команды описаны в [backend/README.md](backend/README.md).
 
 ## Frontend
 

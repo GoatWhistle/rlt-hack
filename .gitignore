@@ -40,3 +40,6 @@ ml/runs/
 *.safetensors
 *.zip
 ._*
+
+var/
+backend/var/

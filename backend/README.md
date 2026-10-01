@@ -1,0 +1,124 @@
+# Backend: сбор поставщиков и хранилище
+
+Сервис собирает компании и их ассортимент из внешних источников и сохраняет их
+в ClickHouse. Код полностью асинхронный: источники обходятся конкурентно, а те
+же сервисы будет вызывать будущее HTTP API на FastAPI.
+
+## Слои
+
+- `src/models/` — только бизнес-модели: источник, компания, предложение, пакет
+  источника и журнал обхода.
+- `src/adapter/supplier/` — вся реализация парсинга, по папке на источник:
+  каждый адаптер сам знает свои адреса и разметку, сам ходит в сеть и сам
+  собирает готовые модели. Общие для всех адаптеров правила — устойчивые UUID и
+  хеши в `identity.py`, реквизиты в `inn.py`, ошибки в `errors.py`.
+- `src/adapter/repository/clickhouse/` — репозитории и раннер миграций.
+- `src/service/supplier/` — бизнес-логика: `SupplierSyncWorker` запускает
+  адаптеры всех включённых источников конкурентно и сохраняет их пакеты;
+  интерфейсы объявлены в `protocols.py`.
+- `src/controller/job/` — команда запуска джобы и её DTO аргументов.
+- `src/application/` — конфигурация и сборка зависимостей: там объявлены
+  источники и подключены их адаптеры.
+- `migration/` — SQL-миграции ClickHouse.
+
+## Единый контракт источника
+
+`SupplierProvider` из `src/service/supplier/protocols.py` описывает любой
+источник двумя членами: паспортом источника и методом обхода.
+
+```python
+class SupplierProvider(Protocol):
+    @property
+    def source(self) -> Source: ...
+
+    async def fetch(self) -> SupplierPackage: ...
+```
+
+`SupplierPackage` — это `Source` плюс списки `Supplier` и `Offer` с уже
+назначенными UUID и хешем содержимого. Адаптер ничего не знает о ClickHouse и
+журнале, а сервис ничего не знает об адресах, селекторах и форматах.
+
+| Адаптер | Имя | Что берёт | Флаг |
+| --- | --- | --- | --- |
+| `SupplierDatasetProvider` | `supplier_dataset` | компании из `Поставщики_24-25.csv` | `SUPPLIER_DATASET_PROVIDER` (вкл.) |
+| `YmlFeedProvider` | `yml_feed` | YML-фид магазина: товары, цены, параметры | `YML_FEED_PROVIDER` |
+| `SchemaOrgWebProvider` | `schema_org_web` | сайт по sitemap и разметке `Product`/`Offer` | `SCHEMA_ORG_WEB_PROVIDER` |
+| `OptKatalogWebProvider` | `optkatalog_web` | компании каталога optkatalog.ru | `OPTKATALOG_WEB_PROVIDER` |
+| `AboutPartnerWebProvider` | `aboutpartner_web` | компании каталога aboutpartner.ru | `ABOUTPARTNER_WEB_PROVIDER` |
+| `TexZakazWebProvider` | `texzakaz_web` | производители texzakaz.ru | `TEXZAKAZ_WEB_PROVIDER` |
+
+Адаптеры каталогов по умолчанию выключены: их селекторы не сверены с живыми
+страницами. Адреса фидов и сайтов задаются списками `SUPPLIER_FEED_URLS` и
+`SUPPLIER_SITE_URLS` — на каждый адрес создаётся свой адаптер.
+
+Новый источник — новая папка в `src/adapter/supplier/<name>/` с классом,
+реализующим `source` и `fetch`, затем флаг в `src/application/config.py` и ветка
+с ним в `Container.providers`. Сервис, хранилище и схема не меняются.
+
+## Сохранение пакета
+
+Пакет — полное состояние источника на момент обхода, поэтому он сохраняется
+одной операцией: источник, компании и предложения пишутся полным снимком строки
+новой версией, время первой встречи предложения сохраняется, а предложения
+источника, которых в пакете нет, снимаются с продажи. Пустой пакет ничего не
+снимает: он чаще означает сломанный разбор, чем исчезновение ассортимента.
+
+## Конкурентность
+
+`SupplierSyncWorker.run_once` запускает все включённые адаптеры одновременно,
+число одновременных обходов ограничено `SYNC_PARALLEL_SOURCES`. Сбой одного
+источника не отменяет результаты остальных и попадает в его запись журнала.
+Внутри адаптера число одновременных запросов к источнику ограничено
+`SYNC_PARALLEL_REQUESTS`, а недоступная страница пропускается с предупреждением.
+Блокирующие операции — разбор HTML и XML, чтение CSV, запросы к ClickHouse —
+выполняются в пуле потоков, поэтому событийный цикл свободен.
+
+## Команды
+
+Через Docker Compose из корня репозитория:
+
+```sh
+docker compose up -d clickhouse migrate          # хранилище и миграции
+docker compose run --rm sync-job providers       # подключённые адаптеры
+docker compose run --rm sync-job sync            # обход включённых источников
+docker compose run --rm sync-job runs --source <UUID>
+```
+
+Локально, с установленными зависимостями из `pyproject.toml`:
+
+```sh
+uv run --python 3.13 python main.py migrate
+uv run --python 3.13 python main.py providers
+uv run --python 3.13 python main.py sync --parallel 4
+uv run --python 3.13 python main.py sync --forever
+uv run --python 3.13 python main.py sources
+uv run --python 3.13 python main.py runs --source <UUID>
+```
+
+Переменные окружения: `CLICKHOUSE_HOST`, `CLICKHOUSE_PORT`, `CLICKHOUSE_USER`,
+`CLICKHOUSE_PASSWORD`, `CLICKHOUSE_DATABASE`, `CLICKHOUSE_SECURE`,
+`TASK_DATA_DIR`, `SUPPLIER_DATASET_PATH`, `SUPPLIER_DATASET_REGION`,
+`SUPPLIER_FEED_URLS`, `SUPPLIER_SITE_URLS`, флаги адаптеров из таблицы выше,
+`SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`,
+`SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `LOG_LEVEL`.
+
+## Проверки
+
+Без сервера ClickHouse и без сети:
+
+```sh
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
+  python tests/clickhouse/schema_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
+  --with lxml --with cssselect --with httpx python tests/supplier/job_smoke.py
+uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx \
+  python tests/supplier/provider_smoke.py
+uv run --no-project --python 3.13 python tests/supplier/worker_smoke.py
+```
+
+Линтер и форматтер:
+
+```sh
+uv run --no-project --python 3.13 --with 'ruff>=0.14' ruff check .
+uv run --no-project --python 3.13 --with 'ruff>=0.14' ruff format .
+```
