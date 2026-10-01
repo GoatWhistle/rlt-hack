@@ -36,12 +36,6 @@
   grid-area: title;
   align-self: end;
   margin-block-start: var(--space-1);
-  font-size: var(--text-2xl);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-  overflow-wrap: anywhere;
-  text-wrap: balance;
 }
 
 .meta {

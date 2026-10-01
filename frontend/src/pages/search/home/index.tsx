@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router"
 import { SearchBox } from "@/features/search-box"
 import { SEARCH_TEXT_PARAM, searchPath } from "@/shared/config/paths"
+import { PageTitle } from "@/shared/ui/page-title"
 import { ReadingGuide } from "../reading-guide"
 import { RecentList } from "../recent-list"
 import styles from "./styles.module.css"
@@ -17,9 +18,7 @@ export function SearchPage() {
     <div className={styles.page}>
       <section className={styles.search} aria-labelledby={titleId}>
         <div className={styles.head}>
-          <h1 id={titleId} className={styles.title}>
-            {t("home.title")}
-          </h1>
+          <PageTitle id={titleId}>{t("home.title")}</PageTitle>
           <p className={styles.lead}>{t("home.lead")}</p>
         </div>
         <SearchBox

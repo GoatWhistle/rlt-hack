@@ -32,11 +32,6 @@
   display: -webkit-box;
   max-width: var(--measure-hero);
   overflow: hidden;
-  font-size: var(--text-2xl);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-  overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }

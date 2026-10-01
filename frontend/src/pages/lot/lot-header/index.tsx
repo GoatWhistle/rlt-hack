@@ -5,6 +5,7 @@ import { BackLink } from "@/shared/ui/back-link"
 import { Button } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
 import { IconLink } from "@/shared/ui/icon-link"
+import { PageTitle } from "@/shared/ui/page-title"
 import styles from "./styles.module.css"
 import { NEXT_KEY, PREV_KEY, useNeighbourKeys } from "./use-neighbour-keys"
 
@@ -58,7 +59,9 @@ export function LotHeader({ upload, lot, backTo, neighbours, onExport }: LotHead
           />
         </nav>
       ) : null}
-      <h1 className={styles.title}>{lot.title}</h1>
+      <PageTitle size="record" className={styles.title}>
+        {lot.title}
+      </PageTitle>
       <p className={styles.meta}>
         <span className={styles.code}>{t("header.lot", { id: lot.id })}</span>
         {facts.map((fact) => (

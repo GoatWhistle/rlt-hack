@@ -8,6 +8,7 @@ import { useFormatters } from "@/shared/i18n/formatters"
 import { BackLink } from "@/shared/ui/back-link"
 import { Button, ButtonLink } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
+import { PageTitle } from "@/shared/ui/page-title"
 import styles from "./styles.module.css"
 
 export function ResultHeader({ result }: { readonly result: SearchResult }) {
@@ -29,9 +30,9 @@ export function ResultHeader({ result }: { readonly result: SearchResult }) {
       </div>
       <div className={styles.query}>
         <p className={styles.eyebrow}>{t("header.label")}</p>
-        <h1 className={styles.title} title={result.query.text}>
+        <PageTitle size="record" className={styles.title} title={result.query.text}>
           {result.query.text}
-        </h1>
+        </PageTitle>
       </div>
       <p className={styles.meta}>
         {facts.map((fact) => (
