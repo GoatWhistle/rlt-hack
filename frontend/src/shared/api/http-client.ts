@@ -64,6 +64,15 @@ function transportError(cause: unknown): ApiError {
   return new ApiError({ status: 0, code: timedOut ? "timeout" : "network", cause })
 }
 
+function encodeBody(body: unknown): Pick<RequestInit, "headers" | "body"> {
+  if (body === undefined) return { headers: { Accept: "application/json" } }
+  if (body instanceof FormData) return { headers: { Accept: "application/json" }, body }
+  return {
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  }
+}
+
 const globalFetch: typeof fetch = (input, init) => fetch(input, init)
 
 export function createHttpClient({
@@ -71,15 +80,11 @@ export function createHttpClient({
   fetcher = globalFetch,
 }: HttpClientConfig): HttpClient {
   const request = async <T>(method: string, path: string, options: RequestOptions<T>) => {
-    const hasBody = options.body !== undefined
     let response: Response
     try {
       response = await fetcher(buildUrl(baseUrl, path, options.query), {
         method,
-        headers: hasBody
-          ? { Accept: "application/json", "Content-Type": "application/json" }
-          : { Accept: "application/json" },
-        body: hasBody ? JSON.stringify(options.body) : undefined,
+        ...encodeBody(options.body),
         signal: options.signal,
       })
     } catch (cause) {

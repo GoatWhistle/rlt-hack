@@ -2,11 +2,12 @@ import AxeBuilder from "@axe-core/playwright"
 import { expect, test } from "@playwright/test"
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]
-const ROUTES = ["/", "/missing-page"]
+const ROUTES = ["/", "/results", "/missing-page"]
 
 test.describe("application shell", () => {
   for (const route of ROUTES) {
     test(`has no serious accessibility violations on ${route}`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: "reduce" })
       await page.goto(route)
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
       const { violations } = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()

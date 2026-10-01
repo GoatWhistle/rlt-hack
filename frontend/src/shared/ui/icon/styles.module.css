@@ -1,0 +1,26 @@
+.icon {
+  flex-shrink: 0;
+}
+
+.sm {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+}
+
+.md {
+  width: var(--icon-md);
+  height: var(--icon-md);
+}
+
+.lg {
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+}
+
+.confirmed {
+  color: var(--accent-confirmed);
+}
+
+.source {
+  color: var(--accent-source);
+}

@@ -11,6 +11,7 @@ body {
   font-family: var(--font-sans);
   font-size: var(--text-md);
   line-height: var(--leading-normal);
+  font-variant-numeric: tabular-nums;
 }
 
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
@@ -20,4 +21,8 @@ body {
 
 a {
   color: var(--link);
+}
+
+a:hover {
+  color: var(--link-hover);
 }

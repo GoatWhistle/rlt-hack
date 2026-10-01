@@ -27,6 +27,7 @@ docker compose up --build
 | --- | --- | --- |
 | `WEB_PORT` | `8080` | Порт фронтенда на хосте |
 | `VITE_API_BASE_URL` | `/api` | Базовый URL API при сборке |
+| `VITE_DEMO_MODE` | `true` | Показывать демонстрационный результат без backend; `false` — отправлять файл в `POST {VITE_API_BASE_URL}/recommendations` |
 
 ## Frontend
 
@@ -55,6 +56,9 @@ npm run dev
 | --- | --- |
 | `VITE_API_BASE_URL` | Базовый URL API, по умолчанию `/api` |
 | `VITE_API_PROXY` | Адрес backend для прокси `/api` в dev-режиме |
+| `VITE_DEMO_MODE` | `false` отключает демонстрационные данные |
+
+Дизайн-система (цвета, шрифт, отступы, компоненты) описана в [frontend/DESIGN.md](frontend/DESIGN.md).
 
 ## ML-пайплайн
 

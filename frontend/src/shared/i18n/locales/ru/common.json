@@ -1,11 +1,11 @@
 {
   "app": {
-    "name": "RLT Hack",
+    "name": "Подбор контрагентов",
     "skipToContent": "Перейти к содержимому",
     "mainNavigation": "Основная навигация"
   },
   "nav": {
-    "home": "Главная"
+    "home": "Подбор"
   },
   "action": {
     "close": "Закрыть",
@@ -19,10 +19,6 @@
     "legend": "Язык интерфейса",
     "ru": "Русский",
     "en": "English"
-  },
-  "home": {
-    "title": "RLT Hack",
-    "description": "Базовый каркас фронтенда."
   },
   "state": {
     "loading": "Загрузка"
@@ -48,5 +44,97 @@
   },
   "notifications": {
     "label": "Уведомления"
+  },
+  "upload": {
+    "title": "Проверяемый список поставщиков из одной закупки",
+    "subtitle": "Загрузите Excel. Система определит товары, найдёт компании и покажет, на чём основан каждый вывод.",
+    "dropTitle": "Перетащите файл сюда",
+    "dropHint": ".xlsx или .xls · лоты, наименования, коды ОКПД2",
+    "chooseFile": "Выбрать файл",
+    "fileSize": "{{size}} КБ · готов к обработке",
+    "submit": "Подобрать поставщиков",
+    "submitting": "Подбираем…",
+    "stepsLabel": "Как система приходит к выводу",
+    "steps": {
+      "request": {
+        "title": "Запрос",
+        "text": "Читаем файл: наименования, ОКПД2, заказчик."
+      },
+      "products": {
+        "title": "Товары",
+        "text": "У каждого видно происхождение: из извещения, предположено или уточнено вами."
+      },
+      "companies": {
+        "title": "Компании",
+        "text": "Ранжированный список с ролью: поставщик, производитель, дистрибьютор."
+      },
+      "evidence": {
+        "title": "Основания",
+        "text": "Почему подходит, чем подтверждено, что нужно уточнить."
+      }
+    }
+  },
+  "results": {
+    "newFile": "Загрузить другой файл",
+    "demoNote": "Демонстрационные данные: названия компаний, ИНН и ссылки условные.",
+    "empty": {
+      "title": "Нет результата подбора",
+      "description": "Загрузите файл закупки, чтобы увидеть кандидатов.",
+      "action": "Загрузить файл"
+    },
+    "chain": {
+      "label": "Цепочка вывода",
+      "request": "01 · Запрос",
+      "products": "02 · Товары",
+      "companies": "03 · Компании",
+      "evidence": "04 · Основания",
+      "lotFromFile": "{{lot}} из файла",
+      "productCount_one": "{{count}} позиция",
+      "productCount_few": "{{count}} позиции",
+      "productCount_many": "{{count}} позиций",
+      "productCount_other": "{{count}} позиции",
+      "originSummary": "{{notice}} из извещения · {{inferred}} предположено · {{user}} уточнено",
+      "companyCount_one": "{{count}} кандидат",
+      "companyCount_few": "{{count}} кандидата",
+      "companyCount_many": "{{count}} кандидатов",
+      "companyCount_other": "{{count}} кандидата",
+      "statusSummary": "{{recommended}} рекомендуем · {{check}} проверить",
+      "evidenceSummary_one": "{{count}} подтверждение · {{clarify}} к уточнению",
+      "evidenceSummary_few": "{{count}} подтверждения · {{clarify}} к уточнению",
+      "evidenceSummary_many": "{{count}} подтверждений · {{clarify}} к уточнению",
+      "evidenceSummary_other": "{{count}} подтверждения · {{clarify}} к уточнению"
+    },
+    "products": {
+      "title": "Определённые товары",
+      "origin": {
+        "notice": "Указано в извещении",
+        "inferred": "Предположено по похожим закупкам",
+        "user": "Уточнено пользователем"
+      }
+    },
+    "companies": {
+      "title": "Подходящие компании",
+      "inn": "ИНН {{inn}}",
+      "covered": "{{covered}} из {{total}} товаров",
+      "purchases_one": "{{count}} похожая закупка",
+      "purchases_few": "{{count}} похожие закупки",
+      "purchases_many": "{{count}} похожих закупок",
+      "purchases_other": "{{count}} похожей закупки",
+      "status": {
+        "recommended": "Рекомендуем",
+        "check": "Проверить"
+      }
+    },
+    "evidence": {
+      "title": "Почему эта компания",
+      "coverage": "Покрытие товаров",
+      "covered": "есть в каталоге",
+      "missing": "не подтверждено",
+      "why": "Почему подходит",
+      "proof": "Чем подтверждено",
+      "clarify": "Что требует уточнения",
+      "shortlist": "Добавить в shortlist",
+      "exclude": "Исключить"
+    }
   }
 }

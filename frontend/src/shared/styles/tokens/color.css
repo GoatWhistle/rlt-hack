@@ -1,11 +1,31 @@
 :root {
-  color-scheme: light dark;
-  --surface-base: Canvas;
-  --text-primary: CanvasText;
-  --text-muted: GrayText;
-  --line-hairline: GrayText;
-  --link: LinkText;
-  --focus-ring: Highlight;
-  --state-success: CanvasText;
-  --state-danger: Mark;
+  color-scheme: light;
+  --palette-snow: #ffffff;
+  --palette-fog: #f9f9fb;
+  --palette-mist: #eff0f6;
+  --palette-silver: #e5e7eb;
+  --palette-charcoal: #333333;
+  --palette-graphite: #545454;
+  --palette-smoke: #767676;
+  --palette-ash: #808080;
+  --palette-emerald: #24b26d;
+  --palette-cobalt: #2c70dd;
+
+  --surface-base: var(--palette-snow);
+  --surface-raised: var(--palette-fog);
+  --surface-accent: var(--palette-mist);
+  --text-primary: var(--palette-charcoal);
+  --text-secondary: var(--palette-graphite);
+  --text-muted: var(--palette-smoke);
+  --text-disabled: var(--palette-ash);
+  --line-hairline: var(--palette-silver);
+  --line-control: var(--palette-graphite);
+  --line-tentative: var(--palette-smoke);
+  --link: var(--palette-charcoal);
+  --link-hover: var(--palette-cobalt);
+  --focus-ring: var(--palette-cobalt);
+  --accent-confirmed: var(--palette-emerald);
+  --accent-source: var(--palette-cobalt);
+  --state-success: var(--palette-emerald);
+  --state-danger: var(--palette-charcoal);
 }

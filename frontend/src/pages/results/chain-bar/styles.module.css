@@ -1,0 +1,42 @@
+.chain {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+  overflow: hidden;
+  padding: 0;
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-md);
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-5);
+  border-inline-end: var(--line-width) solid var(--line-hairline);
+}
+
+.step:last-child {
+  border-inline-end: 0;
+}
+
+.active {
+  background: var(--surface-accent);
+}
+
+.value {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.note {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 45rem) {
+  .step {
+    border-inline-end: 0;
+    border-block-end: var(--line-width) solid var(--line-hairline);
+  }
+}

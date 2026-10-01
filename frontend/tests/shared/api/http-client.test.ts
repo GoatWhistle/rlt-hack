@@ -33,6 +33,16 @@ describe("http client", () => {
     expect(parse).toHaveBeenCalledWith({ id: 1 })
   })
 
+  it("sends form data as is and lets the browser set its content type", async () => {
+    const { client, fetcher } = clientWith(Response.json({ ok: true }))
+    const body = new FormData()
+    body.append("file", new Blob(["x"]), "lot.xlsx")
+    await client.post("/upload", { parse: identity, body })
+    const [, init] = fetcher.mock.calls[0] ?? []
+    expect(init?.body).toBe(body)
+    expect(init?.headers).toEqual({ Accept: "application/json" })
+  })
+
   it("passes empty and text bodies to the parser", async () => {
     await expect(
       clientWith(new Response(null, { status: 204 })).client.get("/a", { parse: identity }),
@@ -104,5 +114,11 @@ describe("env", () => {
     )
     expect(readEnv({ VITE_API_BASE_URL: "  " }).apiBaseUrl).toBe(DEFAULT_API_BASE_URL)
     expect(readEnv({}).apiBaseUrl).toBe(DEFAULT_API_BASE_URL)
+  })
+
+  it("keeps demo data on unless it is switched off", () => {
+    expect(readEnv({}).demoMode).toBe(true)
+    expect(readEnv({ VITE_DEMO_MODE: "true" }).demoMode).toBe(true)
+    expect(readEnv({ VITE_DEMO_MODE: " false " }).demoMode).toBe(false)
   })
 })

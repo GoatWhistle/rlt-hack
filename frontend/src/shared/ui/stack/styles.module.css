@@ -1,0 +1,12 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.tight {
+  gap: var(--space-1);
+}
+
+.normal {
+  gap: var(--space-2);
+}

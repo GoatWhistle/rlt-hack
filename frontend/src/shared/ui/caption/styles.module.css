@@ -1,0 +1,10 @@
+.caption {
+  display: block;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.muted {
+  color: var(--text-muted);
+}

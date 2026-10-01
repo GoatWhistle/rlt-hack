@@ -18,7 +18,7 @@ describe("the application shell", () => {
   it("lazy-loads the home page inside the shell", async () => {
     renderApp()
     expect(
-      await screen.findByRole("heading", { level: 1, name: en("home.title") }),
+      await screen.findByRole("heading", { level: 1, name: en("upload.title") }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole("navigation", { name: en("app.mainNavigation") }),

@@ -14,12 +14,12 @@
 
 .description {
   max-width: var(--measure-prose);
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .details {
   font-size: var(--text-sm);
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .actions {

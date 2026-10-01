@@ -1,0 +1,31 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.narrow {
+  flex: 1 1 16rem;
+  max-width: var(--column-products);
+}
+
+.medium {
+  flex: 1.1 1 20rem;
+}
+
+.wide {
+  flex: 1.4 1 25rem;
+}
+
+.title {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-relaxed);
+}
+
+@media (max-width: 45rem) {
+  .narrow {
+    max-width: none;
+  }
+}

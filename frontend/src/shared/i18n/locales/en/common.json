@@ -1,11 +1,11 @@
 {
   "app": {
-    "name": "RLT Hack",
+    "name": "Supplier search",
     "skipToContent": "Skip to content",
     "mainNavigation": "Main navigation"
   },
   "nav": {
-    "home": "Home"
+    "home": "Search"
   },
   "action": {
     "close": "Close",
@@ -19,10 +19,6 @@
     "legend": "Interface language",
     "ru": "Русский",
     "en": "English"
-  },
-  "home": {
-    "title": "RLT Hack",
-    "description": "Base frontend skeleton."
   },
   "state": {
     "loading": "Loading"
@@ -48,5 +44,89 @@
   },
   "notifications": {
     "label": "Notifications"
+  },
+  "upload": {
+    "title": "A verifiable supplier list from a single procurement",
+    "subtitle": "Upload an Excel file. The system identifies the products, finds companies and shows what every conclusion rests on.",
+    "dropTitle": "Drop the file here",
+    "dropHint": ".xlsx or .xls · lots, product names, OKPD2 codes",
+    "chooseFile": "Choose file",
+    "fileSize": "{{size}} KB · ready to process",
+    "submit": "Find suppliers",
+    "submitting": "Searching…",
+    "stepsLabel": "How the system reaches a conclusion",
+    "steps": {
+      "request": {
+        "title": "Request",
+        "text": "We read the file: product names, OKPD2 codes, customer."
+      },
+      "products": {
+        "title": "Products",
+        "text": "Each one shows its origin: from the notice, inferred or confirmed by you."
+      },
+      "companies": {
+        "title": "Companies",
+        "text": "A ranked list with a role: supplier, manufacturer, distributor."
+      },
+      "evidence": {
+        "title": "Grounds",
+        "text": "Why it fits, what confirms it, what still needs checking."
+      }
+    }
+  },
+  "results": {
+    "newFile": "Upload another file",
+    "demoNote": "Demo data: company names, tax IDs and links are placeholders.",
+    "empty": {
+      "title": "No search result yet",
+      "description": "Upload a procurement file to see the candidates.",
+      "action": "Upload a file"
+    },
+    "chain": {
+      "label": "Reasoning chain",
+      "request": "01 · Request",
+      "products": "02 · Products",
+      "companies": "03 · Companies",
+      "evidence": "04 · Grounds",
+      "lotFromFile": "{{lot}} from the file",
+      "productCount_one": "{{count}} item",
+      "productCount_other": "{{count}} items",
+      "originSummary": "{{notice}} from the notice · {{inferred}} inferred · {{user}} confirmed",
+      "companyCount_one": "{{count}} candidate",
+      "companyCount_other": "{{count}} candidates",
+      "statusSummary": "{{recommended}} recommended · {{check}} to check",
+      "evidenceSummary_one": "{{count}} source · {{clarify}} to clarify",
+      "evidenceSummary_other": "{{count}} sources · {{clarify}} to clarify"
+    },
+    "products": {
+      "title": "Identified products",
+      "origin": {
+        "notice": "Stated in the notice",
+        "inferred": "Inferred from similar purchases",
+        "user": "Confirmed by the user"
+      }
+    },
+    "companies": {
+      "title": "Matching companies",
+      "inn": "Tax ID {{inn}}",
+      "covered": "{{covered}} of {{total}} products",
+      "purchases_one": "{{count}} similar purchase",
+      "purchases_other": "{{count}} similar purchases",
+      "status": {
+        "recommended": "Recommended",
+        "check": "To check"
+      }
+    },
+    "evidence": {
+      "title": "Why this company",
+      "coverage": "Product coverage",
+      "covered": "in the catalogue",
+      "missing": "not confirmed",
+      "why": "Why it fits",
+      "proof": "What confirms it",
+      "clarify": "What needs clarifying",
+      "shortlist": "Add to shortlist",
+      "exclude": "Exclude"
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { NavLink, Outlet } from "react-router"
 import { LocaleSwitch } from "@/features/locale-switch"
+import { Icon } from "@/shared/ui/icon"
 import { SkipLink } from "@/shared/ui/skip-link"
 import styles from "./styles.module.css"
 
@@ -13,6 +14,7 @@ export function AppShell() {
       <SkipLink targetId={MAIN_CONTENT_ID} label={t("app.skipToContent")} />
       <header className={styles.header}>
         <NavLink to="/" className={styles.brand}>
+          <Icon name="logo" />
           {t("app.name")}
         </NavLink>
         <nav aria-label={t("app.mainNavigation")} className={styles.nav}>

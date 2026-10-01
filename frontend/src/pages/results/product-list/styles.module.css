@@ -1,0 +1,31 @@
+.list {
+  padding: 0;
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-block-end: var(--line-width) solid var(--line-hairline);
+}
+
+.item:last-child {
+  border-block-end: 0;
+}
+
+.name {
+  font-weight: var(--weight-medium);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
