@@ -15,6 +15,11 @@ from src.adapter.repository.reference import REFERENCE_DIR
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
 
+def _optional_path(name: str) -> Path | None:
+    value = os.getenv(name, "").strip()
+    return Path(value) if value else None
+
+
 def _int(name: str, default: int) -> int:
     raw = os.getenv(name)
     return int(raw) if raw and raw.strip() else default
@@ -78,6 +83,11 @@ class AppConfig:
     use_optkatalog_provider: bool = False
     use_aboutpartner_provider: bool = False
     use_texzakaz_provider: bool = False
+    # Сайт закрыт проверкой на робота: включается только с разрешения владельца.
+    use_pulscen_provider: bool = False
+    pulscen_delay_seconds: float = 10.0
+    # Диагностический снимок страниц Пульса цен из JSON-файла: пусто — выключен.
+    pulscen_snapshot_path: Path | None = None
     use_gisp_registry_provider: bool = False
     gisp_export_location: str = ""
     use_productcenter_provider: bool = False
@@ -117,6 +127,9 @@ class AppConfig:
             use_optkatalog_provider=_bool("OPTKATALOG_WEB_PROVIDER", False),
             use_aboutpartner_provider=_bool("ABOUTPARTNER_WEB_PROVIDER", False),
             use_texzakaz_provider=_bool("TEXZAKAZ_WEB_PROVIDER", False),
+            use_pulscen_provider=_bool("PULSCEN_WEB_PROVIDER", False),
+            pulscen_delay_seconds=_float("PULSCEN_DELAY_SECONDS", 10.0),
+            pulscen_snapshot_path=_optional_path("PULSCEN_SNAPSHOT_PATH"),
             use_gisp_registry_provider=_bool("GISP_REGISTRY_PROVIDER", False),
             gisp_export_location=os.getenv("GISP_EXPORT_LOCATION", ""),
             use_productcenter_provider=_bool("PRODUCTCENTER_WEB_PROVIDER", False),
