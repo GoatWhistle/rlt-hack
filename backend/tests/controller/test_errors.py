@@ -5,7 +5,12 @@ import pytest
 from starlette.requests import Request
 
 from src.controller.http.errors import handle_http
-from src.models.errors import InvalidQueryItemError
+from src.models.errors import (
+    InvalidCandidateError,
+    InvalidProcurementLotError,
+    InvalidQueryItemError,
+    InvalidScoreError,
+)
 from src.service.errors import (
     ProviderNotConfiguredError,
     SearchNotFoundError,
@@ -69,7 +74,6 @@ async def test_too_long_text_message_matches_contract(client: httpx.AsyncClient)
     ("error", "status", "code"),
     [
         (UninterpretableQueryError(), 422, "query_not_understood"),
-        (InvalidQueryItemError("name is empty"), 422, "invalid_request"),
         (SearchNotFoundError("x"), 404, "search_not_found"),
         (SupplierNotFoundError("x"), 404, "supplier_not_found"),
         (SearchUnavailableError(("lexical",)), 503, "search_unavailable"),
@@ -103,6 +107,32 @@ async def test_unexpected_errors_hide_details(
     assert response.json()["message"] == "internal error"
     assert SECRET not in response.text
     assert any(record.exc_info for record in caplog.records)
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        InvalidCandidateError("ranks start at 1"),
+        InvalidScoreError(1.7),
+        InvalidQueryItemError("name is empty"),
+        InvalidProcurementLotError("title is empty"),
+    ],
+)
+async def test_server_side_invariant_violation_is_internal(
+    client: httpx.AsyncClient,
+    provider: FakeServiceProvider,
+    caplog: pytest.LogCaptureFixture,
+    error: Exception,
+) -> None:
+    provider.searching.error = error
+    with caplog.at_level(logging.INFO):
+        response = await client.post("/api/searches", json={"text": "рис"})
+    assert_error(response, 500, "internal_error")
+    assert str(error) not in response.text
+    failures = [record for record in caplog.records if record.levelno == logging.ERROR]
+    assert failures
+    assert all(record.exc_info for record in failures)
+    assert not [record for record in caplog.records if record.getMessage() == "request rejected"]
 
 
 async def test_unknown_route_is_not_found(client: httpx.AsyncClient) -> None:

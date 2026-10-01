@@ -1,0 +1,183 @@
+{
+  "payload_version": 1,
+  "search_id": "94783fe1-57fe-502c-94ca-91512b1fede5",
+  "query": {
+    "text": "крупа гречневая 1,5 т; рис",
+    "limit": 5,
+    "locale": "en",
+    "regions": [
+      "78",
+      "47"
+    ],
+    "item_type": "goods"
+  },
+  "items": [
+    {
+      "item_id": "i1",
+      "name": "Крупа гречневая",
+      "origin": "text",
+      "okpd2": "10.61.32.113",
+      "item_type": "goods",
+      "quantity": {
+        "value": "1.5",
+        "unit": "т"
+      }
+    },
+    {
+      "item_id": "i2",
+      "name": "Рис",
+      "origin": "inferred",
+      "okpd2": "",
+      "item_type": "unknown",
+      "quantity": null
+    }
+  ],
+  "candidates": [
+    {
+      "supplier": {
+        "supplier_id": "671c847c-400b-5107-ae87-a645ea4b67bd",
+        "name": "ООО «alpha»",
+        "inn": "7801234564",
+        "kpps": [],
+        "region": "78",
+        "website": "https://alpha.example.org",
+        "contacts": {
+          "email": "sales@alpha.example.org",
+          "phone": "+7 812 000-00-00"
+        },
+        "okved_codes": [],
+        "identity_status": "verified",
+        "identity_evidence_url": ""
+      },
+      "role": "distributor",
+      "status": "recommended",
+      "score": {
+        "fusion": 0.9,
+        "coverage": 1.0,
+        "evidence": 0.8,
+        "history": 0.4,
+        "total": 0.8,
+        "channels": [
+          [
+            "lexical",
+            1
+          ]
+        ]
+      },
+      "rank": 1,
+      "role_evidence": {
+        "kind": "catalog",
+        "title": "Прайс-лист",
+        "url": "https://alpha.example.org/price",
+        "checked_at": "2026-09-29T08:00:00Z"
+      },
+      "check_reasons": [],
+      "matches": [
+        {
+          "item_id": "i1",
+          "basis": "stock",
+          "offer_id": "9e2de5a6-219a-5a5c-b011-e7a74fd0f451",
+          "evidence": {
+            "kind": "price",
+            "title": "Прайс-лист",
+            "url": "https://alpha.example.org/price",
+            "checked_at": "2026-09-29T08:00:00Z"
+          }
+        }
+      ],
+      "history": {
+        "similar": 3,
+        "wins": 1,
+        "records": []
+      },
+      "highlights": [
+        {
+          "code": "coversItems",
+          "params": {
+            "matched": 1,
+            "total": 1
+          }
+        }
+      ]
+    },
+    {
+      "supplier": {
+        "supplier_id": "b4088555-cd9c-50db-9a66-073db264283d",
+        "name": "ООО «beta»",
+        "inn": null,
+        "kpps": [],
+        "region": "78",
+        "website": "https://beta.example.org",
+        "contacts": {
+          "email": "sales@beta.example.org",
+          "phone": "+7 812 000-00-00"
+        },
+        "okved_codes": [],
+        "identity_status": "verified",
+        "identity_evidence_url": ""
+      },
+      "role": "unknown",
+      "status": "check",
+      "score": {
+        "fusion": 0.9,
+        "coverage": 1.0,
+        "evidence": 0.8,
+        "history": 0.4,
+        "total": 0.8,
+        "channels": [
+          [
+            "lexical",
+            1
+          ]
+        ]
+      },
+      "rank": 2,
+      "role_evidence": null,
+      "check_reasons": [
+        "innMissing"
+      ],
+      "matches": [
+        {
+          "item_id": "i2",
+          "basis": "inferred",
+          "offer_id": null,
+          "evidence": null
+        }
+      ],
+      "history": {
+        "similar": 4,
+        "wins": 1,
+        "records": [
+          {
+            "lot_id": "L-01",
+            "title": "Поставка риса",
+            "outcome": "winner",
+            "item_ids": [
+              "i2"
+            ]
+          }
+        ]
+      },
+      "highlights": [
+        {
+          "code": "verifiedIdentity",
+          "params": {}
+        }
+      ]
+    }
+  ],
+  "pipeline": {
+    "version": "search-v1",
+    "channels": [
+      "lexical"
+    ],
+    "as_of": "2026-10-01T12:00:00Z"
+  },
+  "created_at": "2026-10-01T12:00:00Z",
+  "warnings": [
+    {
+      "code": "channelFailed",
+      "subject": "semantic"
+    }
+  ]
+}

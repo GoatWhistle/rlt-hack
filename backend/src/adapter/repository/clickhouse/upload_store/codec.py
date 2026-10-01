@@ -1,16 +1,19 @@
 from datetime import datetime
 from typing import Self
 
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 from src.adapter.repository.clickhouse.search_archive.query_dto import FrozenDto, QueryItemDto
 from src.adapter.repository.clickhouse.search_archive.result_dto import CandidateDto, WarningDto
+from src.adapter.repository.errors import CorruptRecordError
 from src.models.enums import IssueCode
+from src.models.errors import DomainError
 from src.models.lot_result import LotResult
 from src.models.procurement import RowIssue
 from src.models.search_result import SearchWarning
 
 PAYLOAD_VERSION = 1
+READABLE_VERSIONS = frozenset({1})
 
 
 class IssueDto(FrozenDto):
@@ -60,7 +63,13 @@ def encode_lot_result(result: LotResult) -> str:
 
 
 def decode_lot_result(payload: str) -> LotResult:
-    return LotResultDto.model_validate_json(payload).to_domain()
+    try:
+        dto = LotResultDto.model_validate_json(payload)
+        if dto.payload_version not in READABLE_VERSIONS:
+            raise CorruptRecordError("lot result", f"payload version {dto.payload_version}")
+        return dto.to_domain()
+    except (ValidationError, DomainError) as error:
+        raise CorruptRecordError("lot result", type(error).__name__) from error
 
 
 def encode_issues(issues: tuple[RowIssue, ...]) -> str:
@@ -71,6 +80,9 @@ def encode_issues(issues: tuple[RowIssue, ...]) -> str:
 def decode_issues(payload: str) -> tuple[RowIssue, ...]:
     if not payload:
         return ()
-    return tuple(
-        RowIssue(item.row, item.code, item.value) for item in ISSUES.validate_json(payload)
-    )
+    try:
+        return tuple(
+            RowIssue(item.row, item.code, item.value) for item in ISSUES.validate_json(payload)
+        )
+    except (ValidationError, DomainError) as error:
+        raise CorruptRecordError("upload issues", type(error).__name__) from error

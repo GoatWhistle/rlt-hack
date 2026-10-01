@@ -15,3 +15,10 @@ class MigrationError(RepositoryError):
 
 class ReferenceDataError(RepositoryError):
     """Файл справочника отсутствует или описан неверно."""
+
+
+class CorruptRecordError(RepositoryError):
+    def __init__(self, record: str, reason: str) -> None:
+        super().__init__(f"stored {record} cannot be read: {reason}")
+        self.record = record
+        self.reason = reason

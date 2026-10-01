@@ -2,18 +2,22 @@ class DomainError(ValueError):
     pass
 
 
-class EmptySearchTextError(DomainError):
+class InvalidInputError(DomainError):
+    pass
+
+
+class EmptySearchTextError(InvalidInputError):
     def __init__(self) -> None:
         super().__init__("search text is empty")
 
 
-class SearchTextTooLongError(DomainError):
+class SearchTextTooLongError(InvalidInputError):
     def __init__(self, limit: int) -> None:
         super().__init__(f"search text is longer than {limit} characters")
         self.limit = limit
 
 
-class InvalidCandidateLimitError(DomainError):
+class InvalidCandidateLimitError(InvalidInputError):
     def __init__(self, minimum: int, maximum: int) -> None:
         super().__init__(f"candidate limit must be within {minimum}..{maximum}")
         self.minimum = minimum
@@ -85,7 +89,7 @@ class InvalidLotResultError(DomainError):
         super().__init__(f"lot result is invalid: {reason}")
 
 
-class NoticeFileError(DomainError):
+class NoticeFileError(InvalidInputError):
     pass
 
 

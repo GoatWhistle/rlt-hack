@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Self
 from uuid import UUID
 
+from pydantic import ValidationError
+
 from src.adapter.repository.clickhouse.search_archive.candidate_dto import (
     EvidenceDto,
     HighlightDto,
@@ -15,11 +17,14 @@ from src.adapter.repository.clickhouse.search_archive.query_dto import (
     QueryDto,
     QueryItemDto,
 )
+from src.adapter.repository.errors import CorruptRecordError
 from src.models.candidate import SupplierCandidate
 from src.models.enums import CandidateStatus, CheckReason, CompanyRole, WarningCode
+from src.models.errors import DomainError
 from src.models.search_result import PipelineInfo, SearchResult, SearchWarning
 
 PAYLOAD_VERSION = 1
+READABLE_VERSIONS = frozenset({1})
 
 
 class CandidateDto(FrozenDto):
@@ -121,4 +126,10 @@ def encode_result(result: SearchResult) -> str:
 
 
 def decode_result(payload: str) -> SearchResult:
-    return SearchResultDto.model_validate_json(payload).to_domain()
+    try:
+        dto = SearchResultDto.model_validate_json(payload)
+        if dto.payload_version not in READABLE_VERSIONS:
+            raise CorruptRecordError("search", f"payload version {dto.payload_version}")
+        return dto.to_domain()
+    except (ValidationError, DomainError) as error:
+        raise CorruptRecordError("search", type(error).__name__) from error
