@@ -13,9 +13,6 @@ Polza API; отдельная серия Qwen3-Embedding-4B выполняетс
 вычислений. Улучшение качества пока является гипотезой.
 
 Основания: [ML-постановка](../task/ML_SPEC.md),
-[принятые решения](../context/decisions.md),
-[ресурсы](../context/hardware.md),
-[уточнения организаторов](../context/organizers.md),
 [общий план](../plans/implementation.md),
 [журнал экспериментов](EXPERIMENTS.md).
 

@@ -12,8 +12,6 @@
 
 ## Состав решения
 
-- [Источники поставщиков и ассортимента](context/supplier-sources.md)
-- [Схема ClickHouse и примеры запросов](context/clickhouse-schema.md)
 - [Схема таблиц и всех связей (PDF)](docs/schema-relations.pdf)
 - [Миграции ClickHouse](backend/migration)
 - [Джоба сбора: контракт источника, адаптеры и команды](backend/README.md)
