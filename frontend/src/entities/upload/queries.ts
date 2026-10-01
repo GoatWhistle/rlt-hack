@@ -1,19 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect } from "react"
 import { keptAcrossLocales } from "@/shared/api/locale-keys"
 import type { Locale } from "@/shared/i18n/locale"
 import { useLocale } from "@/shared/i18n/locale-provider"
 import type { NewUpload } from "./gateway"
 import { useUploadGateway } from "./gateway-context"
-import { isProcessing, type LotDetail } from "./model"
+import { isProcessing, type LotDetail, type UploadDetail, type UploadSummary } from "./model"
 
 export { sameButLocale } from "@/shared/api/locale-keys"
 
 export const POLL_MS = 1000
+export const DETAIL_POLL_MS = 5000
 
 export const uploadKeys = {
   all: ["uploads"] as const,
   list: (locale: Locale) => ["uploads", locale] as const,
   detail: (locale: Locale, uploadId: string) => ["uploads", locale, uploadId] as const,
+  progress: (uploadId: string) => ["upload-progress", uploadId] as const,
   lot: (locale: Locale, uploadId: string, lotId: string) =>
     ["uploads", locale, uploadId, "lots", lotId] as const,
 }
@@ -30,19 +33,51 @@ export function useUploads() {
   })
 }
 
+export function withProgress(
+  detail: UploadDetail | undefined,
+  progress: UploadSummary,
+): UploadDetail | undefined {
+  if (!detail || progress.processed <= detail.processed) return detail
+  return { ...detail, processed: progress.processed, counts: progress.counts }
+}
+
+function useUploadProgress(uploadId: string, enabled: boolean) {
+  const gateway = useUploadGateway()
+  const light = gateway.summary
+  return useQuery({
+    queryKey: uploadKeys.progress(uploadId),
+    queryFn: () => (light ? light(uploadId) : Promise.reject(new Error("no summary"))),
+    enabled: enabled && light !== undefined,
+    staleTime: 0,
+    refetchInterval: POLL_MS,
+  })
+}
+
 export function useUpload(uploadId: string) {
   const gateway = useUploadGateway()
+  const client = useQueryClient()
   const { locale } = useLocale()
-  return useQuery({
+  const light = gateway.summary !== undefined
+  const detail = useQuery({
     queryKey: uploadKeys.detail(locale, uploadId),
     queryFn: () => gateway.get(uploadId),
     placeholderData: keptAcrossLocales(uploadKeys.detail(locale, uploadId)),
     staleTime: 0,
     refetchInterval: (query) => {
       const data = query.state.data
-      return data && isProcessing(data) ? POLL_MS : false
+      if (!data || !isProcessing(data)) return false
+      return light ? DETAIL_POLL_MS : POLL_MS
     },
   })
+  const processing = detail.data !== undefined && isProcessing(detail.data)
+  const latest = useUploadProgress(uploadId, processing).data
+  useEffect(() => {
+    if (!latest) return
+    const key = uploadKeys.detail(locale, uploadId)
+    client.setQueryData<UploadDetail>(key, (current) => withProgress(current, latest))
+    if (!isProcessing(latest)) void client.invalidateQueries({ queryKey: key, exact: true })
+  }, [client, locale, uploadId, latest])
+  return detail
 }
 
 export const LOT_PART = 4

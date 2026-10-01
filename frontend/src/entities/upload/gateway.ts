@@ -11,6 +11,7 @@ export type UploadGateway = {
   readonly maxNotices: number
   readonly list: () => Promise<readonly UploadSummary[]>
   readonly get: (uploadId: string) => Promise<UploadDetail>
+  readonly summary?: (uploadId: string) => Promise<UploadSummary>
   readonly create: (upload: NewUpload) => Promise<UploadSummary>
   readonly lot: (uploadId: string, lotId: string) => Promise<LotDetail>
   readonly results: (

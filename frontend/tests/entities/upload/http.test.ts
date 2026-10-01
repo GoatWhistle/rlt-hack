@@ -54,6 +54,13 @@ describe("the http gateway", () => {
     expect(read.lots[2]?.status).toBe("failed")
     expect(read.issues).toEqual([{ row: 3, code: "badPrice", value: "x" }])
 
+    const light = client(summary)
+    expect(await createHttpGateway(light).summary?.("u 1")).toEqual({
+      ...summary,
+      stored: true,
+    })
+    expect(light.get).toHaveBeenCalledWith(`${UPLOADS_PATH}/u%201/summary`, expect.anything())
+
     const post = client(summary)
     const file = new File(["x"], "n.csv")
     await createHttpGateway(post).create({

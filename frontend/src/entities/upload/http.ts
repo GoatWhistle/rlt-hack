@@ -20,6 +20,10 @@ export function createHttpGateway(client: HttpClient): UploadGateway {
     maxNotices: HTTP_MAX_NOTICES,
     list: () => client.get(UPLOADS_PATH, { parse: parseUploadList }),
     get: (uploadId) => client.get(uploadPath(uploadId), { parse: parseUploadDetail }),
+    summary: (uploadId) =>
+      client.get(`${uploadPath(uploadId)}/summary`, {
+        parse: (value) => parseUploadSummary(value),
+      }),
     create: ({ file }) => {
       const body = new FormData()
       body.append("file", file)
