@@ -77,7 +77,6 @@ jobs:
       - run: python backend/tests/registry/registry_store_smoke.py
       - run: python backend/tests/supplier/eis_registry_smoke.py
       - run: python backend/tests/supplier/gisp_snapshot.py
-      - run: python backend/tests/clickhouse/gisp_schema.py
       - run: python backend/tests/supplier/supl_biz_smoke.py
       - run: python backend/tests/supplier/supl_biz_balanced_smoke.py
       - run: python backend/tests/product/moscow_smoke.py

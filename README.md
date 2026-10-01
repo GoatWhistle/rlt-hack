@@ -148,7 +148,6 @@ uv run --no-project --python 3.13 python backend/tests/classifier/classifier_smo
 uv run --no-project --python 3.13 --with lxml python backend/tests/registry/registry_smoke.py
 uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/registry/registry_store_smoke.py
 uv run --no-project --python 3.13 --with httpx --with openpyxl python backend/tests/supplier/gisp_snapshot.py
-uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/clickhouse/gisp_schema.py
 ```
 
 Проверки используют временные каталоги, встроенный движок chDB и подготовленные

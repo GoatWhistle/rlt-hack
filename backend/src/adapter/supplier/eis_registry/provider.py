@@ -263,16 +263,5 @@ class EisRegistryProvider:
 
 
 def _with_kpp(supplier: Supplier, kpp: str) -> Supplier:
-    return Supplier(
-        supplier_id=supplier.supplier_id,
-        name=supplier.name,
-        inn=supplier.inn,
-        kpps=(*supplier.kpps, kpp),
-        legal_status=supplier.legal_status,
-        region=supplier.region,
-        website=supplier.website,
-        contacts=supplier.contacts,
-        okved_codes=supplier.okved_codes,
-        identity_status=supplier.identity_status,
-        identity_evidence_url=supplier.identity_evidence_url,
-    )
+    """Копия с добавленным КПП: остальные поля компании переносятся как есть."""
+    return replace(supplier, kpps=(*supplier.kpps, kpp))

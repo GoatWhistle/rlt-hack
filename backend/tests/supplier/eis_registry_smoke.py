@@ -187,6 +187,25 @@ async def run():
     assert str(item.unit_price) == "125.05" and str(item.total_price) == "1250.50"
     assert adapter.report.pages == 1 and adapter.report.cards == 3
 
+    # Та же компания с другим КПП: копия обязана сохранить остальные поля.
+    second_kpp, _ = make(
+        total=2,
+        per_page=2,
+        handler=lambda r: (
+            httpx.Response(200, text=listing(2, [0, 1]))
+            if "results" in r.url.path
+            else page_response(
+                r.url.path,
+                card(kpp="780101001" if "000001" in str(r.url) else "770701001"),
+            )
+        ),
+    )
+    merged = await second_kpp.fetch()
+    assert len(merged.suppliers) == 1, "Компания с двумя КПП остаётся одной записью"
+    assert set(merged.suppliers[0].kpps) == {"770701001", "780101001"}
+    assert merged.suppliers[0].inn == INN_A and merged.suppliers[0].name == 'ООО "РОМАШКА"'
+    assert merged.suppliers[0].contacts.get("address"), "Контакты не теряются при добавлении КПП"
+
     bad_inn, _ = make(
         total=1,
         per_page=1,
