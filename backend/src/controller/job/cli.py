@@ -15,6 +15,15 @@ from uuid import UUID
 from src.application.config import AppConfig
 from src.application.container import Container
 from src.controller.job.dto import NormalizeCommand, SyncCommand
+from src.controller.job.protocols import (
+    CoverageReading,
+    CrawlJournalReader,
+    OfferEnriching,
+    OfferReidentifying,
+    SchemaMigrator,
+    SourceCatalog,
+    SupplierSyncing,
+)
 from src.models.coverage import CoverageReport
 from src.service.errors import ProviderNotConfiguredError, ServiceError
 
@@ -96,21 +105,24 @@ async def _dispatch(arguments: argparse.Namespace, config: AppConfig) -> int:
                 source = provider.source
                 print(f"{source.source_id}  {source.provider_name:18}  {source.name}")
             return 0
+        migrator: SchemaMigrator = await container.migrator()
         if arguments.command == "migrate":
-            applied = await (await container.migrator()).apply_pending()
+            applied = await migrator.apply_pending()
             print("\n".join(applied) if applied else "Новых миграций нет")
             return 0
         if arguments.command == "migrations":
-            names = await (await container.migrator()).applied_names()
+            names = await migrator.applied_names()
             print("\n".join(names) or "Миграции не применялись")
             return 0
         if arguments.command == "sources":
-            for source in await (await container.sources()).list_all():
+            catalog: SourceCatalog = await container.sources()
+            for source in await catalog.list_all():
                 print(f"{source.source_id}  {source.provider_name:18}  {source.name}")
             return 0
         if arguments.command == "normalize":
             command = NormalizeCommand.of(arguments)
-            result = await (await container.enrichment()).run(command.limit)
+            enriching: OfferEnriching = await container.enrichment()
+            result = await enriching.run(command.limit)
             print(
                 f"Источников: {result.sources}  позиций: {result.offers}  "
                 f"с кодом: {result.classified}  "
@@ -118,18 +130,19 @@ async def _dispatch(arguments: argparse.Namespace, config: AppConfig) -> int:
             )
             return 0
         if arguments.command == "reidentify":
-            outcome = await (await container.reidentify()).run()
+            reidentifying: OfferReidentifying = await container.reidentify()
+            outcome = await reidentifying.run()
             print(
                 f"Источников: {outcome.sources}  позиций: {outcome.offers}  "
                 f"сменили ключ: {outcome.changed}  слились: {outcome.merged}"
             )
             return 0
         if arguments.command == "coverage":
-            # Контроллер ходит в сервис, а не в репозиторий напрямую.
-            _print_coverage(await (await container.enrichment()).coverage())
+            reading: CoverageReading = await container.enrichment()
+            _print_coverage(await reading.coverage())
             return 0
         if arguments.command == "runs":
-            journal = await container.journal()
+            journal: CrawlJournalReader = await container.journal()
             for run in await journal.last_runs(UUID(arguments.source), arguments.limit):
                 print(
                     f"{run.started_at:%Y-%m-%d %H:%M:%S}  {run.status:8}  "
@@ -172,7 +185,7 @@ async def _sync(arguments: argparse.Namespace, config: AppConfig) -> int:
     if command.parallel_sources is not None:
         config = dataclasses.replace(config, parallel_sources=command.parallel_sources)
     async with Container(config) as container:
-        worker = await container.supplier_worker()
+        worker: SupplierSyncing = await container.supplier_worker()
         if not container.providers():
             raise ProviderNotConfiguredError(
                 "ни один адаптер источника не включён: задайте флаги *_PROVIDER"
