@@ -22,7 +22,11 @@
 }
 
 .invalid {
-  border-color: var(--warning);
+  border-color: var(--warning-icon);
+}
+
+.invalid:has(.input:focus) {
+  outline-color: var(--warning-icon);
 }
 
 .input {
