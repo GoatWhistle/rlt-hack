@@ -1,5 +1,6 @@
 .examples {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
 }
 
@@ -11,6 +12,7 @@
 
 .list {
   display: flex;
+  min-width: 0;
   margin: 0;
   flex-wrap: wrap;
   gap: var(--space-2);
