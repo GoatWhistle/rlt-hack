@@ -1,5 +1,5 @@
 import { QueryClientProvider, useMutation } from "@tanstack/react-query"
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { en } from "@tests/support/dictionaries"
 import { renderWithProviders } from "@tests/support/render"
@@ -134,14 +134,21 @@ describe("mutation errors", () => {
   it("surface as an error toast in the current language", async () => {
     const user = renderWithBridge(false)
     await user.click(screen.getByRole("button", { name: "save" }))
-    expect(await screen.findByRole("alert")).toHaveTextContent(en("forbidden", "errors"))
+    const region = screen.getByRole("region", { name: en("notifications.label") })
+    await waitFor(() =>
+      expect(region.querySelector("li")).toHaveTextContent(en("forbidden", "errors")),
+    )
+    expect(region.querySelector("[aria-live='assertive']")).toHaveTextContent(
+      en("forbidden", "errors"),
+    )
   })
 
   it("stay quiet when the mutation asks for silence", async () => {
     const user = renderWithBridge(true)
     await user.click(screen.getByRole("button", { name: "save" }))
     await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+    const region = screen.getByRole("region", { name: en("notifications.label") })
+    expect(region.querySelector("li")).toBeNull()
   })
 
   it("render inside the shared test providers", () => {

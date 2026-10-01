@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest"
 import { EXIT_FALLBACK_MS } from "@/shared/motion/use-presence"
 import { Button } from "@/shared/ui/button"
 import { Dialog } from "@/shared/ui/dialog"
-import { DEFAULT_TOAST_MS, MAX_TOASTS } from "@/shared/ui/toast"
+import { DEFAULT_TOAST_MS, ERROR_TOAST_MS, MAX_TOASTS } from "@/shared/ui/toast"
 import { useToast } from "@/shared/ui/toast/toast-context"
 
 function DialogHarness({ onClose }: { readonly onClose?: () => void }) {
@@ -61,27 +61,55 @@ describe("Dialog", () => {
   })
 })
 
+function toasts() {
+  return screen.getByRole("region", { name: en("notifications.label") })
+}
+
 describe("Toasts", () => {
-  it("shows a status that dismisses itself after its duration", () => {
+  it("announces a status politely and dismisses it after its duration", () => {
     vi.useFakeTimers()
     renderWithProviders(<ToastHarness tone="success" />)
     fireEvent.click(screen.getByRole("button", { name: "notify" }))
-    const toast = screen.getByRole("status")
+    const toast = toasts().querySelector("li")
     expect(toast).toHaveAttribute("data-state", "open")
+    expect(toasts().querySelector("[aria-live='polite']")).toHaveTextContent(/saved/)
     act(() => vi.advanceTimersByTime(DEFAULT_TOAST_MS))
     expect(toast).toHaveAttribute("data-state", "closed")
     act(() => vi.advanceTimersByTime(EXIT_FALLBACK_MS))
-    expect(screen.queryByRole("status")).not.toBeInTheDocument()
+    expect(toasts().querySelector("li")).toBeNull()
   })
 
-  it("announces errors as alerts and closes them by hand", () => {
+  it("keeps a toast while it is hovered or focused", () => {
+    vi.useFakeTimers()
+    renderWithProviders(<ToastHarness />)
+    fireEvent.click(screen.getByRole("button", { name: "notify" }))
+    const toast = toasts().querySelector("li") as HTMLElement
+    act(() => vi.advanceTimersByTime(DEFAULT_TOAST_MS - 1000))
+    fireEvent.pointerEnter(toast)
+    act(() => vi.advanceTimersByTime(DEFAULT_TOAST_MS * 2))
+    expect(toast).toHaveAttribute("data-state", "open")
+    fireEvent.pointerLeave(toast)
+    fireEvent.focus(screen.getByRole("button", { name: en("action.dismiss") }))
+    act(() => vi.advanceTimersByTime(DEFAULT_TOAST_MS * 2))
+    expect(toast).toHaveAttribute("data-state", "open")
+    fireEvent.blur(screen.getByRole("button", { name: en("action.dismiss") }))
+    act(() => vi.advanceTimersByTime(999))
+    expect(toast).toHaveAttribute("data-state", "open")
+    act(() => vi.advanceTimersByTime(1))
+    expect(toast).toHaveAttribute("data-state", "closed")
+  })
+
+  it("announces errors assertively, keeps them longer and closes them by hand", () => {
     vi.useFakeTimers()
     renderWithProviders(<ToastHarness tone="error" />)
     fireEvent.click(screen.getByRole("button", { name: "notify" }))
-    const alert = screen.getByRole("alert")
+    const toast = toasts().querySelector("li") as HTMLElement
+    expect(toasts().querySelector("[aria-live='assertive']")).toHaveTextContent(/saved/)
+    act(() => vi.advanceTimersByTime(ERROR_TOAST_MS - 1))
+    expect(toast).toHaveAttribute("data-state", "open")
     fireEvent.click(screen.getByRole("button", { name: en("action.dismiss") }))
-    fireEvent.animationEnd(alert)
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+    fireEvent.animationEnd(toast)
+    expect(toasts().querySelector("li")).toBeNull()
   })
 
   it("keeps only the latest toasts in a labelled region", () => {

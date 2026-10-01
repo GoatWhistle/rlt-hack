@@ -9,29 +9,39 @@
 
 .list {
   display: grid;
-  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.item[data-state="open"] {
+  animation: var(--motion-slide-in);
+}
+
+.item[data-state="closed"] {
+  animation: var(--motion-collapse);
+}
+
+.clip {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .toast {
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
+  margin-block-start: var(--space-2);
   padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
   border: var(--line-width) solid var(--line-hairline);
   border-radius: var(--radius-md);
   background: var(--surface-base);
   pointer-events: auto;
-}
-
-.toast[data-state="open"] {
-  animation: var(--motion-slide-in);
-}
-
-.toast[data-state="closed"] {
-  animation: var(--motion-fade-out);
 }
 
 .info {

@@ -27,6 +27,7 @@
   --motion-slide-in: slide-in var(--dur-enter) var(--ease-out) both;
   --motion-slide-out: slide-out var(--dur-exit) var(--ease-in) both;
   --motion-grow: grow-x var(--dur-enter) var(--ease-out) both;
+  --motion-collapse: collapse var(--dur-exit) var(--ease-in) both;
   --dur-pulse: 900ms;
   --skeleton-dim: 0.5;
   --motion-pulse: pulse var(--dur-pulse) var(--ease-in-out) infinite alternate;
@@ -90,6 +91,14 @@
 
 @keyframes slide-out {
   to {
+    opacity: 0;
+    transform: translateY(var(--motion-offset));
+  }
+}
+
+@keyframes collapse {
+  to {
+    grid-template-rows: 0fr;
     opacity: 0;
     transform: translateY(var(--motion-offset));
   }
