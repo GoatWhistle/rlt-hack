@@ -69,7 +69,7 @@ describe("the navigation tabs", () => {
     expect(uploads).toHaveAttribute("aria-current", "page")
     const nav = screen.getByRole("navigation", { name: en("app.mainNavigation") })
     expect(nav.style.getPropertyValue("--indicator-x")).toBe("0px")
-    expect(nav.style.getPropertyValue("--indicator-width")).toBe("80px")
+    expect(nav.style.getPropertyValue("--indicator-scale")).toBe("80")
     expect(indicator()).not.toBeNull()
 
     await user.click(screen.getByRole("link", { name: en("nav.lots") }))
@@ -110,13 +110,43 @@ describe("the navigation tabs", () => {
     act(() => {
       for (const callback of observers) callback([], {} as ResizeObserver)
     })
-    expect(nav.style.getPropertyValue("--indicator-width")).toBe("120px")
+    expect(nav.style.getPropertyValue("--indicator-scale")).toBe("120")
   })
 
   it("hides the indicator when no tab matches the page", () => {
     renderTabs("/missing")
     expect(indicator()).toBeNull()
     expect(screen.getByRole("navigation").querySelector("[aria-current]")).toBeNull()
+  })
+
+  it("turns the slide on only after the first placement and the font swap", async () => {
+    let fontsLoaded: () => void = () => {}
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      callback(0)
+      return 1
+    })
+    Object.defineProperty(document, "fonts", {
+      configurable: true,
+      value: { ready: new Promise<void>((resolve) => (fontsLoaded = resolve)) },
+    })
+    renderTabs("/uploads")
+    const nav = screen.getByRole("navigation")
+    expect(nav).toHaveAttribute("data-indicator", "ready")
+    tabWidth = 96
+    await act(async () => fontsLoaded())
+    expect(nav.style.getPropertyValue("--indicator-scale")).toBe("96")
+    expect(nav).toHaveAttribute("data-indicator", "ready")
+    Reflect.deleteProperty(document, "fonts")
+  })
+
+  it("measures the tab without its padding", () => {
+    const root = document.createElement("nav")
+    const tab = document.createElement("a")
+    tab.setAttribute("aria-current", "page")
+    tab.style.paddingInlineStart = "12px"
+    tab.style.paddingInlineEnd = "12px"
+    root.append(tab)
+    expect(measureActive(root)).toEqual({ x: 12, width: 56 })
   })
 
   it("does not measure a tab that is not laid out", () => {

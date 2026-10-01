@@ -34,13 +34,16 @@
   position: absolute;
   inset-block-end: calc(var(--line-width) * -1);
   inset-inline-start: 0;
-  width: calc(var(--indicator-width) - 2 * var(--tab-padding));
+  width: var(--line-width);
   height: var(--indicator-height);
-  border-radius: var(--radius-pill);
   background: var(--accent);
-  transform: translateX(calc(var(--indicator-x) + var(--tab-padding)));
-  transition: var(--transition-indicator);
+  transform: translateX(var(--indicator-x)) scaleX(var(--indicator-scale));
+  transform-origin: left center;
   pointer-events: none;
+}
+
+.nav[data-indicator="ready"] .indicator {
+  transition: var(--transition-indicator);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -50,14 +53,14 @@
   }
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 47.99rem) {
   .nav {
     --tab-padding: var(--space-2);
     gap: 0;
   }
 }
 
-@media (max-width: 30rem) {
+@media (max-width: 29.99rem) {
   .nav {
     --tab-padding: var(--space-1);
   }

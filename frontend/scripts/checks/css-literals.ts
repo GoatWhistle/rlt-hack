@@ -20,6 +20,11 @@ const LITERALS: readonly Literal[] = [
   { pattern: /(?<![\w.-])\d*\.?\d+m?s\b/, hint: "a literal duration", cssOnly: true },
   { pattern: /\b(?:cubic-bezier|steps)\(/, hint: "a literal easing", cssOnly: true },
   { pattern: /!important/, hint: "!important", cssOnly: true },
+  {
+    pattern: /(?<![\w-])border[\w-]*\s*:[^;{}]*?(?<![\w.-])\d*\.?\d+px\b/,
+    hint: "a literal border width",
+    cssOnly: true,
+  },
 ]
 
 function scan(file: SourceFile): Violation[] {

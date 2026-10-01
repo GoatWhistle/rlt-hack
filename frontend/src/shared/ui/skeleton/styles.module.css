@@ -78,7 +78,7 @@
   width: 40%;
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 47.99rem) {
   .action {
     width: var(--target-touch);
   }

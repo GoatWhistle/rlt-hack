@@ -43,7 +43,7 @@
   font-weight: var(--weight-semibold);
 }
 
-@media (max-width: 45rem) {
+@media (max-width: 47.99rem) {
   .columns {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-1);

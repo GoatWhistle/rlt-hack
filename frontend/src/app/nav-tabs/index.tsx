@@ -23,7 +23,7 @@ export function NavTabs() {
   const { t } = useTranslation()
   const ref = useRef<HTMLElement>(null)
   const active = useActiveTab()
-  const box = useIndicator(ref, active)
+  const { box, animated } = useIndicator(ref, active)
   const tabs: readonly { key: TabKey; to: string; label: string; icon: IconName }[] = [
     { key: "uploads", to: UPLOADS_PATH, label: t("nav.uploads"), icon: "upload" },
     { key: "lots", to: LOTS_ENTRY_PATH, label: t("nav.lots"), icon: "fileCheck" },
@@ -32,12 +32,18 @@ export function NavTabs() {
   const position = box
     ? ({
         "--indicator-x": `${box.x}px`,
-        "--indicator-width": `${box.width}px`,
+        "--indicator-scale": String(box.width),
       } as CSSProperties)
     : undefined
 
   return (
-    <nav ref={ref} aria-label={t("app.mainNavigation")} className={styles.nav} style={position}>
+    <nav
+      ref={ref}
+      aria-label={t("app.mainNavigation")}
+      className={styles.nav}
+      style={position}
+      data-indicator={animated ? "ready" : undefined}
+    >
       {tabs.map((tab) => (
         <Link
           key={tab.key}

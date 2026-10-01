@@ -1,3 +1,4 @@
+import { ProgressBar } from "@/shared/ui/progress-bar"
 import styles from "./styles.module.css"
 
 export type ScoreBarProps = {
@@ -8,7 +9,6 @@ export type ScoreBarProps = {
 }
 
 export function ScoreBar({ value, label, valueText, showLabel = false }: ScoreBarProps) {
-  const share = Math.min(1, Math.max(0, value))
   return (
     <span className={styles.score}>
       {showLabel ? (
@@ -16,14 +16,15 @@ export function ScoreBar({ value, label, valueText, showLabel = false }: ScoreBa
           {label}
         </span>
       ) : null}
-      <meter
-        className={styles.track}
-        min={0}
-        max={1}
-        value={share}
-        aria-label={label}
-        aria-valuetext={valueText}
-      />
+      <span className={styles.bar}>
+        <ProgressBar
+          role="meter"
+          label={label}
+          value={Math.min(1, Math.max(0, value))}
+          max={1}
+          valueText={valueText}
+        />
+      </span>
     </span>
   )
 }

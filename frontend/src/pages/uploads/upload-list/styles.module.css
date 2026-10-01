@@ -148,7 +148,7 @@
   }
 }
 
-@media (max-width: 64rem) {
+@media (max-width: 63.99rem) {
   .wide {
     display: none;
   }

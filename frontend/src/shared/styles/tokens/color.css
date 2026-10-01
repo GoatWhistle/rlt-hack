@@ -27,12 +27,16 @@
   --palette-green: #1f9d57;
   --palette-green-text: #146c3c;
   --palette-green-soft: #e7f6ec;
+  --palette-red-text: #a3261c;
+  --palette-red-soft: #fdecea;
+  --palette-indigo-hover: #e6e8ff;
+  --palette-scrim: rgb(27 29 41 / 0.32);
 
   --surface-canvas: var(--palette-canvas);
   --surface-base: var(--palette-white);
   --surface-raised: var(--palette-paper);
   --surface-subtle: var(--palette-cloud);
-  --surface-accent: var(--palette-indigo-soft);
+  --surface-scrim: var(--palette-scrim);
   --text-primary: var(--palette-ink);
   --text-body: var(--palette-slate);
   --text-secondary: var(--palette-graphite);
@@ -53,6 +57,7 @@
   --accent-muted: var(--palette-indigo-mid);
   --accent-soft: var(--palette-indigo-soft);
   --accent-tint: var(--palette-indigo-tint);
+  --accent-soft-hover: var(--palette-indigo-hover);
   --halo-selected: 0 0 0 4px var(--palette-indigo-soft);
 
   --warning: var(--palette-amber);
@@ -65,6 +70,9 @@
   --success: var(--palette-green);
   --success-text: var(--palette-green-text);
   --success-soft: var(--palette-green-soft);
+
+  --danger-text: var(--palette-red-text);
+  --danger-soft: var(--palette-red-soft);
 
   --meter-stock: var(--palette-indigo);
   --meter-catalog: var(--palette-indigo-mid);

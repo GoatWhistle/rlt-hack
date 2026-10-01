@@ -37,9 +37,7 @@
 }
 
 .menu[data-indicator="ready"] .indicator {
-  transition:
-    transform var(--dur-base) var(--ease-out),
-    height var(--dur-base) var(--ease-out);
+  transition: var(--transition-indicator);
 }
 
 .item {

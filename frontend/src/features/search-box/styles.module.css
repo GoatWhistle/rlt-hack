@@ -126,7 +126,7 @@
   }
 }
 
-@media (max-width: 30rem) {
+@media (max-width: 29.99rem) {
   .submit {
     flex: 1 1 100%;
   }

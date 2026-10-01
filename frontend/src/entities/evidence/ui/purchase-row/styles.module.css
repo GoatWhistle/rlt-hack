@@ -24,7 +24,7 @@
 }
 
 .took {
-  border: 2px solid var(--text-faint);
+  border: var(--line-width-thick) solid var(--text-faint);
 }
 
 .title {

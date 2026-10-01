@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest"
+import { cssBreakpoints } from "../../scripts/checks/css-breakpoints.ts"
 import { cssDuplicates } from "../../scripts/checks/css-duplicates.ts"
 import { cssLiterals } from "../../scripts/checks/css-literals.ts"
 import { cssModules } from "../../scripts/checks/css-modules.ts"
 import { classNames, cssBlocks } from "../../scripts/checks/css-syntax.ts"
+import { cssTransitions } from "../../scripts/checks/css-transitions.ts"
 import { file } from "./fixtures.ts"
 
 const SHEET = "src/shared/ui/card/styles.module.css"
@@ -33,6 +35,21 @@ describe("css literals", () => {
     )
     const inline = file("src/a/index.tsx", 'const s = { color: "rgb(0 0 0)" }')
     expect(cssLiterals.check([sheet, inline])).toHaveLength(5)
+  })
+
+  it("rejects literal border widths but accepts width tokens", () => {
+    const sheet = file(
+      "src/a/styles.module.css",
+      ".a { border: 1.5px dashed var(--x); }\n.b { border-block-start: var(--line-width) solid var(--x); }",
+    )
+    expect(cssLiterals.check([sheet]).map((violation) => violation.message)).toEqual([
+      "a literal border width on line 1: use a token from src/shared/styles/tokens/",
+    ])
+    expect(
+      cssLiterals.check([
+        file("src/b/styles.module.css", ".b { border-radius: var(--radius-md); gap: 1px; }"),
+      ]),
+    ).toEqual([])
   })
 
   it("accepts tokens, token files and durations in scripts", () => {
@@ -117,6 +134,62 @@ describe("css duplicates", () => {
         file("src/shared/styles/tokens/a.css", `:root { ${block} }`),
         file("src/shared/styles/tokens/b.css", `:root { ${block} }`),
         file("src/c/styles.module.css", `@font-face { ${block} }\n@font-face { ${block} }`),
+      ]),
+    ).toEqual([])
+  })
+})
+
+describe("css breakpoints", () => {
+  it("rejects widths outside the shared set in sheets and scripts", () => {
+    const found = cssBreakpoints.check([
+      file("src/a/styles.module.css", "@media (max-width: 48rem) { .a { gap: 0; } }"),
+      file("src/b/styles.module.css", "@media (min-width: 60rem) { .b { gap: 0; } }"),
+      file("src/c/view.ts", 'export const NARROW = "(max-width: 600px)"'),
+    ])
+    expect(found.map((violation) => violation.path)).toEqual([
+      "src/a/styles.module.css",
+      "src/b/styles.module.css",
+      "src/c/view.ts",
+    ])
+    expect(found[0]?.message).toContain("47.99rem")
+  })
+
+  it("accepts the shared lower and upper bounds", () => {
+    expect(
+      cssBreakpoints.check([
+        file(
+          "src/a/styles.module.css",
+          "@media (min-width: 75rem) and (hover: hover) { .a { gap: 0; } }\n@media (max-width: 29.99rem) { .a { gap: 1px; } }",
+        ),
+        file("src/b/view.ts", 'export const NARROW = "(max-width: 63.99rem)"'),
+        file("src/c/styles.module.css", ".c { max-width: 60rem; }"),
+      ]),
+    ).toEqual([])
+  })
+})
+
+describe("css transitions", () => {
+  it("rejects transitions of layout sizes, including transition tokens", () => {
+    const found = cssTransitions.check([
+      file("src/a/styles.module.css", ".a { transition: inline-size var(--dur); }"),
+      file(
+        "src/shared/styles/tokens/motion.css",
+        ":root { --transition-x: opacity 1ms, height 1ms; }",
+      ),
+    ])
+    expect(found.map((violation) => violation.message)).toEqual([
+      ".a on line 1 animates inline-size: animate transform or opacity instead",
+      ":root on line 1 animates height: animate transform or opacity instead",
+    ])
+  })
+
+  it("accepts transform, opacity and size tokens inside values", () => {
+    expect(
+      cssTransitions.check([
+        file(
+          "src/a/styles.module.css",
+          ".a { transition: transform var(--dur), opacity var(--dur); width: var(--indicator-width); }",
+        ),
       ]),
     ).toEqual([])
   })

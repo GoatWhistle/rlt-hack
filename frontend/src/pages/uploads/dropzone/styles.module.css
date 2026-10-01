@@ -7,7 +7,7 @@
   gap: var(--space-4);
   min-height: 16rem;
   padding: var(--space-7) var(--space-5);
-  border: 2px dashed var(--accent-muted);
+  border: var(--line-width-thick) dashed var(--accent-muted);
   border-radius: var(--radius-xl);
   background: var(--surface-base);
   text-align: center;

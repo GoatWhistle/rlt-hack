@@ -27,6 +27,6 @@
 }
 
 .inferred {
-  border: 1.5px dashed var(--meter-inferred-line);
+  border: var(--line-width-strong) dashed var(--meter-inferred-line);
   background: var(--meter-inferred);
 }

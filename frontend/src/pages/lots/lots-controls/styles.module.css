@@ -102,7 +102,7 @@
   }
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 47.99rem) {
   .search {
     flex-basis: 100%;
     max-width: none;

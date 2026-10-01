@@ -12,32 +12,7 @@
   font-weight: var(--weight-medium);
 }
 
-.track {
+.bar {
   flex: 1;
   min-width: 0;
-  height: var(--meter-height);
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--meter-empty);
-  appearance: none;
-}
-
-.track::-webkit-meter-bar {
-  height: var(--meter-height);
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: var(--meter-empty);
-}
-
-.track::-webkit-meter-optimum-value,
-.track::-webkit-meter-suboptimum-value,
-.track::-webkit-meter-even-less-good-value {
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  transition: inline-size var(--dur-base) var(--ease-out);
-}
-
-.track::-moz-meter-bar {
-  border-radius: var(--radius-pill);
-  background: var(--accent);
 }

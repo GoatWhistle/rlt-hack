@@ -3,7 +3,7 @@
   flex-wrap: wrap;
   gap: var(--space-1);
   padding: var(--space-1);
-  border: 1px solid var(--line-hairline);
+  border: var(--line-width) solid var(--line-hairline);
   border-radius: var(--radius-md);
 }
 

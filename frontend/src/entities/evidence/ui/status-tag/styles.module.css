@@ -9,5 +9,5 @@
 }
 
 .hollow {
-  border: 1.5px solid var(--warning-icon);
+  border: var(--line-width-strong) solid var(--warning-icon);
 }

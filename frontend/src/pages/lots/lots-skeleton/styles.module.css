@@ -84,7 +84,7 @@
   height: var(--space-4);
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 47.99rem) {
   .row {
     grid-template-columns: var(--checkbox-size) minmax(0, 1fr);
     padding-inline: var(--space-4);

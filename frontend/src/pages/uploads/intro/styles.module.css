@@ -51,7 +51,7 @@
   min-width: 0;
 }
 
-@media (min-width: 60rem) {
+@media (min-width: 64rem) {
   .intro {
     grid-template-areas:
       "head drop"

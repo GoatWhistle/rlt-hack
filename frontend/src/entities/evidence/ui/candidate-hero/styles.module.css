@@ -106,7 +106,7 @@
   justify-self: stretch;
 }
 
-@media (max-width: 30rem) {
+@media (max-width: 29.99rem) {
   .hero {
     padding: var(--space-4);
   }

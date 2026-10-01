@@ -26,7 +26,7 @@
   display: none;
 }
 
-@media (max-width: 30rem) {
+@media (max-width: 29.99rem) {
   .actions {
     flex-wrap: nowrap;
     padding-inline: var(--space-3);

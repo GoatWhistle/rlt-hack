@@ -14,7 +14,8 @@
   --pop-scale: 0.4;
   --transition-control:
     background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+    border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
   --motion-swap: fade-in var(--dur-fast) var(--ease-out) both;
   --motion-fade-in: fade-in var(--dur-enter) var(--ease-out) both;
   --motion-fade-out: fade-out var(--dur-exit) var(--ease-in) both;
@@ -30,8 +31,7 @@
   --motion-pulse: pulse var(--dur-pulse) var(--ease-in-out) infinite alternate;
   --delay-skeleton: 300ms;
   --motion-skeleton-in: fade-in var(--dur-enter) var(--ease-out) var(--delay-skeleton) both;
-  --transition-indicator:
-    transform var(--dur-base) var(--ease-out), width var(--dur-base) var(--ease-out);
+  --transition-indicator: transform var(--dur-base) var(--ease-out);
 }
 
 @keyframes fade-in {
