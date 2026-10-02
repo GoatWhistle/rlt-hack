@@ -15,11 +15,26 @@
 }
 
 .filled {
-  background: var(--success);
+  background: var(--accent);
 }
 
 .hollow {
   border: var(--line-width-strong) solid var(--warning-icon);
+}
+
+.neutral {
+  border: var(--line-width-strong) dashed var(--line-tentative);
+}
+
+.figure {
+  color: var(--text-primary);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.assumed {
+  color: var(--warning-text);
+  font-weight: var(--weight-regular);
 }
 
 .compare {

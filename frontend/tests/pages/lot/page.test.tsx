@@ -140,7 +140,7 @@ describe("in russian", () => {
   it("uses the right plural forms", async () => {
     await openLot(undefined, { locale: "ru" })
     expect(screen.getByText("5 позиций")).toBeInTheDocument()
-    expect(screen.getByText("5 из 5 · 11 закупок")).toBeInTheDocument()
+    expect(screen.getByText("11 похожих · 4 победы")).toBeInTheDocument()
     expect(screen.getByText(text("ru", "lot", "evidence.summaryTitle"))).toBeInTheDocument()
   })
 })

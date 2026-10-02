@@ -1,6 +1,7 @@
 import { clsx } from "clsx"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useMatchFigure } from "@/entities/evidence/labels"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { Button } from "@/shared/ui/button"
 import { Caption } from "@/shared/ui/caption"
@@ -17,17 +18,18 @@ import styles from "./styles.module.css"
 
 export const VISIBLE_COMPANIES = 4
 
+const STATUS_TONES = {
+  recommended: { tone: "accent", dot: styles.filled },
+  check: { tone: "warning", dot: styles.hollow },
+  historical: { tone: "solid", dot: styles.neutral },
+} as const
+
 export function StatusTag({ company }: { readonly company: Company }) {
   const statusText = useStatusText()
-  const recommended = company.status === "recommended"
+  const { tone, dot } = STATUS_TONES[company.status]
   return (
-    <Tag
-      tone={company.status === "historical" ? "accent" : recommended ? "success" : "warning"}
-    >
-      <span
-        aria-hidden="true"
-        className={clsx(styles.dot, recommended ? styles.filled : styles.hollow)}
-      />
+    <Tag tone={tone}>
+      <span aria-hidden="true" className={clsx(styles.dot, dot)} />
       {statusText(company)}
     </Tag>
   )
@@ -41,30 +43,35 @@ function CompanyFacts({
   readonly products: readonly Product[]
 }) {
   const { t } = useTranslation("lot")
+  const { t: card } = useTranslation("candidate")
+  const figureOf = useMatchFigure()
+  if (company.history) {
+    return company.similarPurchases !== null ? (
+      <span>
+        {t("grounds.purchases", { count: company.similarPurchases })}
+        {" · "}
+        {t("grounds.winsCount", { count: company.wins ?? 0 })}
+      </span>
+    ) : (
+      <span>{t("history.examples", { count: company.history.examples.length })}</span>
+    )
+  }
+  const figure = products.length > 0 ? figureOf(company.matches, products.length) : undefined
+  const similar = company.similarPurchases ?? 0
   return (
     <>
-      {company.similarPurchases !== null && company.history ? (
-        <span>
-          {t("grounds.purchases", { count: company.similarPurchases })}
-          {" · "}
-          {t("grounds.winsCount", { count: company.wins ?? 0 })}
+      {figure ? (
+        <span className={styles.figure}>
+          {figure.value}
+          {figure.note ? <span className={styles.assumed}> {figure.note}</span> : null}
         </span>
-      ) : company.history ? (
-        <span>{t("history.examples", { count: company.history.examples.length })}</span>
-      ) : (
+      ) : null}
+      {similar > 0 ? (
         <span>
-          {products.length === 0
-            ? t("compare.unknown")
-            : t("companies.matchCount", {
-                matched: company.matches.length,
-                total: products.length,
-              })}
-          {" · "}
-          {company.similarPurchases === null
-            ? t("compare.unknown")
-            : t("companies.purchases", { count: company.similarPurchases })}
+          {card("card.similar", { count: similar })}
+          {company.wins ? ` · ${card("card.wins", { count: company.wins })}` : null}
         </span>
-      )}
+      ) : null}
     </>
   )
 }
@@ -112,7 +119,10 @@ export function CompanyList(props: CompanyListProps) {
             <span className={styles.facts}>
               <StatusTag company={company} />
               {chosen.includes(company.id) ? (
-                <Tag tone="accent">{t("companies.chosen")}</Tag>
+                <Tag tone="accent">
+                  <Icon name="check" size="sm" />
+                  {t("companies.chosen")}
+                </Tag>
               ) : null}
               <CompanyFacts company={company} products={products} />
             </span>

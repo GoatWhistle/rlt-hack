@@ -1,12 +1,17 @@
-import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
+import { useMatchFigure } from "@/entities/evidence/labels"
+import { countMatches } from "@/entities/evidence/model"
 import type { Company, MatchBasis, Product } from "@/entities/recommendation/model"
-import { Caption } from "@/shared/ui/caption"
-import { Dialog } from "@/shared/ui/dialog"
-import { ScrollRegion } from "@/shared/ui/scroll-region"
+import {
+  type CompareColumn,
+  type CompareCriterion,
+  CompareTable,
+  MatchValue,
+  MissingNames,
+} from "@/features/compare-candidates"
+import { useFormatters } from "@/shared/i18n/formatters"
 import { SegmentMeter } from "../segment-meter"
 import { useStatusText } from "../status"
-import styles from "./styles.module.css"
 
 export type CompareDialogProps = {
   readonly open: boolean
@@ -15,93 +20,105 @@ export type CompareDialogProps = {
   readonly onClose: () => void
 }
 
-type Criterion = {
-  readonly id: string
-  readonly label: string
-  readonly value: (company: Company) => ReactNode
+type Column = CompareColumn & { readonly company: Company }
+
+function useCriteria(products: readonly Product[]): CompareCriterion<Column>[] {
+  const { t } = useTranslation("lot")
+  const statusText = useStatusText()
+  const figureOf = useMatchFigure()
+  const { list, number } = useFormatters()
+  const count = (company: Company, basis: MatchBasis) =>
+    company.matches.filter((match) => match.basis === basis).length
+  const known = (value: number | null) =>
+    value === null ? t("compare.unknown") : number(value)
+  const unmatched = (company: Company) => {
+    const found = new Set(company.matches.map((match) => match.productId))
+    const names = products.filter((product) => !found.has(product.id)).map((p) => p.name)
+    return names.length > 0 ? <MissingNames names={list(names)} /> : t("compare.none")
+  }
+  const contacts = (company: Company) => {
+    const { site, email, phone } = company.contacts ?? {}
+    const given = [site, email, phone].filter(Boolean)
+    return given.length > 0 ? given.join(" · ") : t("compare.unknown")
+  }
+  return [
+    {
+      id: "match",
+      label: t("compare.match"),
+      value: ({ company }) => {
+        const figure = figureOf(company.matches, products.length)
+        return (
+          <MatchValue
+            figure={figure.value}
+            note={figure.note}
+            meter={<SegmentMeter company={company} products={products} />}
+          />
+        )
+      },
+      score: ({ company }) => countMatches(company.matches).confirmed,
+    },
+    {
+      id: "stock",
+      label: t("evidence.basis.stock"),
+      value: ({ company }) => number(count(company, "stock")),
+      score: ({ company }) => count(company, "stock"),
+    },
+    {
+      id: "catalog",
+      label: t("evidence.basis.catalog"),
+      value: ({ company }) => number(count(company, "catalog")),
+    },
+    {
+      id: "inferred",
+      label: t("evidence.basis.inferred"),
+      value: ({ company }) => number(count(company, "inferred")),
+    },
+    { id: "missing", label: t("compare.missing"), value: ({ company }) => unmatched(company) },
+    { id: "status", label: t("compare.status"), value: ({ company }) => statusText(company) },
+    {
+      id: "purchases",
+      label: t("compare.purchases"),
+      value: ({ company }) => known(company.similarPurchases),
+      score: ({ company }) => company.similarPurchases ?? 0,
+    },
+    {
+      id: "wins",
+      label: t("compare.wins"),
+      value: ({ company }) => known(company.wins),
+      score: ({ company }) => company.wins ?? 0,
+    },
+    {
+      id: "clarify",
+      label: t("compare.clarify"),
+      value: ({ company }) => company.clarify[0] ?? t("compare.none"),
+    },
+    { id: "contacts", label: t("compare.contacts"), value: ({ company }) => contacts(company) },
+    {
+      id: "inn",
+      label: t("profile.inn"),
+      value: ({ company }) => company.inn || t("compare.unknown"),
+    },
+  ]
 }
 
 export function CompareDialog({ open, companies, products, onClose }: CompareDialogProps) {
   const { t } = useTranslation("lot")
-  const statusText = useStatusText()
-  const count = (company: Company, basis: MatchBasis) =>
-    company.matches.filter((match) => match.basis === basis).length
-  const unmatched = (company: Company) => {
-    const found = new Set(company.matches.map((match) => match.productId))
-    const names = products.filter((product) => !found.has(product.id)).map((p) => p.name)
-    return names.length > 0 ? names.join(", ") : t("compare.none")
-  }
-  const contacts = (company: Company) => {
-    const { site, email, phone } = company.contacts ?? {}
-    const known = [site, email, phone].filter(Boolean)
-    return known.length > 0 ? known.join(" · ") : t("compare.unknown")
-  }
-  const criteria: Criterion[] = [
-    {
-      id: "match",
-      label: t("compare.match"),
-      value: (company) => (
-        <span className={styles.match}>
-          {t("companies.matchCount", {
-            matched: company.matches.length,
-            total: products.length,
-          })}
-          <SegmentMeter company={company} products={products} />
-        </span>
-      ),
-    },
-    { id: "stock", label: t("evidence.basis.stock"), value: (c) => count(c, "stock") },
-    { id: "catalog", label: t("evidence.basis.catalog"), value: (c) => count(c, "catalog") },
-    { id: "inferred", label: t("evidence.basis.inferred"), value: (c) => count(c, "inferred") },
-    { id: "missing", label: t("compare.missing"), value: unmatched },
-    { id: "status", label: t("compare.status"), value: statusText },
-    {
-      id: "purchases",
-      label: t("compare.purchases"),
-      value: (c) => c.similarPurchases ?? t("compare.unknown"),
-    },
-    { id: "wins", label: t("compare.wins"), value: (c) => c.wins ?? t("compare.unknown") },
-    {
-      id: "clarify",
-      label: t("compare.clarify"),
-      value: (c) => c.clarify[0] ?? t("compare.none"),
-    },
-    { id: "contacts", label: t("compare.contacts"), value: contacts },
-    { id: "inn", label: t("profile.inn"), value: (c) => c.inn },
-  ]
+  const criteria = useCriteria(products)
   return (
-    <Dialog open={open} size="wide" title={t("compare.title")} onClose={onClose}>
-      <ScrollRegion label={t("compare.title")}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th scope="col" className={styles.criterion}>
-                {t("compare.criterion")}
-              </th>
-              {companies.map((company) => (
-                <th key={company.id} scope="col" className={styles.company}>
-                  {company.name}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {criteria.map((criterion) => (
-              <tr key={criterion.id}>
-                <th scope="row" className={styles.criterion}>
-                  {criterion.label}
-                </th>
-                {companies.map((company) => (
-                  <td key={company.id} className={styles.cell}>
-                    {criterion.value(company)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </ScrollRegion>
-      <Caption>{t("compare.note")}</Caption>
-    </Dialog>
+    <CompareTable
+      open={open}
+      title={t("compare.title")}
+      criterionLabel={t("compare.criterion")}
+      bestLabel={t("compare.best")}
+      note={t("compare.note")}
+      columns={companies.map((company) => ({
+        id: company.id,
+        name: company.name,
+        role: company.role,
+        company,
+      }))}
+      criteria={criteria}
+      onClose={onClose}
+    />
   )
 }

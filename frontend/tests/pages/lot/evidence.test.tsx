@@ -38,7 +38,9 @@ describe("the candidates column", () => {
     const companies = screen.getByRole("region", { name: en("companies.title", "lot") })
     const north = within(companies).getByRole("button", { name: /North Foods/ })
     expect(north).toHaveAttribute("aria-pressed", "true")
-    expect(within(north).getByText("5 of 5 · 11 purchases")).toBeInTheDocument()
+    expect(within(north).getByText("4/5")).toBeInTheDocument()
+    expect(within(north).getByText("+1 assumption")).toBeInTheDocument()
+    expect(within(north).getByText("11 similar · 4 wins")).toBeInTheDocument()
     expect(
       within(north).getByRole("img", {
         name: "Match 5 of 5: in a price list — 1, in the catalog — 3, assumed — 1",
@@ -74,7 +76,7 @@ describe("the grounds panel", () => {
     await openLot()
     const grounds = panel("North Foods")
     expect(within(grounds).getByText("Tax ID 7800000011")).toBeInTheDocument()
-    expect(within(grounds).getByText("5/5")).toBeInTheDocument()
+    expect(within(grounds).getByText("4/5")).toBeInTheDocument()
     expect(
       within(grounds).getByRole("heading", {
         level: 3,
@@ -152,11 +154,16 @@ describe("choosing, comparing and the profile", () => {
       within(table)
         .getAllByRole("columnheader")
         .map((cell) => cell.textContent),
-    ).toEqual([en("compare.criterion", "lot"), "North Foods", "West Trade"])
+    ).toEqual([en("compare.criterion", "lot"), "North FoodsSupplier", "West TradeDistributor"])
+    const match = within(table)
+      .getByRole("rowheader", { name: en("compare.match", "lot") })
+      .closest("tr") as HTMLElement
+    expect(within(match).getAllByText(en("compare.best", "lot"))).toHaveLength(1)
+    expect(within(match).getByText("4/5")).toBeInTheDocument()
     const missing = within(table)
       .getByRole("rowheader", { name: en("compare.missing", "lot") })
       .closest("tr")
-    expect(missing).toHaveTextContent("Rice, Sugar, Tea, Salt, Oil")
+    expect(missing).toHaveTextContent("Rice, Sugar, Tea, Salt, and Oil")
     expect(
       within(table)
         .getByRole("rowheader", { name: en("compare.contacts", "lot") })
