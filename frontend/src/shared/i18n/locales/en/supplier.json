@@ -16,5 +16,6 @@
   "contacts": "Contacts",
   "offers": "Current offers",
   "forQuery": "For your request",
-  "otherOffers": "Other offers"
+  "otherOffers": "Other offers",
+  "error": "Couldn't load the company profile"
 }

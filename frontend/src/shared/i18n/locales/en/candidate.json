@@ -88,14 +88,14 @@
     "itemsTruncated": "The request has more items than one search covers, so only the first ones were used. Search for the rest separately."
   },
   "selection": {
-    "label": "Chosen candidates",
     "count_one": "{{count, number}} chosen",
     "count_other": "{{count, number}} chosen",
     "compare": "Compare",
     "compareHint": "Choose one more candidate to compare",
-    "export": "Download chosen",
-    "exportShort": "Download",
-    "clear": "Clear"
+    "clear": "Clear",
+    "compareLabel_one": "Compare chosen: {{count, number}}",
+    "compareLabel_other": "Compare chosen: {{count, number}}",
+    "pickMore": "pick one more to compare"
   },
   "compare": {
     "title": "Compare candidates",

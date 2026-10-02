@@ -19,6 +19,10 @@ body {
   outline-offset: var(--focus-ring-offset);
 }
 
+:root:has([data-dock]) {
+  --toast-lift: calc(var(--dock-height) + var(--space-4));
+}
+
 a {
   color: var(--link);
 }
@@ -40,9 +44,22 @@ a:hover {
   animation-timing-function: var(--ease-drawer);
 }
 
+::view-transition-image-pair(search-query) {
+  overflow: clip;
+  border-radius: var(--radius-lg);
+}
+
 ::view-transition-old(search-query),
 ::view-transition-new(search-query) {
   height: 100%;
   object-fit: none;
   object-position: left top;
+}
+
+::view-transition-old(search-query) {
+  animation: var(--vt-query-old);
+}
+
+::view-transition-new(search-query) {
+  animation: var(--vt-query-new);
 }

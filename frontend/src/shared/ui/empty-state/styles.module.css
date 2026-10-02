@@ -1,5 +1,6 @@
 .state {
   display: grid;
+  align-content: start;
   justify-items: center;
   gap: var(--space-3);
   padding-block: var(--space-6);

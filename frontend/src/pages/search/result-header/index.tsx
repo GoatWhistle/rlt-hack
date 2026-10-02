@@ -1,11 +1,14 @@
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router"
 import type { SearchResult } from "@/entities/search/model"
-import { SearchBox } from "@/features/search-box"
+import { COMPARE_FROM, CompareButton } from "@/features/compare-candidates"
+import { SearchBox, type SearchStage, StageLine } from "@/features/search-box"
 import { searchPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { Button } from "@/shared/ui/button"
+import { CountBadge } from "@/shared/ui/count-badge"
 import { Icon } from "@/shared/ui/icon"
+import { TextButton } from "@/shared/ui/text-button"
 import { VisuallyHidden } from "@/shared/ui/visually-hidden"
 import styles from "./styles.module.css"
 
@@ -13,12 +16,17 @@ export type ResultHeaderProps = {
   readonly result: SearchResult
   readonly inputId: string
   readonly chosen: number
+  readonly stage: SearchStage | null
+  readonly onStage: (stage: SearchStage | null) => void
   readonly onExport: () => void
+  readonly onCompare: () => void
+  readonly onClear: () => void
 }
 
-export function ResultHeader({ result, inputId, chosen, onExport }: ResultHeaderProps) {
+export function ResultHeader(props: ResultHeaderProps) {
+  const { result, inputId, chosen, stage, onStage, onExport, onCompare, onClear } = props
   const { t } = useTranslation("search")
-  const { dateTime, number } = useFormatters()
+  const { dateTime } = useFormatters()
   const navigate = useNavigate()
   const recommended = result.candidates.filter((item) => item.status === "recommended").length
   const facts = [
@@ -35,32 +43,67 @@ export function ResultHeader({ result, inputId, chosen, onExport }: ResultHeader
         <SearchBox
           key={result.searchId}
           compact
+          shortcut
           inputId={inputId}
           showExamples={false}
           initialText={result.query.text}
+          onStage={onStage}
           onFound={(next) => navigate(searchPath(next.searchId), { viewTransition: true })}
         />
       </div>
       {result.candidates.length > 0 ? (
-        <Button
-          variant="secondary"
-          className={styles.export}
-          aria-label={t("header.export")}
-          onClick={onExport}
-        >
-          <Icon name="download" />
-          <span className={styles.exportLabel}>{t("header.export")}</span>
-          {chosen > 0 ? (
-            <span key={chosen} className={styles.count}>
-              {number(chosen)}
-            </span>
-          ) : null}
-        </Button>
+        <div className={styles.actions}>
+          <CompareButton
+            count={chosen}
+            className={styles.action}
+            labelClassName={styles.actionLabel}
+            onCompare={onCompare}
+          />
+          <Button
+            variant="secondary"
+            className={styles.action}
+            aria-label={t("header.export")}
+            onClick={onExport}
+          >
+            <Icon name="download" />
+            <span className={styles.actionLabel}>{t("header.export")}</span>
+            {chosen > 0 ? <CountBadge value={chosen} corner /> : null}
+          </Button>
+        </div>
       ) : null}
       <p className={styles.meta}>
-        <span>{facts.join(" · ")}</span>
+        <StageLine stage={stage} />
+        {stage ? null : (
+          <span key="facts" className={styles.facts}>
+            {facts.join(" · ")}
+          </span>
+        )}
+        {chosen > 0 ? <Selection chosen={chosen} onClear={onClear} /> : null}
         <time dateTime={result.createdAt}>{dateTime(result.createdAt)}</time>
       </p>
     </header>
+  )
+}
+
+function Selection({
+  chosen,
+  onClear,
+}: {
+  readonly chosen: number
+  readonly onClear: () => void
+}) {
+  const { t: candidate } = useTranslation("candidate")
+  return (
+    <span className={styles.selection}>
+      <span aria-live="polite">
+        {candidate("selection.count", { count: chosen })}
+        {chosen < COMPARE_FROM ? (
+          <span className={styles.more}> · {candidate("selection.pickMore")}</span>
+        ) : null}
+      </span>
+      <TextButton className={styles.clear} onClick={onClear}>
+        {candidate("selection.clear")}
+      </TextButton>
+    </span>
   )
 }

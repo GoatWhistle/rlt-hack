@@ -6,6 +6,7 @@ import { type OfferEntry, OfferGridSkeleton } from "@/entities/evidence/ui/offer
 import { SourceLine } from "@/entities/evidence/ui/source-line"
 import type { SupplierProfile } from "@/entities/supplier/model"
 import { useSupplierProfile } from "@/entities/supplier/queries"
+import { type Choice, ChoiceButton } from "@/shared/ui/choice-button"
 import { Dialog } from "@/shared/ui/dialog"
 import { ErrorState } from "@/shared/ui/error-state"
 import { type Fact, FactList } from "@/shared/ui/fact-list"
@@ -98,8 +99,11 @@ function ProfileBody({ supplierId, matched }: ProfileBodyProps) {
   const profile = useSupplierProfile(supplierId)
   const [late] = useState(profile.isPending)
   if (profile.isPending) return <ProfileSkeleton label={t("loading")} />
-  if (profile.isError)
-    return <ErrorState error={profile.error} onRetry={() => profile.refetch()} />
+  if (profile.isError) {
+    return (
+      <ErrorState error={profile.error} title={t("error")} onRetry={() => profile.refetch()} />
+    )
+  }
   return (
     <Reveal active={late}>
       <Profile profile={profile.data} matched={matched} />
@@ -112,6 +116,7 @@ export type SupplierProfilePanelProps = {
   readonly supplierId: string
   readonly name: string
   readonly matched?: readonly OfferEntry[]
+  readonly choice?: Choice
   readonly onClose: () => void
 }
 
@@ -120,10 +125,26 @@ export function SupplierProfilePanel({
   supplierId,
   name,
   matched = [],
+  choice,
   onClose,
 }: SupplierProfilePanelProps) {
+  const { t: candidate } = useTranslation("candidate")
   return (
-    <Dialog open={open} size="side" title={name} onClose={onClose}>
+    <Dialog
+      open={open}
+      size="side"
+      title={name}
+      onClose={onClose}
+      footer={
+        choice ? (
+          <ChoiceButton
+            {...choice}
+            chooseLabel={candidate("panel.choose")}
+            chosenLabel={candidate("panel.chosen")}
+          />
+        ) : null
+      }
+    >
       <ProfileBody key={supplierId} supplierId={supplierId} matched={matched} />
     </Dialog>
   )

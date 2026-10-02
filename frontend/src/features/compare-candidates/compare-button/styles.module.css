@@ -1,0 +1,7 @@
+.button[data-state="open"] {
+  animation: var(--motion-scale-in);
+}
+
+.button[data-state="closed"] {
+  animation: var(--motion-scale-out);
+}

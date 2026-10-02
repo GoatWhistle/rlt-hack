@@ -30,6 +30,7 @@ export function SelectionBar({
       className={styles.bar}
       aria-label={label}
       data-state={state}
+      data-dock=""
       inert={!open}
       onAnimationEnd={onAnimationEnd}
     >

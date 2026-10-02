@@ -98,16 +98,18 @@
     "itemsTruncated": "В запросе больше позиций, чем разбирается за раз: учтены первые. Остальные ищите отдельным запросом."
   },
   "selection": {
-    "label": "Выбранные кандидаты",
     "count_one": "Выбран: {{count, number}}",
     "count_few": "Выбрано: {{count, number}}",
     "count_many": "Выбрано: {{count, number}}",
     "count_other": "Выбрано: {{count, number}}",
     "compare": "Сравнить",
     "compareHint": "Выберите ещё одного кандидата, чтобы сравнить",
-    "export": "Скачать выбранных",
-    "exportShort": "Скачать",
-    "clear": "Снять выбор"
+    "clear": "Снять выбор",
+    "compareLabel_one": "Сравнить выбранных: {{count, number}}",
+    "compareLabel_few": "Сравнить выбранных: {{count, number}}",
+    "compareLabel_many": "Сравнить выбранных: {{count, number}}",
+    "compareLabel_other": "Сравнить выбранных: {{count, number}}",
+    "pickMore": "выберите ещё одного, чтобы сравнить"
   },
   "compare": {
     "title": "Сравнение кандидатов",

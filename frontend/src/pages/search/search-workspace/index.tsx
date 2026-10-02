@@ -188,6 +188,10 @@ export function SearchWorkspace({
         supplierId={selected.id}
         name={selected.name}
         matched={offerEntries(rowsOf(selected, items))}
+        choice={{
+          chosen: chosen.includes(selected.id),
+          onToggle: () => onToggle(selected.id),
+        }}
         onClose={() => setProfileOpen(false)}
       />
     </>

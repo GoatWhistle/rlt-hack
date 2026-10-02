@@ -20,6 +20,7 @@ import {
 } from "./compare-table"
 import { useOfferCriteria } from "./offer-criteria"
 
+export { COMPARE_FROM, CompareButton } from "./compare-button"
 export {
   bestOf,
   type CompareColumn,

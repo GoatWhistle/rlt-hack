@@ -13,7 +13,6 @@ import {
   type WorkspaceView,
 } from "@/shared/ui/workspace-layout"
 import { CompanyList } from "../company-list"
-import { CompareDialog } from "../compare-dialog"
 import { EvidencePanel } from "../evidence-panel"
 import { ProductList } from "../product-list"
 import { ProfilePanel } from "../profile-panel"
@@ -36,7 +35,6 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
   const { narrow, stackRef, prepareSwitch } = useWorkspaceView(view)
   const shortlist = useShortlist(uploadId, lotId)
   const [profileOpen, setProfileOpen] = useState(false)
-  const [compareOpen, setCompareOpen] = useState(false)
 
   const ranks = new Map(companies.map((company, index) => [company.id, index + 1]))
   const filterProduct = products.find((product) => product.id === params.product)
@@ -117,7 +115,6 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
                   : undefined
               }
               onSelect={select}
-              onCompare={() => setCompareOpen(true)}
             />
           ),
           evidence: (
@@ -148,13 +145,11 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
         open={profileOpen}
         company={selected}
         products={products}
+        choice={{
+          chosen: shortlist.ids.includes(selected.id),
+          onToggle: () => shortlist.toggle(selected.id),
+        }}
         onClose={() => setProfileOpen(false)}
-      />
-      <CompareDialog
-        open={compareOpen}
-        companies={companies.filter((company) => shortlist.ids.includes(company.id))}
-        products={products}
-        onClose={() => setCompareOpen(false)}
       />
     </>
   )

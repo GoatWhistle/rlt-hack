@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useParams } from "react-router"
+import type { Recommendation } from "@/entities/recommendation/model"
+import { useShortlist } from "@/entities/shortlist/store"
 import {
   filtered,
   type ListQuery,
@@ -21,6 +23,7 @@ import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
 import { Reveal } from "@/shared/ui/reveal"
 import { WorkspaceSkeleton } from "@/shared/ui/workspace-skeleton"
+import { CompareDialog } from "./compare-dialog"
 import { LotBody } from "./lot-body"
 import { LotHeader, type Neighbours } from "./lot-header"
 import styles from "./styles.module.css"
@@ -62,6 +65,21 @@ export function neighboursOf(
   return { prev: link(index - 1), next: link(index + 1), index: index + 1, total: list.length }
 }
 
+function useLotCompare(
+  uploadId: string,
+  lotId: string,
+  recommendation: Recommendation | null | undefined,
+  switching: boolean,
+) {
+  const shortlist = useShortlist(uploadId, lotId)
+  const [open, setOpen] = useState(false)
+  const shown = switching ? null : recommendation
+  const chosen = (shown?.companies ?? []).filter((company) =>
+    shortlist.ids.includes(company.id),
+  )
+  return { chosen, products: shown?.products ?? [], open, setOpen }
+}
+
 function useLotSwitch(uploadId: string, lotId: string) {
   const lot = useLot(uploadId, lotId)
   const upload = useUpload(uploadId)
@@ -86,6 +104,7 @@ export function LotPage() {
   const [late] = useState(lot.isPending)
   const { locale } = useLocale()
   const [exporting, setExporting] = useState({ open: false, session: 0 })
+  const compare = useLotCompare(uploadId, lotId, lot.data?.recommendation, switching)
   useDocumentTitle([common("title.lot", { id: lotId }), lot.data?.upload.fileName])
 
   if (waiting || lot.isPending) return <WorkspaceSkeleton label={t("loading")} />
@@ -114,6 +133,8 @@ export function LotPage() {
           lot={current}
           backTo={uploadPath(uploadId, index < 0 ? writeQuery(query) : listSearch)}
           neighbours={neighboursOf(list, index, uploadId, query)}
+          chosen={compare.chosen.length}
+          onCompare={() => compare.setOpen(true)}
           onExport={() => setExporting((state) => ({ open: true, session: state.session + 1 }))}
         />
         <LotBody uploadId={uploadId} detail={lot.data} switching={switching} />
@@ -125,6 +146,12 @@ export function LotPage() {
           fileName={summary.fileName}
           lots={upload.data?.lots ?? [current]}
           currentLotId={current.id}
+        />
+        <CompareDialog
+          open={compare.open && compare.chosen.length > 0}
+          companies={compare.chosen}
+          products={compare.products}
+          onClose={() => compare.setOpen(false)}
         />
       </div>
     </Reveal>

@@ -80,7 +80,6 @@
     "chosen": "Chosen",
     "showMore": "Show {{count, number}} more",
     "showLess": "Show fewer",
-    "compare": "Compare chosen ({{count, number}})",
     "compareHint": "Choose two or more candidates in the grounds to compare them."
   },
   "evidence": {

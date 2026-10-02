@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { useMatchFigure } from "@/entities/evidence/labels"
 import { targetIndex } from "@/entities/evidence/ui/candidate-list"
 import type { Company, Product } from "@/entities/recommendation/model"
-import { Button } from "@/shared/ui/button"
+import { COMPARE_FROM } from "@/features/compare-candidates"
 import { Caption } from "@/shared/ui/caption"
 import { FilterNote } from "@/shared/ui/filter-note"
 import { Icon } from "@/shared/ui/icon"
@@ -85,11 +85,10 @@ export type CompanyListProps = {
   readonly chosen: readonly string[]
   readonly filter?: { readonly name: string; readonly onReset: () => void }
   readonly onSelect: (id: string) => void
-  readonly onCompare: () => void
 }
 
 export function CompanyList(props: CompanyListProps) {
-  const { companies, ranks, products, selectedId, chosen, filter, onSelect, onCompare } = props
+  const { companies, ranks, products, selectedId, chosen, filter, onSelect } = props
   const { t } = useTranslation("lot")
   const { t: rankText } = useTranslation("candidate")
   const [expanded, setExpanded] = useState(false)
@@ -152,16 +151,11 @@ export function CompanyList(props: CompanyListProps) {
           {expanded ? t("companies.showLess") : t("companies.showMore", { count: hidden })}
         </TextButton>
       ) : null}
-      <div className={styles.compare}>
-        {chosen.length >= 2 ? (
-          <Button variant="secondary" onClick={onCompare}>
-            <Icon name="compare" />
-            {t("companies.compare", { count: chosen.length })}
-          </Button>
-        ) : (
+      {chosen.length < COMPARE_FROM ? (
+        <div className={styles.compare}>
           <Caption>{t("companies.compareHint")}</Caption>
-        )}
-      </div>
+        </div>
+      ) : null}
     </ResultSection>
   )
 }

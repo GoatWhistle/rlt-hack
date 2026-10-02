@@ -41,7 +41,8 @@
   visibility: hidden;
 }
 
-.button:disabled {
+.button:disabled,
+.button[aria-disabled="true"]:not([aria-busy="true"]) {
   border-color: var(--line-subtle);
   background: var(--surface-subtle);
   color: var(--text-disabled);
@@ -75,15 +76,15 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .primary:hover:not(:disabled) {
+  .primary:hover:not(:disabled, [aria-disabled="true"]) {
     background: var(--accent-strong);
   }
 
-  .strong:hover:not(:disabled) {
+  .strong:hover:not(:disabled, [aria-disabled="true"]) {
     background: var(--text-body);
   }
 
-  .secondary:hover:not(:disabled) {
+  .secondary:hover:not(:disabled, [aria-disabled="true"]) {
     border-color: var(--line-tentative);
     background: var(--surface-raised);
   }

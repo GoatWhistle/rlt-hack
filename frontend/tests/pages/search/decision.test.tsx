@@ -1,4 +1,4 @@
-import { cleanup, screen, within } from "@testing-library/react"
+import { cleanup, screen, waitFor, within } from "@testing-library/react"
 import { en } from "@tests/support/dictionaries"
 import { renderSearch } from "@tests/support/search"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -29,6 +29,10 @@ function candidates() {
   return screen.getByRole("region", { name: en("candidates.title", "search") })
 }
 
+function resultHeader(): HTMLElement {
+  return screen.getByRole("heading", { level: 1 }).closest("header") as HTMLElement
+}
+
 describe("deciding on a search result", () => {
   it("marks a chosen candidate and keeps the choice", async () => {
     const { user, unmount } = await openResult()
@@ -55,13 +59,17 @@ describe("deciding on a search result", () => {
     await user.click(
       within(grounds).getByRole("button", { name: en("panel.choose", "candidate") }),
     )
-    const bar = screen.getByRole("region", { name: en("selection.label", "candidate") })
-    expect(bar).toHaveTextContent("1 chosen")
-    expect(
-      within(bar).getByRole("button", { name: en("selection.compare", "candidate") }),
-    ).toHaveAttribute("aria-disabled", "true")
+    const header = resultHeader()
+    expect(header).toHaveTextContent("1 chosen")
+    expect(header).toHaveTextContent(en("selection.pickMore", "candidate"))
+    const compare = within(header).getByRole("button", { name: "Compare chosen: 1" })
+    expect(compare).toHaveAttribute("aria-disabled", "true")
+    expect(compare).toHaveAccessibleDescription(en("selection.compareHint", "candidate"))
+    await user.click(compare)
+    expect(screen.queryByRole("dialog")).toBeNull()
+    expect(screen.queryByRole("region", { name: /chosen/i })).toBeNull()
     await user.click(
-      within(bar).getByRole("button", { name: en("selection.exportShort", "candidate") }),
+      within(header).getByRole("button", { name: en("header.export", "search") }),
     )
     const dialog = screen.getByRole("dialog", { name: en("search.title", "export") })
     expect(
@@ -90,20 +98,21 @@ describe("deciding on a search result", () => {
     await choose()
     const exportButton = screen.getByRole("button", { name: en("header.export", "search") })
     expect(exportButton).toHaveTextContent("2")
-    const bar = screen.getByRole("region", { name: en("selection.label", "candidate") })
-    expect(bar).toHaveTextContent("2 chosen")
-    await user.click(
-      within(bar).getByRole("button", { name: en("selection.compare", "candidate") }),
-    )
+    const header = resultHeader()
+    expect(header).toHaveTextContent("2 chosen")
+    await user.click(within(header).getByRole("button", { name: "Compare chosen: 2" }))
     const dialog = await screen.findByRole("dialog", { name: en("compare.title", "candidate") })
     const headers = within(within(dialog).getByRole("table")).getAllByRole("columnheader")
     expect(headers).toHaveLength(3)
     expect(headers[1]).toHaveTextContent("Северный Провиант")
     await user.click(within(dialog).getByRole("button", { name: en("action.close") }))
     await user.click(
-      within(bar).getByRole("button", { name: en("selection.clear", "candidate") }),
+      within(header).getByRole("button", { name: en("selection.clear", "candidate") }),
     )
     expect(screen.queryAllByText(en("card.chosen", "candidate"))).toHaveLength(0)
+    await waitFor(() =>
+      expect(within(header).queryByRole("button", { name: /Compare chosen/ })).toBeNull(),
+    )
   })
 
   it("downloads everyone when nobody is chosen", async () => {

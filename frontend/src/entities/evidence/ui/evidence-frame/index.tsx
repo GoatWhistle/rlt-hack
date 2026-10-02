@@ -15,7 +15,9 @@ export function EvidenceFrame({ label, swapKey, actions, children }: EvidenceFra
       <div key={swapKey} className={styles.content}>
         {children}
       </div>
-      <div className={styles.actions}>{actions}</div>
+      <div className={styles.actions} data-dock="">
+        {actions}
+      </div>
     </article>
   )
 }

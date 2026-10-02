@@ -147,7 +147,8 @@ describe("choosing, comparing and the profile", () => {
     await user.click(
       within(panel("West Trade")).getByRole("button", { name: en("evidence.choose", "lot") }),
     )
-    await user.click(screen.getByRole("button", { name: "Compare chosen (2)" }))
+    expect(screen.queryByText(en("companies.compareHint", "lot"))).toBeNull()
+    await user.click(screen.getByRole("button", { name: "Compare chosen: 2" }))
     const dialog = await screen.findByRole("dialog", { name: en("compare.title", "lot") })
     const table = within(dialog).getByRole("table")
     expect(

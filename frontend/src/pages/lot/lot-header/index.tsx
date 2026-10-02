@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next"
 import type { LotSummary, UploadSummary } from "@/entities/upload/model"
+import { CompareButton } from "@/features/compare-candidates"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { BackLink } from "@/shared/ui/back-link"
 import { Button } from "@/shared/ui/button"
@@ -21,10 +22,13 @@ export type LotHeaderProps = {
   readonly lot: LotSummary
   readonly backTo: string
   readonly neighbours?: Neighbours
+  readonly chosen: number
   readonly onExport: () => void
+  readonly onCompare: () => void
 }
 
-export function LotHeader({ upload, lot, backTo, neighbours, onExport }: LotHeaderProps) {
+export function LotHeader(props: LotHeaderProps) {
+  const { upload, lot, backTo, neighbours, chosen, onExport, onCompare } = props
   const { t } = useTranslation("lot")
   const { date, money } = useFormatters()
   useNeighbourKeys(neighbours?.prev, neighbours?.next)
@@ -71,6 +75,7 @@ export function LotHeader({ upload, lot, backTo, neighbours, onExport }: LotHead
         ))}
       </p>
       <div className={styles.actions}>
+        <CompareButton count={chosen} onCompare={onCompare} />
         <Button variant="secondary" aria-label={t("header.export")} onClick={onExport}>
           <Icon name="download" />
           <span className={styles.full}>{t("header.export")}</span>
