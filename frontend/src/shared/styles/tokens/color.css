@@ -47,6 +47,9 @@
   --line-hairline: var(--palette-hairline);
   --line-subtle: var(--palette-whisper);
   --line-control: var(--palette-rule);
+  --scrollbar-thumb: var(--palette-rule);
+  --scrollbar-thumb-active: var(--palette-pewter);
+  --scrollbar-track: transparent;
   --line-tentative: var(--palette-haze);
   --line-clear: transparent;
   --mask-fade-end: linear-gradient(to right, black calc(100% - var(--space-8)), transparent);

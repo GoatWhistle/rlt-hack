@@ -35,7 +35,13 @@
   display: block;
   width: 100%;
   min-height: calc(var(--text-lg) * var(--leading-relaxed) * 2 + 2 * var(--space-4));
-  max-height: 45dvh;
+  max-height: calc(
+    var(--text-lg) *
+    var(--leading-relaxed) *
+    var(--field-max-lines) +
+    var(--space-4) +
+    var(--space-2)
+  );
   padding: var(--space-4) var(--space-4) var(--space-2);
   overflow-y: auto;
   border: 0;

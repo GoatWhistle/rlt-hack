@@ -19,6 +19,15 @@ body {
   outline-offset: var(--focus-ring-offset);
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+:where(:hover, :focus-within) {
+  scrollbar-color: var(--scrollbar-thumb-active) var(--scrollbar-track);
+}
+
 :root:has([data-dock]) {
   --toast-lift: calc(var(--dock-height) + var(--space-4));
 }

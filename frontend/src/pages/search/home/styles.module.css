@@ -1,7 +1,9 @@
 .page {
   display: grid;
-  align-items: start;
+  align-content: center;
+  align-items: center;
   gap: var(--space-7);
+  min-height: var(--page-fill);
 }
 
 .search {

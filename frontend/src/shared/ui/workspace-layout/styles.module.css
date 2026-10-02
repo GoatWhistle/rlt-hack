@@ -20,7 +20,6 @@
     margin: calc(-1 * var(--space-1));
     padding: var(--space-1);
     overflow-y: auto;
-    scrollbar-width: thin;
   }
 
   .columns .detail {

@@ -25,7 +25,7 @@
 - [x] [Три страницы подбора контрагентов](frontend-three-pages.md): загрузки → закупки из файла → разбор закупки; единая дизайн-система, навигация, сравнение и экспорт
 - [x] Согласовать контракт API с backend, добавить прокси `/api` в nginx и сервис backend в compose (после слияния main загрузки и разбор закупки обслуживает `search-api` main, поиск и профиль — сервис `api`). В контракте `role`, `checkReason` и `originNote.code` — коды из `entities/recommendation/model.ts`, `summary` и `clarify` — текст на языке из `Accept-Language`
 - [x] CI: `npm run verify` и e2e на каждый PR
-- [ ] Кастомные полосы прокрутки в стиле «Ясного атласа»:
+- [x] Кастомные полосы прокрутки в стиле «Ясного атласа» (глобально в `global.css`, токены `--scrollbar-*`):
   - тонкий бегунок на токенах цвета, заметнее при наведении;
   - прозрачная дорожка;
   - `scrollbar-width` и `scrollbar-color` для Firefox, `::-webkit-scrollbar` для Chromium и Safari;

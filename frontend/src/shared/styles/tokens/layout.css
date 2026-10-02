@@ -28,6 +28,14 @@
   --checkbox-size: 1.125rem;
   --dot-size: 0.4375rem;
   --header-height: 3.5rem;
+  --field-max-lines: 8;
+  --page-fill: calc(
+    100dvh -
+    var(--header-height) -
+    var(--line-width) -
+    var(--space-6) -
+    var(--space-8)
+  );
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
   --target-touch: 2.75rem;
