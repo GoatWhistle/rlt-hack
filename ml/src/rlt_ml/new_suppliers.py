@@ -95,10 +95,14 @@ def aggregate(rows: Sequence[dict]) -> dict:
         "categories": len({row["category"] for row in rows}),
         "candidates": total,
         "queries_with_suitable_new": len(with_fit) / len(queries) if queries else 0.0,
-        "labels": {label: share(lambda row, label=label: row.get("label") == label) for label in LABELS},
+        "labels": {
+            label: share(lambda row, label=label: row.get("label") == label) for label in LABELS
+        },
         "false_confirmations": share(
-            lambda row: row.get("system_status") == "recommended"
-            and row.get("label") in ("does_not_fit", "insufficient")
+            lambda row: (
+                row.get("system_status") == "recommended"
+                and row.get("label") in ("does_not_fit", "insufficient")
+            )
         ),
         "broken_evidence": share(lambda row: row.get("link_ok") == "no"),
         "unknown_fields": share(lambda row: any(row.get(check) == "unknown" for check in CHECKS)),

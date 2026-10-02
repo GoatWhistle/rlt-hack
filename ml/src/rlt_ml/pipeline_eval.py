@@ -187,9 +187,7 @@ def latency(outcomes: Sequence[Outcome]) -> dict[str, float]:
     }
 
 
-def report(
-    cases: Sequence[Case], baseline: Sequence[Outcome], system: Sequence[Outcome]
-) -> dict:
+def report(cases: Sequence[Case], baseline: Sequence[Outcome], system: Sequence[Outcome]) -> dict:
     return {
         "sample_sha256": sample_hash(cases),
         "queries": len(cases),

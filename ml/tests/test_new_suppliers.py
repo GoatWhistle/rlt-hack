@@ -10,15 +10,32 @@ QUERIES = [
 
 def answer(text: str) -> dict:
     if text == "Крупа":
-        return {"candidates": [{"rank": 1, "inn": "1", "name": "Old", "novelty": "known",
-                                "status": "check", "matches": []}]}
+        return {
+            "candidates": [
+                {
+                    "rank": 1,
+                    "inn": "1",
+                    "name": "Old",
+                    "novelty": "known",
+                    "status": "check",
+                    "matches": [],
+                }
+            ]
+        }
     offer = {"name": "Бумага SvetoCopy A4", "url": "https://x.ru/1", "observedAt": "2026-09-29"}
-    return {"candidates": [
-        {"rank": rank, "inn": str(rank), "name": f"N{rank}", "novelty": "new",
-         "status": "recommended" if rank == 1 else "check",
-         "matches": [{"offer": offer}]}
-        for rank in range(1, 8)
-    ]}
+    return {
+        "candidates": [
+            {
+                "rank": rank,
+                "inn": str(rank),
+                "name": f"N{rank}",
+                "novelty": "new",
+                "status": "recommended" if rank == 1 else "check",
+                "matches": [{"offer": offer}],
+            }
+            for rank in range(1, 8)
+        ]
+    }
 
 
 def test_sheet_keeps_queries_without_new_candidates_and_caps_five(tmp_path: Path) -> None:

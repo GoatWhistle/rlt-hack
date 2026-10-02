@@ -73,8 +73,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     lines = "\n".join(json.dumps(case, ensure_ascii=False) for case in cases)
     arguments.out.write_text(lines + "\n", encoding="utf-8")
     digest = hashlib.sha256("\n".join(sorted(c["lot_id"] for c in cases)).encode()).hexdigest()
-    manifest = {"size": len(cases), "seed": arguments.seed, "after": str(arguments.after),
-                "excluded": len(excluded), "sample_sha256": digest}
+    manifest = {
+        "size": len(cases),
+        "seed": arguments.seed,
+        "after": str(arguments.after),
+        "excluded": len(excluded),
+        "sample_sha256": digest,
+    }
     arguments.out.with_suffix(".manifest.json").write_text(json.dumps(manifest, indent=2))
     return 0
 
