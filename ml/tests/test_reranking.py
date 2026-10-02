@@ -157,7 +157,12 @@ def test_fixed_model_evaluation_and_export(tmp_path):
     result = json.loads((models / "test-report.json").read_text())
     assert result["accepted"] and result["winner_mrr_delta"] == 0.5
     assert result["winner_mrr_delta_cluster_ci95"] == [0.5, 0.5]
-    for name in ("cards.parquet", "supplier_stats.parquet", "category_stats.parquet"):
+    for name in (
+        "cards.parquet",
+        "supplier_stats.parquet",
+        "category_stats.parquet",
+        "customer_stats.parquet",
+    ):
         pq.write_table(
             pa.Table.from_pylist([{"supplier_inn": "a", "category": "paper"}]),
             (vectors if name == "cards.parquet" else data / "validation") / name,
