@@ -11,12 +11,18 @@ import {
   CSV_BOM,
   CSV_TYPE,
   exportFileNames,
+  type LotCsvLabels,
   productsCsv,
   suppliersCsv,
   toCsv,
 } from "@/features/export-results/csv"
 import * as download from "@/shared/download/save-text-file"
 import { recommendationFixture } from "../entities/recommendation/fixture"
+
+const labels: LotCsvLabels = {
+  status: (status) => en(`companies.status.${status}`, "lot"),
+  origin: (origin) => en(`products.origin.${origin}`, "lot"),
+}
 
 const results: LotResult[] = [
   { lot: lotSummary("10"), recommendation: recommendationFixture },
@@ -30,16 +36,19 @@ afterEach(() => {
 
 describe("the result files", () => {
   it("link products and suppliers to the source lot", () => {
-    const products = productsCsv(results)
+    const products = productsCsv(results, labels)
     expect(products.startsWith(CSV_BOM)).toBe(true)
-    expect(products).toContain("lot_id;product_name;okpd2_code;origin\r\n")
-    expect(products).toContain("10;Sugar;10.81.12;inferred\r\n")
-    const suppliers = suppliersCsv(results)
+    expect(products).toContain("lot_id;product_name;okpd2_code;origin;origin_text\r\n")
+    expect(products).toContain("10;Sugar;10.81.12;inferred;Needs confirming\r\n")
+    const suppliers = suppliersCsv(results, labels)
+    expect(suppliers).toContain("status;status_text;check_reason")
     expect(suppliers).toContain(
-      "10;1;7800000011;North Foods;Supplier;recommended;;5;5;1;3;1;11;4;",
+      "10;1;7800000011;North Foods;Supplier;recommended;Recommended;;4;5;1;3;1;11;4;",
     )
-    expect(suppliers).toContain("10;3;7800000033;West Trade;Distributor;check;;1;5;0;1;0;3;0;")
-    const chosen = suppliersCsv(results, { "10": ["west"] })
+    expect(suppliers).toContain(
+      "10;3;7800000033;West Trade;Distributor;check;Needs checking;;1;5;0;1;0;3;0;",
+    )
+    const chosen = suppliersCsv(results, labels, { "10": ["west"] })
     expect(chosen).not.toContain("North Foods")
     expect(chosen).toContain("West Trade")
   })

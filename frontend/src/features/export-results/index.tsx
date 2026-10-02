@@ -10,7 +10,7 @@ import { Dialog } from "@/shared/ui/dialog"
 import { RadioGroup } from "@/shared/ui/radio-group"
 import { useToast } from "@/shared/ui/toast/toast-context"
 import { type CandidateScope, useCandidateChoice } from "./candidate-choice"
-import { CSV_TYPE, exportFileNames, productsCsv, suppliersCsv } from "./csv"
+import { CSV_TYPE, exportFileNames, type LotCsvLabels, productsCsv, suppliersCsv } from "./csv"
 import styles from "./styles.module.css"
 
 export { SearchExportDialog } from "./search-dialog"
@@ -35,6 +35,11 @@ function initialScope(currentLotId: string | undefined, selected: number): LotSc
 export function ExportDialog(props: ExportDialogProps) {
   const { open, onClose, uploadId, fileName, lots, selectedIds = [], currentLotId } = props
   const { t } = useTranslation("export")
+  const { t: lot } = useTranslation("lot")
+  const labels: LotCsvLabels = {
+    status: (status) => lot(`companies.status.${status}`),
+    origin: (origin) => lot(`products.origin.${origin}`),
+  }
   const gateway = useUploadGateway()
   const toast = useToast()
   const [lotScope, setLotScope] = useState<LotScope>(() =>
@@ -89,10 +94,10 @@ export function ExportDialog(props: ExportDialogProps) {
         ready.map((lot) => lot.id),
       )
       const names = exportFileNames(fileName)
-      saveTextFile(names.products, productsCsv(results), CSV_TYPE)
+      saveTextFile(names.products, productsCsv(results, labels), CSV_TYPE)
       saveTextFile(
         names.suppliers,
-        suppliersCsv(results, scope === "shortlist" ? shortlists : undefined),
+        suppliersCsv(results, labels, scope === "shortlist" ? shortlists : undefined),
         CSV_TYPE,
       )
       toast.show({ tone: "success", message: t("done") })
