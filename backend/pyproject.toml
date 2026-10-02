@@ -138,7 +138,7 @@ plugins = ["pydantic.mypy"]
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-module = ["clickhouse_connect.*", "chdb.*", "snowballstemmer.*"]
+module = ["clickhouse_connect.*", "chdb.*", "snowballstemmer.*", "pyarrow", "pyarrow.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
