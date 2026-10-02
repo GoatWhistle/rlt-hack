@@ -13,6 +13,7 @@
     { "code": "invalid_file", "status": 422 },
     { "code": "missing_columns", "status": 422 },
     { "code": "too_many_rows", "status": 422 },
+    { "code": "invalid_row", "status": 422 },
     { "code": "no_valid_lots", "status": 422 },
     { "code": "upload_not_found", "status": 404 },
     { "code": "lot_not_found", "status": 404 },
@@ -22,6 +23,7 @@
     { "code": "method_not_allowed", "status": 405 },
     { "code": "search_unavailable", "status": 503 },
     { "code": "storage_unavailable", "status": 503 },
+    { "code": "search_busy", "status": 503 },
     { "code": "search_timeout", "status": 504 },
     { "code": "internal_error", "status": 500 }
   ]

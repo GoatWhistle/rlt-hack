@@ -1,9 +1,13 @@
 import { useTranslation } from "react-i18next"
+import { OfferGrid } from "@/entities/evidence/ui/offer-grid"
 import type { Company } from "@/entities/recommendation/model"
 import { Caption } from "@/shared/ui/caption"
 import { CollapsibleList } from "@/shared/ui/collapsible-list"
 import { PanelBlock as Block } from "@/shared/ui/panel-block"
 import { Stack } from "@/shared/ui/stack"
+import { catalogOfferView } from "./catalog"
+
+export const CATALOG_LIMIT = 4
 
 export function HistoryBlock({
   company,
@@ -36,14 +40,12 @@ export function HistoryBlock({
       ) : null}
       {company.catalog?.length ? (
         <Block title={t("history.catalog")}>
-          <Stack as="ul">
-            {company.catalog.map((item) => (
-              <li key={item.url}>
-                <a href={item.url}>{item.name}</a>
-                <Caption>{t("history.checkedAt", { date: item.checkedAt })}</Caption>
-              </li>
-            ))}
-          </Stack>
+          <OfferGrid
+            entries={company.catalog.map((item) => ({ offer: catalogOfferView(item) }))}
+            label={t("history.catalog")}
+            limit={CATALOG_LIMIT}
+            ribbon
+          />
         </Block>
       ) : null}
     </>

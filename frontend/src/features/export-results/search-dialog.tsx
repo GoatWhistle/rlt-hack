@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useCheckReasonText, useHighlightText } from "@/entities/evidence/labels"
+import { useCheckReasonText } from "@/entities/evidence/candidate-labels"
+import { useHighlightText } from "@/entities/evidence/labels"
 import type { SearchResult } from "@/entities/search/model"
 import { saveTextFile } from "@/shared/download/save-text-file"
 import { Button } from "@/shared/ui/button"
@@ -33,7 +34,7 @@ export function SearchExportDialog({ open, onClose, result, chosen }: SearchExpo
   const count = choice.scope === "shortlist" ? known.length : result.candidates.length
 
   function download() {
-    const name = searchFileName(result.searchId)
+    const name = searchFileName(result.query.text, result.createdAt)
     const kept = choice.scope === "shortlist" ? known : undefined
     saveTextFile(name, searchCsv(result, labels, kept), CSV_TYPE)
     toast.show({ tone: "success", message: t("search.done", { name }) })

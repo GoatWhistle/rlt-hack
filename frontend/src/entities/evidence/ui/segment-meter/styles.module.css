@@ -1,10 +1,12 @@
 .meter {
   display: flex;
-  gap: 3px;
+  gap: var(--meter-gap);
 }
 
 .segment {
+  position: relative;
   flex: 1;
+  overflow: hidden;
   height: var(--meter-height);
   border: var(--line-width) solid var(--meter-empty-line);
   border-radius: var(--radius-pill);
@@ -27,6 +29,11 @@
 .catalog {
   border: var(--line-width-strong) solid var(--meter-catalog-line);
   background: var(--meter-catalog-fill);
+}
+
+.meter[data-reveal] {
+  animation: var(--motion-reveal);
+  animation-delay: calc(var(--reveal-index) * var(--stagger-step) + var(--stagger-offset));
 }
 
 .inferred {

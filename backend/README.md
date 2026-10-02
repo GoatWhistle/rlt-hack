@@ -28,14 +28,13 @@
   базовую единицу, ключ склейки дублей.
 - `src/service/classifier/` — код ОКПД2, рубрика и тип позиции по
   детерминированным каналам; таксономия и каналы разнесены по модулям.
-- `src/adapter/file/notice_csv/` — разбор CSV извещений о закупках.
 - `src/service/supplier_search/` — подбор поставщиков: `SupplierMatcher` (каналы,
   слияние, обогащение, политика, ранжирование), общий сценарий
   `SearchPipeline` (разбор текста → совпадения → предупреждения и версия
   конвейера) и тонкая обёртка `SupplierSearchService` для поиска по тексту.
-- `src/service/procurement_upload/` — загрузка файла закупок: деление на
-  закупки, фоновая обработка через тот же `SearchPipeline` (порт
-  `LotSearching`), повторы и дообработка после перезапуска.
+- `src/service/upload/`, `src/controller/uploads/` — загрузка CSV закупок в
+  `search-api` из main: синхронная обработка ранжировщиком, результаты в
+  `UPLOADS_DIR` (раздел «HTTP-поиск и импорт готового индекса»).
 - Правила, общие для контекстов, живут в `src/models/`: роль компании по
   предложениям с подтверждённым продавцом (`company_role.py`), правило ИНН с
   контрольной суммой (`inn.py`), итог сопоставления (`match.py`). Контекст
@@ -418,20 +417,27 @@ INSERT на пачку, поэтому порция размера записи 
 API получает пул такого размера, и каналы поиска с обогащением кандидатов
 выполняются параллельно; джоба сбора работает с одним клиентом, как и раньше.
 
-У API три независимых набора клиентов, чтобы фоновая работа не вытесняла
-интерактивную:
+У API три независимых набора клиентов:
 
-- интерактивный пул (`CLICKHOUSE_POOL_SIZE`) — поиск, профили, чтение загрузок;
-- фоновый пул (`CLICKHOUSE_BACKGROUND_POOL_SIZE`, по умолчанию 2) — обработка
-  закупок из загруженных файлов;
+- интерактивный пул (`CLICKHOUSE_POOL_SIZE`) — каналы поиска, обогащение,
+  профили и чтение архива;
+- пул записи из одного клиента — сохранение поиска в архив. Вставка не ждёт,
+  пока каналы соседних поисков освободят интерактивный пул, поэтому таймаут
+  архива 2 с считается почти от начала вставки;
 - управляющий клиент вне пулов — проба `/api/health/ready` и `KILL QUERY`.
+
+Один поиск занимает не больше половины интерактивного пула (`ceil(size / 2)`,
+`GatewayPool.scope`): запросы его каналов и обогащения встают в очередь внутри
+своей доли, и короткий поиск рядом с большим получает свободный клиент сразу.
+Интерактивный поиск разбирает не больше `SEARCH_MAX_ITEMS` позиций (по
+умолчанию 20); лишние отбрасываются, а ответ получает предупреждение
+`itemsTruncated`.
 
 Каждый запрос API уходит со своим `query_id`. Если вызывающий отменён (например,
 сработал `SEARCH_TIMEOUT_SECONDS`), пул отправляет `KILL QUERY ... ASYNC` через
 управляющий клиент, и слот освобождается сразу после отмены запроса в ClickHouse.
 Клиенты API передают в сессии `max_execution_time` = бюджет + 2 с
-(`SEARCH_TIMEOUT_SECONDS` для интерактивного пула, `UPLOAD_LOT_TIMEOUT_SECONDS`
-для фонового) и `timeout_overflow_mode=throw`, а таймаут ответа HTTP берут из
+(`SEARCH_TIMEOUT_SECONDS`) и `timeout_overflow_mode=throw`, а таймаут ответа HTTP берут из
 `CLICKHOUSE_API_QUERY_TIMEOUT`; у джобы ограничения нет, её таймаут — 300 с.
 
 ## HTTP API
@@ -468,7 +474,11 @@ API получает пул такого размера, и каналы пои�
 `имя@домен`; иначе поле — пустая строка.
 
 Каждый ответ содержит `X-Request-Id` (входящий токен `[A-Za-z0-9-]{8,64}`
-сохраняется, иначе выдаётся новый UUID) и `Server-Timing: app;dur=<мс>`.
+сохраняется, иначе выдаётся новый UUID) и `Server-Timing: app;dur=<мс>`. Ответ
+поиска добавляет время стадий: `parse` (разбор текста), `channels` (каналы),
+`enrich` (обогащение кандидатов), `policy` (сборка, правила и ранжирование) и
+`archive` (сохранение), например
+`app;dur=640.2, parse;dur=0.4, channels;dur=180.3, enrich;dur=420.8, policy;dur=6.1, archive;dur=12.5`.
 Ошибки приходят телом `{"code", "message", "requestId"}`:
 
 | HTTP | `code` | Когда |
@@ -481,11 +491,12 @@ API получает пул такого размера, и каналы пои�
 | 404 | `search_not_found` | нет поиска с таким id |
 | 404 | `supplier_not_found` | нет поставщика с таким id |
 | 400 | `missing_file` | в multipart нет поля `file` |
-| 413 | `file_too_large` | файл больше `UPLOAD_MAX_BYTES` |
+| 413 | `file_too_large` | файл больше 2 МБ (`search-api`) |
 | 415 | `unsupported_file_type` | не `.csv` или двоичное содержимое (XLSX, XLS, PDF) |
 | 422 | `invalid_file` | пустой файл, нет строк данных, неизвестная кодировка |
 | 422 | `missing_columns` | нет обязательных колонок `lot_id`, `procedure_name` |
-| 422 | `too_many_rows` | строк больше `UPLOAD_MAX_ROWS` |
+| 422 | `too_many_rows` | строк больше 20 (`search-api`) |
+| 422 | `invalid_row` | строка CSV в `search-api` не прошла проверку; номер строки в `message` |
 | 422 | `no_valid_lots` | ни одна строка не прошла проверку |
 | 404 | `upload_not_found` | нет загрузки с таким id |
 | 404 | `lot_not_found` | в загрузке нет закупки с таким номером |
@@ -495,6 +506,7 @@ API получает пул такого размера, и каналы пои�
 | 405 | `method_not_allowed` | метод не поддерживается маршрутом |
 | 503 | `search_unavailable` | недоступны все каналы поиска; `Retry-After: 5` |
 | 503 | `storage_unavailable` | ClickHouse недоступен; заголовок `Retry-After: 5` |
+| 503 | `search_busy` | в `search-api` уже идёт `SEARCH_MAX_ACTIVE` поисков; `Retry-After: 5` |
 | 504 | `search_timeout` | превышен `SEARCH_TIMEOUT_SECONDS`; `Retry-After: 5` |
 | 500 | `internal_error` | прочие ошибки и нарушения инвариантов модели на сервере, без деталей наружу |
 
@@ -581,77 +593,25 @@ curl -s http://localhost:8000/api/health/ready
 | `SEARCH_RETRIEVAL_DEPTH` | `3` | во сколько раз каналы берут больше кандидатов, чем лимит |
 | `SEARCH_COVERAGE_THRESHOLD` | `0.5` | порог покрытия позиций для статуса `recommended` |
 | `SEARCH_LEXICAL_POOL` | `500` | сколько карточек отбирает лексический поиск |
+| `SEARCH_MAX_ITEMS` | `20` | сколько позиций разбирает один поиск; лишние отбрасываются с предупреждением `itemsTruncated` |
 | `SEARCH_HISTORY_ENABLED` | `true` | канал поиска по истории закупок |
 | `SEARCH_ML_ENABLED` | `false` | ML-канал поиска |
 | `ML_SERVICE_URL` | `http://ml:8001` | адрес ML-сервиса |
 | `ML_SERVICE_TIMEOUT` | `5` | таймаут запроса к ML-сервису, секунды |
 | `CLICKHOUSE_POOL_SIZE` | `4` | сколько одновременных запросов API отправляет в ClickHouse |
 | `CLICKHOUSE_MAX_THREADS` | `4` | потоков ClickHouse на один запрос; `0` — значение сервера |
-| `CLICKHOUSE_BACKGROUND_POOL_SIZE` | `2` | клиентов ClickHouse для фоновой обработки закупок |
 | `CLICKHOUSE_API_QUERY_TIMEOUT` | `15` | таймаут ответа ClickHouse для API, секунды (не меньше бюджета + 4 с) |
 | `CLICKHOUSE_API_MAX_MEMORY_USAGE` | `0` | `max_memory_usage` запросов API в байтах; `0` — значение сервера |
-| `UPLOAD_MAX_BYTES` | `10485760` | наибольший размер CSV; nginx пропускает до 12 МБ |
-| `UPLOAD_MAX_ROWS` | `5000` | наибольшее число строк закупок в файле |
-| `UPLOAD_CANDIDATES` | `20` | сколько кандидатов подбирается на закупку |
-| `UPLOAD_CONCURRENCY` | `2` | сколько закупок обрабатывается одновременно |
-| `UPLOAD_ATTEMPTS` | `3` | попыток на закупку, затем статус `failed` |
-| `UPLOAD_LOT_TIMEOUT_SECONDS` | `30` | таймаут обработки одной закупки |
-| `UPLOAD_RESUME_INTERVAL_SECONDS` | `60` | как часто незавершённые закупки снова ставятся в очередь |
-| `UPLOAD_MAX_BACKLOG` | `10000` | сколько закупок может ждать обработки; не меньше `2 × UPLOAD_MAX_ROWS` по умолчанию |
+| `UPLOAD_MAX_BACKLOG` | `40` | `search-api`: сколько закупок одновременно во всех идущих загрузках; не меньше 20 |
+| `SEARCH_MAX_ACTIVE` | `4` | `search-api`: сколько `POST /api/suppliers/search` выполняется одновременно |
 
 ## Загрузка файла закупок
 
-`POST /api/uploads` принимает multipart с полем `file` — CSV извещений в формате
-фронтенда (`frontend/src/entities/notice`): разделитель `;`, `,` или табуляция,
-UTF-8 (с BOM или без) либо Windows-1251, обязательные колонки `lot_id` и
-`procedure_name`, необязательные `subject`, `start_price`, `customer_inn`,
-`publish_date` и прочие. Строки с ошибками (`missingLotId`, `badLotId`,
-`duplicateLot`, `missingTitle`, `badPrice`, `badDate`, `columnCount`) не
-обрабатываются и возвращаются в `issues`; остальные становятся закупками.
-
-Разбор ограничен по памяти: строка файла длиннее 64 КБ или шапка шире 64 колонок
-дают `invalid_file`, записи читаются потоком и чтение прерывается на
-`UPLOAD_MAX_ROWS + 1` строке, одновременно разбираются не больше двух файлов, а
-сам разбор идёт в пуле потоков. В продакшне память контейнера `api` ограничена
-`API_MEMORY_LIMIT` (по умолчанию `768m`).
-
-Каждая закупка обрабатывается в фоне тем же конвейером, что и поиск по тексту:
-текст предмета (или названия) → позиции через `RuleQueryInterpreter` →
-`SupplierMatcher` → кандидаты с основаниями. Раннер живёт в процессе API
-(`asyncio`, `UPLOAD_CONCURRENCY` воркеров) и стартует в lifespan; очередей и
-брокеров нет. Транзиентный сбой закупки (недоступность хранилища, отказ
-каналов) повторяется до `UPLOAD_ATTEMPTS` раз с растущей паузой и случайным
-разбросом, таймаут — не больше одного повтора, ошибки данных не повторяются;
-затем закупка получает статус `failed`. Состояние хранится в ClickHouse
-(миграция `0006_uploads.sql`: `uploads`, `upload_lots`, `upload_results` на
-`ReplacingMergeTree` и представления `*_current`). При старте API и затем каждые
-`UPLOAD_RESUME_INTERVAL_SECONDS` закупки без результата, которых нет в работе,
-снова ставятся в очередь: перезапуск не теряет работу, а закупка, результат
-которой не удалось сохранить, обрабатывается повторно без перезапуска.
-
-Очередь закупок живёт в памяти процесса, поэтому API запускается одним
-процессом uvicorn без `--workers` и одной репликой; это проверяет
-`tests/architecture/test_deployment.py`.
-
-Закупка проходит тот же `SearchPipeline`, что и поиск по тексту, поэтому её
-результат хранит предупреждения поиска (`itemsInferred`, `channelFailed`,
-`enrichmentFailed`) и версию конвейера; рекомендация закупки отдаёт их полями
-`warnings` и `pipeline` (`null` у результатов, сохранённых до payload версии 2).
-
-Статус закупки: `queued` — ждёт обработки, `ready` — лидер рекомендован,
-`needsCheck` — лидер требует проверки, есть предполагаемые позиции или отказал
-канал поиска либо источник обогащения,
-`noCandidates` — кандидатов нет, `failed` — обработать не удалось. Рекомендация
-содержит только коды (`checkReasons`, `highlights`, `basis`, `role`), текст для
-людей строит фронтенд на языке интерфейса. Примеры ответов — в
-[`contracts/upload/`](../contracts/upload).
-
-```sh
-curl -s -F 'file=@notices.csv;type=text/csv' http://localhost:8000/api/uploads
-curl -s http://localhost:8000/api/uploads/<uploadId>
-curl -s http://localhost:8000/api/uploads/<uploadId>/lots/<lotId>
-curl -s -X POST http://localhost:8000/api/uploads/<uploadId>/results   -H 'Content-Type: application/json' -d '{"lotIds": ["<lotId>"]}'
-```
+`/api/uploads` обслуживает `search-api` из main (раздел «HTTP-поиск и импорт
+готового индекса»): CSV до 20 строк и 2 МБ обрабатывается синхронно в запросе,
+результаты связаны с cookie сессии. Сервис `api` загрузки не принимает. Что из
+прежней реализации ветки перенесено поверх main, а что нет, — в
+[`plans/paused-work.md`](../plans/paused-work.md).
 
 ## Команды
 
@@ -813,6 +773,48 @@ uv run --python 3.13 python tests/supplier/productcenter_live.py \
   --cache-dir /tmp/productcenter-cache --out /tmp/productcenter-report.json
 ```
 
+## Индексы поиска и тексты лотов
+
+Каналы поиска не читают таблицы целиком. Миграции `0013`–`0015`:
+
+- `0013_offer_prefix_index.sql` удаляет блум-фильтры `tokenbf_v1` и
+  `ngrambf_v1`, которые не отсекали ни одной гранулы, и строит текстовый
+  индекс ClickHouse (`TYPE text(tokenizer = array)`) по префиксам слов
+  `search_text` длиной 3–6 символов. Лексический канал ищет префиксы терминов
+  запроса через `hasAnyTokens`, а флаги совпадений читает из индекса, а не
+  вычисляет по тексту. Колонка `search_terms` хранит длину текста для BM25.
+  Мутации выполняются с `mutations_sync = 2`: `migrate` завершается после
+  перестройки индекса, а не раньше. `offers_current` пересоздаётся атомарно
+  через `CREATE OR REPLACE VIEW`.
+- `0014_lot_texts.sql` собирает два производных представления истории
+  закупок, обновляемых раз в сутки (`REFRESH EVERY 1 DAY`):
+  `lot_texts` — строка на лот с нормализованным текстом предмета, названия и
+  позиций, участниками и победителями (канал истории);
+  `supplier_lots` — строка на пару поставщик–лот с ключом
+  `(supplier_id, lot_id)` (сводка участий кандидатов). Обе таблицы с тем же
+  текстовым индексом.
+- `0015_archive_retention.sql` задаёт архиву поисков `searches` срок хранения
+  180 дней (`TTL created_at + 180 DAY`).
+
+После загрузки или обновления истории закупок представления нужно обновить, не
+дожидаясь суточного цикла:
+
+```sh
+docker compose exec clickhouse clickhouse-client -q "SYSTEM REFRESH VIEW supplier_search.lot_texts_refresh"
+docker compose exec clickhouse clickhouse-client -q "SYSTEM WAIT VIEW supplier_search.lot_texts_refresh"
+docker compose exec clickhouse clickhouse-client -q "SYSTEM REFRESH VIEW supplier_search.supplier_lots_refresh"
+docker compose exec clickhouse clickhouse-client -q "SYSTEM WAIT VIEW supplier_search.supplier_lots_refresh"
+```
+
+Обновление заменяет содержимое таблиц целиком. На объёме реального датасета
+(604 тыс. лотов, 1,2 млн участий) оно занимает около 40 с для `lot_texts` и
+4 с для `supplier_lots` при двух потоках ClickHouse.
+
+Применённые миграции не меняются: исправление выкладывается следующим файлом
+(откат только вперёд). Повторное выполнение старых файлов поверх новой схемы
+не поддерживается: `0005_normalized_view.sql` ссылается на колонку, которую
+удаляет `0006`.
+
 ## Нагрузочный замер
 
 `bench/` — генератор синтетических данных и замер задержки `POST /api/searches`.
@@ -831,8 +833,18 @@ SQL по стадиям поиска берёт из `system.query_log`.
 uv run python -m bench.run --up --build --seed --out bench.json
 uv run python -m bench.run --up --pool-size 1 --max-threads 0
 uv run python -m bench.run --sequential 50 --concurrency 8 --requests 100
+uv run python -m bench.run --up --seed --reset --volume real --large 5
 docker compose -p rlt-bench stop
 ```
+
+`--volume real` наполняет базу в объёме реального датасета закупок: 1 млн
+карточек, 604 452 лота, 2 971 651 позиция ТРУ, 1,2 млн участий. `--large N`
+после основных режимов прогоняет по N поисков на 10, 25 и 50 позиций.
+Наполнение в конце обновляет `lot_texts` и `supplier_lots`. В отчёте каждого
+режима есть счётчик кодов предупреждений ответов, например `archiveFailed` и
+`itemsTruncated`. Ограничение ClickHouse как в продакшне задаётся после
+запуска: `docker update --cpus 2 --memory 1500m --memory-swap 1500m
+rlt-bench-clickhouse-1`.
 
 `--seed` наполняет пустую базу и пропускает уже наполненную, `--reset`
 очищает таблицы перед наполнением. `--pool-size` и `--max-threads`
@@ -928,6 +940,25 @@ uv run --no-project --python 3.13 --with 'ruff>=0.14' ruff format .
 запускает `/api/health`, `/api/suppliers/search` и `/api/uploads`.
 CSV содержит `lot_id,procedure_name,subject`; максимум 20 строк и 2 МБ.
 Результаты связаны с cookie сессии и сохраняются в `UPLOADS_DIR`.
+
+Ошибки `search-api` приходят тем же телом `{"code", "message", "requestId"}` и
+с теми же кодами, что у `api` (таблица выше, `contracts/error-codes.json`);
+каждый ответ несёт `X-Request-Id`. Файл больше 2 МБ (по `Content-Length` ещё до
+чтения) — `413 file_too_large`, нет поля `file` — `400 missing_file`, ZIP/XLSX,
+OLE/XLS, PDF или `NUL` в начале — `415 unsupported_file_type`. Разбор идёт
+потоком в пуле потоков, не больше двух файлов одновременно: строка длиннее
+64 КБ, шапка шире 64 колонок, пустой файл или неизвестная кодировка —
+`422 invalid_file`, нет `lot_id`/`procedure_name` — `422 missing_columns`,
+21-я строка — `422 too_many_rows` (чтение прерывается), неверная строка —
+`422 invalid_row` с номером строки. Сбой поиска при загрузке или в
+`/api/suppliers/search` — `503 search_unavailable`, недоступный ClickHouse на
+любом маршруте — `503 storage_unavailable`, обе с `Retry-After: 5`.
+
+Загрузка обрабатывается синхронно в запросе. `UPLOAD_MAX_BACKLOG` (по умолчанию
+40, не меньше 20) ограничивает число закупок во всех одновременно идущих
+загрузках: сверх него — `429 upload_queue_full` с `Retry-After: 60`.
+`SEARCH_MAX_ACTIVE` (по умолчанию 4) ограничивает одновременные
+`POST /api/suppliers/search`: сверх него — `503 search_busy`.
 
 `python -m src.controller.search.import_index /data/index` применяет миграции,
 проверяет манифест и импортирует карточки/вектора в ClickHouse. Каталог должен

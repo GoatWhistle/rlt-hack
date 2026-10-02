@@ -1,4 +1,5 @@
 import type { CheckReason, Highlight } from "@/entities/evidence/model"
+import type { CompanyStatus, ProductOrigin } from "@/entities/recommendation/model"
 import type { LotShortlists } from "@/entities/shortlist/store"
 import type { LotResult } from "@/entities/upload/model"
 
@@ -14,7 +15,18 @@ export type CsvLabels = {
   readonly highlight: (highlight: Highlight) => string
 }
 
-export const PRODUCT_COLUMNS = ["lot_id", "product_name", "okpd2_code", "origin"] as const
+export type LotCsvLabels = {
+  readonly status: (status: CompanyStatus) => string
+  readonly origin: (origin: ProductOrigin) => string
+}
+
+export const PRODUCT_COLUMNS = [
+  "lot_id",
+  "product_name",
+  "okpd2_code",
+  "origin",
+  "origin_text",
+] as const
 
 export const SUPPLIER_COLUMNS = [
   "lot_id",
@@ -23,6 +35,7 @@ export const SUPPLIER_COLUMNS = [
   "supplier_name",
   "role",
   "status",
+  "status_text",
   "check_reason",
   "matched_products",
   "products_total",
@@ -32,6 +45,7 @@ export const SUPPLIER_COLUMNS = [
   "similar_purchases",
   "wins",
   "summary",
+  "clarify",
 ] as const
 
 type Cell = string | number
@@ -49,13 +63,14 @@ export function toCsv(header: readonly string[], rows: readonly (readonly Cell[]
   return `${CSV_BOM}${lines.join("\r\n")}\r\n`
 }
 
-export function productsCsv(results: readonly LotResult[]): string {
+export function productsCsv(results: readonly LotResult[], labels: LotCsvLabels): string {
   const rows = results.flatMap(({ lot, recommendation }) =>
     (recommendation?.products ?? []).map((product) => [
       lot.id,
       product.name,
       product.okpd2,
       product.origin,
+      labels.origin(product.origin),
     ]),
   )
   return toCsv(PRODUCT_COLUMNS, rows)
@@ -63,6 +78,7 @@ export function productsCsv(results: readonly LotResult[]): string {
 
 export function suppliersCsv(
   results: readonly LotResult[],
+  labels: LotCsvLabels,
   shortlists?: LotShortlists,
 ): string {
   const rows = results.flatMap(({ lot, recommendation }) => {
@@ -80,8 +96,9 @@ export function suppliersCsv(
           company.name,
           company.role,
           company.status,
+          labels.status(company.status),
           company.checkReason ?? "",
-          company.matches.length,
+          company.matches.length - basis("inferred"),
           total,
           basis("stock"),
           basis("catalog"),
@@ -89,6 +106,7 @@ export function suppliersCsv(
           company.similarPurchases ?? "",
           company.wins ?? "",
           company.summary,
+          company.clarify.join(SUMMARY_SEPARATOR),
         ],
       ]
     })

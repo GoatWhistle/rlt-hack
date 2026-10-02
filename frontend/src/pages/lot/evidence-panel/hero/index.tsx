@@ -1,5 +1,10 @@
 import { useTranslation } from "react-i18next"
+import { useMatchFigure } from "@/entities/evidence/labels"
 import { CandidateHero } from "@/entities/evidence/ui/candidate-hero"
+import {
+  CandidatePager,
+  type CandidatePagerProps,
+} from "@/entities/evidence/ui/candidate-pager"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { Icon } from "@/shared/ui/icon"
 import { SegmentMeter } from "../../segment-meter"
@@ -9,6 +14,7 @@ import styles from "./styles.module.css"
 export type HeroProps = {
   readonly company: Company
   readonly products: readonly Product[]
+  readonly pager?: CandidatePagerProps
 }
 
 function useReasonTitle(company: Company): string {
@@ -19,8 +25,9 @@ function useReasonTitle(company: Company): string {
     : t("evidence.checkTitle")
 }
 
-export function Hero({ company, products }: HeroProps) {
+export function Hero({ company, products, pager }: HeroProps) {
   const { t } = useTranslation("lot")
+  const figureOf = useMatchFigure()
   const title = useReasonTitle(company)
   const main = company.clarify[0]
   return (
@@ -31,14 +38,12 @@ export function Hero({ company, products }: HeroProps) {
       check={company.status === "check"}
       figure={
         products.length > 0
-          ? {
-              value: `${company.matches.length}/${products.length}`,
-              label: t("compare.match"),
-            }
+          ? { ...figureOf(company.matches, products.length), label: t("compare.match") }
           : undefined
       }
       verdict={<SegmentMeter company={company} products={products} size="lg" />}
       reason={{ title, text: company.summary }}
+      pager={pager ? <CandidatePager {...pager} /> : null}
     >
       <RankingReasons company={company} />
       {main && company.status !== "historical" && !company.history ? (

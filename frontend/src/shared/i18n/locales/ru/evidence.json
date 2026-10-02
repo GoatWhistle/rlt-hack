@@ -12,7 +12,7 @@
     "unknown": "Роль не определена"
   },
   "basis": {
-    "stock": "Наличие подтверждено",
+    "stock": "Есть в прайсе",
     "catalog": "Есть в каталоге",
     "inferred": "Предположение системы"
   },
@@ -30,7 +30,7 @@
     "participant": "Участник"
   },
   "meter": {
-    "label": "Совпадение {{matched, number}} из {{total, number}}: наличие подтверждено — {{stock, number}}, в каталоге — {{catalog, number}}, предположение — {{inferred, number}}"
+    "label": "Совпадение {{matched, number}} из {{total, number}}: в прайсе — {{stock, number}}, в каталоге — {{catalog, number}}, предположение — {{inferred, number}}"
   },
   "contacts": {
     "site": "Сайт",
@@ -40,10 +40,10 @@
   },
   "highlight": {
     "coversItems": "Покрывает {{matched, number}} из {{total, number}} позиций",
-    "inStock_one": "Наличие по {{count, number}} позиции",
-    "inStock_few": "Наличие по {{count, number}} позициям",
-    "inStock_many": "Наличие по {{count, number}} позициям",
-    "inStock_other": "Наличие по {{count, number}} позиции",
+    "inStock_one": "Прайс по {{count, number}} позиции",
+    "inStock_few": "Прайс по {{count, number}} позициям",
+    "inStock_many": "Прайс по {{count, number}} позициям",
+    "inStock_other": "Прайс по {{count, number}} позиции",
     "hasPrice_one": "Цена по {{count, number}} позиции",
     "hasPrice_few": "Цены по {{count, number}} позициям",
     "hasPrice_many": "Цены по {{count, number}} позициям",
@@ -58,14 +58,6 @@
     "similarPurchases_other": "{{count, number}} похожей закупки",
     "verifiedIdentity": "Реквизиты подтверждены"
   },
-  "checkReason": {
-    "innMissing": "Нет ИНН: компанию нельзя однозначно определить.",
-    "identityConflict": "Источники расходятся в реквизитах компании.",
-    "roleUnconfirmed": "Ни один источник не подтверждает, кто компания: производитель, дистрибьютор или поставщик.",
-    "noCurrentOffer": "Нет актуального предложения: товары найдены только в старых записях.",
-    "rangeUnconfirmed": "Ассортимент подтверждён не по всем позициям.",
-    "sourceUnavailable": "Один из источников не ответил во время проверки."
-  },
   "inn": "ИНН {{inn}}",
   "noInn": "ИНН неизвестен",
   "assumed_one": "+{{count, number}} предположение",
@@ -73,6 +65,31 @@
   "assumed_many": "+{{count, number}} предположений",
   "assumed_other": "+{{count, number}} предположения",
   "newTab": "(откроется в новой вкладке)",
+  "offer": {
+    "listLabel": "Предложения компании",
+    "price": "{{price}} за {{unit}}",
+    "noPrice": "Цена не указана",
+    "amount": "{{value}} {{currency}}",
+    "article": "арт. {{article}}",
+    "okpd2": "ОКПД2 {{code}}",
+    "attribute": "{{name}}: {{value}}",
+    "availability": {
+      "available": "В наличии",
+      "on_order": "Под заказ",
+      "unavailable": "Нет в наличии",
+      "unknown": "Наличие неизвестно"
+    },
+    "seller": {
+      "unverified": "Продавец не подтверждён",
+      "conflict": "Источники расходятся о продавце"
+    },
+    "item": "Позиция «{{name}}»",
+    "staleCheck": "проверено {{date}}, давно не обновлялось",
+    "inferred": "Предложения нет — система предполагает по похожим закупкам",
+    "empty": "Актуальных предложений нет",
+    "emptyHint": "Компания найдена по истории закупок. Ассортимент и цены уточняйте напрямую.",
+    "short": "{{price}} · {{availability}}"
+  },
   "region": {
     "named": "{{name}} ({{code}})",
     "code": "Регион {{code}}"

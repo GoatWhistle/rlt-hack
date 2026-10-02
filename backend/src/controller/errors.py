@@ -17,3 +17,9 @@ class UnsupportedFileTypeError(RequestFileError):
     def __init__(self, allowed: tuple[str, ...]) -> None:
         super().__init__(f"only {', '.join(allowed)} files are accepted")
         self.allowed = allowed
+
+
+class SearchBusyError(Exception):
+    def __init__(self, limit: int) -> None:
+        super().__init__(f"{limit} searches are already running, retry later")
+        self.limit = limit

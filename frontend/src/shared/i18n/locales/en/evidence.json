@@ -12,7 +12,7 @@
     "unknown": "Role not determined"
   },
   "basis": {
-    "stock": "Stock confirmed",
+    "stock": "In a price list",
     "catalog": "In the catalog",
     "inferred": "System assumption"
   },
@@ -30,7 +30,7 @@
     "participant": "Participant"
   },
   "meter": {
-    "label": "Match {{matched, number}} of {{total, number}}: stock confirmed — {{stock, number}}, in the catalog — {{catalog, number}}, assumed — {{inferred, number}}"
+    "label": "Match {{matched, number}} of {{total, number}}: in a price list — {{stock, number}}, in the catalog — {{catalog, number}}, assumed — {{inferred, number}}"
   },
   "contacts": {
     "site": "Website",
@@ -40,8 +40,8 @@
   },
   "highlight": {
     "coversItems": "Covers {{matched, number}} of {{total, number}} items",
-    "inStock_one": "In stock for {{count, number}} item",
-    "inStock_other": "In stock for {{count, number}} items",
+    "inStock_one": "Price list for {{count, number}} item",
+    "inStock_other": "Price list for {{count, number}} items",
     "hasPrice_one": "Price listed for {{count, number}} item",
     "hasPrice_other": "Price listed for {{count, number}} items",
     "pastWins_one": "{{count, number}} win in similar purchases",
@@ -50,19 +50,36 @@
     "similarPurchases_other": "{{count, number}} similar purchases",
     "verifiedIdentity": "Company details verified"
   },
-  "checkReason": {
-    "innMissing": "No INN: the company cannot be identified for certain.",
-    "identityConflict": "Sources disagree about the company details.",
-    "roleUnconfirmed": "No source confirms what the company does: manufacturer, distributor or supplier.",
-    "noCurrentOffer": "No current offer: the products were found only in older records.",
-    "rangeUnconfirmed": "The range is not confirmed for every item.",
-    "sourceUnavailable": "One of the sources did not answer during the check."
-  },
   "inn": "INN {{inn}}",
   "noInn": "INN unknown",
   "assumed_one": "+{{count, number}} assumption",
   "assumed_other": "+{{count, number}} assumptions",
   "newTab": "(opens in a new tab)",
+  "offer": {
+    "listLabel": "Company offers",
+    "price": "{{price}} per {{unit}}",
+    "noPrice": "No price given",
+    "amount": "{{value}} {{currency}}",
+    "article": "SKU {{article}}",
+    "okpd2": "OKPD2 {{code}}",
+    "attribute": "{{name}}: {{value}}",
+    "availability": {
+      "available": "In stock",
+      "on_order": "On order",
+      "unavailable": "Out of stock",
+      "unknown": "Availability unknown"
+    },
+    "seller": {
+      "unverified": "Seller not confirmed",
+      "conflict": "Sources disagree on the seller"
+    },
+    "item": "Item “{{name}}”",
+    "staleCheck": "checked {{date}}, may be outdated",
+    "inferred": "No offer: the system infers this from similar purchases",
+    "empty": "No current offers",
+    "emptyHint": "The company was found through past purchases. Ask the company about its range and prices directly.",
+    "short": "{{price}} · {{availability}}"
+  },
   "region": {
     "named": "{{name}} ({{code}})",
     "code": "Region {{code}}"

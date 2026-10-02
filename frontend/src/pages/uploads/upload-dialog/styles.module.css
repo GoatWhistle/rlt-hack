@@ -3,6 +3,7 @@
   gap: var(--space-5);
   min-height: 12rem;
   padding-block: var(--space-2);
+  animation: var(--motion-swap);
 }
 
 .error {

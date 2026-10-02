@@ -57,7 +57,10 @@ describe("the first visit", () => {
     expect(
       within(dialog)
         .getAllByRole("button")
-        .map((button) => button.textContent),
+        .map(
+          (button) =>
+            button.querySelector('[aria-hidden="false"]')?.textContent ?? button.textContent,
+        ),
     ).toEqual([
       en("action.close"),
       en("dialog.otherFile", "uploads"),
@@ -165,7 +168,7 @@ describe("the list of uploads", () => {
     expect(within(done).getByText(en("list.done", "uploads"))).toBeInTheDocument()
     expect(within(done).getByText("2 rows with errors were not processed")).toBeInTheDocument()
     const running = screen.getByRole("link", { name: /running\.csv/ })
-    expect(within(running).getByText("Processed 4 of 10")).toBeInTheDocument()
+    expect(within(running).getByText("Processing: 4 of 10")).toBeInTheDocument()
     expect(within(running).getByText(en("list.notStored", "uploads"))).toBeInTheDocument()
     expect(within(running).getByText("not processed: 1")).toBeInTheDocument()
     expect(within(done).queryByText(/not processed:/)).toBeNull()
@@ -174,6 +177,25 @@ describe("the list of uploads", () => {
     expect(within(dialog).getByLabelText(en("drop.choose", "uploads"))).toBeInTheDocument()
     await user.click(within(dialog).getByRole("button", { name: en("action.close") }))
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
+  })
+
+  it("announces a file that finished processing while the list was open", async () => {
+    const running = uploadSummary({ id: "b", fileName: "running.csv", total: 4, processed: 1 })
+    const done = uploadSummary({
+      id: "b",
+      fileName: "running.csv",
+      total: 4,
+      processed: 4,
+      counts: { ready: 3, needsCheck: 1, noCandidates: 0, failed: 0 },
+    })
+    const list = vi.fn().mockResolvedValueOnce([running]).mockResolvedValue([done])
+    renderPage("/uploads", stubGateway({ list }))
+    const notes = await screen.findAllByText(
+      "running.csv is processed: 3 ready, 1 need clarifying",
+      {},
+      { timeout: 6000 },
+    )
+    expect(notes.length).toBeGreaterThan(0)
   })
 
   it("shows a skeleton of the page while the list loads", async () => {

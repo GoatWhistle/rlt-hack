@@ -1,64 +1,103 @@
 import { clsx } from "clsx"
-import { type FormEvent, type KeyboardEvent, useEffect, useId, useRef, useState } from "react"
+import { type FormEvent, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { invalidQuery } from "@/entities/search/gateway"
 import { DEFAULT_LIMIT, MAX_QUERY_LENGTH, type SearchResult } from "@/entities/search/model"
 import { useRunSearch } from "@/entities/search/queries"
-import { useErrorMessage } from "@/shared/errors/use-error-message"
+import { FOCUS_SHORTCUT } from "@/shared/keyboard/use-focus-shortcut"
 import { Button } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
-import { ExampleChips } from "./example-chips"
+import { Spinner } from "@/shared/ui/spinner"
+import {
+  isInputProblem,
+  joinIds,
+  problemOf,
+  useFieldEffects,
+  useReportStage,
+} from "./field-effects"
+import { SearchError } from "./search-error"
+import { StageLine, SweepBar } from "./stage-line"
 import styles from "./styles.module.css"
 import { useAutoHeight } from "./use-auto-height"
+import { type SearchStage, useStage } from "./use-stage"
+
+export { FINE_POINTER, isInputProblem } from "./field-effects"
+export { StageLine } from "./stage-line"
+export type { SearchStage } from "./use-stage"
 
 export const COUNTER_FROM = 3600
-export const SLOW_SEARCH_MS = 1000
 
 export type SearchBoxProps = {
   readonly initialText?: string
-  readonly showExamples?: boolean
+  readonly compact?: boolean
+  readonly inputId?: string
+  readonly autoFocus?: boolean
+  readonly shortcut?: boolean
+  readonly onStage?: (stage: SearchStage | null) => void
   readonly onFound: (result: SearchResult) => void
 }
 
-function problemOf(text: string) {
-  if (!text) return invalidQuery("empty_query")
-  if (text.length > MAX_QUERY_LENGTH) return invalidQuery("query_too_long")
-  return null
+type FieldBarProps = {
+  readonly compact: boolean
+  readonly stage: SearchStage | null
+  readonly counterId: string
+  readonly length: number
+  readonly pending: boolean
 }
 
-function wantsSubmit(event: KeyboardEvent<HTMLTextAreaElement>): boolean {
-  if (event.key !== "Enter" || event.nativeEvent.isComposing) return false
-  return event.metaKey || event.ctrlKey || !event.shiftKey
-}
-
-export function SearchBox({ initialText = "", showExamples = true, onFound }: SearchBoxProps) {
+function FieldBar(props: FieldBarProps) {
+  const { compact, stage, counterId, length, pending } = props
   const { t } = useTranslation("search")
-  const errorMessage = useErrorMessage()
+  return (
+    <div className={styles.bar} data-part="query-bar">
+      {compact ? null : <StageLine stage={stage} />}
+      {length >= COUNTER_FROM ? (
+        <span
+          id={counterId}
+          className={clsx(styles.counter, length > MAX_QUERY_LENGTH && styles.over)}
+        >
+          {t("box.counter", { count: length, limit: MAX_QUERY_LENGTH })}
+        </span>
+      ) : null}
+      <Button
+        type="submit"
+        className={styles.submit}
+        aria-disabled={pending}
+        aria-busy={pending}
+      >
+        {pending ? <Spinner /> : <Icon name="search" />}
+        {t("box.submit")}
+      </Button>
+    </div>
+  )
+}
+
+export function SearchBox({
+  initialText = "",
+  compact = false,
+  inputId,
+  autoFocus,
+  shortcut,
+  onStage,
+  onFound,
+}: SearchBoxProps) {
+  const { t } = useTranslation("search")
   const search = useRunSearch()
   const [text, setText] = useState(initialText)
   const [problem, setProblem] = useState<unknown>(null)
   const fieldRef = useRef<HTMLTextAreaElement>(null)
-  const fieldId = useId()
-  const hintId = useId()
+  const ownId = useId()
+  const fieldId = inputId ?? ownId
   const counterId = useId()
   const errorId = useId()
-  const [slow, setSlow] = useState(false)
+  const stage = useStage(search.isPending)
   useAutoHeight(fieldRef, text)
-
-  useEffect(() => {
-    if (!search.isPending) {
-      setSlow(false)
-      return
-    }
-    const timer = window.setTimeout(() => setSlow(true), SLOW_SEARCH_MS)
-    return () => window.clearTimeout(timer)
-  }, [search.isPending])
+  useFieldEffects(fieldRef, { autoFocus: autoFocus === true, shortcut: shortcut === true })
+  useReportStage(stage, onStage)
 
   const error = problem ?? search.error
+  const invalid = isInputProblem(error)
   const showCounter = text.length >= COUNTER_FROM
-  const describedBy = [hintId, showCounter ? counterId : "", error ? errorId : ""]
-    .filter(Boolean)
-    .join(" ")
+  const describedBy = joinIds([showCounter ? counterId : "", error ? errorId : ""])
 
   function submit(value = text) {
     if (search.isPending) return
@@ -78,14 +117,9 @@ export function SearchBox({ initialText = "", showExamples = true, onFound }: Se
     if (search.isError) search.reset()
   }
 
-  function pick(example: string) {
-    change(example)
-    submit(example)
-  }
-
   return (
     <form
-      className={styles.box}
+      className={clsx(styles.box, compact && styles.compact)}
       noValidate
       aria-busy={search.isPending}
       onSubmit={(event: FormEvent) => {
@@ -93,63 +127,36 @@ export function SearchBox({ initialText = "", showExamples = true, onFound }: Se
         submit()
       }}
     >
-      <label htmlFor={fieldId} className={styles.label}>
-        {t("box.label")}
-      </label>
-      <div className={clsx(styles.field, error ? styles.invalid : undefined)}>
+      {compact ? null : (
+        <label htmlFor={fieldId} className={styles.label}>
+          {t("box.label")}
+        </label>
+      )}
+      <div className={clsx(styles.field, invalid && styles.invalid)}>
         <textarea
           id={fieldId}
           ref={fieldRef}
           className={styles.input}
-          rows={2}
+          data-part="query-text"
+          rows={compact ? 1 : 4}
           value={text}
           placeholder={t("box.placeholder")}
-          aria-invalid={error ? true : undefined}
+          aria-label={compact ? t("box.label") : undefined}
+          aria-invalid={invalid || undefined}
           aria-describedby={describedBy}
+          aria-keyshortcuts={shortcut ? FOCUS_SHORTCUT : undefined}
           onChange={(event) => change(event.target.value)}
-          onKeyDown={(event) => {
-            if (!wantsSubmit(event)) return
-            event.preventDefault()
-            submit()
-          }}
         />
-        <div className={styles.bar}>
-          <span role="status" className={styles.progress}>
-            {slow ? t("box.progress") : null}
-          </span>
-          <span id={hintId} className={clsx(styles.hint, slow && styles.hidden)}>
-            {t("box.hint")}
-          </span>
-          {showCounter ? (
-            <span
-              id={counterId}
-              className={clsx(styles.counter, text.length > MAX_QUERY_LENGTH && styles.over)}
-            >
-              {t("box.counter", { count: text.length, limit: MAX_QUERY_LENGTH })}
-            </span>
-          ) : null}
-          <Button
-            type="submit"
-            className={styles.submit}
-            aria-disabled={search.isPending}
-            aria-busy={search.isPending}
-          >
-            {search.isPending ? (
-              <span className={styles.spinner} aria-hidden="true" />
-            ) : (
-              <Icon name="search" />
-            )}
-            {t("box.submit")}
-          </Button>
-        </div>
+        <FieldBar
+          compact={compact}
+          stage={stage}
+          counterId={counterId}
+          length={text.length}
+          pending={search.isPending}
+        />
+        {search.isPending ? <SweepBar /> : null}
       </div>
-      {error ? (
-        <p id={errorId} role="alert" className={styles.error}>
-          <Icon name="warning" size="sm" />
-          {errorMessage(error)}
-        </p>
-      ) : null}
-      {showExamples ? <ExampleChips onPick={pick} /> : null}
+      <SearchError id={errorId} error={error} onRetry={() => submit()} />
     </form>
   )
 }

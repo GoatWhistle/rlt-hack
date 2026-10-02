@@ -13,6 +13,7 @@ from src.models.supplier import Supplier
 from tests.fakes.domain import CHECKED, uid
 
 DATABASE = "supplier_search"
+HISTORY_VIEWS = ("lot_texts_refresh", "supplier_lots_refresh")
 MATCH_COLUMNS = (
     "offer_id",
     "catalog_item_id",
@@ -75,3 +76,8 @@ class Seeder:
             ("lot_id", "supplier_inn", "supplier_kpp", "supplier_id", "is_winner", "version"),
             [(lot_id, supplier.inn or "", "", supplier.supplier_id, int(won), 1)],
         )
+
+    async def refresh_history(self) -> None:
+        for view in HISTORY_VIEWS:
+            await self._gateway.command(f"SYSTEM REFRESH VIEW {DATABASE}.{view}")
+            await self._gateway.command(f"SYSTEM WAIT VIEW {DATABASE}.{view}")

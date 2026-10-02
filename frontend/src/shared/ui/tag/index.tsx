@@ -16,9 +16,17 @@ const TONES: Record<TagTone, string | undefined> = {
 export type TagProps = {
   readonly tone?: TagTone
   readonly as?: "span" | "li"
+  readonly wrap?: boolean
   readonly children: ReactNode
 }
 
-export function Tag({ tone = "solid", as: Element = "span", children }: TagProps) {
-  return <Element className={clsx(styles.tag, TONES[tone])}>{children}</Element>
+export function Tag({
+  tone = "solid",
+  as: Element = "span",
+  wrap = false,
+  children,
+}: TagProps) {
+  return (
+    <Element className={clsx(styles.tag, TONES[tone], wrap && styles.wrap)}>{children}</Element>
+  )
 }

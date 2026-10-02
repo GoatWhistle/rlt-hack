@@ -1,19 +1,18 @@
-import asyncio
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from uuid import UUID
 
 from src.adapter.repository.clickhouse.participation.protocols import TextAnalyzer
-from src.adapter.repository.clickhouse.participation.query import participations_statement
+from src.adapter.repository.clickhouse.participation.query import participations_query
 from src.adapter.repository.clickhouse.protocols import SqlGateway
-from src.adapter.repository.clickhouse.retrieval.terms import needles_for
+from src.adapter.repository.clickhouse.retrieval.similarity import LotSimilarity
+from src.adapter.repository.clickhouse.retrieval.terms import flags_of, index_terms
 from src.adapter.repository.clickhouse.rows import to_uuid
 from src.models.enums import PurchaseOutcome
 from src.models.purchase import PurchaseRecord, PurchaseSummary
 from src.models.query_item import QueryItem
 
-MATCH_SHARE = 0.5
-MAX_NEEDLES = 255
+MAX_TERMS = 128
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,7 +21,7 @@ class LotParticipation:
     lot_id: str
     won: bool
     title: str
-    text: str
+    flags: tuple[bool, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,47 +55,46 @@ class ClickHousePurchaseHistory:
         analyzer: TextAnalyzer,
         database: str = "supplier_search",
         row_cap: int = 5000,
+        similarity: LotSimilarity | None = None,
     ) -> None:
         self._gateway = gateway
         self._analyzer = analyzer
         self._db = database
         self._cap = row_cap
+        self._similarity = similarity or LotSimilarity()
 
     async def summarize(
         self, supplier_ids: Sequence[UUID], items: Sequence[QueryItem], records: int
     ) -> Mapping[UUID, PurchaseSummary]:
-        needles = tuple(
-            dict.fromkeys(
-                needle for item in items for needle in needles_for(self._analyzer, item.name)
-            )
-        )
-        if not supplier_ids or not needles:
+        wanted = {item.item_id: index_terms(self._analyzer, item.name) for item in items}
+        terms = tuple(dict.fromkeys(term for found in wanted.values() for term in found))
+        terms = terms[:MAX_TERMS]
+        if not supplier_ids or not terms:
             return {}
+        statement, match = participations_query(self._db, terms)
+        ids = [str(value) for value in dict.fromkeys(supplier_ids)]
         rows = await self._gateway.select(
-            participations_statement(self._db),
-            {
-                "ids": [str(value) for value in dict.fromkeys(supplier_ids)],
-                "needles": list(needles[:MAX_NEEDLES]),
-                "cap": self._cap,
-            },
+            statement, {**match.parameters, "ids": ids, "cap": self._cap}
         )
-        participations = [_participation(row) for row in rows]
-        return await asyncio.to_thread(self._summaries, participations, items, records)
+        positions = {term: index for index, term in enumerate(terms)}
+        columns = {
+            item_id: [positions[term] for term in found if term in positions]
+            for item_id, found in wanted.items()
+        }
+        return self._summaries([_participation(row) for row in rows], columns, records)
 
     def _summaries(
         self,
         participations: Sequence[LotParticipation],
-        items: Sequence[QueryItem],
+        columns: Mapping[str, Sequence[int]],
         records: int,
     ) -> dict[UUID, PurchaseSummary]:
-        wanted = {item.item_id: frozenset(self._analyzer.analyze(item.name)) for item in items}
         grouped: dict[UUID, list[MatchedLot]] = {}
         for entry in participations:
-            stems = frozenset(self._analyzer.analyze(entry.text))
             matched = tuple(
                 item_id
-                for item_id, terms in wanted.items()
-                if terms and len(terms & stems) / len(terms) >= MATCH_SHARE
+                for item_id, indexes in columns.items()
+                if self._similarity.similar([entry.flags[index] for index in indexes])
             )
             if matched:
                 grouped.setdefault(entry.supplier_id, []).append(MatchedLot(entry, matched))
@@ -104,11 +102,10 @@ class ClickHousePurchaseHistory:
 
 
 def _participation(row: Sequence[object]) -> LotParticipation:
-    subject, procedure, products = str(row[3] or ""), str(row[4] or ""), str(row[5] or "")
     return LotParticipation(
         supplier_id=to_uuid(row[0]),
         lot_id=str(row[1]),
-        won=bool(int(str(row[2]))),
-        title=subject or procedure,
-        text=" ".join((subject, procedure, products)),
+        won=bool(row[2]),
+        title=str(row[3] or ""),
+        flags=flags_of(row[-1]),
     )

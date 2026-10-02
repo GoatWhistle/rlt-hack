@@ -4,10 +4,12 @@ from fastapi import FastAPI
 from src.application.api import ApiContainer
 from src.application.config import AppConfig
 from src.application.container import Container
+from src.application.deferred_gateway import DeferredShare
 from src.controller.http.app import create_app
 from src.controller.http.correlation import current_request_id
 from src.controller.http.log_format import configure_logging
 from src.controller.http.settings import ApiSettings
+from src.controller.http.timing import ServerTimingStages
 
 APP_FACTORY = "src.controller.api.main:build_app"
 API_TITLE = "LOTIVE API"
@@ -28,6 +30,9 @@ def build_app() -> FastAPI:
         container.api_gateway,
         container.aclose,
         control=container.control_gateway,
+        writer=container.writer_gateway,
+        share=DeferredShare(container.api_gateway),
+        stages=ServerTimingStages(),
         correlation=current_request_id,
     )
     return create_app(api, settings)

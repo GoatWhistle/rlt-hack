@@ -2,9 +2,9 @@ from bench.clickhouse import ClickHouseHttp
 from bench.sql import quote
 
 STAGES = (
-    ("lexical", "multiSearchAny(o.search_text"),
-    ("history", "FROM supplier_search.procurement_lots_current"),
-    ("participation", "HAVING multiSearchAny"),
+    ("lexical", "FROM supplier_search.offers_current AS o"),
+    ("history", "ARRAY JOIN m.participants"),
+    ("participation", "FROM supplier_search.supplier_lots"),
     ("offer_read", "INNER JOIN supplier_search.sources_current AS s"),
     ("suppliers", "FROM supplier_search.suppliers_current WHERE supplier_id IN"),
     ("archive", "INSERT INTO supplier_search.searches"),

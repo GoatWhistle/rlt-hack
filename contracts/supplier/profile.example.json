@@ -25,6 +25,15 @@
       "currency": "RUB",
       "unit": "кг",
       "availability": "available",
+      "brand": "Увелка",
+      "article": "4607012",
+      "okpd2": "10.61.32.110",
+      "attributes": [
+        { "name": "Фасовка", "value": "50 кг" },
+        { "name": "Сорт", "value": "первый" }
+      ],
+      "imageUrl": null,
+      "seller": "verified",
       "source": {
         "kind": "price",
         "title": "Прайс-лист компании",

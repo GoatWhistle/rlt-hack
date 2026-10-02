@@ -1,0 +1,127 @@
+{
+  "card": {
+    "similar_one": "{{count, number}} similar",
+    "similar_other": "{{count, number}} similar",
+    "wins_one": "{{count, number}} win",
+    "wins_other": "{{count, number}} wins",
+    "rank": "rank {{index, number}}",
+    "moreReasons": "+{{count, number}}",
+    "chosen": "Chosen"
+  },
+  "reasonShort": {
+    "innMissing": "No INN",
+    "identityConflict": "Details disagree",
+    "roleUnconfirmed": "Role unconfirmed",
+    "noCurrentOffer": "No current offer",
+    "rangeUnconfirmed": "Range unconfirmed",
+    "sourceUnavailable": "Source didn't respond"
+  },
+  "reasonText": {
+    "innMissing": "the company can't be identified for sure.",
+    "identityConflict": "the sources give different company details.",
+    "roleUnconfirmed": "no source confirms whether it's a manufacturer, distributor or supplier.",
+    "noCurrentOffer": "the products were found only in older records.",
+    "rangeUnconfirmed": "the range isn't confirmed for every item.",
+    "sourceUnavailable": "one of the sources didn't respond during the check."
+  },
+  "reasonLine": "{{title}} — {{value}}",
+  "summary": {
+    "price_one": "Price list of {{date}} for {{count, number}} item",
+    "price_other": "Price list of {{date}} for {{count, number}} items",
+    "catalog_one": "Catalog of {{date}} for {{count, number}} item",
+    "catalog_other": "Catalog of {{date}} for {{count, number}} items",
+    "win": "won lot {{id}}",
+    "winYear": "won lot {{id}} ({{date}})",
+    "verified": "company details verified",
+    "separator": "; "
+  },
+  "panel": {
+    "summaryTitle": "Why we recommend it",
+    "checkTitle": "Why it needs checking",
+    "noHighlights": "No supporting records.",
+    "figure": "Match by item",
+    "matchesTitle": "Match by item",
+    "offersLabel": "Offers covering the items",
+    "matchesHint": "Price lists and catalogs show the company sells the item. Confirm stock and delivery time with the company.",
+    "clarifyTitle": "What to clarify with the company",
+    "historyTitle": "Purchase history",
+    "historyAside_one": "{{count, number}} similar · wins: {{wins, number}}",
+    "historyAside_other": "{{count, number}} similar · wins: {{wins, number}}",
+    "historyNote": "Past participation and wins do not guarantee a future delivery.",
+    "noRecords": "No purchase examples with a source.",
+    "lot": "Lot {{id}} · {{title}}",
+    "recordItems": "Items: {{names}}",
+    "companyTitle": "Company and contacts",
+    "role": "Role",
+    "roleBasis": "Role basis",
+    "noRoleBasis": "No source confirms the role",
+    "region": "Region",
+    "inn": "INN",
+    "choose": "Choose candidate",
+    "chosen": "Remove from chosen",
+    "profile": "Company profile",
+    "profileShort": "Profile",
+    "chooseShort": "Choose",
+    "chosenShort": "Chosen"
+  },
+  "clarify": {
+    "reason": {
+      "innMissing": "Request the company's INN and details.",
+      "identityConflict": "Reconcile the details: the sources disagree.",
+      "roleUnconfirmed": "Clarify the role: manufacturer, distributor or supplier.",
+      "noCurrentOffer": "Request a current offer: the products were found only in older records.",
+      "rangeUnconfirmed": "Confirm the range for every item.",
+      "sourceUnavailable": "Recheck the records: one of the sources didn't respond."
+    },
+    "item": "Confirm stock and price: {{name}}"
+  },
+  "pager": {
+    "label": "Candidates",
+    "position": "{{index, number}} of {{total, number}}",
+    "prev": "Previous candidate",
+    "next": "Next candidate"
+  },
+  "warning": {
+    "title": "Results may be incomplete",
+    "channelFailed": "One of the sources didn't respond, so some companies may be missing.",
+    "enrichmentFailed": "Some company details could not be loaded. Affected candidates are marked for checking.",
+    "archiveFailed": "The result was not saved: the link will not open later.",
+    "itemsInferred": "Some items were identified by the system. Confirm them before contacting suppliers.",
+    "itemsTruncated": "The request has more items than one search covers, so only the first ones were used. Search for the rest separately."
+  },
+  "selection": {
+    "count_one": "{{count, number}} chosen",
+    "count_other": "{{count, number}} chosen",
+    "compare": "Compare",
+    "compareHint": "Choose one more candidate to compare",
+    "clear": "Clear",
+    "compareLabel_one": "Compare chosen: {{count, number}}",
+    "compareLabel_other": "Compare chosen: {{count, number}}",
+    "pickMore": "pick one more to compare"
+  },
+  "compare": {
+    "title": "Compare candidates",
+    "criterion": "Criterion",
+    "match": "Match by item",
+    "missing": "No records",
+    "none": "none",
+    "status": "Status",
+    "purchases": "Similar purchases",
+    "wins": "Wins in similar purchases",
+    "clarify": "Key thing to clarify",
+    "contacts": "Contacts",
+    "unknown": "No records",
+    "note": "Past wins don't guarantee a future delivery. Prices are in the company profile, from price lists as of the check date.",
+    "best": "(best value)"
+  },
+  "list": {
+    "showMore": "Show {{count, number}} more",
+    "showLess": "Show fewer",
+    "reset": "Reset"
+  },
+  "items": {
+    "covered_one": "{{count, number}} candidate",
+    "covered_other": "{{count, number}} candidates",
+    "none": "no candidates"
+  }
+}

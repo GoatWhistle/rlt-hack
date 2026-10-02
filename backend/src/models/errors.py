@@ -110,6 +110,13 @@ class TooManyNoticeRowsError(NoticeFileError):
         self.limit = limit
 
 
+class InvalidNoticeRowError(NoticeFileError):
+    def __init__(self, line: int, reason: str) -> None:
+        super().__init__(f"line {line}: {reason}")
+        self.line = line
+        self.reason = reason
+
+
 class NoValidLotsError(NoticeFileError):
     def __init__(self) -> None:
         super().__init__("no row of the file is a valid procurement lot")

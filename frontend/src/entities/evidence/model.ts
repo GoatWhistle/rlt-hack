@@ -28,6 +28,42 @@ export type Source = {
   readonly checkedAt?: string
 }
 
+export const AVAILABILITIES = ["available", "on_order", "unavailable", "unknown"] as const
+export type Availability = (typeof AVAILABILITIES)[number]
+
+export const SELLER_STATUSES = ["verified", "unverified", "conflict"] as const
+export type SellerStatus = (typeof SELLER_STATUSES)[number]
+
+export const STALE_AFTER_DAYS = 30
+const DAY_MS = 86_400_000
+
+export type OfferAttribute = {
+  readonly name: string
+  readonly value: string
+}
+
+export type OfferView = {
+  readonly id: string
+  readonly name: string
+  readonly price?: number
+  readonly currency?: string
+  readonly unit?: string
+  readonly availability?: Availability
+  readonly brand?: string
+  readonly article?: string
+  readonly okpd2?: string
+  readonly attributes?: readonly OfferAttribute[]
+  readonly imageUrl?: string
+  readonly seller?: SellerStatus
+  readonly source?: Source
+}
+
+export function isStale(checkedAt: string | undefined, now: number = Date.now()): boolean {
+  if (!checkedAt) return false
+  const moment = Date.parse(checkedAt)
+  return Number.isFinite(moment) && now - moment > STALE_AFTER_DAYS * DAY_MS
+}
+
 export type Contacts = {
   readonly site?: string
   readonly email?: string
@@ -68,6 +104,7 @@ export const WARNING_CODES = [
   "enrichmentFailed",
   "archiveFailed",
   "itemsInferred",
+  "itemsTruncated",
 ] as const
 export type WarningCode = (typeof WARNING_CODES)[number]
 

@@ -1,8 +1,9 @@
-import { screen, within } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import { en } from "@tests/support/dictionaries"
 import { contractResult, renderSearch, stubSearch } from "@tests/support/search"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { ApiError } from "@/shared/api/api-error"
+import { searchDraftPath } from "@/shared/config/paths"
 import { NARROW_LAYOUT } from "@/shared/ui/workspace-layout"
 
 afterEach(() => {
@@ -36,22 +37,25 @@ describe("a search result", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "Крупа гречневая ядрица",
     )
-    const items = region(en("items.title", "search"))
-    expect(
-      within(items).getByRole("button", { name: /Крупа гречневая ядрица/ }),
-    ).toHaveTextContent("500 кг")
-    const candidates = region(en("candidates.title", "search"))
-    const first = within(candidates).getByRole("button", { name: /Северный Провиант/ })
-    expect(first).toHaveAttribute("aria-pressed", "true")
-    expect(first).toHaveTextContent("INN 7801234567")
-    expect(first).toHaveTextContent("Covers 2 of 2 items · In stock for 1 item")
-    expect(within(first).getByRole("meter", { name: "Relevance" })).toHaveAttribute(
-      "aria-valuetext",
-      "0.82 out of 1",
+    expect(screen.getByRole("textbox", { name: en("box.label", "search") })).toHaveValue(
+      contractResult().query.text,
     )
-    const second = within(candidates).getByRole("button", { name: /Зерновой Двор/ })
+    await waitFor(() => expect(document.title).toBe("lotive | Search"))
+    const items = region(en("items.title", "search"))
+    const groats = within(items).getByRole("button", { name: /Крупа гречневая ядрица/ })
+    expect(groats).toHaveTextContent("500 кг")
+    expect(groats).toHaveTextContent("1 candidate · +1 assumption")
+    const candidates = region(en("candidates.title", "search"))
+    const first = within(candidates).getByRole("button", { name: "ООО «Северный Провиант»" })
+    expect(first).toHaveAttribute("aria-pressed", "true")
+    expect(first).toHaveAccessibleDescription(/INN 7801234567/)
+    expect(first).toHaveTextContent("2/2")
+    expect(first).toHaveTextContent("11 similar · 4 wins")
+    expect(within(first).queryByRole("meter")).toBeNull()
+    expect(first).not.toHaveTextContent(/Covers/)
+    const second = within(candidates).getByRole("button", { name: "АО «Зерновой Двор»" })
     expect(second).toHaveTextContent(en("noInn", "evidence"))
-    expect(second).toHaveTextContent(en("status.check", "evidence"))
+    expect(second).toHaveTextContent(`${en("reasonShort.innMissing", "candidate")} +3`)
   })
 
   it("grounds the chosen candidate in sources, history and contacts", async () => {
@@ -59,9 +63,14 @@ describe("a search result", () => {
     const grounds = screen.getByRole("article", { name: /Северный Провиант/ })
     expect(within(grounds).getAllByText("2/2")).toHaveLength(2)
     expect(
+      within(grounds).getByText(
+        "Price list of Sep 29, 2026 for 1 item; won lot 32514850391-1.",
+      ),
+    ).toBeVisible()
+    expect(
       within(grounds).getByRole("link", { name: "Прайс-лист компании (opens in a new tab)" }),
     ).toHaveAttribute("href", "https://severny-proviant.example.org/price/grechka")
-    expect(within(grounds).getByText("checked Sep 29, 2026")).toBeInTheDocument()
+    expect(within(grounds).getAllByText(/^checked Sep 29, 2026/).length).toBeGreaterThan(0)
     expect(within(grounds).getByText(en("basis.catalog", "evidence"))).toBeInTheDocument()
     expect(within(grounds).getByText("11 similar · wins: 4")).toBeInTheDocument()
     expect(within(grounds).getByText(/Lot 32514850391-1/)).toBeInTheDocument()
@@ -72,13 +81,26 @@ describe("a search result", () => {
     )
     await user.click(screen.getByRole("button", { name: /Зерновой Двор/ }))
     const check = screen.getByRole("article", { name: /Зерновой Двор/ })
-    expect(check).toHaveTextContent(en("checkReason.innMissing", "evidence"))
-    expect(within(check).getByText(en("evidence.noRoleBasis", "search"))).toBeVisible()
+    const reasons = within(check).getByRole("heading", {
+      name: en("panel.checkTitle", "candidate"),
+    }).parentElement as HTMLElement
+    expect(
+      within(reasons)
+        .getAllByRole("listitem")
+        .map((item) => item.querySelector("strong")?.textContent),
+    ).toEqual([
+      en("reasonShort.innMissing", "candidate"),
+      en("reasonShort.roleUnconfirmed", "candidate"),
+      en("reasonShort.noCurrentOffer", "candidate"),
+      en("reasonShort.rangeUnconfirmed", "candidate"),
+    ])
+    expect(within(check).getByText(en("offer.inferred", "evidence"))).toBeVisible()
+    await user.click(within(check).getByText(en("panel.companyTitle", "candidate")))
+    expect(within(check).getByText(en("panel.noRoleBasis", "candidate"))).toBeVisible()
     expect(within(check).getByText(en("contacts.none", "evidence"))).toBeVisible()
-    expect(within(check).getByText(en("noSource", "evidence"))).toBeVisible()
   })
 
-  it("keeps only the candidates that cover a chosen item", async () => {
+  it("shows who covers a chosen item and on what basis", async () => {
     const { user } = await openContract()
     const rice = within(region(en("items.title", "search"))).getByRole("button", {
       name: /Рис шлифованный/,
@@ -86,16 +108,47 @@ describe("a search result", () => {
     await user.click(rice)
     expect(rice).toHaveAttribute("aria-pressed", "true")
     const candidates = region(en("candidates.title", "search"))
-    expect(within(candidates).getByText("Candidates for “Рис шлифованный”")).toBeVisible()
+    expect(within(candidates).getByText("Who covers “Рис шлифованный”")).toBeVisible()
     expect(within(candidates).queryByRole("button", { name: /Зерновой Двор/ })).toBeNull()
-    await user.click(within(candidates).getByRole("button", { name: "Reset" }))
+    const north = within(candidates).getByRole("button", { name: /Северный Провиант/ })
+    expect(north).toHaveTextContent(`${en("basis.catalog", "evidence")} · Sep 28, 2026`)
+    await user.click(
+      within(candidates).getByRole("button", { name: en("list.reset", "candidate") }),
+    )
     expect(within(candidates).getByRole("button", { name: /Зерновой Двор/ })).toBeVisible()
     await user.click(rice)
     await user.click(rice)
     expect(rice).toHaveAttribute("aria-pressed", "false")
   })
 
-  it("warns quietly when the result may be incomplete and shows more on request", async () => {
+  it("narrows the candidates by their verdict from the address", async () => {
+    const { user, router } = await openContract()
+    const candidates = region(en("candidates.title", "search"))
+    const verdicts = within(candidates).getByRole("group", {
+      name: en("candidates.facets.legend", "search"),
+    })
+    expect(verdicts).toHaveTextContent("All2Recommended1To check1")
+    await user.click(within(verdicts).getByRole("radio", { name: /^To check/ }))
+    expect(router.state.location.search).toContain("status=check")
+    expect(within(candidates).queryByRole("button", { name: /Северный Провиант/ })).toBeNull()
+    expect(screen.getByRole("article", { name: /Зерновой Двор/ })).toBeInTheDocument()
+  })
+
+  it("starts a new search right from the result", async () => {
+    const next = contractResult((payload) => ({ ...payload, searchId: "next-search" }))
+    const search = vi.fn(async () => next)
+    const { user, router } = renderSearch("/search/1f0c", {
+      gateway: stubSearch({ search }),
+    })
+    const field = await screen.findByRole("textbox", { name: en("box.label", "search") })
+    await user.clear(field)
+    await user.type(field, "рис 200 кг")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
+    expect(search).toHaveBeenCalledWith({ text: "рис 200 кг", limit: 20 })
+    await waitFor(() => expect(router.state.location.pathname).toBe("/search/next-search"))
+  })
+
+  it("warns quietly when the result may be incomplete", async () => {
     const { user } = await openVariant((payload) => {
       const [first, ...rest] = payload.items as Record<string, unknown>[]
       return {
@@ -104,18 +157,18 @@ describe("a search result", () => {
         warnings: [{ code: "itemsInferred", subject: "" }],
       }
     })
-    expect(screen.getByRole("note", { name: en("warning.title", "search") })).toHaveTextContent(
-      en("warning.itemsInferred", "search"),
-    )
+    expect(
+      screen.getByRole("note", { name: en("warning.title", "candidate") }),
+    ).toHaveTextContent(en("warning.itemsInferred", "candidate"))
     expect(screen.getByText(en("items.origin.inferred", "search"))).toBeVisible()
     await user.click(screen.getByRole("button", { name: /Зерновой Двор/ }))
     expect(screen.getByRole("article", { name: /Зерновой Двор/ })).toHaveTextContent(
-      en("checkReason.rangeUnconfirmed", "evidence"),
+      en("reasonText.rangeUnconfirmed", "candidate"),
     )
   })
 
-  it("suggests rephrasing when nobody matches", async () => {
-    await openVariant((payload) => ({
+  it("suggests one way forward when nobody matches", async () => {
+    const { user } = await openVariant((payload) => ({
       ...payload,
       query: {
         ...(payload.query as Record<string, unknown>),
@@ -126,22 +179,17 @@ describe("a search result", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: en("empty.title", "search") }),
     ).toBeVisible()
-    const links = screen.getAllByRole("link", { name: en("empty.action", "search") })
-    for (const link of links) {
-      expect(link).toHaveAttribute("href", "/search?q=tractor+tyres%3B+engine+oil")
-    }
-  })
-
-  it("opens the company profile with current offers", async () => {
-    const { user } = await openContract()
-    await user.click(screen.getByRole("button", { name: en("evidence.profile", "search") }))
-    const dialog = await screen.findByRole("dialog", { name: "ООО «Северный Провиант»" })
+    expect(screen.queryByRole("button", { pressed: false })).toBeNull()
+    expect(screen.getAllByRole("button", { name: /Change the query/ })).toHaveLength(1)
     expect(
-      await within(dialog).findByText("Крупа гречневая ядрица 1 сорт, мешок 50 кг"),
-    ).toBeVisible()
-    expect(within(dialog).getByText("RUB 84.50 per кг")).toBeVisible()
-    expect(within(dialog).getByText(en("availability.available", "supplier"))).toBeVisible()
-    expect(within(dialog).getByText(en("identity.verified", "supplier"))).toBeVisible()
+      screen.getByRole("link", { name: "Search only for “Рис шлифованный”" }),
+    ).toHaveAttribute("href", searchDraftPath("Рис шлифованный"))
+    expect(screen.getByRole("link", { name: en("empty.upload", "search") })).toHaveAttribute(
+      "href",
+      "/uploads",
+    )
+    await user.click(screen.getByRole("button", { name: /Change the query/ }))
+    expect(screen.getByRole("textbox", { name: en("box.label", "search") })).toHaveFocus()
   })
 
   it("says when the search does not exist and retries other failures", async () => {
@@ -179,5 +227,10 @@ describe("a search result on a narrow screen", () => {
     expect(screen.getByRole("radio", { name: en("views.candidates", "search") })).toBeChecked()
     await user.click(screen.getByRole("button", { name: /Северный Провиант/ }))
     expect(screen.getByRole("radio", { name: en("views.evidence", "search") })).toBeChecked()
+    const pager = screen.getByRole("navigation", { name: en("pager.label", "candidate") })
+    expect(pager).toHaveTextContent("1 of 1")
+    expect(
+      within(pager).queryByRole("button", { name: en("pager.next", "candidate") }),
+    ).toBeNull()
   })
 })

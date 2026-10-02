@@ -67,6 +67,18 @@
   color: var(--warning-text);
 }
 
+.assumed {
+  align-self: start;
+  margin-block-start: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border: var(--line-width) dashed var(--warning-icon);
+  border-radius: var(--radius-sm);
+  background: var(--warning-tint);
+  color: var(--warning-text);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
 @media (max-width: 29.99rem) {
   .head {
     grid-template-columns: minmax(0, 1fr);

@@ -1,0 +1,37 @@
+.stage {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  animation: var(--motion-slide-in);
+}
+
+.stage[data-slow="true"] {
+  color: var(--warning-text);
+}
+
+.track {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  height: var(--indicator-height);
+  overflow: clip;
+  border-end-start-radius: var(--radius-xl);
+  border-end-end-radius: var(--radius-xl);
+  animation: var(--motion-fade-in);
+  pointer-events: none;
+}
+
+.sweep {
+  display: block;
+  width: 40%;
+  height: 100%;
+  background: var(--accent);
+  animation: var(--motion-sweep);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    display: none;
+  }
+}

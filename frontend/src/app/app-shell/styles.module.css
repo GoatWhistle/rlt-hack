@@ -6,6 +6,7 @@
 }
 
 .header {
+  position: relative;
   border-block-end: var(--line-width) solid var(--line-hairline);
   background: var(--surface-base);
 }
@@ -61,5 +62,20 @@
 @media (max-width: 47.99rem) {
   .bar {
     gap: var(--space-2);
+  }
+}
+
+@media (min-width: 48rem) {
+  .bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+
+  .brand {
+    justify-self: start;
+  }
+
+  .tools {
+    justify-self: end;
   }
 }

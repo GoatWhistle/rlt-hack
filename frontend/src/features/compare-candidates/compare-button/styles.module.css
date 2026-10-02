@@ -1,0 +1,16 @@
+.button[data-state="open"] {
+  animation: var(--motion-scale-in);
+}
+
+.button[data-state="closed"] {
+  animation: var(--motion-scale-out);
+}
+
+.compact {
+  position: relative;
+  padding-inline: var(--space-3);
+}
+
+.compactLabel {
+  display: none;
+}

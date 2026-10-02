@@ -66,6 +66,21 @@ describe("http client", () => {
     })
   })
 
+  it("keeps the request number from the body or the response header", async () => {
+    const fromBody = await clientWith(
+      Response.json({ code: "storage_unavailable", requestId: "req-7f3a" }, { status: 503 }),
+    )
+      .client.get("/a", { parse: identity })
+      .catch((e) => e)
+    expect(fromBody).toMatchObject({ code: "storage_unavailable", requestId: "req-7f3a" })
+    const fromHeader = await clientWith(
+      new Response("oops", { status: 502, headers: { "X-Request-Id": "req-91bc" } }),
+    )
+      .client.get("/a", { parse: identity })
+      .catch((e) => e)
+    expect(fromHeader).toMatchObject({ code: "http_502", requestId: "req-91bc" })
+  })
+
   it("names an error by status when the body has no code", async () => {
     const error = await clientWith(new Response("oops", { status: 503 }))
       .client.get("/a", { parse: identity })

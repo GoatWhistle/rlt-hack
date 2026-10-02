@@ -1,5 +1,6 @@
 .state {
   display: grid;
+  align-content: start;
   justify-items: center;
   gap: var(--space-3);
   padding-block: var(--space-6);
@@ -8,9 +9,7 @@
 }
 
 .page {
-  justify-items: start;
   padding-block: var(--state-offset) var(--space-7);
-  text-align: start;
 }
 
 .badge {
@@ -64,8 +63,4 @@
   justify-content: center;
   gap: var(--space-3);
   margin-block: var(--space-3);
-}
-
-.page .actions {
-  justify-content: flex-start;
 }

@@ -134,6 +134,7 @@ class WarningCode(StrEnum):
     ENRICHMENT_FAILED = "enrichmentFailed"
     ARCHIVE_FAILED = "archiveFailed"
     ITEMS_INFERRED = "itemsInferred"
+    ITEMS_TRUNCATED = "itemsTruncated"
 
 
 class RetrievalChannel(StrEnum):
@@ -141,6 +142,14 @@ class RetrievalChannel(StrEnum):
     HISTORY = "history"
     SEMANTIC = "semantic"
     CATALOG_VECTOR = "catalogVector"
+
+
+class SearchStage(StrEnum):
+    PARSE = "parse"
+    CHANNELS = "channels"
+    ENRICH = "enrich"
+    POLICY = "policy"
+    ARCHIVE = "archive"
 
 
 class EnrichmentSource(StrEnum):

@@ -84,7 +84,7 @@ describe("web manifest", () => {
   }
 
   it("names the product and matches the header colour", () => {
-    expect(manifest.name).toBe("LOTIVE")
+    expect(manifest.name).toBe("Lotive")
     const html = readFileSync(join(ROOT, "index.html"), "utf8")
     expect(html).toContain(`<meta name="theme-color" content="${manifest.theme_color}" />`)
   })

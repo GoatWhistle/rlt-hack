@@ -1,6 +1,6 @@
 .viewport {
   position: fixed;
-  inset-block-end: var(--space-4);
+  inset-block-end: calc(var(--space-4) + var(--toast-lift));
   inset-inline-end: var(--space-4);
   z-index: var(--z-toast);
   width: min(var(--toast-width), calc(100vw - 2 * var(--space-4)));
@@ -20,7 +20,7 @@
 }
 
 .item[data-state="open"] {
-  animation: var(--motion-slide-in);
+  animation: var(--motion-expand);
 }
 
 .item[data-state="closed"] {
@@ -61,6 +61,19 @@
   padding-block: var(--space-2);
 }
 
+.action {
+  flex: none;
+  min-height: var(--target-touch);
+  padding-inline: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--accent-strong);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  transition: var(--transition-control);
+}
+
 .close {
   display: inline-grid;
   place-items: center;
@@ -72,4 +85,14 @@
   background: transparent;
   font-size: var(--text-xl);
   line-height: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .action:hover {
+    background: var(--accent-soft);
+  }
+
+  .close:hover {
+    background: var(--surface-subtle);
+  }
 }

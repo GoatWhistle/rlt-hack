@@ -1,0 +1,143 @@
+{
+  "card": {
+    "similar_one": "{{count, number}} похожая",
+    "similar_few": "{{count, number}} похожие",
+    "similar_many": "{{count, number}} похожих",
+    "similar_other": "{{count, number}} похожей",
+    "wins_one": "{{count, number}} победа",
+    "wins_few": "{{count, number}} победы",
+    "wins_many": "{{count, number}} побед",
+    "wins_other": "{{count, number}} победы",
+    "rank": "место {{index, number}}",
+    "moreReasons": "+{{count, number}}",
+    "chosen": "Выбран"
+  },
+  "reasonShort": {
+    "innMissing": "Нет ИНН",
+    "identityConflict": "Реквизиты расходятся",
+    "roleUnconfirmed": "Роль не подтверждена",
+    "noCurrentOffer": "Нет актуального предложения",
+    "rangeUnconfirmed": "Не подтверждён ассортимент",
+    "sourceUnavailable": "Источник не ответил"
+  },
+  "reasonText": {
+    "innMissing": "компанию нельзя однозначно определить.",
+    "identityConflict": "источники называют разные реквизиты компании.",
+    "roleUnconfirmed": "ни один источник не подтверждает, производитель это, дистрибьютор или поставщик.",
+    "noCurrentOffer": "товары найдены только в старых записях.",
+    "rangeUnconfirmed": "ассортимент подтверждён не по всем позициям.",
+    "sourceUnavailable": "один из источников не ответил во время проверки."
+  },
+  "reasonLine": "{{title}} — {{value}}",
+  "summary": {
+    "price_one": "Прайс от {{date}} по {{count, number}} позиции",
+    "price_few": "Прайс от {{date}} по {{count, number}} позициям",
+    "price_many": "Прайс от {{date}} по {{count, number}} позициям",
+    "price_other": "Прайс от {{date}} по {{count, number}} позиции",
+    "catalog_one": "Каталог от {{date}} по {{count, number}} позиции",
+    "catalog_few": "Каталог от {{date}} по {{count, number}} позициям",
+    "catalog_many": "Каталог от {{date}} по {{count, number}} позициям",
+    "catalog_other": "Каталог от {{date}} по {{count, number}} позиции",
+    "win": "победитель лота {{id}}",
+    "winYear": "победитель лота {{id}} ({{date}})",
+    "verified": "реквизиты подтверждены",
+    "separator": "; "
+  },
+  "panel": {
+    "summaryTitle": "Почему рекомендуем",
+    "checkTitle": "Почему нужна проверка",
+    "noHighlights": "Подтверждающих сведений нет.",
+    "figure": "Совпадение по позициям",
+    "matchesTitle": "Совпадение по позициям",
+    "offersLabel": "Предложения, закрывающие позиции",
+    "matchesHint": "Прайс и каталог показывают, что компания продаёт товар. Наличие на складе и срок поставки уточняйте у неё.",
+    "clarifyTitle": "Что уточнить у компании",
+    "historyTitle": "Опыт закупок",
+    "historyAside_one": "{{count, number}} похожая · побед: {{wins, number}}",
+    "historyAside_few": "{{count, number}} похожие · побед: {{wins, number}}",
+    "historyAside_many": "{{count, number}} похожих · побед: {{wins, number}}",
+    "historyAside_other": "{{count, number}} похожей · побед: {{wins, number}}",
+    "historyNote": "Прошлые участия и победы не гарантируют будущую поставку.",
+    "noRecords": "Примеров закупок с источником нет.",
+    "lot": "Лот {{id}} · {{title}}",
+    "recordItems": "Позиции: {{names}}",
+    "companyTitle": "Компания и контакты",
+    "role": "Роль",
+    "roleBasis": "Основание роли",
+    "noRoleBasis": "Роль не подтверждена источником",
+    "region": "Регион",
+    "inn": "ИНН",
+    "choose": "Выбрать кандидата",
+    "chosen": "Убрать из выбранных",
+    "profile": "Профиль компании",
+    "profileShort": "Профиль",
+    "chooseShort": "Выбрать",
+    "chosenShort": "Выбран"
+  },
+  "clarify": {
+    "reason": {
+      "innMissing": "Запросить ИНН и реквизиты компании.",
+      "identityConflict": "Сверить реквизиты: источники расходятся.",
+      "roleUnconfirmed": "Уточнить роль: производитель, дистрибьютор или поставщик.",
+      "noCurrentOffer": "Запросить актуальное предложение: товары найдены только в старых записях.",
+      "rangeUnconfirmed": "Подтвердить ассортимент по всем позициям.",
+      "sourceUnavailable": "Перепроверить сведения: один из источников не ответил."
+    },
+    "item": "Подтвердить наличие и цену: {{name}}"
+  },
+  "pager": {
+    "label": "Кандидаты",
+    "position": "{{index, number}} из {{total, number}}",
+    "prev": "Предыдущий кандидат",
+    "next": "Следующий кандидат"
+  },
+  "warning": {
+    "title": "Результат может быть неполным",
+    "channelFailed": "Один из источников не ответил — часть компаний может отсутствовать.",
+    "enrichmentFailed": "Не удалось загрузить часть сведений о компаниях. Затронутые кандидаты отмечены для проверки.",
+    "archiveFailed": "Результат не сохранился: позже ссылка не откроется.",
+    "itemsInferred": "Часть позиций определена системой — подтвердите их до обращения к поставщикам.",
+    "itemsTruncated": "В запросе больше позиций, чем разбирается за раз: учтены первые. Остальные ищите отдельным запросом."
+  },
+  "selection": {
+    "count_one": "Выбран: {{count, number}}",
+    "count_few": "Выбрано: {{count, number}}",
+    "count_many": "Выбрано: {{count, number}}",
+    "count_other": "Выбрано: {{count, number}}",
+    "compare": "Сравнить",
+    "compareHint": "Выберите ещё одного кандидата, чтобы сравнить",
+    "clear": "Снять выбор",
+    "compareLabel_one": "Сравнить выбранных: {{count, number}}",
+    "compareLabel_few": "Сравнить выбранных: {{count, number}}",
+    "compareLabel_many": "Сравнить выбранных: {{count, number}}",
+    "compareLabel_other": "Сравнить выбранных: {{count, number}}",
+    "pickMore": "выберите ещё одного, чтобы сравнить"
+  },
+  "compare": {
+    "title": "Сравнение кандидатов",
+    "criterion": "Критерий",
+    "match": "Совпадение по позициям",
+    "missing": "Нет сведений",
+    "none": "нет",
+    "status": "Статус",
+    "purchases": "Похожих закупок",
+    "wins": "Побед в похожих закупках",
+    "clarify": "Главное уточнение",
+    "contacts": "Контакты",
+    "unknown": "Нет сведений",
+    "note": "Прошлые победы не гарантируют будущую поставку. Цены — в профиле компании, из прайсов на дату проверки.",
+    "best": "(лучшее значение)"
+  },
+  "list": {
+    "showMore": "Показать ещё {{count, number}}",
+    "showLess": "Свернуть",
+    "reset": "Сбросить"
+  },
+  "items": {
+    "covered_one": "{{count, number}} кандидат",
+    "covered_few": "{{count, number}} кандидата",
+    "covered_many": "{{count, number}} кандидатов",
+    "covered_other": "{{count, number}} кандидата",
+    "none": "нет кандидатов"
+  }
+}

@@ -18,9 +18,10 @@ export type MeterSegment = {
 export type SegmentMeterProps = {
   readonly segments: readonly MeterSegment[]
   readonly size?: "sm" | "lg"
+  readonly reveal?: boolean
 }
 
-export function SegmentMeter({ segments, size = "sm" }: SegmentMeterProps) {
+export function SegmentMeter({ segments, size = "sm", reveal = false }: SegmentMeterProps) {
   const { t } = useTranslation("evidence")
   const count = (basis: MeterBasis) => segments.filter((item) => item.basis === basis).length
   const label = t("meter.label", {
@@ -35,6 +36,7 @@ export function SegmentMeter({ segments, size = "sm" }: SegmentMeterProps) {
       role="img"
       aria-label={label}
       className={clsx(styles.meter, size === "lg" && styles.large)}
+      data-reveal={reveal ? "" : undefined}
     >
       {segments.map((segment) => (
         <span key={segment.key} className={clsx(styles.segment, BASIS_STYLES[segment.basis])} />

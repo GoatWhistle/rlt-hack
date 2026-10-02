@@ -1,8 +1,11 @@
 .columns {
+  --column-list: var(--pane-products);
+  --column-candidates: var(--pane-companies);
+  --column-evidence: var(--pane-evidence-max);
   display: grid;
-  grid-template-columns: var(--pane-products) var(--pane-companies) minmax(
+  grid-template-columns: var(--column-list) var(--column-candidates) minmax(
       0,
-      var(--pane-evidence-max)
+      var(--column-evidence)
     );
   align-items: start;
   gap: var(--space-4);
@@ -20,13 +23,26 @@
     margin: calc(-1 * var(--space-1));
     padding: var(--space-1);
     overflow-y: auto;
-    scrollbar-width: thin;
   }
 
   .columns .detail {
     position: static;
     max-height: none;
     overflow: visible;
+  }
+
+  .columns .pane[data-folded] {
+    display: none;
+  }
+
+  .columns[data-list="folded"] {
+    --column-list: var(--rail-width);
+    --column-evidence: 1fr;
+  }
+
+  .columns[data-candidates="folded"] {
+    --column-candidates: var(--rail-width);
+    --column-evidence: 1fr;
   }
 }
 
@@ -37,6 +53,14 @@
 .stacked {
   display: grid;
   gap: var(--space-3);
+}
+
+.view {
+  min-width: 0;
+}
+
+.view[data-direction] {
+  animation: var(--motion-slide-x-in);
 }
 
 .switcher {

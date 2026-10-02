@@ -27,7 +27,17 @@
   --swatch-width: 0.625rem;
   --checkbox-size: 1.125rem;
   --dot-size: 0.4375rem;
-  --header-height: 4rem;
+  --header-height: 3.5rem;
+  --field-min-lines: 4;
+  --query-lift: 22dvh;
+  --field-max-lines: 8;
+  --page-fill: calc(
+    100dvh -
+    var(--header-height) -
+    var(--line-width) -
+    var(--space-6) -
+    var(--space-8)
+  );
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
   --target-touch: 2.75rem;
@@ -50,6 +60,8 @@
   --pane-companies: clamp(18rem, 23vw, 28rem);
   --pane-evidence-max: 54rem;
   --pane-offset: var(--space-4);
+  --rail-width: 3.5rem;
+  --rail-max-height: 36rem;
   --z-skip-link: 600;
   --indicator-height: 2px;
   --skeleton-line: 0.75rem;
@@ -59,4 +71,16 @@
   --marker-size: 1.125rem;
   --skeleton-title: 1.75rem;
   --skeleton-hero: 12rem;
+  --meter-gap: 3px;
+  --dialog-offset: min(12dvh, 6rem);
+  --dialog-max-height: calc(100dvh - 2 * var(--space-4));
+  --dialog-wide-max-height: calc(100dvh - var(--dialog-offset) - var(--space-4));
+  --col-status: 13rem;
+  --score-width: 4ch;
+  --offer-image: 3.5rem;
+  --offer-min: 18rem;
+  --offer-ribbon: 85%;
+  --toast-lift: 0rem;
+  --separator-width: calc(var(--space-1) + 2 * var(--space-2));
+  --dock-height: calc(var(--target-touch) + 2 * var(--space-2) + 2 * var(--line-width));
 }

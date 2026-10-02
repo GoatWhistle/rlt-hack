@@ -19,10 +19,184 @@ body {
   outline-offset: var(--focus-ring-offset);
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+:where(:hover, :focus-within) {
+  scrollbar-color: var(--scrollbar-thumb-active) var(--scrollbar-track);
+}
+
+:root:has([data-dock]) {
+  --toast-lift: calc(var(--dock-height) + var(--space-4));
+}
+
 a {
   color: var(--link);
 }
 
 a:hover {
   color: var(--link-hover);
+}
+
+::view-transition-old(root) {
+  animation: var(--vt-old);
+}
+
+::view-transition-new(root) {
+  animation: var(--vt-new);
+}
+
+::view-transition-group(search-query) {
+  animation-duration: var(--vt-morph);
+  animation-timing-function: var(--ease-drawer);
+}
+
+::view-transition-image-pair(search-query) {
+  overflow: clip;
+  border-radius: var(--radius-lg);
+}
+
+::view-transition-old(search-query),
+::view-transition-new(search-query) {
+  height: 100%;
+  object-fit: none;
+  object-position: left top;
+}
+
+::view-transition-old(search-query) {
+  animation: var(--vt-query-old);
+}
+
+::view-transition-new(search-query) {
+  animation: var(--vt-query-new);
+}
+
+:root[data-transition="panel"]::view-transition-old(root) {
+  animation: var(--vt-fade-out);
+}
+
+:root[data-transition="panel"]::view-transition-new(root) {
+  animation: var(--vt-fade-in);
+}
+
+:root[data-transition="panel"] [data-part="query-text"] {
+  view-transition-name: search-text;
+}
+
+:root[data-transition="panel"] [data-part="query-bar"] {
+  view-transition-name: search-bar;
+}
+
+:root[data-transition="panel"]::view-transition-old(search-query),
+:root[data-transition="panel"]::view-transition-new(search-query) {
+  width: 100%;
+  object-fit: fill;
+  animation: none;
+}
+
+::view-transition-image-pair(search-text),
+::view-transition-image-pair(search-bar) {
+  overflow: clip;
+}
+
+::view-transition-old(search-text),
+::view-transition-new(search-text),
+::view-transition-old(search-bar),
+::view-transition-new(search-bar) {
+  height: 100%;
+  object-fit: none;
+  animation: none;
+}
+
+::view-transition-old(search-text),
+::view-transition-new(search-text) {
+  object-position: left top;
+}
+
+::view-transition-old(search-bar),
+::view-transition-new(search-bar) {
+  object-position: right top;
+}
+
+::view-transition-old(search-text),
+::view-transition-old(search-bar) {
+  opacity: 0;
+}
+
+:root[data-transition="panel"]::view-transition-group(search-query),
+::view-transition-group(search-text),
+::view-transition-group(search-bar),
+:root[data-transition^="fold-"] [data-pane="list"] {
+  view-transition-name: pane-list;
+}
+
+:root[data-transition^="fold-"] [data-pane="candidates"] {
+  view-transition-name: pane-candidates;
+}
+
+:root[data-transition^="fold-"] [data-pane="evidence"] {
+  view-transition-name: pane-evidence;
+}
+
+:root[data-transition^="fold-"]::view-transition-old(root),
+:root[data-transition^="fold-"]::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-group(pane-list),
+::view-transition-group(pane-candidates),
+::view-transition-group(pane-evidence) {
+  animation-duration: var(--dur-panel);
+  animation-timing-function: var(--ease-panel);
+}
+
+::view-transition-image-pair(pane-list),
+::view-transition-image-pair(pane-candidates),
+::view-transition-image-pair(pane-evidence) {
+  overflow: clip;
+  border-radius: var(--radius-xl);
+}
+
+::view-transition-old(pane-list),
+::view-transition-new(pane-list),
+::view-transition-old(pane-candidates),
+::view-transition-new(pane-candidates),
+::view-transition-old(pane-evidence),
+::view-transition-new(pane-evidence) {
+  height: 100%;
+  object-fit: none;
+  object-position: left top;
+  animation: none;
+}
+
+:root[data-transition="fold-list"]::view-transition-old(pane-list),
+:root[data-transition="fold-candidates"]::view-transition-old(pane-candidates) {
+  animation: var(--vt-pane-old);
+}
+
+:root[data-transition="fold-list"]::view-transition-new(pane-list),
+:root[data-transition="fold-candidates"]::view-transition-new(pane-candidates) {
+  animation: var(--vt-pane-new);
+}
+
+::view-transition-old(pane-evidence) {
+  animation: var(--vt-pane-ghost);
+}
+
+::view-transition-group(recent-panel),
+::view-transition-group(recent-reveal) {
+  animation-duration: var(--dur-panel);
+  animation-timing-function: var(--ease-panel);
+}
+
+::view-transition-old(recent-panel),
+::view-transition-old(recent-reveal) {
+  animation: var(--vt-panel-out);
+}
+
+::view-transition-new(recent-panel),
+::view-transition-new(recent-reveal) {
+  animation: var(--vt-panel-in);
 }

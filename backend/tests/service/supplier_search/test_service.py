@@ -10,6 +10,7 @@ from src.models.enums import (
     WarningCode,
 )
 from src.models.offer_evidence import OfferEvidence
+from src.models.offer_summary import OfferSummary
 from src.models.purchase import PurchaseSummary
 from src.models.retrieval import ChannelHit, ItemHit, RetrievalHits
 from src.models.search_result import SearchWarning
@@ -26,6 +27,7 @@ from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from src.service.supplier_search.matcher import SupplierMatcher
 from src.service.supplier_search.pipeline import SearchPipeline
 from src.service.supplier_search.policy.policy import CandidatePolicy
+from src.service.supplier_search.protocols import StageTimer, WorkShare
 from src.service.supplier_search.ranking.ranker import CandidateRanker
 from src.service.supplier_search.service import SupplierSearchService
 from src.service.supplier_search.settings import SearchSettings
@@ -90,6 +92,8 @@ class Harness:
     )
     archive: FakeArchive = field(default_factory=FakeArchive)
     settings: SearchSettings = field(default_factory=SearchSettings)
+    stages: StageTimer | None = None
+    share: WorkShare | None = None
 
     def pipeline(self) -> SearchPipeline:
         matcher = SupplierMatcher(
@@ -102,8 +106,11 @@ class Harness:
             policy=CandidatePolicy.standard(self.settings.coverage_threshold),
             ranker=CandidateRanker(self.settings.weights),
             settings=self.settings,
+            stages=self.stages,
         )
-        return SearchPipeline(self.interpreter, matcher, FixedClock(), self.settings)
+        return SearchPipeline(
+            self.interpreter, matcher, FixedClock(), self.settings, stages=self.stages
+        )
 
     def service(self) -> SupplierSearchService:
         return SupplierSearchService(
@@ -111,6 +118,8 @@ class Harness:
             archive=self.archive,
             ids=SequentialIds(),
             settings=self.settings,
+            share=self.share,
+            stages=self.stages,
         )
 
 
@@ -127,6 +136,7 @@ async def test_search_ranks_explains_and_archives_candidates() -> None:
     assert result.pipeline.channels == ("lexical", "history")
     assert (result.created_at, result.pipeline.as_of, result.warnings) == (MOMENT, MOMENT, ())
     assert harness.archive.stored == {result.search_id: result}
+    assert result.offers == (OfferSummary.of(alpha_card()),)
     assert harness.lexical.calls[0][1] == 15
     assert harness.lexical.calls[0][0].items == ITEMS
 
@@ -158,6 +168,7 @@ async def test_failed_enrichment_marks_candidates_for_checking() -> None:
     result = await harness.service().search(make_query())
     assert result.warnings == (
         SearchWarning(WarningCode.ENRICHMENT_FAILED, "offers"),
+        SearchWarning(WarningCode.ENRICHMENT_FAILED, "currentOffers"),
         SearchWarning(WarningCode.ENRICHMENT_FAILED, "history"),
     )
     for candidate in result.candidates:

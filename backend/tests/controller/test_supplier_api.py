@@ -23,6 +23,11 @@ async def test_profile_is_returned(client: httpx.AsyncClient) -> None:
     assert offer["availability"] == "available"
     assert offer["source"]["kind"] == "price"
     assert offer["source"]["checkedAt"] == "2026-09-29T08:00:00Z"
+    assert offer["brand"] == "Увелка"
+    assert offer["article"] == ""
+    assert offer["attributes"] == [{"name": "Фасовка", "value": "50 кг"}]
+    assert offer["imageUrl"] is None
+    assert offer["seller"] == "verified"
 
 
 async def test_offer_without_price_or_web_url(

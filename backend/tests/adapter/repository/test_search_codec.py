@@ -12,6 +12,7 @@ from src.adapter.repository.clickhouse.search_archive.result_dto import (
 from src.adapter.repository.errors import CorruptRecordError
 from src.models.candidate import Highlight, ProductMatch
 from src.models.enums import (
+    Availability,
     CheckReason,
     CompanyRole,
     HighlightCode,
@@ -22,11 +23,30 @@ from src.models.enums import (
     PurchaseOutcome,
     WarningCode,
 )
+from src.models.offer_summary import OfferAttribute, OfferSummary
 from src.models.purchase import PurchaseRecord, PurchaseSummary
 from src.models.query_item import Quantity, QueryItem
 from src.models.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
 from src.models.search_result import SearchResult, SearchWarning
-from tests.fakes.domain import make_candidate, make_result, make_supplier
+from tests.fakes.domain import make_candidate, make_evidence, make_result, make_supplier, uid
+
+
+def rich_offers() -> tuple[OfferSummary, ...]:
+    return (
+        OfferSummary(
+            offer_id=uid("offer:offer"),
+            name="Крупа гречневая ядрица",
+            availability=Availability.AVAILABLE,
+            price=Decimal("84.50"),
+            currency="RUB",
+            unit="кг",
+            brand="Увелка",
+            article="4607",
+            okpd2_code="10.61.32.110",
+            attributes=(OfferAttribute("Фасовка", "50 кг"),),
+            evidence=make_evidence(),
+        ),
+    )
 
 
 def rich_result() -> SearchResult:
@@ -58,7 +78,7 @@ def rich_result() -> SearchResult:
         SearchFilters(regions=("78", "47"), item_type=ItemType.GOODS),
     )
     warnings = (SearchWarning(WarningCode.CHANNEL_FAILED, "semantic"),)
-    return replace(base, query=query, warnings=warnings)
+    return replace(base, query=query, warnings=warnings, offers=rich_offers())
 
 
 def test_codec_round_trip_is_lossless() -> None:
@@ -67,7 +87,8 @@ def test_codec_round_trip_is_lossless() -> None:
     assert decode_result(payload) == result
     assert decode_result(encode_result(decode_result(payload))) == result
     document = json.loads(payload)
-    assert document["payload_version"] == 1
+    assert document["payload_version"] == 2
+    assert document["offers"][0]["attributes"] == [["Фасовка", "50 кг"]]
     assert document["items"][0]["quantity"] == {"value": "1.5", "unit": "т"}
 
 
@@ -76,7 +97,15 @@ FIXTURES = Path(__file__).parent / "fixtures"
 
 def test_v1_payload_still_decodes() -> None:
     payload = (FIXTURES / "search_payload_v1.json").read_text(encoding="utf-8")
-    assert decode_result(payload) == rich_result()
+    assert decode_result(payload) == replace(rich_result(), offers=())
+
+
+def test_repeated_offer_is_corrupt() -> None:
+    document = json.loads(encode_result(rich_result()))
+    document["offers"] = document["offers"] * 2
+    with pytest.raises(CorruptRecordError) as caught:
+        decode_result(json.dumps(document))
+    assert caught.value.reason == "InvalidSearchResultError"
 
 
 def test_codec_rejects_foreign_payloads() -> None:

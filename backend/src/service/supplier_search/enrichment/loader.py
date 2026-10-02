@@ -19,6 +19,9 @@ OFFERS = EnrichmentSource.OFFERS
 CURRENT_OFFERS = EnrichmentSource.CURRENT_OFFERS
 HISTORY = EnrichmentSource.HISTORY
 
+CurrentIds = Mapping[UUID, tuple[UUID, ...]]
+Cards = Mapping[UUID, OfferEvidence]
+
 
 async def _attempt[K, V](source: str, call: Awaitable[Mapping[K, V]]) -> Mapping[K, V] | None:
     try:
@@ -26,6 +29,16 @@ async def _attempt[K, V](source: str, call: Awaitable[Mapping[K, V]]) -> Mapping
     except Exception:
         logger.warning("enrichment source failed", extra={"source": source}, exc_info=True)
         return None
+
+
+def _current(ids: CurrentIds | None, cards: Cards | None) -> dict[UUID, tuple[OfferEvidence, ...]]:
+    if ids is None or cards is None:
+        return {}
+    found = {
+        supplier_id: tuple(cards[offer_id] for offer_id in offer_ids if offer_id in cards)
+        for supplier_id, offer_ids in ids.items()
+    }
+    return {supplier_id: owned for supplier_id, owned in found.items() if owned}
 
 
 class EnrichmentLoader:
@@ -45,16 +58,12 @@ class EnrichmentLoader:
         self, candidates: Sequence[FusedCandidate], items: Sequence[QueryItem]
     ) -> tuple[Enrichment, tuple[SearchWarning, ...]]:
         supplier_ids = [candidate.supplier_id for candidate in candidates]
-        offer_ids = list(
+        referenced = list(
             dict.fromkeys(offer_id for candidate in candidates for offer_id in candidate.offer_ids)
         )
-        suppliers, offers, current, histories = await asyncio.gather(
+        suppliers, (offers, current), histories = await asyncio.gather(
             _attempt(DIRECTORY, self._directory.get_many(supplier_ids)),
-            _attempt(OFFERS, self._load_offers(offer_ids)),
-            _attempt(
-                CURRENT_OFFERS,
-                self._offers.current_for(supplier_ids, self._settings.offers_per_supplier),
-            ),
+            self._load_offers(supplier_ids, referenced),
             _attempt(
                 HISTORY,
                 self._history.summarize(supplier_ids, items, self._settings.history_records),
@@ -81,7 +90,19 @@ class EnrichmentLoader:
         )
         return enrichment, warnings
 
-    async def _load_offers(self, offer_ids: Sequence[UUID]) -> Mapping[UUID, OfferEvidence]:
+    async def _load_offers(
+        self, supplier_ids: Sequence[UUID], referenced: Sequence[UUID]
+    ) -> tuple[Cards | None, Mapping[UUID, tuple[OfferEvidence, ...]] | None]:
+        per_supplier = self._settings.offers_per_supplier
+        ids = await _attempt(CURRENT_OFFERS, self._offers.current_ids(supplier_ids, per_supplier))
+        current_ids = [offer_id for owned in (ids or {}).values() for offer_id in owned]
+        wanted = list(dict.fromkeys((*referenced, *current_ids)))
+        cards = await _attempt(OFFERS, self._cards(wanted))
+        offers = None if cards is None else {key: cards[key] for key in referenced if key in cards}
+        current = None if ids is None or cards is None else _current(ids, cards)
+        return offers, current
+
+    async def _cards(self, offer_ids: Sequence[UUID]) -> Cards:
         if not offer_ids:
             return {}
         return await self._offers.get_many(offer_ids)

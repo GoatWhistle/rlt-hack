@@ -12,6 +12,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from src.controller.http.correlation import bind_request_id, release_request_id
 from src.controller.http.error_body import INTERNAL_STATUS, internal_body
 from src.controller.http.metrics import Metrics
+from src.controller.http.timing import bind_stages, release_stages, server_timing
 
 REQUEST_ID_HEADER = "X-Request-Id"
 SERVER_TIMING_HEADER = "Server-Timing"
@@ -62,6 +63,7 @@ class RequestContextMiddleware:
         exchange = Exchange(accepted_request_id(incoming) or str(uuid4()))
         scope.setdefault("state", {})["request_id"] = exchange.request_id
         token = bind_request_id(exchange.request_id)
+        stages = bind_stages()
 
         async def reply(message: Message) -> None:
             if message["type"] == "http.response.start":
@@ -69,7 +71,7 @@ class RequestContextMiddleware:
                 exchange.status = message["status"]
                 headers = MutableHeaders(scope=message)
                 headers[REQUEST_ID_HEADER] = exchange.request_id
-                headers[SERVER_TIMING_HEADER] = f"app;dur={exchange.elapsed_ms:.1f}"
+                headers[SERVER_TIMING_HEADER] = server_timing(exchange.elapsed_ms)
             await send(message)
 
         try:
@@ -83,6 +85,7 @@ class RequestContextMiddleware:
                 await self._internal_error(exchange, reply)
         finally:
             self._complete(scope, exchange)
+            release_stages(stages)
             release_request_id(token)
 
     async def _internal_error(self, exchange: Exchange, reply: Send) -> None:

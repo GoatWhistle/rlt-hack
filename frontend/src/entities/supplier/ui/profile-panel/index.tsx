@@ -1,19 +1,28 @@
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useRegionText, useRoleLabel } from "@/entities/evidence/labels"
 import { ContactList } from "@/entities/evidence/ui/contact-list"
+import { type OfferEntry, OfferGridSkeleton } from "@/entities/evidence/ui/offer-grid"
 import { SourceLine } from "@/entities/evidence/ui/source-line"
 import type { SupplierProfile } from "@/entities/supplier/model"
 import { useSupplierProfile } from "@/entities/supplier/queries"
+import { type Choice, ChoiceButton } from "@/shared/ui/choice-button"
 import { Dialog } from "@/shared/ui/dialog"
 import { ErrorState } from "@/shared/ui/error-state"
 import { type Fact, FactList } from "@/shared/ui/fact-list"
 import { LoadingState } from "@/shared/ui/loading-state"
+import { Reveal } from "@/shared/ui/reveal"
 import { SheetSection } from "@/shared/ui/sheet-section"
 import { Bone } from "@/shared/ui/skeleton"
-import { OfferList } from "../offer-list"
+import { ProfileOffers } from "../profile-offers"
 import styles from "./styles.module.css"
 
-function Profile({ profile }: { readonly profile: SupplierProfile }) {
+type ProfileProps = {
+  readonly profile: SupplierProfile
+  readonly matched: readonly OfferEntry[]
+}
+
+function Profile({ profile, matched }: ProfileProps) {
   const { t } = useTranslation("supplier")
   const roleLabel = useRoleLabel()
   const regionText = useRegionText()
@@ -41,9 +50,7 @@ function Profile({ profile }: { readonly profile: SupplierProfile }) {
       <SheetSection title={t("contacts")}>
         <ContactList contacts={profile.contacts} />
       </SheetSection>
-      <SheetSection title={t("offers")}>
-        <OfferList offers={profile.offers} />
-      </SheetSection>
+      <ProfileOffers offers={profile.offers} matched={matched} />
     </div>
   )
 }
@@ -51,7 +58,6 @@ function Profile({ profile }: { readonly profile: SupplierProfile }) {
 export const SKELETON_SECTIONS = [
   { id: "requisites", rows: 5 },
   { id: "contacts", rows: 3 },
-  { id: "offers", rows: 6 },
 ] as const
 
 const SKELETON = SKELETON_SECTIONS.map(({ id, rows }) => ({
@@ -74,24 +80,43 @@ function ProfileSkeleton({ label }: { readonly label: string }) {
             ))}
           </div>
         ))}
+        <div className={styles.block}>
+          <Bone className={styles.heading} />
+          <OfferGridSkeleton />
+        </div>
       </div>
     </LoadingState>
   )
 }
 
-function ProfileBody({ supplierId }: { readonly supplierId: string }) {
+type ProfileBodyProps = {
+  readonly supplierId: string
+  readonly matched: readonly OfferEntry[]
+}
+
+function ProfileBody({ supplierId, matched }: ProfileBodyProps) {
   const { t } = useTranslation("supplier")
   const profile = useSupplierProfile(supplierId)
+  const [late] = useState(profile.isPending)
   if (profile.isPending) return <ProfileSkeleton label={t("loading")} />
-  if (profile.isError)
-    return <ErrorState error={profile.error} onRetry={() => profile.refetch()} />
-  return <Profile profile={profile.data} />
+  if (profile.isError) {
+    return (
+      <ErrorState error={profile.error} title={t("error")} onRetry={() => profile.refetch()} />
+    )
+  }
+  return (
+    <Reveal active={late}>
+      <Profile profile={profile.data} matched={matched} />
+    </Reveal>
+  )
 }
 
 export type SupplierProfilePanelProps = {
   readonly open: boolean
   readonly supplierId: string
   readonly name: string
+  readonly matched?: readonly OfferEntry[]
+  readonly choice?: Choice
   readonly onClose: () => void
 }
 
@@ -99,11 +124,28 @@ export function SupplierProfilePanel({
   open,
   supplierId,
   name,
+  matched = [],
+  choice,
   onClose,
 }: SupplierProfilePanelProps) {
+  const { t: candidate } = useTranslation("candidate")
   return (
-    <Dialog open={open} size="side" title={name} onClose={onClose}>
-      <ProfileBody supplierId={supplierId} />
+    <Dialog
+      open={open}
+      size="side"
+      title={name}
+      onClose={onClose}
+      footer={
+        choice ? (
+          <ChoiceButton
+            {...choice}
+            chooseLabel={candidate("panel.choose")}
+            chosenLabel={candidate("panel.chosen")}
+          />
+        ) : null
+      }
+    >
+      <ProfileBody key={supplierId} supplierId={supplierId} matched={matched} />
     </Dialog>
   )
 }

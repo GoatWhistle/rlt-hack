@@ -26,5 +26,6 @@
       "title": "The file is too large",
       "text": "Up to {{limit, number}} rows are processed at a time. Split the file and upload the parts one by one."
     }
-  }
+  },
+  "sample": "Download a sample CSV"
 }

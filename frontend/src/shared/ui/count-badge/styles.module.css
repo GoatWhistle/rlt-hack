@@ -1,0 +1,20 @@
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--icon-md);
+  padding-inline: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+  animation: var(--motion-pop-in);
+}
+
+@media (max-width: 47.99rem) {
+  .corner {
+    position: absolute;
+    inset-block-start: calc(var(--space-1) * -1);
+    inset-inline-end: calc(var(--space-1) * -1);
+  }
+}

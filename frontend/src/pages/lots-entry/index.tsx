@@ -4,8 +4,10 @@ import { useUploads } from "@/entities/upload/queries"
 import { StatusStrip } from "@/entities/upload/status-strip"
 import { UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
+import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { ButtonLink } from "@/shared/ui/button"
 import { ErrorState } from "@/shared/ui/error-state"
+import { FileName } from "@/shared/ui/file-name"
 import { PageTitle } from "@/shared/ui/page-title"
 import { RowChevron } from "@/shared/ui/row-chevron"
 import { PageSkeleton } from "@/shared/ui/skeleton"
@@ -16,7 +18,9 @@ export const RECENT_UPLOADS = 5
 export function LotsEntryPage() {
   const { t } = useTranslation("lots")
   const { dateTime } = useFormatters()
+  const { t: common } = useTranslation()
   const uploads = useUploads()
+  useDocumentTitle(common("title.lots"))
 
   if (uploads.isPending) return <PageSkeleton label={t("loading")} rows={3} />
   if (uploads.isError) {
@@ -39,7 +43,7 @@ export function LotsEntryPage() {
           <li key={upload.id}>
             <Link to={uploadPath(upload.id)} className={styles.row}>
               <span className={styles.file}>
-                <span className={styles.name}>{upload.fileName}</span>
+                <FileName name={upload.fileName} />
                 <span className={styles.meta}>
                   {dateTime(upload.createdAt)}
                   {" · "}
@@ -47,7 +51,7 @@ export function LotsEntryPage() {
                 </span>
               </span>
               <span className={styles.strip}>
-                <StatusStrip counts={upload.counts} total={upload.total} />
+                <StatusStrip counts={upload.counts} total={upload.total} revealId={upload.id} />
               </span>
               <RowChevron className={styles.chevron} />
             </Link>

@@ -8,6 +8,7 @@ from src.adapter.repository.supplier_index.clickhouse import ClickHouseSupplierI
 from src.adapter.repository.supplier_index.index import FileSupplierIndex
 from src.application.config import AppConfig
 from src.application.container import Container
+from src.application.deferred_gateway import DeferredGateway
 
 
 @asynccontextmanager
@@ -18,7 +19,7 @@ async def supplier_index():
         config = AppConfig.from_env()
         async with Container(config) as container:
             index = ClickHouseSupplierIndex(
-                directory, await container.gateway(), index_id, config.clickhouse.database
+                directory, DeferredGateway(container.gateway), index_id, config.clickhouse.database
             )
             await index.initialize()
             await initialize_ranker(index)

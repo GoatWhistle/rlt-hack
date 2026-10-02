@@ -4,7 +4,66 @@
 
 .blocks {
   display: grid;
+  gap: var(--space-4);
+}
+
+.header {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-6);
+}
+
+.titles {
+  display: grid;
+  flex: 1 1 auto;
+  gap: var(--space-2);
+}
+
+.action {
+  flex: none;
+  width: 12rem;
+  height: var(--target-touch);
+}
+
+.strip {
+  max-width: var(--pane-evidence-max);
+  height: var(--meter-height-lg);
+  margin-block-start: var(--space-2);
+}
+
+.blocks .strip {
+  border-radius: var(--radius-pill);
+}
+
+.legend {
+  width: min(24rem, 80%);
+  height: var(--space-4);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: var(--space-3);
+}
+
+.segments {
+  width: min(30rem, 100%);
+  height: var(--target-touch);
+}
+
+.head {
+  height: var(--target-touch);
+  border-block-end: var(--line-width) solid var(--line-hairline);
+  border-start-start-radius: var(--radius-xl);
+  border-start-end-radius: var(--radius-xl);
+  background: var(--surface-raised);
 }
 
 .blocks span {
@@ -37,9 +96,9 @@
 }
 
 .search {
-  width: min(28rem, 100%);
-  height: var(--target-touch);
-  margin-block: var(--space-4) var(--space-1);
+  flex: 1 1 18rem;
+  max-width: 28rem;
+  height: calc(var(--target-touch) + var(--space-5));
 }
 
 .table {
@@ -93,5 +152,9 @@
   .blocks .tag,
   .blocks .cell {
     display: none;
+  }
+
+  .action {
+    width: var(--target-touch);
   }
 }

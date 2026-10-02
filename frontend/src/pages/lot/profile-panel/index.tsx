@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next"
 import { SourceLine } from "@/entities/evidence/ui/source-line"
 import type { Company, Product, Source } from "@/entities/recommendation/model"
 import { Caption } from "@/shared/ui/caption"
+import { type Choice, ChoiceButton } from "@/shared/ui/choice-button"
 import { Dialog } from "@/shared/ui/dialog"
 import { type Fact, FactList } from "@/shared/ui/fact-list"
 import { Stack } from "@/shared/ui/stack"
@@ -12,6 +13,7 @@ export type ProfilePanelProps = {
   readonly open: boolean
   readonly company: Company
   readonly products: readonly Product[]
+  readonly choice?: Choice
   readonly onClose: () => void
 }
 
@@ -144,9 +146,24 @@ function Profile({ company, products }: ProfileProps) {
   )
 }
 
-export function ProfilePanel({ open, company, products, onClose }: ProfilePanelProps) {
+export function ProfilePanel({ open, company, products, choice, onClose }: ProfilePanelProps) {
+  const { t } = useTranslation("lot")
   return (
-    <Dialog open={open} size="side" title={company.name} onClose={onClose}>
+    <Dialog
+      open={open}
+      size="side"
+      title={company.name}
+      onClose={onClose}
+      footer={
+        choice ? (
+          <ChoiceButton
+            {...choice}
+            chooseLabel={t("evidence.choose")}
+            chosenLabel={t("evidence.chosen")}
+          />
+        ) : null
+      }
+    >
       <Profile company={company} products={products} />
     </Dialog>
   )

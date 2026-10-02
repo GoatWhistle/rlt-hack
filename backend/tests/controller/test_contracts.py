@@ -1,7 +1,9 @@
 import json
 from dataclasses import replace
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
 import httpx
 import pytest
@@ -12,11 +14,12 @@ from src.controller.search.dto import RecentSearchesDto, SearchRequestDto, Searc
 from src.controller.search.mapper import to_query
 from src.controller.supplier.dto import SupplierProfileDto
 from src.models.candidate import Highlight
-from src.models.enums import HighlightCode, ItemType, Locale, PurchaseOutcome
+from src.models.enums import Availability, HighlightCode, ItemType, Locale, PurchaseOutcome
+from src.models.offer_summary import OfferAttribute, OfferSummary
 from src.models.purchase import PurchaseRecord, PurchaseSummary
 from src.models.search import SearchFilters
 from src.models.search_result import SearchResult
-from tests.fakes.domain import make_candidate, make_result, make_supplier, uid
+from tests.fakes.domain import make_candidate, make_evidence, make_result, make_supplier, uid
 from tests.fakes.http import FakeServiceProvider
 
 CONTRACTS = Path(__file__).resolve().parents[3] / "contracts"
@@ -26,12 +29,21 @@ def load(name: str) -> Any:
     return json.loads((CONTRACTS / name).read_text(encoding="utf-8"))
 
 
+def path_key(key: str) -> str:
+    try:
+        UUID(key)
+    except ValueError:
+        return key
+    return "{id}"
+
+
 def key_paths(value: Any, prefix: str = "$") -> set[str]:
     if isinstance(value, dict):
         found: set[str] = set()
         for key, inner in value.items():
-            found.add(f"{prefix}.{key}")
-            found |= key_paths(inner, f"{prefix}.{key}")
+            step = f"{prefix}.{path_key(key)}"
+            found.add(step)
+            found |= key_paths(inner, step)
         return found
     if isinstance(value, list):
         return set().union(*(key_paths(item, f"{prefix}[]") for item in value))
@@ -46,7 +58,17 @@ def rich_result() -> SearchResult:
         Highlight(HighlightCode.IN_STOCK, {"count": 1}),
     )
     candidate = replace(make_candidate(), history=history, highlights=highlights)
-    result = make_result(candidate)
+    offer = OfferSummary(
+        offer_id=candidate.matches[0].offer_id or uid("offer"),
+        name="Крупа гречневая ядрица",
+        availability=Availability.AVAILABLE,
+        price=Decimal("84.50"),
+        currency="RUB",
+        unit="кг",
+        attributes=(OfferAttribute("Фасовка", "50 кг"),),
+        evidence=make_evidence(),
+    )
+    result = replace(make_result(candidate), offers=(offer,))
     filters = SearchFilters(regions=("78",), item_type=ItemType.GOODS)
     return replace(result, query=replace(result.query, filters=filters))
 
@@ -99,3 +121,21 @@ async def test_profile_response_matches_contract_keys(client: httpx.AsyncClient)
 async def test_error_response_matches_contract_keys(client: httpx.AsyncClient) -> None:
     response = await client.post("/api/searches", json={"text": "а" * 4001})
     assert key_paths(response.json()) == key_paths(load("search/error.example.json"))
+
+
+def test_every_matched_offer_is_described() -> None:
+    example = load("search/response.example.json")
+    matched = {
+        match["offerId"]
+        for candidate in example["candidates"]
+        for match in candidate["matches"]
+        if match["offerId"] is not None
+    }
+    assert matched == set(example["offers"])
+    assert all(offer["id"] == key for key, offer in example["offers"].items())
+
+
+def test_response_without_offers_stays_valid() -> None:
+    example = load("search/response.example.json")
+    del example["offers"]
+    assert SearchResponseDto.model_validate(example).offers == {}

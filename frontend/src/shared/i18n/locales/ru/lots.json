@@ -23,8 +23,7 @@
   "search": {
     "label": "Поиск по закупкам",
     "placeholder": "Название, ИНН заказчика или номер лота",
-    "clear": "Очистить поиск",
-    "shortcut": "/"
+    "clear": "Очистить поиск"
   },
   "filter": {
     "legend": "Результат",
@@ -41,7 +40,7 @@
     "title": "Закупка",
     "subject": "Предмет",
     "price": "Начальная цена",
-    "products": "Товары",
+    "products": "Позиции",
     "candidates": "Кандидаты",
     "status": "Статус",
     "published": "Опубликована",
@@ -51,10 +50,10 @@
     "noPrice": "не указана",
     "pending": "—",
     "priceMissing": "цена не указана",
-    "productCount_one": "{{count, number}} товар",
-    "productCount_few": "{{count, number}} товара",
-    "productCount_many": "{{count, number}} товаров",
-    "productCount_other": "{{count, number}} товара",
+    "productCount_one": "{{count, number}} позиция",
+    "productCount_few": "{{count, number}} позиции",
+    "productCount_many": "{{count, number}} позиций",
+    "productCount_other": "{{count, number}} позиции",
     "candidateCount_one": "{{count, number}} кандидат",
     "candidateCount_few": "{{count, number}} кандидата",
     "candidateCount_many": "{{count, number}} кандидатов",
@@ -90,7 +89,8 @@
     "text": "Поиск идёт по всему файлу: названию закупки, ИНН заказчика и номеру лота. Проверьте написание или сократите запрос.",
     "filtered": "Показаны только закупки со статусом «{{filter}}». Поиск идёт по всему файлу: названию закупки, ИНН заказчика и номеру лота.",
     "allStatuses": "Искать во всех статусах",
-    "reset": "Сбросить поиск и фильтры"
+    "reset": "Сбросить поиск и фильтры",
+    "searchSuppliers": "Найти поставщиков по «{{query}}»"
   },
   "missing": {
     "title": "Загрузка не найдена",

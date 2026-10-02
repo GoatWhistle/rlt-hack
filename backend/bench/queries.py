@@ -1,3 +1,15 @@
+from bench.vocabulary import CATEGORIES
+
+LARGE_SIZES = (10, 25, 50)
+PRODUCTS = tuple(product for category in CATEGORIES for product in category.products)
+
+
+def large_query(size: int, shift: int = 0) -> str:
+    return "; ".join(
+        f"{PRODUCTS[(index * 7 + shift) % len(PRODUCTS)]} {10 + index} шт" for index in range(size)
+    )
+
+
 QUERIES = (
     "Крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
     "Бумага офисная А4 80 г/м2 — 300 пачек",

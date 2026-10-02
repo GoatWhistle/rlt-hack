@@ -42,7 +42,7 @@ describe("the purchases of a file", () => {
       "Status",
       "Published",
       "Start price",
-      "Products",
+      "Items",
       "Candidates",
     ])
     expect(within(table).getAllByRole("row")).toHaveLength(PAGE_SIZE + 1)
@@ -52,7 +52,7 @@ describe("the purchases of a file", () => {
     expect(screen.getByRole("link", { name: "Page 1" })).toHaveAttribute("aria-current", "page")
     expect(screen.queryByRole("link", { name: en("pages.prev", "lots") })).toBeNull()
     const row = within(table).getByRole("row", { name: /Milk for schools/ })
-    expect(within(row).getByText("RUB 1,000 · 5 products · 3 candidates")).toBeInTheDocument()
+    expect(within(row).getByText("₽1,000 · 5 items · 3 candidates")).toBeInTheDocument()
     expect(readLastUpload()).toBe("u1")
   })
 
@@ -83,6 +83,10 @@ describe("the purchases of a file", () => {
     await user.click(screen.getByRole("button", { name: en("empty.allStatuses", "lots") }))
     expect(router.state.location.search).toBe("?q=milkzzz")
     expect(screen.getByText(/Check the spelling/)).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Find suppliers for “milkzzz”" })).toHaveAttribute(
+      "href",
+      "/search?q=milkzzz",
+    )
     await user.click(screen.getByRole("button", { name: en("empty.reset", "lots") }))
     expect(router.state.location.search).toBe("")
   })

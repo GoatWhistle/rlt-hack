@@ -22,7 +22,8 @@ export function ErrorState({
 }: ErrorStateProps) {
   const { t } = useTranslation()
   const errorMessage = useErrorMessage()
-  const { code } = describeError(error)
+  const { code, requestId } = describeError(error)
+  const reference = requestId ?? code
   const retry = onRetry ? <Button onClick={onRetry}>{t("action.retry")}</Button> : null
   return (
     <EmptyState
@@ -30,7 +31,7 @@ export function ErrorState({
       headingLevel={headingLevel}
       title={title ?? t("routeError.title")}
       description={errorMessage(error)}
-      details={code ? t("errorDetails.code", { code }) : undefined}
+      details={reference ? t("errorDetails.code", { code: reference }) : undefined}
       actions={
         retry || extraAction ? (
           <>

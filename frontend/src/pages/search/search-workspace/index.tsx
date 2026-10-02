@@ -1,44 +1,80 @@
-import { useState } from "react"
+import { type ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { matchOf, type SearchResult } from "@/entities/search/model"
-import { useSearchShortlist } from "@/entities/shortlist/store"
+import { CandidateList } from "@/entities/evidence/ui/candidate-list"
+import { CandidatePanel, offerEntries } from "@/entities/evidence/ui/candidate-panel"
+import { coverageOf, rowsOf } from "@/entities/evidence/view"
+import type { CandidateStatus, SearchResult } from "@/entities/search/model"
+import { candidateView, itemViews } from "@/entities/search/view"
 import { SupplierProfilePanel } from "@/entities/supplier/ui/profile-panel"
-import { searchDraftPath } from "@/shared/config/paths"
+import { useFormatters } from "@/shared/i18n/formatters"
+import { useMediaQuery } from "@/shared/media/use-media-query"
 import { useQueryState } from "@/shared/routing/use-query-state"
-import { ButtonLink } from "@/shared/ui/button"
-import { EmptyState } from "@/shared/ui/empty-state"
+import { SegmentedControl } from "@/shared/ui/segmented-control"
 import {
   parseView,
   useWorkspaceView,
   viewParam,
-  WorkspaceEmpty,
   WorkspaceLayout,
   type WorkspaceView,
 } from "@/shared/ui/workspace-layout"
-import { CandidateList } from "../candidate-list"
-import { CandidatePanel } from "../candidate-panel"
+import { EmptyResult } from "../empty-result"
 import { ItemList } from "../item-list"
 
-export const SEARCH_PARAMS = ["candidate", "item", "view"] as const
+export const SEARCH_PARAMS = ["candidate", "item", "view", "status"] as const
+export const MEDIUM_LAYOUT = "(min-width: 48rem) and (max-width: 74.99rem)"
 
-export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
+type Facet = "all" | CandidateStatus
+const FACETS: readonly Facet[] = ["all", "recommended", "check"]
+
+function parseFacet(value: string | null): Facet {
+  return FACETS.find((facet) => facet === value) ?? "all"
+}
+
+export type SearchWorkspaceProps = {
+  readonly result: SearchResult
+  readonly chosen: readonly string[]
+  readonly reveal: boolean
+  readonly dockAction?: ReactNode
+  readonly onToggle: (id: string) => void
+  readonly onEditQuery: () => void
+}
+
+export function SearchWorkspace({
+  result,
+  chosen,
+  reveal,
+  dockAction,
+  onToggle,
+  onEditQuery,
+}: SearchWorkspaceProps) {
   const { t } = useTranslation("search")
-  const { items, candidates } = result
+  const { t: candidateText } = useTranslation("candidate")
+  const { number } = useFormatters()
   const [params, update] = useQueryState(SEARCH_PARAMS)
   const view = parseView(params.view)
   const { narrow, stackRef, prepareSwitch } = useWorkspaceView(view)
-  const shortlist = useSearchShortlist(result.searchId)
+  const medium = useMediaQuery(MEDIUM_LAYOUT)
   const [profileOpen, setProfileOpen] = useState(false)
-
-  const focusItem = items.find((item) => item.id === params.item)
-  const shown = focusItem
-    ? candidates.filter((candidate) => matchOf(candidate, focusItem.id))
-    : candidates
+  const items = itemViews(result.items)
+  const candidates = result.candidates.map((candidate) =>
+    candidateView(candidate, result.offers),
+  )
+  const facet = parseFacet(params.status)
+  const focusItem = result.items.find((item) => item.id === params.item)
+  const focusId = focusItem?.id ?? null
+  const shown = candidates.filter(
+    (candidate) =>
+      coverageOf(candidate, focusId) && (facet === "all" || candidate.status === facet),
+  )
   const selected =
     shown.find((candidate) => candidate.id === params.candidate) ??
     shown[0] ??
     candidates.find((candidate) => candidate.id === params.candidate) ??
     candidates[0]
+
+  if (!selected) {
+    return <EmptyResult result={result} onEditQuery={onEditQuery} />
+  }
 
   function show(next: WorkspaceView) {
     prepareSwitch(false)
@@ -56,30 +92,18 @@ export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
     update({ item: next, ...(move ? { view: viewParam("candidates") } : {}) })
   }
 
-  const itemPane = (
-    <ItemList
-      items={items}
-      candidates={candidates}
-      activeId={focusItem?.id ?? null}
-      onFilter={filter}
-    />
-  )
-  if (!selected) {
-    return (
-      <WorkspaceEmpty list={items.length > 0 ? itemPane : null}>
-        <EmptyState
-          icon="search"
-          headingLevel={2}
-          title={t("empty.title")}
-          description={t("empty.text")}
-          actions={
-            <ButtonLink to={searchDraftPath(result.query.text)}>{t("empty.action")}</ButtonLink>
-          }
-        />
-      </WorkspaceEmpty>
-    )
+  const position = shown.findIndex((candidate) => candidate.id === selected.id)
+  const neighbour = (step: number) => {
+    const target = shown[position + step]
+    return position >= 0 && target ? () => update({ candidate: target.id }) : undefined
   }
-
+  const count = (value: Facet) =>
+    number(
+      candidates.filter(
+        (candidate) =>
+          coverageOf(candidate, focusId) && (value === "all" || candidate.status === value),
+      ).length,
+    )
   const labels: Record<WorkspaceView, string> = {
     list: t("views.items"),
     candidates: t("views.candidates"),
@@ -91,29 +115,73 @@ export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
         narrow={narrow}
         legend={t("views.legend")}
         labels={labels}
+        counts={{ list: result.items.length, candidates: shown.length }}
         view={view}
         onShow={show}
         stackRef={stackRef}
         panes={{
-          list: itemPane,
+          list: (
+            <ItemList
+              items={result.items}
+              candidates={result.candidates}
+              activeId={focusId}
+              compact={medium}
+              onFilter={filter}
+            />
+          ),
           candidates: (
             <CandidateList
+              title={t("candidates.title")}
               candidates={shown}
+              items={items}
               selectedId={selected.id}
-              chosen={shortlist.ids}
+              chosen={chosen}
+              reveal={reveal}
+              noMatch={t("candidates.noMatch")}
               filter={
-                focusItem ? { name: focusItem.name, onReset: () => filter(null) } : undefined
+                focusItem
+                  ? {
+                      itemId: focusItem.id,
+                      text: t("candidates.filtered", { name: focusItem.name }),
+                      resetLabel: candidateText("list.reset"),
+                      onReset: () => filter(null),
+                    }
+                  : undefined
+              }
+              toolbar={
+                <SegmentedControl
+                  scroll
+                  legend={t("candidates.facets.legend")}
+                  value={facet}
+                  onChange={(next) => update({ status: next === "all" ? null : next })}
+                  options={FACETS.map((value) => ({
+                    value,
+                    label: t(`candidates.facets.${value}`),
+                    count: count(value),
+                  }))}
+                />
               }
               onSelect={select}
             />
           ),
           evidence: (
             <CandidatePanel
-              key={selected.id}
               candidate={selected}
               items={items}
-              chosen={shortlist.ids.includes(selected.id)}
-              onChoose={() => shortlist.toggle(selected.id)}
+              chosen={chosen.includes(selected.id)}
+              focusItemId={focusItem?.id}
+              extraAction={dockAction}
+              pager={
+                narrow && position >= 0
+                  ? {
+                      index: position + 1,
+                      total: shown.length,
+                      onPrev: neighbour(-1),
+                      onNext: neighbour(1),
+                    }
+                  : undefined
+              }
+              onChoose={() => onToggle(selected.id)}
               onProfile={() => setProfileOpen(true)}
             />
           ),
@@ -123,6 +191,11 @@ export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
         open={profileOpen}
         supplierId={selected.id}
         name={selected.name}
+        matched={offerEntries(rowsOf(selected, items))}
+        choice={{
+          chosen: chosen.includes(selected.id),
+          onToggle: () => onToggle(selected.id),
+        }}
         onClose={() => setProfileOpen(false)}
       />
     </>

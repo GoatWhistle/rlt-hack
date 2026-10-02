@@ -26,6 +26,7 @@ class ConnectGateway:
         self._comment = comment
         self._lock = asyncio.Lock()
         self._query_id: str | None = None
+        self._column_types: dict[tuple[str, tuple[str, ...]], Any] = {}
 
     @property
     def active_query(self) -> str | None:
@@ -54,15 +55,30 @@ class ConnectGateway:
     ) -> None:
         if not rows:
             return
-        await self._run(
-            self._client.insert,
-            table,
-            [list(row) for row in rows],
-            column_names=list(column_names),
-        )
+        await self._run(self._insert, table, tuple(column_names), [list(row) for row in rows])
 
     async def close(self) -> None:
         await asyncio.to_thread(self._client.close)
+
+    def _insert(
+        self,
+        table: str,
+        column_names: tuple[str, ...],
+        rows: list[list[Any]],
+        settings: dict[str, str],
+    ) -> None:
+        key = (table, column_names)
+        known = self._column_types.get(key)
+        if known is not None:
+            self._client.insert(
+                table, rows, column_names=list(column_names), column_types=known, settings=settings
+            )
+            return
+        context = self._client.create_insert_context(
+            table, column_names=list(column_names), settings=settings
+        )
+        self._column_types[key] = context.column_types
+        self._client.insert(data=rows, context=context)
 
     async def _run(self, call: Any, *args: Any, **kwargs: Any) -> Any:
         async with self._lock:

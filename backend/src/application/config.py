@@ -73,6 +73,7 @@ class SearchConfig:
     lexical_pool: int = 500
     history_enabled: bool = True
     vector_url: str = ""
+    max_items: int = 20
 
 
 @dataclass(frozen=True, slots=True)
@@ -124,6 +125,7 @@ def _search_config() -> SearchConfig:
         lexical_pool=_int("SEARCH_LEXICAL_POOL", 500),
         history_enabled=_bool("SEARCH_HISTORY_ENABLED", True),
         vector_url=os.getenv("SEARCH_VECTOR_URL", ""),
+        max_items=_int("SEARCH_MAX_ITEMS", 20),
     )
 
 

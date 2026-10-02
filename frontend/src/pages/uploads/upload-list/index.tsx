@@ -8,6 +8,7 @@ import { useFormatters } from "@/shared/i18n/formatters"
 import { Button } from "@/shared/ui/button"
 import { Caption } from "@/shared/ui/caption"
 import { DoneNote } from "@/shared/ui/done-note"
+import { FileName } from "@/shared/ui/file-name"
 import { Icon } from "@/shared/ui/icon"
 import { PageTitle } from "@/shared/ui/page-title"
 import { RowChevron } from "@/shared/ui/row-chevron"
@@ -19,9 +20,9 @@ function UploadState({ upload }: { readonly upload: UploadSummary }) {
   const { t } = useTranslation("uploads")
   if (!isProcessing(upload)) return <DoneNote>{t("list.done")}</DoneNote>
   return (
-    <span className={styles.progressText}>
+    <DoneNote icon="clock">
       {t("list.processing", { processed: upload.processed, total: upload.total })}
-    </span>
+    </DoneNote>
   )
 }
 
@@ -33,7 +34,7 @@ function UploadRow({ upload }: { readonly upload: UploadSummary }) {
     <li>
       <Link to={uploadPath(upload.id)} className={styles.row}>
         <span className={styles.file}>
-          <span className={styles.name}>{upload.fileName}</span>
+          <FileName name={upload.fileName} />
           {upload.rejected > 0 ? (
             <span className={styles.rejected}>
               {t("list.rejected", { count: upload.rejected })}
@@ -55,7 +56,7 @@ function UploadRow({ upload }: { readonly upload: UploadSummary }) {
           {upload.stored ? null : <Caption>{t("list.notStored")}</Caption>}
         </span>
         <span className={styles.results}>
-          <StatusStrip counts={upload.counts} total={upload.total} />
+          <StatusStrip counts={upload.counts} total={upload.total} revealId={upload.id} />
         </span>
         <RowChevron className={styles.chevron} />
       </Link>

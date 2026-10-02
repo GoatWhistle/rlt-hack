@@ -29,6 +29,7 @@
   --palette-green-soft: #e7f6ec;
   --palette-red-text: #a3261c;
   --palette-red-soft: #fdecea;
+  --palette-red-vivid: #d92d20;
   --palette-indigo-hover: #e6e8ff;
   --palette-scrim: rgb(27 29 41 / 0.32);
 
@@ -47,7 +48,12 @@
   --line-hairline: var(--palette-hairline);
   --line-subtle: var(--palette-whisper);
   --line-control: var(--palette-rule);
+  --scrollbar-thumb: var(--palette-rule);
+  --scrollbar-thumb-active: var(--palette-pewter);
+  --scrollbar-track: transparent;
   --line-tentative: var(--palette-haze);
+  --line-clear: transparent;
+  --mask-fade-end: linear-gradient(to right, black calc(100% - var(--space-8)), transparent);
   --link: var(--palette-indigo-deep);
   --link-hover: var(--palette-ink);
   --focus-ring: var(--palette-indigo);
@@ -73,6 +79,7 @@
 
   --danger-text: var(--palette-red-text);
   --danger-soft: var(--palette-red-soft);
+  --counter-over: var(--palette-red-vivid);
 
   --meter-stock: var(--palette-indigo);
   --meter-catalog: var(--palette-indigo-mid);
@@ -88,4 +95,5 @@
   --state-success: var(--success);
   --state-danger: var(--warning-text);
   --skeleton: var(--palette-empty);
+  --disabled-opacity: 0.55;
 }

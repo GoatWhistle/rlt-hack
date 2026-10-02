@@ -8,13 +8,22 @@ const CONTRACTS = resolve(process.cwd(), "..", "contracts")
 const UNREADABLE = /^[\d\s!?.,;:-]*$/
 const NOTHING_FOUND = /tractor/i
 const INFERRED = /office/i
+const TRUNCATED = /many items/i
+const ARCHIVED = /archived/i
 
 function contract(path: string): Payload {
   return JSON.parse(readFileSync(resolve(CONTRACTS, path), "utf8")) as Payload
 }
 
+function warnings(text: string): Payload[] {
+  return [
+    ...(INFERRED.test(text) ? [{ code: "itemsInferred", subject: "" }] : []),
+    ...(TRUNCATED.test(text) ? [{ code: "itemsTruncated", subject: "" }] : []),
+  ]
+}
+
 function answer(text: string, searchId: string): Payload {
-  const base = contract("search/response.example.json")
+  const { offers, ...base } = contract("search/response.example.json")
   const items = base.items as Payload[]
   return {
     ...base,
@@ -22,7 +31,8 @@ function answer(text: string, searchId: string): Payload {
     query: { ...(base.query as Payload), text },
     items: INFERRED.test(text) ? items.map((item) => ({ ...item, origin: "inferred" })) : items,
     candidates: NOTHING_FOUND.test(text) ? [] : base.candidates,
-    warnings: INFERRED.test(text) ? [{ code: "itemsInferred", subject: "" }] : [],
+    warnings: warnings(text),
+    ...(ARCHIVED.test(text) ? {} : { offers }),
   }
 }
 

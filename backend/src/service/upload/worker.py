@@ -3,9 +3,10 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from uuid import uuid4
 
+from src.models.errors import NoValidLotsError, TooManyNoticeRowsError
 from src.models.supplier_search import SupplierCandidate
 from src.models.upload import LotRecommendation, Notice, Upload
-from src.service.errors import ServiceError
+from src.service.errors import UploadQueueFullError
 from src.service.upload.evidence import relevant_evidence
 from src.service.upload.protocols import (
     CandidateEnrichment,
@@ -15,20 +16,40 @@ from src.service.upload.protocols import (
     UploadRepository,
 )
 
+MAX_LOTS = 20
+DEFAULT_MAX_BACKLOG = 2 * MAX_LOTS
+
 
 class UploadService:
-    def __init__(self, search: SearchEngine, repository: UploadRepository) -> None:
+    def __init__(
+        self,
+        search: SearchEngine,
+        repository: UploadRepository,
+        max_backlog: int = DEFAULT_MAX_BACKLOG,
+    ) -> None:
+        if max_backlog < MAX_LOTS:
+            raise ValueError(max_backlog)
         self._search = search
         self._repository = repository
         self._refresh_lock = asyncio.Lock()
+        self._max_backlog = max_backlog
+        self._backlog = 0
 
     async def create(self, owner: str, filename: str, notices: list[Notice]) -> Upload:
-        if not notices or len(notices) > 20:
-            raise ServiceError("в тестовом режиме загрузите от 1 до 20 закупок")
-        lots = []
-        for notice in notices:
-            candidates = await self._recommend(notice)
-            lots.append(LotRecommendation(notice, candidates))
+        if not notices:
+            raise NoValidLotsError
+        if len(notices) > MAX_LOTS:
+            raise TooManyNoticeRowsError(MAX_LOTS)
+        if self._backlog + len(notices) > self._max_backlog:
+            raise UploadQueueFullError(self._max_backlog)
+        self._backlog += len(notices)
+        try:
+            lots = []
+            for notice in notices:
+                candidates = await self._recommend(notice)
+                lots.append(LotRecommendation(notice, candidates))
+        finally:
+            self._backlog -= len(notices)
         upload = Upload(
             uuid4().hex, owner, filename, datetime.now(UTC).isoformat(), lots, self._version()
         )

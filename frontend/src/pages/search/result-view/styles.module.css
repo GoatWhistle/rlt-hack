@@ -1,0 +1,17 @@
+.view {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.body {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.body[aria-busy="true"] {
+  opacity: var(--skeleton-dim);
+  transition-delay: var(--delay-skeleton);
+}

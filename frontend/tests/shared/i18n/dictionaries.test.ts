@@ -28,11 +28,16 @@ const NUMERIC_PARAMS = new Set([
   "stock",
   "catalog",
   "inferred",
+  "ready",
+  "check",
 ])
 const TEXT_PARAMS = new Set([
+  "article",
+  "availability",
   "category",
   "code",
   "columns",
+  "currency",
   "date",
   "file",
   "filter",

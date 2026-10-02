@@ -18,6 +18,7 @@ class Sample:
     latency_ms: float
     status: int
     app_ms: float | None
+    warnings: tuple[str, ...] = ()
 
 
 @dataclass(slots=True)
@@ -38,12 +39,14 @@ def summary(mode: Mode) -> dict[str, object]:
     ok = [sample.latency_ms for sample in mode.samples if sample.status == httpx.codes.CREATED]
     app = [sample.app_ms for sample in mode.samples if sample.app_ms is not None]
     statuses = Counter(str(sample.status) for sample in mode.samples)
+    warnings = Counter(code for sample in mode.samples for code in sample.warnings)
     result: dict[str, object] = {
         "mode": mode.name,
         "concurrency": mode.concurrency,
         "requests": len(mode.samples),
         "errors": len(mode.samples) - len(ok),
         "statuses": dict(statuses),
+        "warnings": dict(warnings),
         "elapsed_s": round(mode.elapsed_s, 2),
         "rps": round(len(mode.samples) / mode.elapsed_s, 2) if mode.elapsed_s else 0.0,
     }
@@ -63,7 +66,19 @@ async def _one(client: httpx.AsyncClient, text: str) -> Sample:
         return Sample((time.perf_counter() - started) * 1000, 0, None)
     latency = (time.perf_counter() - started) * 1000
     timing = APP_TIMING.search(response.headers.get("server-timing", ""))
-    return Sample(latency, response.status_code, float(timing.group(1)) if timing else None)
+    return Sample(
+        latency,
+        response.status_code,
+        float(timing.group(1)) if timing else None,
+        _warnings(response),
+    )
+
+
+def _warnings(response: httpx.Response) -> tuple[str, ...]:
+    if response.status_code != httpx.codes.CREATED:
+        return ()
+    body = response.json()
+    return tuple(str(warning.get("code", "")) for warning in body.get("warnings", ()))
 
 
 async def run(

@@ -28,3 +28,7 @@
   color: var(--warning-text);
   font-size: var(--text-xs);
 }
+
+.stale {
+  color: var(--warning-text);
+}

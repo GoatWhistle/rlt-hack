@@ -29,6 +29,15 @@ class Volume:
     participants_per_lot: int = 3
 
 
+REAL_VOLUME = Volume(
+    offers=1_000_000,
+    lots=604_452,
+    items=2_971_651,
+    participants_per_lot=2,
+)
+VOLUMES = {"default": Volume(), "real": REAL_VOLUME}
+
+
 def quote(text: str) -> str:
     return "'" + text.replace("\\", "\\\\").replace("'", "\\'") + "'"
 

@@ -1,3 +1,4 @@
+import { parseOfferMap } from "@/entities/evidence/offer-parse"
 import {
   parseCheckReasons,
   parseContacts,
@@ -188,6 +189,7 @@ export function parseSearchResult(value: unknown): SearchResult {
     },
     warnings: parseWarnings(fields, "$"),
     createdAt: text(fields, "createdAt", "$"),
+    offers: parseOfferMap(fields.offers, "$.offers"),
   })
 }
 

@@ -1,64 +1,99 @@
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router"
 import type { SearchResult } from "@/entities/search/model"
-import { useSearchShortlist } from "@/entities/shortlist/store"
-import { SearchExportDialog } from "@/features/export-results"
-import { SEARCH_PATH, searchDraftPath } from "@/shared/config/paths"
+import { COMPARE_FROM, CompareButton } from "@/features/compare-candidates"
+import { SearchBox, type SearchStage, StageLine } from "@/features/search-box"
+import { searchPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
-import { BackLink } from "@/shared/ui/back-link"
-import { Button, ButtonLink } from "@/shared/ui/button"
+import { Button } from "@/shared/ui/button"
+import { CountBadge } from "@/shared/ui/count-badge"
 import { Icon } from "@/shared/ui/icon"
-import { PageTitle } from "@/shared/ui/page-title"
+import { TextButton } from "@/shared/ui/text-button"
+import { VisuallyHidden } from "@/shared/ui/visually-hidden"
 import styles from "./styles.module.css"
 
-export function ResultHeader({ result }: { readonly result: SearchResult }) {
+export type ResultHeaderProps = {
+  readonly result: SearchResult
+  readonly inputId: string
+  readonly chosen: number
+  readonly stage: SearchStage | null
+  readonly actionsRef?: (node: HTMLDivElement | null) => void
+  readonly onStage: (stage: SearchStage | null) => void
+  readonly onExport: () => void
+  readonly onCompare: () => void
+  readonly onClear: () => void
+}
+
+export function ResultHeader(props: ResultHeaderProps) {
+  const { result, inputId, chosen, stage, actionsRef, onStage, onExport, onCompare, onClear } =
+    props
   const { t } = useTranslation("search")
   const { dateTime } = useFormatters()
-  const shortlist = useSearchShortlist(result.searchId)
-  const [exporting, setExporting] = useState(false)
-  const recommended = result.candidates.filter((item) => item.status === "recommended").length
-  const facts = [
-    t("items.count", { count: result.items.length }),
-    t("recent.candidates", { count: result.candidates.length }),
-    ...(recommended > 0 ? [t("recent.recommended", { count: recommended })] : []),
-    t("header.created", { date: dateTime(result.createdAt) }),
-  ]
+  const navigate = useNavigate()
   return (
     <header className={styles.header}>
-      <div className={styles.back}>
-        <BackLink to={SEARCH_PATH}>{t("header.back")}</BackLink>
-      </div>
+      <h1 className={styles.heading}>
+        <VisuallyHidden>{t("header.title", { query: result.query.text })}</VisuallyHidden>
+      </h1>
       <div className={styles.query}>
-        <p className={styles.eyebrow}>{t("header.label")}</p>
-        <PageTitle size="record" className={styles.title} title={result.query.text}>
-          {result.query.text}
-        </PageTitle>
+        <SearchBox
+          key={result.searchId}
+          compact
+          shortcut
+          inputId={inputId}
+          initialText={result.query.text}
+          onStage={onStage}
+          onFound={(next) => navigate(searchPath(next.searchId), { viewTransition: true })}
+        />
       </div>
-      <p className={styles.meta}>
-        {facts.map((fact) => (
-          <span key={fact} className={styles.fact}>
-            {fact}
-          </span>
-        ))}
-      </p>
-      <div className={styles.actions}>
-        <ButtonLink variant="secondary" to={searchDraftPath(result.query.text)}>
-          <Icon name="pencil" />
-          {t("header.edit")}
-        </ButtonLink>
-        {result.candidates.length > 0 ? (
-          <Button variant="secondary" onClick={() => setExporting(true)}>
+      {result.candidates.length > 0 ? (
+        <div ref={actionsRef} className={styles.actions}>
+          <CompareButton
+            count={chosen}
+            className={styles.action}
+            labelClassName={styles.actionLabel}
+            onCompare={onCompare}
+          />
+          <Button
+            variant="secondary"
+            className={styles.action}
+            aria-label={t("header.export")}
+            onClick={onExport}
+          >
             <Icon name="download" />
-            {t("header.export")}
+            <span className={styles.actionLabel}>{t("header.export")}</span>
+            {chosen > 0 ? <CountBadge value={chosen} corner /> : null}
           </Button>
-        ) : null}
-      </div>
-      <SearchExportDialog
-        open={exporting}
-        onClose={() => setExporting(false)}
-        result={result}
-        chosen={shortlist.ids}
-      />
+        </div>
+      ) : null}
+      <p className={styles.meta}>
+        <StageLine stage={stage} />
+        {chosen > 0 ? <Selection chosen={chosen} onClear={onClear} /> : null}
+        <time dateTime={result.createdAt}>{dateTime(result.createdAt)}</time>
+      </p>
     </header>
+  )
+}
+
+function Selection({
+  chosen,
+  onClear,
+}: {
+  readonly chosen: number
+  readonly onClear: () => void
+}) {
+  const { t: candidate } = useTranslation("candidate")
+  return (
+    <span className={styles.selection}>
+      <span aria-live="polite">
+        {candidate("selection.count", { count: chosen })}
+        {chosen < COMPARE_FROM ? (
+          <span className={styles.more}> · {candidate("selection.pickMore")}</span>
+        ) : null}
+      </span>
+      <TextButton className={styles.clear} onClick={onClear}>
+        {candidate("selection.clear")}
+      </TextButton>
+    </span>
   )
 }

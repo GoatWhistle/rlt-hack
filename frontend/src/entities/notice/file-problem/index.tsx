@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next"
+import { NOTICES_SAMPLE_PATH } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { Caption } from "@/shared/ui/caption"
+import { DownloadLink } from "@/shared/ui/download-link"
 import { Icon } from "@/shared/ui/icon"
 import type { RejectedFile } from "../model"
 import styles from "./styles.module.css"
@@ -20,6 +22,7 @@ export function FileProblem({ check }: { readonly check: RejectedFile }) {
           })}
         </p>
         <Caption>{check.fileName}</Caption>
+        <DownloadLink href={NOTICES_SAMPLE_PATH}>{t("sample")}</DownloadLink>
       </div>
     </div>
   )

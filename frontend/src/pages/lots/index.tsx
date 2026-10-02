@@ -16,11 +16,15 @@ import {
 import { useUpload } from "@/entities/upload/queries"
 import { ExportDialog } from "@/features/export-results"
 import { isApiError } from "@/shared/api/api-error"
-import { UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
+import { searchDraftPath, UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
 import { useLocale } from "@/shared/i18n/locale-provider"
+import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { Button, ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
+import { Icon } from "@/shared/ui/icon"
+import { Reveal } from "@/shared/ui/reveal"
+import { SelectionBar } from "@/shared/ui/selection-bar"
 import { TextButton } from "@/shared/ui/text-button"
 import { LotsControls } from "./lots-controls"
 import { LotsHeader } from "./lots-header"
@@ -28,7 +32,6 @@ import { LotsSkeleton } from "./lots-skeleton"
 import { LotsTable } from "./lots-table"
 import { Pagination } from "./pagination"
 import { ProcessingLine } from "./processing-line"
-import { SelectionBar } from "./selection-bar"
 import styles from "./styles.module.css"
 
 type ExportState = { readonly open: boolean; readonly session: number }
@@ -36,11 +39,50 @@ type Selection = { readonly uploadId: string; readonly ids: ReadonlySet<string> 
 
 const NOTHING: ReadonlySet<string> = new Set()
 
+type LotsEmptyProps = {
+  readonly query: ListQuery
+  readonly onReset: () => void
+  readonly onAllStatuses: () => void
+}
+
+function LotsEmpty({ query, onReset, onAllStatuses }: LotsEmptyProps) {
+  const { t } = useTranslation("lots")
+  const search = query.search.trim()
+  return (
+    <EmptyState
+      headingLevel={2}
+      title={search ? t("empty.query", { query: search }) : t("empty.title")}
+      description={
+        query.filter === "all"
+          ? t("empty.text")
+          : t("empty.filtered", { filter: t(`filter.${query.filter}`) })
+      }
+      actions={
+        <>
+          <Button variant="secondary" onClick={onReset}>
+            {t("empty.reset")}
+          </Button>
+          {search ? (
+            <ButtonLink variant="secondary" to={searchDraftPath(search)}>
+              <Icon name="search" />
+              {t("empty.searchSuppliers", { query: search })}
+            </ButtonLink>
+          ) : null}
+          {query.filter !== "all" && search ? (
+            <TextButton onClick={onAllStatuses}>{t("empty.allStatuses")}</TextButton>
+          ) : null}
+        </>
+      }
+    />
+  )
+}
+
 export function LotsPage() {
   const { t } = useTranslation("lots")
   const { uploadId = "" } = useParams()
   const [params, setParams] = useSearchParams()
   const upload = useUpload(uploadId)
+  const [late] = useState(upload.isPending)
   const { locale } = useLocale()
   const pageToggle = useRef<HTMLInputElement>(null)
   const [selection, setSelection] = useState<Selection>({ uploadId, ids: NOTHING })
@@ -52,6 +94,8 @@ export function LotsPage() {
     }))
   const [exporting, setExporting] = useState<ExportState>({ open: false, session: 0 })
   const query = readQuery(params)
+  const { t: common } = useTranslation()
+  useDocumentTitle(common("title.lots"))
 
   useEffect(() => {
     if (upload.data) rememberUpload(upload.data.id)
@@ -96,82 +140,71 @@ export function LotsPage() {
     setExporting((current) => ({ open: true, session: current.session + 1 }))
 
   return (
-    <div className={styles.page}>
-      <LotsHeader
-        upload={data}
-        onExport={() => openExport()}
-        status={<ProcessingLine upload={data} />}
-      />
-      <LotsControls
-        search={query.search}
-        filter={query.filter}
-        counts={filterCounts(searched(data.lots, query.search, locale))}
-        onSearch={(search) => update({ search })}
-        onFilter={(filter: Filter) => update({ filter })}
-      />
-      {visible.length === 0 ? (
-        <EmptyState
-          headingLevel={2}
-          title={
-            query.search.trim()
-              ? t("empty.query", { query: query.search.trim() })
-              : t("empty.title")
-          }
-          description={
-            query.filter === "all"
-              ? t("empty.text")
-              : t("empty.filtered", { filter: t(`filter.${query.filter}`) })
-          }
-          actions={
-            <>
-              <Button variant="secondary" onClick={() => update({ search: "", filter: "all" })}>
-                {t("empty.reset")}
-              </Button>
-              {query.filter !== "all" && query.search.trim() ? (
-                <TextButton onClick={() => update({ filter: "all" })}>
-                  {t("empty.allStatuses")}
-                </TextButton>
-              ) : null}
-            </>
-          }
+    <Reveal active={late}>
+      <div className={styles.page}>
+        <LotsHeader
+          upload={data}
+          onExport={() => openExport()}
+          status={<ProcessingLine upload={data} />}
         />
-      ) : (
-        <>
-          <LotsTable
-            uploadId={data.id}
-            fileName={data.fileName}
-            lots={pageOf(visible, page)}
-            linkSearch={writeQuery({ ...query, page })}
-            selected={selected}
-            onToggle={toggle}
-            onTogglePage={togglePage}
-            pageToggle={pageToggle}
+        <LotsControls
+          search={query.search}
+          filter={query.filter}
+          counts={filterCounts(searched(data.lots, query.search, locale))}
+          onSearch={(search) => update({ search })}
+          onFilter={(filter: Filter) => update({ filter })}
+        />
+        {visible.length === 0 ? (
+          <LotsEmpty
+            query={query}
+            onReset={() => update({ search: "", filter: "all" })}
+            onAllStatuses={() => update({ filter: "all" })}
           />
-          <Pagination
-            page={page}
-            pages={pages}
-            total={visible.length}
-            hrefFor={(target) => uploadPath(data.id, writeQuery({ ...query, page: target }))}
-          />
-        </>
-      )}
-      <SelectionBar
-        count={selected.size}
-        onExport={() => openExport()}
-        onClear={() => {
-          setSelected(() => NOTHING)
-          pageToggle.current?.focus()
-        }}
-      />
-      <ExportDialog
-        key={exporting.session}
-        open={exporting.open}
-        onClose={() => setExporting((current) => ({ ...current, open: false }))}
-        uploadId={data.id}
-        fileName={data.fileName}
-        lots={data.lots}
-        selectedIds={[...selected]}
-      />
-    </div>
+        ) : (
+          <>
+            <LotsTable
+              uploadId={data.id}
+              fileName={data.fileName}
+              lots={pageOf(visible, page)}
+              linkSearch={writeQuery({ ...query, page })}
+              selected={selected}
+              onToggle={toggle}
+              onTogglePage={togglePage}
+              pageToggle={pageToggle}
+            />
+            <Pagination
+              page={page}
+              pages={pages}
+              total={visible.length}
+              hrefFor={(target) => uploadPath(data.id, writeQuery({ ...query, page: target }))}
+            />
+          </>
+        )}
+        <SelectionBar
+          count={selected.size}
+          label={t("selection.label")}
+          countText={(count) => t("selection.count", { count })}
+          clearLabel={t("selection.clear")}
+          onClear={() => {
+            setSelected(() => NOTHING)
+            pageToggle.current?.focus()
+          }}
+        >
+          <Button variant="strong" onClick={() => openExport()}>
+            <Icon name="download" />
+            {t("selection.export")}
+          </Button>
+        </SelectionBar>
+        <ExportDialog
+          key={exporting.session}
+          open={exporting.open}
+          onClose={() => setExporting((current) => ({ ...current, open: false }))}
+          uploadId={data.id}
+          fileName={data.fileName}
+          lots={data.lots}
+          selectedIds={[...selected]}
+        />
+      </div>
+    </Reveal>
   )
 }

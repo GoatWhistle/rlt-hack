@@ -112,13 +112,20 @@ describe("Toasts", () => {
     expect(toasts().querySelector("li")).toBeNull()
   })
 
-  it("keeps only the latest toasts in a labelled region", () => {
+  it("lets the oldest toast leave gracefully when a new one overflows the region", () => {
+    vi.useFakeTimers()
     renderWithProviders(<ToastHarness />)
     for (let index = 0; index <= MAX_TOASTS; index++) {
       fireEvent.click(screen.getByRole("button", { name: "notify" }))
     }
     const region = screen.getByRole("region", { name: en("notifications.label") })
+    const items = region.querySelectorAll("li")
+    expect(items).toHaveLength(MAX_TOASTS + 1)
+    expect(items[0]).toHaveAttribute("data-state", "closed")
+    expect(region.querySelectorAll("li[data-state='open']")).toHaveLength(MAX_TOASTS)
+    act(() => vi.advanceTimersByTime(EXIT_FALLBACK_MS))
     expect(region.querySelectorAll("li")).toHaveLength(MAX_TOASTS)
+    vi.useRealTimers()
   })
 
   it("refuses to be used without a provider", () => {

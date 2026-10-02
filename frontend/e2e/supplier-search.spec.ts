@@ -16,6 +16,17 @@ async function expectAccessible(page: Page) {
   expect(blocking.map((violation) => violation.id)).toEqual([])
 }
 
+function settledWidth(page: Page): Promise<number> {
+  return page.evaluate(
+    () =>
+      new Promise<number>((resolve) =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => resolve(document.documentElement.scrollWidth)),
+        ),
+      ),
+  )
+}
+
 async function showView(page: Page, name: RegExp) {
   const views = page.getByRole("group", { name: /review section/i })
   if (await views.isVisible()) await views.getByRole("radio", { name }).check()
@@ -48,18 +59,18 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
     .getByRole("article")
     .getByRole("button", { name: /choose candidate/i })
     .click()
-  await showView(page, /^companies$/i)
+  await showView(page, /^candidates$/i)
   await page
     .getByRole("region", { name: /candidates/i })
-    .getByRole("button")
+    .locator("[aria-pressed]")
     .nth(1)
     .click()
   await page
     .getByRole("article")
     .getByRole("button", { name: /choose candidate/i })
     .click()
-  await showView(page, /^companies$/i)
-  await page.getByRole("button", { name: /compare chosen \(2\)/i }).click()
+  await showView(page, /^candidates$/i)
+  await page.getByRole("button", { name: /compare chosen: 2/i }).click()
   await expect(page.getByRole("dialog", { name: /compare/i }).getByRole("table")).toBeVisible()
   await expectAccessible(page)
   await page.keyboard.press("Escape")
@@ -132,15 +143,11 @@ test("keeps every page within the screen width", async ({ page }) => {
   await uploadSample(page)
   for (const width of [1366, 390]) {
     await page.setViewportSize({ width, height: 800 })
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
-      width,
-    )
+    expect(await settledWidth(page)).toBeLessThanOrEqual(width)
   }
   await page.getByRole("table").getByRole("link").first().click()
   await expect(page.getByRole("article")).toBeVisible()
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
-    390,
-  )
+  expect(await settledWidth(page)).toBeLessThanOrEqual(390)
 })
 
 test("moves through companies with the keyboard", async ({ page }) => {
@@ -149,7 +156,7 @@ test("moves through companies with the keyboard", async ({ page }) => {
   await page.getByRole("table").getByRole("link").first().click()
   const second = page
     .getByRole("region", { name: /candidates/i })
-    .getByRole("button")
+    .locator("[aria-pressed]")
     .nth(1)
   const name = (await second.textContent()) ?? ""
   await second.focus()

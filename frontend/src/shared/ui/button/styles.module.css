@@ -13,11 +13,36 @@
   transition: var(--transition-control);
 }
 
-.button:active:not(:disabled) {
+.button:active:not(:disabled, [aria-disabled="true"]) {
   transform: scale(var(--press-scale));
 }
 
-.button:disabled {
+.button[aria-busy="true"] {
+  cursor: progress;
+}
+
+.faces {
+  display: inline-grid;
+}
+
+.face {
+  display: inline-flex;
+  grid-area: 1 / 1;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.face[data-shown="true"] {
+  animation: var(--motion-swap);
+}
+
+.face[data-shown="false"] {
+  visibility: hidden;
+}
+
+.button:disabled,
+.button[aria-disabled="true"]:not([aria-busy="true"]) {
   border-color: var(--line-subtle);
   background: var(--surface-subtle);
   color: var(--text-disabled);
@@ -51,15 +76,15 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .primary:hover:not(:disabled) {
+  .primary:hover:not(:disabled, [aria-disabled="true"]) {
     background: var(--accent-strong);
   }
 
-  .strong:hover:not(:disabled) {
+  .strong:hover:not(:disabled, [aria-disabled="true"]) {
     background: var(--text-body);
   }
 
-  .secondary:hover:not(:disabled) {
+  .secondary:hover:not(:disabled, [aria-disabled="true"]) {
     border-color: var(--line-tentative);
     background: var(--surface-raised);
   }

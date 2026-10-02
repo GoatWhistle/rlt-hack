@@ -10,8 +10,8 @@ import httpx
 
 from bench import load, seed, stages
 from bench.clickhouse import ClickHouseAddress, ClickHouseHttp
-from bench.queries import QUERIES
-from bench.sql import Volume
+from bench.queries import LARGE_SIZES, QUERIES, large_query
+from bench.sql import VOLUMES
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 SERVICES = ("clickhouse", "migrate", "api")
@@ -26,6 +26,8 @@ def _arguments() -> argparse.Namespace:
     parser.add_argument("--max-threads", type=int)
     parser.add_argument("--seed", action="store_true")
     parser.add_argument("--reset", action="store_true")
+    parser.add_argument("--volume", choices=sorted(VOLUMES), default="default")
+    parser.add_argument("--large", type=int, default=0)
     parser.add_argument("--sequential", type=int, default=50)
     parser.add_argument("--concurrency", type=int, default=8)
     parser.add_argument("--requests", type=int, default=100)
@@ -70,6 +72,13 @@ async def _measure(arguments: argparse.Namespace, clickhouse: ClickHouseHttp) ->
             report = load.summary(mode)
             report["stages"] = await stages.breakdown(clickhouse, started, finished)
             modes.append(report)
+        for size in LARGE_SIZES if arguments.large else ():
+            texts = [large_query(size, shift) for shift in range(arguments.large)]
+            started = int(time.time())
+            mode = await load.run(client, texts, f"items_{size}", 1, arguments.large)
+            report = load.summary(mode)
+            report["stages"] = await stages.breakdown(clickhouse, started, int(time.time()) + 1)
+            modes.append(report)
     return modes
 
 
@@ -79,7 +88,8 @@ async def main() -> None:
         await _compose(arguments)
     address = ClickHouseAddress(url=arguments.clickhouse_url)
     async with ClickHouseHttp(address) as clickhouse:
-        seeding = await seed.seed(clickhouse, Volume(), arguments.reset) if arguments.seed else {}
+        volume = VOLUMES[arguments.volume]
+        seeding = await seed.seed(clickhouse, volume, arguments.reset) if arguments.seed else {}
         report = {
             "label": arguments.label,
             "pool_size": arguments.pool_size,

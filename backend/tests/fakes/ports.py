@@ -75,6 +75,12 @@ class FakeOfferCatalog:
         wanted = set(offer_ids)
         return {card.offer.offer_id: card for card in self.cards if card.offer.offer_id in wanted}
 
+    async def current_ids(
+        self, supplier_ids: Sequence[UUID], per_supplier: int
+    ) -> Mapping[UUID, tuple[UUID, ...]]:
+        found = await self.current_for(supplier_ids, per_supplier)
+        return {key: tuple(card.offer.offer_id for card in cards) for key, cards in found.items()}
+
     async def current_for(
         self, supplier_ids: Sequence[UUID], per_supplier: int
     ) -> Mapping[UUID, tuple[OfferEvidence, ...]]:

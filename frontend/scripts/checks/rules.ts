@@ -2,6 +2,7 @@ import { cssBreakpoints } from "./css-breakpoints.ts"
 import { cssDuplicates } from "./css-duplicates.ts"
 import { cssLiterals } from "./css-literals.ts"
 import { cssModules } from "./css-modules.ts"
+import { cssMonoWeight } from "./css-mono-weight.ts"
 import { cssTransitions } from "./css-transitions.ts"
 import { cyrillic } from "./cyrillic.ts"
 import { fileLength } from "./file-length.ts"
@@ -22,6 +23,7 @@ export const RULES: readonly Rule[] = [
   cssDuplicates,
   cssBreakpoints,
   cssTransitions,
+  cssMonoWeight,
   jsxText,
 ]
 

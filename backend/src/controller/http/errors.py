@@ -11,6 +11,7 @@ from src.controller.errors import (
     FileTooLargeError,
     MissingFileError,
     RequestFileError,
+    SearchBusyError,
     UnsupportedFileTypeError,
 )
 from src.controller.http.error_body import (
@@ -25,6 +26,7 @@ from src.models.errors import (
     EmptySearchTextError,
     InvalidCandidateLimitError,
     InvalidInputError,
+    InvalidNoticeRowError,
     MissingNoticeColumnsError,
     NoValidLotsError,
     SearchTextTooLongError,
@@ -76,6 +78,7 @@ UPLOAD_ERRORS: tuple[tuple[type[Exception], ErrorKind], ...] = (
     (UnreadableNoticeFileError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "invalid_file")),
     (MissingNoticeColumnsError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "missing_columns")),
     (TooManyNoticeRowsError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "too_many_rows")),
+    (InvalidNoticeRowError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "invalid_row")),
     (NoValidLotsError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "no_valid_lots")),
     (UploadNotFoundError, ErrorKind(HTTPStatus.NOT_FOUND, "upload_not_found")),
     (
@@ -101,6 +104,10 @@ KNOWN_ERRORS: tuple[tuple[type[Exception], ErrorKind], ...] = (
     (
         StorageUnavailableError,
         ErrorKind(HTTPStatus.SERVICE_UNAVAILABLE, "storage_unavailable", RETRY_AFTER_SECONDS),
+    ),
+    (
+        SearchBusyError,
+        ErrorKind(HTTPStatus.SERVICE_UNAVAILABLE, "search_busy", RETRY_AFTER_SECONDS),
     ),
     (
         SearchTimeoutError,
@@ -175,5 +182,6 @@ def install_error_handlers(app: FastAPI) -> None:
     app.add_exception_handler(DomainError, handle_known)
     app.add_exception_handler(ServiceError, handle_known)
     app.add_exception_handler(RequestFileError, handle_known)
+    app.add_exception_handler(SearchBusyError, handle_known)
     app.add_exception_handler(RequestValidationError, handle_validation)
     app.add_exception_handler(HTTPException, handle_http)

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useRevalidator, useRouteError } from "react-router"
 import { NotFoundPage } from "@/pages/not-found"
+import { UPLOADS_PATH } from "@/shared/config/paths"
 import { describeError } from "@/shared/errors/describe-error"
 import { reloadPage } from "@/shared/errors/reload-page"
 import { Button, ButtonLink } from "@/shared/ui/button"
@@ -36,7 +37,7 @@ export function RouteErrorPage({ onReload = reloadPage }: RouteErrorPageProps) {
       headingLevel={1}
       onRetry={() => void revalidator.revalidate()}
       extraAction={
-        <ButtonLink variant="secondary" to="/">
+        <ButtonLink variant="secondary" to={UPLOADS_PATH}>
           {t("action.home")}
         </ButtonLink>
       }

@@ -1,8 +1,10 @@
-import { useEffect, useId, useRef } from "react"
+import { useId, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { FILTERS, type Filter } from "@/entities/upload/list-query"
 import { useFormatters } from "@/shared/i18n/formatters"
+import { FOCUS_SHORTCUT, useFocusShortcut } from "@/shared/keyboard/use-focus-shortcut"
 import { Icon } from "@/shared/ui/icon"
+import { KeyHint } from "@/shared/ui/key-hint"
 import { SegmentedControl } from "@/shared/ui/segmented-control"
 import styles from "./styles.module.css"
 
@@ -12,13 +14,6 @@ export type LotsControlsProps = {
   readonly counts: Readonly<Record<Filter, number>>
   readonly onSearch: (search: string) => void
   readonly onFilter: (filter: Filter) => void
-}
-
-const SHORTCUT = "/"
-
-function isTyping(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false
-  return target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
 }
 
 export function LotsControls({
@@ -33,16 +28,7 @@ export function LotsControls({
   const searchId = useId()
   const input = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    const focusSearch = (event: KeyboardEvent) => {
-      if (event.key !== SHORTCUT || event.ctrlKey || event.metaKey || event.altKey) return
-      if (isTyping(event.target)) return
-      event.preventDefault()
-      input.current?.focus()
-    }
-    window.addEventListener("keydown", focusSearch)
-    return () => window.removeEventListener("keydown", focusSearch)
-  }, [])
+  useFocusShortcut(input)
 
   const clear = () => {
     onSearch("")
@@ -65,7 +51,7 @@ export function LotsControls({
             value={search}
             placeholder={t("search.placeholder")}
             aria-label={t("search.label")}
-            aria-keyshortcuts={SHORTCUT}
+            aria-keyshortcuts={FOCUS_SHORTCUT}
             onChange={(event) => onSearch(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Escape" && search) {
@@ -84,9 +70,7 @@ export function LotsControls({
               <Icon name="close" size="sm" />
             </button>
           ) : (
-            <span className={styles.key} aria-hidden="true">
-              {t("search.shortcut")}
-            </span>
+            <KeyHint keys={FOCUS_SHORTCUT} className={styles.key} />
           )}
         </span>
       </div>

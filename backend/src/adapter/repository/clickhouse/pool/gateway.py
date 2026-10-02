@@ -1,24 +1,41 @@
 import asyncio
 import logging
-from collections.abc import Awaitable, Callable, Mapping, Sequence
+import math
+from collections.abc import AsyncIterator, Awaitable, Callable, Mapping, Sequence
+from contextlib import asynccontextmanager
+from contextvars import ContextVar
 from typing import Any
 
 from src.adapter.repository.clickhouse.pool.protocols import PooledGateway, QueryControl
 
 OpenGateway = Callable[[], Awaitable[PooledGateway]]
 Slots = asyncio.LifoQueue[PooledGateway | None]
+Share = tuple[object, asyncio.Semaphore]
 
 logger = logging.getLogger(__name__)
+
+_share: ContextVar[Share | None] = ContextVar("gateway_pool_share", default=None)
+
+
+def fair_share(size: int) -> int:
+    return max(1, math.ceil(size / 2))
 
 
 class GatewayPool:
     def __init__(
-        self, open_gateway: OpenGateway, size: int, control: QueryControl | None = None
+        self,
+        open_gateway: OpenGateway,
+        size: int,
+        control: QueryControl | None = None,
+        share: int | None = None,
     ) -> None:
         if size < 1:
             raise ValueError(size)
         self._open = open_gateway
         self._size = size
+        self._share = min(size, share if share is not None else fair_share(size))
+        if self._share < 1:
+            raise ValueError(share)
         self._control = control
         self._opened: list[PooledGateway] = []
         self._kills: set[asyncio.Future[None]] = set()
@@ -29,8 +46,20 @@ class GatewayPool:
         return self._size
 
     @property
+    def share(self) -> int:
+        return self._share
+
+    @property
     def opened(self) -> int:
         return len(self._opened)
+
+    @asynccontextmanager
+    async def scope(self) -> AsyncIterator[None]:
+        token = _share.set((self, asyncio.Semaphore(self._share)))
+        try:
+            yield
+        finally:
+            _share.reset(token)
 
     async def command(self, statement: str, parameters: Mapping[str, Any] | None = None) -> None:
         await self._lease(lambda gateway: gateway.command(statement, parameters))
@@ -57,6 +86,13 @@ class GatewayPool:
             raise failures[0]
 
     async def _lease[T](self, operation: Callable[[PooledGateway], Awaitable[T]]) -> T:
+        share = _share.get()
+        if share is None or share[0] is not self:
+            return await self._run(operation)
+        async with share[1]:
+            return await self._run(operation)
+
+    async def _run[T](self, operation: Callable[[PooledGateway], Awaitable[T]]) -> T:
         slots = self._slots
         gateway = await self._take(slots)
         task = asyncio.ensure_future(operation(gateway))

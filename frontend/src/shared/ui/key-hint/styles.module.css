@@ -1,0 +1,16 @@
+.key {
+  display: none;
+  padding: 0 var(--space-2);
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: var(--leading-normal);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .key {
+    display: inline-block;
+  }
+}

@@ -77,6 +77,7 @@ from src.service.supplier.reidentify import OfferReidentifyService
 from src.service.supplier.worker import SupplierSyncWorker
 
 JOB_POOL_SIZE = 1
+WRITER_POOL_SIZE = 1
 
 
 def _source(name: str, base_url: str, source_type: SourceType, provider_name: str) -> Source:
@@ -99,6 +100,7 @@ class Container:
         self._versions = VersionSequencer()
         self._gateway: GatewayPool | None = None
         self._api_gateway: GatewayPool | None = None
+        self._writer_gateway: GatewayPool | None = None
         self._control: ControlChannel | None = None
         # Справочники читаются один раз на процесс: они не меняются на ходу.
         self._normalizer: OfferNormalizer | None = None
@@ -123,6 +125,14 @@ class Container:
                 await self.control_gateway(),
             )
         return self._api_gateway
+
+    async def writer_gateway(self) -> GatewayPool:
+        if self._writer_gateway is None:
+            config = self._api_clickhouse(self._config.search.timeout_seconds)
+            self._writer_gateway = GatewayPool(
+                partial(self._open_with, config), WRITER_POOL_SIZE, await self.control_gateway()
+            )
+        return self._writer_gateway
 
     async def control_gateway(self) -> ControlChannel:
         if self._control is None:
@@ -482,10 +492,15 @@ class Container:
         return ProductCollectionWorker(self.product_provider(), storage)
 
     async def aclose(self) -> None:
-        pools = [pool for pool in (self._gateway, self._api_gateway) if pool is not None]
+        pools = [
+            pool
+            for pool in (self._gateway, self._api_gateway, self._writer_gateway)
+            if pool is not None
+        ]
         control, self._control = self._control, None
         self._gateway = None
         self._api_gateway = None
+        self._writer_gateway = None
         for pool in pools:
             await pool.aclose()
         if control is not None:

@@ -17,7 +17,7 @@ from src.models.enums import Locale, WarningCode
 
 RECENT_DEFAULT = 10
 RECENT_MAX = 50
-VIEW_VERSION = 1
+VIEW_VERSION = 2
 
 router = APIRouter(prefix="/api/searches", tags=["searches"])
 
