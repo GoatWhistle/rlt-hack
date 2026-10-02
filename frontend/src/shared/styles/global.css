@@ -128,6 +128,63 @@ a:hover {
 :root[data-transition="panel"]::view-transition-group(search-query),
 ::view-transition-group(search-text),
 ::view-transition-group(search-bar),
+:root[data-transition^="fold-"] [data-pane="list"] {
+  view-transition-name: pane-list;
+}
+
+:root[data-transition^="fold-"] [data-pane="candidates"] {
+  view-transition-name: pane-candidates;
+}
+
+:root[data-transition^="fold-"] [data-pane="evidence"] {
+  view-transition-name: pane-evidence;
+}
+
+:root[data-transition^="fold-"]::view-transition-old(root),
+:root[data-transition^="fold-"]::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-group(pane-list),
+::view-transition-group(pane-candidates),
+::view-transition-group(pane-evidence) {
+  animation-duration: var(--dur-panel);
+  animation-timing-function: var(--ease-panel);
+}
+
+::view-transition-image-pair(pane-list),
+::view-transition-image-pair(pane-candidates),
+::view-transition-image-pair(pane-evidence) {
+  overflow: clip;
+  border-radius: var(--radius-xl);
+}
+
+::view-transition-old(pane-list),
+::view-transition-new(pane-list),
+::view-transition-old(pane-candidates),
+::view-transition-new(pane-candidates),
+::view-transition-old(pane-evidence),
+::view-transition-new(pane-evidence) {
+  height: 100%;
+  object-fit: none;
+  object-position: left top;
+  animation: none;
+}
+
+:root[data-transition="fold-list"]::view-transition-old(pane-list),
+:root[data-transition="fold-candidates"]::view-transition-old(pane-candidates) {
+  animation: var(--vt-pane-old);
+}
+
+:root[data-transition="fold-list"]::view-transition-new(pane-list),
+:root[data-transition="fold-candidates"]::view-transition-new(pane-candidates) {
+  animation: var(--vt-pane-new);
+}
+
+::view-transition-old(pane-evidence) {
+  animation: var(--vt-pane-ghost);
+}
+
 ::view-transition-group(recent-panel),
 ::view-transition-group(recent-reveal) {
   animation-duration: var(--dur-panel);

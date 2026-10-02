@@ -115,6 +115,7 @@ export function SearchWorkspace({
         narrow={narrow}
         legend={t("views.legend")}
         labels={labels}
+        counts={{ list: result.items.length, candidates: shown.length }}
         view={view}
         onShow={show}
         stackRef={stackRef}

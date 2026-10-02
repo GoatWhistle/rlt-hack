@@ -15,6 +15,7 @@ export const ICON_PATHS = {
   ],
   warning: ["M12 3.5l9.5 16.5h-19z", "M12 10v4.5M12 17.5h.01"],
   chevron: ["M9 6l6 6-6 6"],
+  fold: ["M11 7l-5 5 5 5", "M18 7l-5 5 5 5"],
   download: ["M12 4v11M7.5 10.5L12 15l4.5-4.5", "M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"],
   arrowRight: ["M5 12h14M13 6l6 6-6 6"],
   close: ["M6 6l12 12M18 6L6 18"],

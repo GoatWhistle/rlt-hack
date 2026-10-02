@@ -62,7 +62,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
   await showView(page, /^candidates$/i)
   await page
     .getByRole("region", { name: /candidates/i })
-    .getByRole("button")
+    .locator("[aria-pressed]")
     .nth(1)
     .click()
   await page
@@ -156,7 +156,7 @@ test("moves through companies with the keyboard", async ({ page }) => {
   await page.getByRole("table").getByRole("link").first().click()
   const second = page
     .getByRole("region", { name: /candidates/i })
-    .getByRole("button")
+    .locator("[aria-pressed]")
     .nth(1)
   const name = (await second.textContent()) ?? ""
   await second.focus()

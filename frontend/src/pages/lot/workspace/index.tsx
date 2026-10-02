@@ -110,6 +110,7 @@ export function Workspace({ uploadId, lotId, recommendation, dockAction }: Works
           candidates: t("views.companies"),
           evidence: t("views.evidence"),
         }}
+        counts={{ list: products.length, candidates: shown.length }}
         panes={{
           list: productPane,
           candidates: (

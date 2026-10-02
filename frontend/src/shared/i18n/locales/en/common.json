@@ -62,5 +62,9 @@
     "lot": "Lot {{id}}",
     "notFound": "Page not found",
     "error": "Error"
+  },
+  "workspace": {
+    "fold": "Hide “{{name}}”",
+    "unfold": "Show “{{name}}”"
   }
 }

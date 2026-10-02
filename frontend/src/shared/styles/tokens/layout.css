@@ -60,6 +60,8 @@
   --pane-companies: clamp(18rem, 23vw, 28rem);
   --pane-evidence-max: 54rem;
   --pane-offset: var(--space-4);
+  --rail-width: 3.5rem;
+  --rail-max-height: 36rem;
   --z-skip-link: 600;
   --indicator-height: 2px;
   --skeleton-line: 0.75rem;

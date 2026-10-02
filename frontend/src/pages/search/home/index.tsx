@@ -1,10 +1,9 @@
 import { useEffect, useId, useRef } from "react"
-import { flushSync } from "react-dom"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router"
 import { SearchBox } from "@/features/search-box"
 import { SEARCH_TEXT_PARAM, searchPath } from "@/shared/config/paths"
-import { prefersReducedMotion } from "@/shared/motion/settle-delay"
+import { withViewTransition } from "@/shared/motion/view-transition"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { PageTitle } from "@/shared/ui/page-title"
 import { ReadingGuide } from "../reading-guide"
@@ -25,19 +24,6 @@ function useToggleFocus(open: boolean, panelId: string) {
   return { reveal, mark: () => (toggled.current = true) }
 }
 
-function withPanelTransition(change: () => void) {
-  if (!("startViewTransition" in document) || prefersReducedMotion()) {
-    change()
-    return
-  }
-  const root = document.documentElement
-  root.dataset.transition = "panel"
-  const transition = document.startViewTransition(() => flushSync(change))
-  void transition.finished.finally(() => {
-    delete root.dataset.transition
-  })
-}
-
 export function SearchPage() {
   const { t } = useTranslation("search")
   const { t: common } = useTranslation()
@@ -51,7 +37,7 @@ export function SearchPage() {
   const draft = params.get(SEARCH_TEXT_PARAM) ?? ""
   const toggle = (next: boolean) => {
     focus.mark()
-    withPanelTransition(() => setOpen(next))
+    withViewTransition("panel", () => setOpen(next))
   }
   return (
     <div className={styles.page} data-recent={open ? "open" : "closed"}>

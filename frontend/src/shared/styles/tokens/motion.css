@@ -11,6 +11,7 @@
   --dur-panel: 460ms;
   --motion-offset: 0.5rem;
   --motion-scale: 0.96;
+  --motion-blur: 4px;
   --press-scale: 0.97;
   --press-scale-surface: 0.99;
   --pop-scale: 0.4;
@@ -58,6 +59,9 @@
   --vt-panel-out: panel-out var(--dur-base) var(--ease-out) both;
   --vt-fade-out: fade-out var(--dur-panel) var(--ease-panel) both;
   --vt-fade-in: fade-in var(--dur-panel) var(--ease-panel) both;
+  --vt-pane-old: pane-old var(--dur-base) var(--ease-out) both;
+  --vt-pane-ghost: pane-old var(--dur-fast) var(--ease-out) both;
+  --vt-pane-new: pane-new var(--dur-drawer) var(--ease-out) var(--dur-fast) both;
   --vt-panel-in: panel-in var(--dur-drawer) var(--ease-out) var(--dur-base) both;
   --motion-scroll-edge: scroll-edge linear both;
 }
@@ -157,6 +161,20 @@
   }
 }
 
+@keyframes pane-old {
+  to {
+    opacity: 0;
+    filter: blur(var(--motion-blur));
+  }
+}
+
+@keyframes pane-new {
+  from {
+    opacity: 0;
+    filter: blur(var(--motion-blur));
+  }
+}
+
 @keyframes spin {
   to {
     transform: rotate(1turn);
@@ -217,6 +235,7 @@
     --vt-morph: 1ms;
     --motion-offset: 0;
     --motion-scale: 1;
+    --motion-blur: 0;
     --pop-scale: 1;
   }
 

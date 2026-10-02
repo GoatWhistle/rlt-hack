@@ -1,0 +1,69 @@
+.fold {
+  align-self: center;
+  margin-block: calc(-1 * var(--space-1));
+}
+
+.rail {
+  position: sticky;
+  inset-block-start: var(--pane-offset);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  height: calc(100dvh - 2 * var(--pane-offset));
+  max-height: var(--rail-max-height);
+  padding: var(--space-3) 0 var(--space-4);
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-xl);
+  background: var(--surface-base);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-surface);
+}
+
+.rail:active {
+  transform: scale(var(--press-scale-surface));
+}
+
+.rail:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.open {
+  display: inline-grid;
+  place-items: center;
+  width: var(--tool-size);
+  height: var(--tool-size);
+  border-radius: var(--radius-switch);
+  transform: rotate(180deg);
+  transition: var(--transition-control);
+}
+
+.label {
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  writing-mode: vertical-rl;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .rail:hover {
+    border-color: var(--line-control);
+    background: var(--surface-raised);
+    color: var(--text-primary);
+  }
+
+  .rail:hover .open {
+    background: var(--surface-subtle);
+    transform: rotate(180deg) translateX(calc(-1 * var(--space-0-5)));
+  }
+}
+
+@media (max-width: 74.99rem) {
+  .fold,
+  .rail {
+    display: none;
+  }
+}
