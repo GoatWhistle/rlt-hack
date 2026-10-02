@@ -21,6 +21,15 @@ class QueryResult:
 
 
 @dataclass(slots=True)
+class InsertContext:
+    table: str
+    column_names: list[str]
+    settings: Settings
+    column_types: list[str]
+    data: Sequence[Sequence[Any]] | None = None
+
+
+@dataclass(slots=True)
 class Activity:
     delay: float = 0.02
     active: int = 0
@@ -47,6 +56,8 @@ class FakeDriver:
         self.gate: threading.Event | None = None
         self.statements: list[str] = []
         self.query_ids: list[str] = []
+        self.described: list[str] = []
+        self.inserted_types: list[Sequence[str]] = []
 
     def query(
         self, statement: str, parameters: Mapping[str, Any], settings: Settings = None
@@ -59,14 +70,26 @@ class FakeDriver:
     ) -> None:
         self._work(statement, settings)
 
+    def create_insert_context(
+        self, table: str, column_names: list[str], settings: Settings = None
+    ) -> InsertContext:
+        self.described.append(table)
+        types = [f"type:{name}" for name in column_names]
+        return InsertContext(table, column_names, settings, types)
+
     def insert(
         self,
-        table: str,
-        rows: Sequence[Sequence[Any]],
-        column_names: list[str],
+        table: str | None = None,
+        data: Sequence[Sequence[Any]] | None = None,
+        column_names: list[str] | None = None,
+        column_types: Sequence[str] | None = None,
         settings: Settings = None,
+        context: InsertContext | None = None,
     ) -> None:
-        self._work(table, settings)
+        if context is not None:
+            table, settings, column_types = context.table, context.settings, context.column_types
+        self.inserted_types.append(tuple(column_types or ()))
+        self._work(str(table), settings)
 
     def close(self) -> None:
         if self.close_failure is not None:

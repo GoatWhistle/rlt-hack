@@ -9,6 +9,7 @@ from src.adapter.repository.clickhouse.offer_search.retriever import ClickHouseL
 from src.adapter.repository.clickhouse.participation.history import ClickHousePurchaseHistory
 from src.adapter.repository.clickhouse.probe.probe import ClickHouseProbe
 from src.adapter.repository.clickhouse.protocols import SqlGateway
+from src.adapter.repository.clickhouse.retrieval.similarity import LotSimilarity
 from src.adapter.repository.clickhouse.search_archive.archive import ClickHouseSearchArchive
 from src.adapter.repository.clickhouse.supplier_read.directory import ClickHouseSupplierDirectory
 from src.adapter.repository.clickhouse.supplier_read.identity import ClickHouseSupplierIdentity
@@ -17,7 +18,7 @@ from src.adapter.system.ids import Uuid4Generator
 from src.adapter.text.analyzer.analyzer import RussianAnalyzer
 from src.adapter.text.rule_interpreter.interpreter import RuleQueryInterpreter
 from src.application.config import AppConfig
-from src.application.deferred_gateway import Connect, DeferredGateway
+from src.application.deferred_gateway import Connect, DeferredGateway, DeferredShare
 from src.service.health.service import HealthService
 from src.service.supplier_profile.service import SupplierProfileService
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
@@ -27,7 +28,7 @@ from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from src.service.supplier_search.matcher import SupplierMatcher
 from src.service.supplier_search.pipeline import SearchPipeline
 from src.service.supplier_search.policy.policy import CandidatePolicy
-from src.service.supplier_search.protocols import CandidateRetriever
+from src.service.supplier_search.protocols import CandidateRetriever, StageTimer
 from src.service.supplier_search.ranking.ranker import CandidateRanker
 from src.service.supplier_search.service import SupplierSearchService
 from src.service.supplier_search.settings import SearchSettings
@@ -44,12 +45,18 @@ class ApiContainer:
         *,
         background: Connect | None = None,
         control: Connect | None = None,
+        writer: Connect | None = None,
+        share: DeferredShare | None = None,
+        stages: StageTimer | None = None,
         correlation: Callable[[], str | None] | None = None,
     ) -> None:
         self._config = config
         self._gateway = DeferredGateway(connect)
         self._background = self._gateway if background is None else DeferredGateway(background)
         self._control = self._gateway if control is None else DeferredGateway(control)
+        self._writer = self._gateway if writer is None else DeferredGateway(writer)
+        self._share = share
+        self._stages = stages
         self._release = release
         self._correlation = correlation
         self._analyzer = RussianAnalyzer()
@@ -58,6 +65,7 @@ class ApiContainer:
             timeout_seconds=config.search.timeout_seconds,
             retrieval_depth_factor=config.search.retrieval_depth_factor,
             coverage_threshold=config.search.coverage_threshold,
+            max_items=config.search.max_items,
         )
 
     @property
@@ -75,12 +83,15 @@ class ApiContainer:
             retrievers=self.retrievers(sql),
             directory=ClickHouseSupplierDirectory(sql, self.database),
             offers=ClickHouseOfferCatalog(sql, self.database),
-            history=ClickHousePurchaseHistory(sql, self._analyzer, self.database),
+            history=ClickHousePurchaseHistory(
+                sql, self._analyzer, self.database, similarity=self._similarity()
+            ),
             fusion=ReciprocalRankFusion(settings.rrf_k),
             assembler=CandidateAssembler(MatchResolver(), HighlightComposer()),
             policy=CandidatePolicy.standard(settings.coverage_threshold),
             ranker=CandidateRanker(settings.weights),
             settings=settings,
+            stages=self._stages,
         )
 
     def pipeline(self, gateway: SqlGateway | None = None) -> SearchPipeline:
@@ -89,14 +100,17 @@ class ApiContainer:
             matcher=self.matcher(gateway),
             clock=SystemClock(),
             settings=self._settings,
+            stages=self._stages,
         )
 
     async def supplier_search(self) -> SupplierSearchService:
         return SupplierSearchService(
             pipeline=self.pipeline(),
-            archive=ClickHouseSearchArchive(self._gateway, self.database),
+            archive=ClickHouseSearchArchive(self._gateway, self.database, writer=self._writer),
             ids=Uuid4Generator(),
             settings=self._settings,
+            share=self._share,
+            stages=self._stages,
         )
 
     async def supplier_profiles(self) -> SupplierProfileService:
@@ -120,7 +134,11 @@ class ApiContainer:
             )
         ]
         if search.history_enabled:
-            channels.append(ClickHouseHistoryRetriever(sql, self._analyzer, self.database))
+            channels.append(
+                ClickHouseHistoryRetriever(
+                    sql, self._analyzer, self.database, similarity=self._similarity()
+                )
+            )
         if self._config.ml_service.enabled:
             channels.append(self._semantic(sql))
         return tuple(channels)
@@ -131,6 +149,12 @@ class ApiContainer:
             self._ml_client = None
         if self._release is not None:
             await self._release()
+
+    def _similarity(self) -> LotSimilarity:
+        return LotSimilarity(
+            match_share=self._settings.history_match_share,
+            win_weight=self._settings.history_win_weight,
+        )
 
     def _semantic(self, gateway: SqlGateway) -> MlServiceRetriever:
         ml = self._config.ml_service

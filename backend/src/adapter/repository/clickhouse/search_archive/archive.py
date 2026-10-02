@@ -34,13 +34,19 @@ SELECT_RECENT = (
 
 
 class ClickHouseSearchArchive:
-    def __init__(self, gateway: SqlGateway, database: str = "supplier_search") -> None:
+    def __init__(
+        self,
+        gateway: SqlGateway,
+        database: str = "supplier_search",
+        writer: SqlGateway | None = None,
+    ) -> None:
         self._gateway = gateway
+        self._writer = writer or gateway
         self._db = database
 
     async def save(self, result: SearchResult) -> None:
         summary = result.summary()
-        await self._gateway.insert(
+        await self._writer.insert(
             f"{self._db}.searches",
             SEARCH_COLUMNS,
             [

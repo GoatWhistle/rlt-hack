@@ -26,6 +26,7 @@ from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from src.service.supplier_search.matcher import SupplierMatcher
 from src.service.supplier_search.pipeline import SearchPipeline
 from src.service.supplier_search.policy.policy import CandidatePolicy
+from src.service.supplier_search.protocols import StageTimer, WorkShare
 from src.service.supplier_search.ranking.ranker import CandidateRanker
 from src.service.supplier_search.service import SupplierSearchService
 from src.service.supplier_search.settings import SearchSettings
@@ -90,6 +91,8 @@ class Harness:
     )
     archive: FakeArchive = field(default_factory=FakeArchive)
     settings: SearchSettings = field(default_factory=SearchSettings)
+    stages: StageTimer | None = None
+    share: WorkShare | None = None
 
     def pipeline(self) -> SearchPipeline:
         matcher = SupplierMatcher(
@@ -102,8 +105,11 @@ class Harness:
             policy=CandidatePolicy.standard(self.settings.coverage_threshold),
             ranker=CandidateRanker(self.settings.weights),
             settings=self.settings,
+            stages=self.stages,
         )
-        return SearchPipeline(self.interpreter, matcher, FixedClock(), self.settings)
+        return SearchPipeline(
+            self.interpreter, matcher, FixedClock(), self.settings, stages=self.stages
+        )
 
     def service(self) -> SupplierSearchService:
         return SupplierSearchService(
@@ -111,6 +117,8 @@ class Harness:
             archive=self.archive,
             ids=SequentialIds(),
             settings=self.settings,
+            share=self.share,
+            stages=self.stages,
         )
 
 
@@ -158,6 +166,7 @@ async def test_failed_enrichment_marks_candidates_for_checking() -> None:
     result = await harness.service().search(make_query())
     assert result.warnings == (
         SearchWarning(WarningCode.ENRICHMENT_FAILED, "offers"),
+        SearchWarning(WarningCode.ENRICHMENT_FAILED, "currentOffers"),
         SearchWarning(WarningCode.ENRICHMENT_FAILED, "history"),
     )
     for candidate in result.candidates:

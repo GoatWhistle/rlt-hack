@@ -28,6 +28,9 @@ class SearchSettings:
     coverage_threshold: float = 0.5
     offers_per_supplier: int = 20
     history_records: int = 5
+    max_items: int = 20
+    history_match_share: float = 0.5
+    history_win_weight: float = 2.0
     weights: ScoreWeights = field(default_factory=ScoreWeights)
 
     def __post_init__(self) -> None:
@@ -35,8 +38,12 @@ class SearchSettings:
             raise ValueError("timeouts must be positive")
         if self.retrieval_depth_factor < 1 or self.rrf_k < 1:
             raise ValueError("retrieval depth and rrf k must be positive")
+        if self.max_items < 1:
+            raise ValueError("max items must be positive")
         if not 0 < self.coverage_threshold <= 1:
             raise ValueError("coverage threshold must be within (0, 1]")
+        if not 0 < self.history_match_share <= 1 or self.history_win_weight <= 0:
+            raise ValueError("history match share must be within (0, 1], win weight positive")
 
     def retrieval_depth(self, limit: int) -> int:
         return limit * self.retrieval_depth_factor

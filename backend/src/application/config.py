@@ -72,6 +72,7 @@ class SearchConfig:
     coverage_threshold: float = 0.5
     lexical_pool: int = 500
     history_enabled: bool = True
+    max_items: int = 20
 
 
 @dataclass(frozen=True, slots=True)
@@ -122,6 +123,7 @@ def _search_config() -> SearchConfig:
         coverage_threshold=_float("SEARCH_COVERAGE_THRESHOLD", 0.5),
         lexical_pool=_int("SEARCH_LEXICAL_POOL", 500),
         history_enabled=_bool("SEARCH_HISTORY_ENABLED", True),
+        max_items=_int("SEARCH_MAX_ITEMS", 20),
     )
 
 

@@ -1,13 +1,15 @@
 import asyncio
-from collections.abc import Awaitable, Callable, Iterator, Mapping, Sequence
-from contextlib import contextmanager
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterator, Mapping, Sequence
+from contextlib import asynccontextmanager, contextmanager
 from typing import Any
 
 from src.adapter.repository.clickhouse.protocols import SqlGateway
 from src.adapter.repository.errors import RepositoryUnavailableError
 from src.service.errors import StorageUnavailableError
+from src.service.supplier_search.protocols import WorkShare
 
 Connect = Callable[[], Awaitable[SqlGateway]]
+ResolveShare = Callable[[], Awaitable[WorkShare]]
 
 
 @contextmanager
@@ -46,3 +48,14 @@ class DeferredGateway:
                 if self._gateway is None:
                     self._gateway = await self._connect()
         return self._gateway
+
+
+class DeferredShare:
+    def __init__(self, resolve: ResolveShare) -> None:
+        self._resolve = resolve
+
+    @asynccontextmanager
+    async def scope(self) -> AsyncIterator[None]:
+        share = await self._resolve()
+        async with share.scope():
+            yield
