@@ -1,5 +1,6 @@
 export const UPLOADS_PATH = "/uploads"
 export const LOTS_ENTRY_PATH = "/lots"
+export const NOTICES_SAMPLE_PATH = "/notices-sample.csv"
 
 export function uploadPath(uploadId: string, search = ""): string {
   return `${UPLOADS_PATH}/${encodeURIComponent(uploadId)}${search}`

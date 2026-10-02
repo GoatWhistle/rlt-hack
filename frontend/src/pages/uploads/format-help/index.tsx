@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next"
 import { KNOWN_COLUMNS, REQUIRED_COLUMNS } from "@/entities/notice/model"
-import { Icon } from "@/shared/ui/icon"
+import { NOTICES_SAMPLE_PATH } from "@/shared/config/paths"
+import { DownloadLink } from "@/shared/ui/download-link"
 import styles from "./styles.module.css"
 
-export const SAMPLE_PATH = "/notices-sample.csv"
+export const SAMPLE_PATH = NOTICES_SAMPLE_PATH
 
 const OPTIONAL_COLUMNS = KNOWN_COLUMNS.filter(
   (column) => !(REQUIRED_COLUMNS as readonly string[]).includes(column),
@@ -23,10 +24,7 @@ export function FormatHelp() {
         <dt className={styles.term}>{t("intro.optional")}</dt>
         <dd className={styles.codes}>{OPTIONAL_COLUMNS.join(", ")}</dd>
       </dl>
-      <a href={SAMPLE_PATH} download className={styles.sample}>
-        <Icon name="download" />
-        {t("intro.sample")}
-      </a>
+      <DownloadLink href={SAMPLE_PATH}>{t("intro.sample")}</DownloadLink>
     </section>
   )
 }

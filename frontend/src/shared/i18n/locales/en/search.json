@@ -59,7 +59,8 @@
       "user": "Specified by you"
     },
     "hint": "Choose an item to see who covers it and on what basis.",
-    "all": "All items"
+    "all": "All items",
+    "details": "Item details"
   },
   "candidates": {
     "title": "Candidates",
@@ -70,7 +71,7 @@
       "legend": "Show candidates",
       "all": "All",
       "recommended": "Recommended",
-      "check": "Needs checking"
+      "check": "To check"
     }
   },
   "empty": {

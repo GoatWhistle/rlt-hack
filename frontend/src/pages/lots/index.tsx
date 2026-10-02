@@ -16,7 +16,7 @@ import {
 import { useUpload } from "@/entities/upload/queries"
 import { ExportDialog } from "@/features/export-results"
 import { isApiError } from "@/shared/api/api-error"
-import { UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
+import { searchDraftPath, UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
 import { useLocale } from "@/shared/i18n/locale-provider"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { Button, ButtonLink } from "@/shared/ui/button"
@@ -38,6 +38,44 @@ type ExportState = { readonly open: boolean; readonly session: number }
 type Selection = { readonly uploadId: string; readonly ids: ReadonlySet<string> }
 
 const NOTHING: ReadonlySet<string> = new Set()
+
+type LotsEmptyProps = {
+  readonly query: ListQuery
+  readonly onReset: () => void
+  readonly onAllStatuses: () => void
+}
+
+function LotsEmpty({ query, onReset, onAllStatuses }: LotsEmptyProps) {
+  const { t } = useTranslation("lots")
+  const search = query.search.trim()
+  return (
+    <EmptyState
+      headingLevel={2}
+      title={search ? t("empty.query", { query: search }) : t("empty.title")}
+      description={
+        query.filter === "all"
+          ? t("empty.text")
+          : t("empty.filtered", { filter: t(`filter.${query.filter}`) })
+      }
+      actions={
+        <>
+          <Button variant="secondary" onClick={onReset}>
+            {t("empty.reset")}
+          </Button>
+          {search ? (
+            <ButtonLink variant="secondary" to={searchDraftPath(search)}>
+              <Icon name="search" />
+              {t("empty.searchSuppliers", { query: search })}
+            </ButtonLink>
+          ) : null}
+          {query.filter !== "all" && search ? (
+            <TextButton onClick={onAllStatuses}>{t("empty.allStatuses")}</TextButton>
+          ) : null}
+        </>
+      }
+    />
+  )
+}
 
 export function LotsPage() {
   const { t } = useTranslation("lots")
@@ -117,33 +155,10 @@ export function LotsPage() {
           onFilter={(filter: Filter) => update({ filter })}
         />
         {visible.length === 0 ? (
-          <EmptyState
-            headingLevel={2}
-            title={
-              query.search.trim()
-                ? t("empty.query", { query: query.search.trim() })
-                : t("empty.title")
-            }
-            description={
-              query.filter === "all"
-                ? t("empty.text")
-                : t("empty.filtered", { filter: t(`filter.${query.filter}`) })
-            }
-            actions={
-              <>
-                <Button
-                  variant="secondary"
-                  onClick={() => update({ search: "", filter: "all" })}
-                >
-                  {t("empty.reset")}
-                </Button>
-                {query.filter !== "all" && query.search.trim() ? (
-                  <TextButton onClick={() => update({ filter: "all" })}>
-                    {t("empty.allStatuses")}
-                  </TextButton>
-                ) : null}
-              </>
-            }
+          <LotsEmpty
+            query={query}
+            onReset={() => update({ search: "", filter: "all" })}
+            onAllStatuses={() => update({ filter: "all" })}
           />
         ) : (
           <>

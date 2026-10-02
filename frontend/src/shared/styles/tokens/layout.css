@@ -69,5 +69,6 @@
   --offer-min: 18rem;
   --offer-ribbon: 85%;
   --toast-lift: 0rem;
+  --separator-width: calc(var(--space-1) + 2 * var(--space-2));
   --dock-height: calc(var(--target-touch) + 2 * var(--space-2) + 2 * var(--line-width));
 }

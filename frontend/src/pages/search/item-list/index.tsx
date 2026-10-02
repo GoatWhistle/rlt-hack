@@ -118,7 +118,7 @@ export function ItemList(props: ItemListProps) {
             ...items.map((item) => ({ value: item.id, label: item.name })),
           ]}
         />
-        <Fold title={t("items.all")}>
+        <Fold title={t("items.details")}>
           <ItemRows {...props} />
         </Fold>
       </ResultSection>

@@ -86,7 +86,6 @@
   font-weight: var(--weight-medium);
   line-height: var(--leading-tight);
   overflow-wrap: break-word;
-  hyphens: auto;
 }
 
 .meta {

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router"
 import { useSearchResult } from "@/entities/search/queries"
+import { RecentPlaces } from "@/features/recent-places"
 import { isApiError } from "@/shared/api/api-error"
 import { SEARCH_PATH } from "@/shared/config/paths"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
@@ -26,7 +27,9 @@ export function SearchResultPage() {
           title={t("missing.title")}
           description={t("missing.text")}
           actions={<ButtonLink to={SEARCH_PATH}>{t("missing.action")}</ButtonLink>}
-        />
+        >
+          <RecentPlaces />
+        </EmptyState>
       )
     }
     return <ErrorState error={result.error} headingLevel={1} onRetry={() => result.refetch()} />

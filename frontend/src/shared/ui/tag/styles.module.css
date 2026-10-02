@@ -13,6 +13,12 @@
   white-space: nowrap;
 }
 
+.wrap {
+  max-inline-size: 100%;
+  white-space: normal;
+  text-wrap: balance;
+}
+
 .tentative {
   border-style: dashed;
   border-color: var(--line-tentative);

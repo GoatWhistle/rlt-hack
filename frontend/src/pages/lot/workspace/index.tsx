@@ -2,8 +2,11 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Recommendation } from "@/entities/recommendation/model"
 import { useShortlist } from "@/entities/shortlist/store"
+import { searchDraftPath } from "@/shared/config/paths"
 import { useQueryState } from "@/shared/routing/use-query-state"
+import { ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
+import { Icon } from "@/shared/ui/icon"
 import {
   parseView,
   useWorkspaceView,
@@ -80,6 +83,12 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
           headingLevel={2}
           title={t("noCandidates.title")}
           description={t("noCandidates.text")}
+          actions={
+            <ButtonLink variant="secondary" to={searchDraftPath(recommendation.requestTitle)}>
+              <Icon name="search" />
+              {t("noCandidates.search")}
+            </ButtonLink>
+          }
         />
       </WorkspaceEmpty>
     )

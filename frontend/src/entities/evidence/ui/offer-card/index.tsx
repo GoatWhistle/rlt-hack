@@ -38,6 +38,7 @@ export type OfferLink = {
 export type OfferCardProps = {
   readonly offer: OfferView
   readonly link?: OfferLink
+  readonly focused?: boolean
 }
 
 function OfferName({ offer, id }: { readonly offer: OfferView; readonly id: string }) {
@@ -93,7 +94,7 @@ function OfferFacts({ offer }: { readonly offer: OfferView }) {
   )
 }
 
-export function OfferCard({ offer, link }: OfferCardProps) {
+export function OfferCard({ offer, link, focused = false }: OfferCardProps) {
   const { t } = useTranslation("evidence")
   const text = useOfferText()
   const nameId = useId()
@@ -101,7 +102,11 @@ export function OfferCard({ offer, link }: OfferCardProps) {
   const look = AVAILABILITY[availability]
   const seller = offer.seller && offer.seller !== "verified" ? offer.seller : undefined
   return (
-    <article className={styles.card} aria-labelledby={nameId}>
+    <article
+      className={styles.card}
+      aria-labelledby={nameId}
+      aria-current={focused || undefined}
+    >
       <div className={styles.head}>
         {offer.imageUrl ? (
           <img

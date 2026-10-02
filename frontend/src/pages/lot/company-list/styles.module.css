@@ -9,6 +9,7 @@
 }
 
 .dot {
+  flex-shrink: 0;
   width: var(--dot-size);
   height: var(--dot-size);
   border-radius: var(--radius-pill);
@@ -35,6 +36,11 @@
 .assumed {
   color: var(--warning-text);
   font-weight: var(--weight-regular);
+}
+
+.inn {
+  font-family: var(--font-mono);
+  white-space: nowrap;
 }
 
 .compare {

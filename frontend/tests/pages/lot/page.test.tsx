@@ -3,6 +3,7 @@ import { en, text } from "@tests/support/dictionaries"
 import { renderPage, stubGateway, uploadDetail } from "@tests/support/gateway"
 import { describe, expect, it, vi } from "vitest"
 import { ApiError } from "@/shared/api/api-error"
+import { searchDraftPath } from "@/shared/config/paths"
 import { LONG_NAME, recommendationFixture } from "../../entities/recommendation/fixture"
 import { LOTS, lotDetail, openLot } from "./open-lot"
 
@@ -80,6 +81,9 @@ describe("the purchase header", () => {
     expect(
       screen.getByRole("region", { name: en("products.title", "lot") }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole("link", { name: en("noCandidates.search", "lot") }),
+    ).toHaveAttribute("href", searchDraftPath(recommendationFixture.requestTitle))
   })
 
   it("downloads this purchase from the header", async () => {

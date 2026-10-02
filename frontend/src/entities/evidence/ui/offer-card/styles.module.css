@@ -7,6 +7,14 @@
   border: var(--line-width) solid var(--line-hairline);
   border-radius: var(--radius-md);
   background: var(--surface-base);
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+}
+
+.card[aria-current="true"] {
+  border-color: var(--accent-muted);
+  background: var(--accent-tint);
 }
 
 .head {
@@ -66,16 +74,22 @@
 .facts {
   display: flex;
   flex-wrap: wrap;
-  column-gap: var(--space-2);
+  margin-inline-start: calc(var(--separator-width) * -1);
+  clip-path: inset(0 0 0 var(--separator-width));
   color: var(--text-secondary);
   font-size: var(--text-xs);
   line-height: var(--leading-normal);
 }
 
-.fact + .fact::before {
-  content: "·";
-  margin-inline-end: var(--space-2);
+.fact::before,
+.relationText > ::before {
+  display: inline-block;
+  inline-size: var(--separator-width);
   color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-regular);
+  text-align: center;
+  content: "·";
 }
 
 .code {
@@ -133,20 +147,14 @@
 .relationText {
   display: flex;
   flex-wrap: wrap;
-  column-gap: var(--space-2);
   min-width: 0;
+  margin-inline-start: calc(var(--separator-width) * -1);
+  clip-path: inset(0 0 0 var(--separator-width));
   overflow-wrap: anywhere;
 }
 
 .relationText > :last-child {
   font-weight: var(--weight-medium);
-}
-
-.relationText > :last-child::before {
-  content: "·";
-  margin-inline-end: var(--space-2);
-  color: var(--text-muted);
-  font-weight: var(--weight-regular);
 }
 
 .stock {
