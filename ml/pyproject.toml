@@ -36,6 +36,9 @@ rlt-build-card-variants = "rlt_ml.cards:main"
 rlt-audit-card-variants = "rlt_ml.card_audit:main"
 rlt-compare-card-variants = "rlt_ml.compare_cards:main"
 rlt-evaluate-candidate-ranker = "rlt_ml.candidate_ranker:main"
+rlt-pipeline-cases = "rlt_ml.pipeline_cases:main"
+rlt-evaluate-pipeline = "rlt_ml.pipeline_eval:main"
+rlt-review-new-suppliers = "rlt_ml.new_suppliers:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
