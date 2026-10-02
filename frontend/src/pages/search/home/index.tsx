@@ -1,33 +1,66 @@
-import { useEffect, useId, useRef } from "react"
+import { useId, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router"
 import { DEFAULT_REGION_CODE, isRegionCode } from "@/entities/evidence/regions"
-import { SearchBox } from "@/features/search-box"
-import { lotPath, SEARCH_TEXT_PARAM } from "@/shared/config/paths"
-import { withViewTransition } from "@/shared/motion/view-transition"
+import type { UploadSummary } from "@/entities/upload/model"
+import { CheckDisclosure } from "@/features/file-intake/check-disclosure"
+import { FileChip } from "@/features/file-intake/file-chip"
+import {
+  AttachButton,
+  FileInput,
+  FormatsHint,
+  useFilePicker,
+} from "@/features/file-intake/file-picker"
+import { ItemsAttachment } from "@/features/file-intake/items-attachment"
+import { sendable } from "@/features/file-intake/model"
+import { useFileIntake } from "@/features/file-intake/use-file-intake"
+import { useWindowDrop } from "@/features/file-intake/use-window-drop"
+import { type Attachment, SearchBox } from "@/features/search-box"
+import { lotPath, SEARCH_TEXT_PARAM, uploadPath } from "@/shared/config/paths"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { PageTitle } from "@/shared/ui/page-title"
-import { ReadingGuide } from "../reading-guide"
-import { RecentList } from "../recent-list"
-import { RecentReveal } from "../recent-toggle"
+import { LatestStrip } from "../latest-strip"
 import styles from "./styles.module.css"
-import { useRecentOpen } from "./use-recent-open"
-
-function useToggleFocus(open: boolean, panelId: string) {
-  const reveal = useRef<HTMLButtonElement>(null)
-  const toggled = useRef(false)
-  useEffect(() => {
-    if (!toggled.current) return
-    toggled.current = false
-    if (!open) reveal.current?.focus()
-    else document.getElementById(panelId)?.querySelector<HTMLElement>("h2[tabindex]")?.focus()
-  }, [open, panelId])
-  return { reveal, mark: () => (toggled.current = true) }
-}
 
 function regionFrom(param: string | null): string {
   if (param === "") return ""
   return param !== null && isRegionCode(param) ? param : DEFAULT_REGION_CODE
+}
+
+export function foundPath(result: UploadSummary, lots: readonly string[]): string {
+  const [only] = lots
+  return lots.length === 1 && only ? lotPath(result.id, only) : uploadPath(result.id)
+}
+
+function useAttachment(fieldId: string) {
+  const files = useFileIntake()
+  const picker = useFilePicker()
+  const dropping = useWindowDrop(files.attach)
+  const { intake } = files
+  const [itemsFile, setItemsFile] = useState<File | undefined>()
+  const notices = sendable(intake)
+  const upload = notices && itemsFile ? { ...notices, itemsFile } : notices
+  const remove = () => {
+    files.clear()
+    setItemsFile(undefined)
+    document.getElementById(fieldId)?.focus()
+  }
+  const attachment: Attachment = {
+    upload,
+    reading: intake?.status === "reading",
+    needsText: intake !== null && intake.status !== "reading" && upload === null,
+    dropping,
+    chip: <FileChip intake={intake} onRemove={remove} onReplace={picker.open} />,
+    tool: <AttachButton onClick={picker.open} />,
+    hint: <FormatsHint />,
+  }
+  const items = notices ? <ItemsAttachment file={itemsFile} onChange={setItemsFile} /> : null
+  return {
+    attachment,
+    intake,
+    items,
+    input: <FileInput picker={picker} onFile={files.attach} />,
+  }
 }
 
 export function SearchPage() {
@@ -37,50 +70,34 @@ export function SearchPage() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const titleId = useId()
-  const panelId = useId()
-  const [open, setOpen] = useRecentOpen()
-  const focus = useToggleFocus(open, panelId)
+  const fieldId = useId()
+  const { attachment, intake, items, input } = useAttachment(fieldId)
   const region = params.get("region")
   const draft = params.get(SEARCH_TEXT_PARAM) ?? ""
-  const toggle = (next: boolean) => {
-    focus.mark()
-    withViewTransition("panel", () => setOpen(next))
-  }
   return (
-    <div className={styles.page} data-recent={open ? "open" : "closed"}>
-      <section className={styles.search} aria-labelledby={titleId}>
-        <div className={styles.head}>
-          <div className={styles.intro}>
-            <PageTitle id={titleId}>{t("home.title")}</PageTitle>
-            <p className={styles.lead}>{t("home.lead")}</p>
-          </div>
-          <RecentReveal
-            ref={focus.reveal}
-            open={open}
-            controls={panelId}
-            onOpen={() => toggle(true)}
-          />
-        </div>
-        <div className={styles.query}>
-          <SearchBox
-            key={draft}
-            autoFocus
-            shortcut
-            initialText={draft}
-            initialRegion={regionFrom(region)}
-            onFound={(result) =>
-              navigate(lotPath(result.id, "query"), { viewTransition: true })
-            }
-          />
-        </div>
-      </section>
-      <div id={panelId} className={styles.recent}>
-        <RecentList
-          empty={<ReadingGuide />}
-          controls={panelId}
-          onCollapse={() => toggle(false)}
-        />
+    <section className={styles.page} aria-labelledby={titleId}>
+      <div className={styles.intro}>
+        <PageTitle id={titleId}>{t("home.title")}</PageTitle>
+        <p className={styles.lead}>{t("home.lead")}</p>
       </div>
-    </div>
+      <div className={styles.query}>
+        <SearchBox
+          key={draft}
+          autoFocus
+          shortcut
+          inputId={fieldId}
+          initialText={draft}
+          initialRegion={regionFrom(region)}
+          attachment={attachment}
+          onFound={(result, lots) =>
+            navigate(foundPath(result, lots), { viewTransition: true })
+          }
+        />
+        {input}
+        <CheckDisclosure intake={intake} />
+        {items}
+        <LatestStrip />
+      </div>
+    </section>
   )
 }

@@ -6,9 +6,8 @@
     "repository": "Source code on GitHub"
   },
   "nav": {
-    "uploads": "Uploads",
-    "lots": "Purchases",
     "search": "Search",
+    "history": "History",
     "analytics": "Analytics"
   },
   "action": {
@@ -16,7 +15,7 @@
     "dismiss": "Dismiss notification",
     "retry": "Try again",
     "reload": "Reload the page",
-    "home": "Go to uploads",
+    "home": "Go to history",
     "showAll": "Show all {{count, number}}",
     "showLess": "Show less",
     "newSearch": "New search"
@@ -63,6 +62,7 @@
     "lot": "Lot {{id}}",
     "notFound": "Page not found",
     "error": "Error",
+    "history": "History",
     "analytics": "Analytics"
   },
   "workspace": {

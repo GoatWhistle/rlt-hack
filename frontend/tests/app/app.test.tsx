@@ -122,15 +122,15 @@ describe("the not found page", () => {
     )
     expect(screen.getByRole("link", { name: en("action.home") })).toHaveAttribute(
       "href",
-      "/uploads",
+      "/history",
     )
     expect(screen.getByRole("navigation")).toBeInTheDocument()
     await waitFor(() => expect(document.title).toBe("lotive | Page not found"))
   })
 
-  it("names the browser tab after the uploads page", async () => {
+  it("sends the old uploads address to the files history", async () => {
     renderApp(["/uploads"])
-    await screen.findByRole("heading", { level: 1, name: en("intro.title", "uploads") })
-    await waitFor(() => expect(document.title).toBe("lotive | Uploads"))
+    await screen.findByRole("heading", { level: 1, name: en("title", "history") })
+    await waitFor(() => expect(document.title).toBe("lotive | History"))
   })
 })

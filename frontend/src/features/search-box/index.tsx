@@ -2,33 +2,23 @@ import { clsx } from "clsx"
 import { type FormEvent, type ReactNode, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { DEFAULT_REGION_CODE } from "@/entities/evidence/regions"
-import { MAX_QUERY_LENGTH } from "@/entities/search/model"
-import type { UploadSummary } from "@/entities/upload/model"
-import { useCreateUpload } from "@/entities/upload/queries"
 import { FOCUS_SHORTCUT } from "@/shared/keyboard/use-focus-shortcut"
-import { Button } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
-import { Spinner } from "@/shared/ui/spinner"
-import {
-  isInputProblem,
-  joinIds,
-  problemOf,
-  useFieldEffects,
-  useReportStage,
-} from "./field-effects"
+import { COUNTER_FROM, FieldBar, SubmitButton } from "./field-bar"
+import { isInputProblem, joinIds, useFieldEffects, useReportStage } from "./field-effects"
 import { RegionPreference } from "./region-preference"
 import { SearchError } from "./search-error"
-import { StageLine, SweepBar } from "./stage-line"
+import { SweepBar } from "./stage-line"
 import styles from "./styles.module.css"
-import { textUpload } from "./text-upload"
 import { useAutoHeight } from "./use-auto-height"
+import { type Attachment, type Found, isBlocked, useSearchSubmit } from "./use-search-submit"
 import { type SearchStage, useStage } from "./use-stage"
 
+export { COUNTER_FROM } from "./field-bar"
 export { FINE_POINTER, isInputProblem } from "./field-effects"
 export { StageLine } from "./stage-line"
+export type { Attachment } from "./use-search-submit"
 export type { SearchStage } from "./use-stage"
-
-export const COUNTER_FROM = 3600
 
 export type SearchBoxProps = {
   readonly initialRegion?: string
@@ -37,44 +27,53 @@ export type SearchBoxProps = {
   readonly inputId?: string
   readonly autoFocus?: boolean
   readonly shortcut?: boolean
+  readonly attachment?: Attachment
   readonly onStage?: (stage: SearchStage | null) => void
-  readonly onFound: (result: UploadSummary) => void
+  readonly onFound: Found
 }
 
-type FieldBarProps = {
-  readonly region: ReactNode
-  readonly compact: boolean
-  readonly stage: SearchStage | null
-  readonly counterId: string
-  readonly length: number
-  readonly pending: boolean
-}
-
-function FieldBar(props: FieldBarProps) {
-  const { region, compact, stage, counterId, length, pending } = props
+function DropNote({ shown }: { readonly shown: boolean }) {
   const { t } = useTranslation("search")
   return (
-    <div className={styles.bar} data-part="query-bar">
-      {region}
-      {compact ? null : <StageLine stage={stage} />}
-      {length >= COUNTER_FROM ? (
-        <span
-          id={counterId}
-          className={clsx(styles.counter, length > MAX_QUERY_LENGTH && styles.over)}
-        >
-          {t("box.counter", { count: length, limit: MAX_QUERY_LENGTH })}
-        </span>
-      ) : null}
-      <Button
-        type="submit"
-        className={styles.submit}
-        aria-disabled={pending}
-        aria-busy={pending}
-      >
-        {pending ? <Spinner /> : <Icon name="search" />}
-        {t("box.submit")}
-      </Button>
-    </div>
+    <span className={styles.drop} aria-hidden={!shown}>
+      <Icon name="upload" />
+      {t("box.drop")}
+    </span>
+  )
+}
+
+function useFieldCopy(attachment: Attachment | undefined) {
+  const { t } = useTranslation("search")
+  return attachment?.upload != null
+    ? { label: t("box.noteLabel"), placeholder: t("box.notePlaceholder") }
+    : { label: t("box.label"), placeholder: t("box.placeholder") }
+}
+
+type AttachmentActionsProps = {
+  readonly attachment: Attachment | undefined
+  readonly submit: ReactNode
+}
+
+function AttachmentActions({ attachment, submit }: AttachmentActionsProps) {
+  if (!attachment) return null
+  return (
+    <>
+      <div className={styles.actions}>
+        {attachment.tool}
+        {submit}
+      </div>
+      <p className={styles.hint}>{attachment.hint}</p>
+    </>
+  )
+}
+
+function AttachmentChip({ attachment }: { readonly attachment: Attachment | undefined }) {
+  if (!attachment) return null
+  return (
+    <>
+      <div className={styles.chip}>{attachment.chip}</div>
+      <DropNote shown={attachment.dropping} />
+    </>
   )
 }
 
@@ -85,49 +84,43 @@ export function SearchBox({
   inputId,
   autoFocus,
   shortcut,
+  attachment,
   onStage,
   onFound,
 }: SearchBoxProps) {
-  const { t } = useTranslation("search")
-  const search = useCreateUpload()
+  const search = useSearchSubmit(attachment, onFound)
   const [text, setText] = useState(initialText)
   const [region, setRegion] = useState(initialRegion)
-  const [problem, setProblem] = useState<unknown>(null)
   const fieldRef = useRef<HTMLTextAreaElement>(null)
   const ownId = useId()
   const fieldId = inputId ?? ownId
   const counterId = useId()
   const errorId = useId()
-  const stage = useStage(search.isPending)
+  const stage = useStage(search.pending)
   useAutoHeight(fieldRef, text)
   useFieldEffects(fieldRef, { autoFocus: autoFocus === true, shortcut: shortcut === true })
   useReportStage(stage, onStage)
 
-  const error = problem ?? search.error
+  const { error } = search
   const invalid = isInputProblem(error)
   const showCounter = text.length >= COUNTER_FROM
   const describedBy = joinIds([showCounter ? counterId : "", error ? errorId : ""])
-
-  function submit(value = text) {
-    if (search.isPending) return
-    const query = value.trim()
-    const found = problemOf(query)
-    setProblem(found)
-    if (found) return
-    search.mutate(textUpload(query, region), { onSuccess: (result) => onFound(result) })
-  }
+  const copy = useFieldCopy(attachment)
+  const submitButton = (
+    <SubmitButton pending={search.pending} blocked={isBlocked(attachment, text)} />
+  )
+  const submit = () => search.submit(text, region)
 
   function change(next: string) {
     setText(next)
-    setProblem(null)
-    if (search.isError) search.reset()
+    search.clear()
   }
 
   return (
     <form
-      className={clsx(styles.box, compact && styles.compact)}
+      className={clsx(styles.box, compact && styles.compact, attachment && styles.attachable)}
       noValidate
-      aria-busy={search.isPending}
+      aria-busy={search.pending}
       onSubmit={(event: FormEvent) => {
         event.preventDefault()
         submit()
@@ -135,10 +128,13 @@ export function SearchBox({
     >
       {compact ? null : (
         <label htmlFor={fieldId} className={styles.label}>
-          {t("box.label")}
+          {copy.label}
         </label>
       )}
-      <div className={clsx(styles.field, invalid && styles.invalid)}>
+      <div
+        className={clsx(styles.field, invalid && styles.invalid)}
+        data-dropping={attachment?.dropping || undefined}
+      >
         <textarea
           id={fieldId}
           ref={fieldRef}
@@ -146,13 +142,14 @@ export function SearchBox({
           data-part="query-text"
           rows={compact ? 1 : 4}
           value={text}
-          placeholder={t("box.placeholder")}
-          aria-label={compact ? t("box.label") : undefined}
+          placeholder={copy.placeholder}
+          aria-label={compact ? copy.label : undefined}
           aria-invalid={invalid || undefined}
           aria-describedby={describedBy}
           aria-keyshortcuts={shortcut ? FOCUS_SHORTCUT : undefined}
           onChange={(event) => change(event.target.value)}
         />
+        <AttachmentChip attachment={attachment} />
         <FieldBar
           region={
             <RegionPreference
@@ -160,18 +157,21 @@ export function SearchBox({
               collapse={compact}
               value={region}
               onChange={setRegion}
-              disabled={search.isPending}
+              disabled={search.pending}
             />
           }
           compact={compact}
           stage={stage}
           counterId={counterId}
           length={text.length}
-          pending={search.isPending}
+          submit={attachment ? null : submitButton}
         />
-        {search.isPending ? <SweepBar /> : null}
+        {search.pending ? <SweepBar /> : null}
       </div>
-      <SearchError id={errorId} error={error} onRetry={() => submit()} />
+      <AttachmentActions attachment={attachment} submit={submitButton} />
+      <div className={styles.status}>
+        <SearchError id={errorId} error={error} onRetry={submit} />
+      </div>
     </form>
   )
 }

@@ -12,6 +12,7 @@ import { useFormatters } from "@/shared/i18n/formatters"
 import { DataCell, type DataColumn, DataTable } from "@/shared/ui/data-table"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
+import { QuietAnchor } from "@/shared/ui/quiet-link"
 import { PageSkeleton } from "@/shared/ui/skeleton"
 import { useScope } from "../use-scope"
 import styles from "./styles.module.css"
@@ -79,9 +80,7 @@ export function RecordsPage() {
           {page.items.map((item) => (
             <tr key={item.offerId}>
               <DataCell>
-                <a href={item.url} className={styles.link} target="_blank" rel="noreferrer">
-                  {item.name}
-                </a>
+                <QuietAnchor href={item.url}>{item.name}</QuietAnchor>
               </DataCell>
               <DataCell>{item.sourceName}</DataCell>
               <DataCell>{item.supplierName || t("records.noValue")}</DataCell>

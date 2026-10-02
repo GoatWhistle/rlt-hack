@@ -11,6 +11,10 @@ export type MetricCardProps = {
   readonly action?: ReactNode
 }
 
+export function MetricGroup({ children }: { readonly children: ReactNode }) {
+  return <div className={styles.group}>{children}</div>
+}
+
 export function MetricCard({
   label,
   value,

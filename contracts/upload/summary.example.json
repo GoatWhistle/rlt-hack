@@ -1,6 +1,7 @@
 {
   "id": "synthetic-upload",
   "fileName": "test.csv",
+  "title": "Бумага",
   "createdAt": "2026-10-02T00:00:00+00:00",
   "total": 1,
   "processed": 1,

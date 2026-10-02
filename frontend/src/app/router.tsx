@@ -1,10 +1,9 @@
 import { useTranslation } from "react-i18next"
 import { createBrowserRouter, type RouteObject, redirect } from "react-router"
 import { AppShell } from "@/app/app-shell"
-import { readLastUpload } from "@/entities/upload/last-upload"
 import { NotFoundPage } from "@/pages/not-found"
 import { RouteErrorPage } from "@/pages/route-error"
-import { SEARCH_PATH, uploadPath } from "@/shared/config/paths"
+import { historyPath, SEARCH_PATH } from "@/shared/config/paths"
 import { PageSkeleton } from "@/shared/ui/skeleton"
 import { routeModules } from "./route-modules"
 
@@ -13,9 +12,8 @@ export function RouteLoading() {
   return <PageSkeleton label={t("state.loading")} />
 }
 
-export function lastUploadRedirect() {
-  const uploadId = readLastUpload()
-  return uploadId ? redirect(uploadPath(uploadId)) : null
+export function filesHistoryRedirect() {
+  return redirect(historyPath("files"))
 }
 
 export const routes: RouteObject[] = [
@@ -29,10 +27,7 @@ export const routes: RouteObject[] = [
         HydrateFallback: RouteLoading,
         children: [
           { index: true, loader: () => redirect(SEARCH_PATH), element: null },
-          {
-            path: "uploads",
-            lazy: async () => ({ Component: (await routeModules.uploads()).UploadsPage }),
-          },
+          { path: "uploads", loader: filesHistoryRedirect, element: null },
           {
             path: "uploads/:uploadId",
             lazy: async () => ({ Component: (await routeModules.lots()).LotsPage }),
@@ -47,12 +42,10 @@ export const routes: RouteObject[] = [
               Component: (await import("@/pages/procurement-source")).ProcurementSourcePage,
             }),
           },
+          { path: "lots", loader: filesHistoryRedirect, element: null },
           {
-            path: "lots",
-            loader: lastUploadRedirect,
-            lazy: async () => ({
-              Component: (await routeModules.lotsEntry()).LotsEntryPage,
-            }),
+            path: "history",
+            lazy: async () => ({ Component: (await routeModules.history()).HistoryPage }),
           },
           {
             path: "search",

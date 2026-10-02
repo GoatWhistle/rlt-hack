@@ -1,0 +1,56 @@
+{
+  "title": "История",
+  "lead": "Все ваши запросы и загруженные файлы. Откройте любой, чтобы вернуться к кандидатам.",
+  "filter": {
+    "label": "Найти в истории",
+    "placeholder": "Текст запроса или имя файла"
+  },
+  "tabs": {
+    "legend": "Раздел истории"
+  },
+  "queries": {
+    "title": "Запросы",
+    "empty": "Здесь появятся ваши запросы",
+    "emptyHint": "Опишите, что нужно купить, и запрос сохранится здесь.",
+    "start": "Новый поиск"
+  },
+  "files": {
+    "title": "Файлы",
+    "empty": "Здесь появятся загруженные файлы",
+    "emptyHint": "Загрузите выгрузку извещений или ТЗ, и результаты сохранятся здесь.",
+    "start": "Загрузить файл"
+  },
+  "noMatch": "Ничего не нашлось по «{{query}}»",
+  "reset": "Сбросить фильтр",
+  "loading": "Загружаем историю",
+  "more_one": "Показать ещё {{count, number}}",
+  "more_few": "Показать ещё {{count, number}}",
+  "more_many": "Показать ещё {{count, number}}",
+  "more_other": "Показать ещё {{count, number}}",
+  "row": {
+    "lots_one": "<b>{{count, number}}</b> закупка",
+    "lots_few": "<b>{{count, number}}</b> закупки",
+    "lots_many": "<b>{{count, number}}</b> закупок",
+    "lots_other": "<b>{{count, number}}</b> закупки",
+    "ready_one": "<b>{{count, number}}</b> готова",
+    "ready_few": "<b>{{count, number}}</b> готовы",
+    "ready_many": "<b>{{count, number}}</b> готово",
+    "ready_other": "<b>{{count, number}}</b> готово",
+    "attention_one": "<b>{{count, number}}</b> без кандидатов",
+    "attention_few": "<b>{{count, number}}</b> без кандидатов",
+    "attention_many": "<b>{{count, number}}</b> без кандидатов",
+    "attention_other": "<b>{{count, number}}</b> без кандидатов",
+    "found": "Кандидаты найдены",
+    "notFound": "Кандидатов не нашлось",
+    "working": "Подбираем кандидатов",
+    "progress": "Обработано {{processed, number}} из {{total, number}}"
+  },
+  "kind": {
+    "csv": "CSV",
+    "xlsx": "XLSX",
+    "pdf": "PDF",
+    "docx": "DOCX",
+    "other": "Файл"
+  },
+  "retry": "Повторить"
+}

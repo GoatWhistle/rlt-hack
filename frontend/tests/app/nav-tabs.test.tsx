@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { en } from "@tests/support/dictionaries"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { NavTabs } from "@/app/nav-tabs"
+import { NavTabs, tabOf } from "@/app/nav-tabs"
 import { measureActive } from "@/app/nav-tabs/use-indicator"
 import { LocaleProvider } from "@/shared/i18n/locale-provider"
 
@@ -31,7 +31,7 @@ function stubLayout() {
   vi.spyOn(HTMLElement.prototype, "offsetLeft", "get").mockImplementation(function left(
     this: HTMLElement,
   ) {
-    return this.getAttribute("href") === "/lots" ? 100 : 0
+    return this.getAttribute("href") === "/history" ? 100 : 0
   })
 }
 
@@ -64,29 +64,30 @@ describe("the navigation tabs", () => {
   })
 
   it("marks the current tab and slides the indicator under it", async () => {
-    const { user } = renderTabs("/uploads")
-    const uploads = screen.getByRole("link", { name: en("nav.uploads") })
-    expect(uploads).toHaveAttribute("aria-current", "page")
+    const { user } = renderTabs("/search")
+    const search = screen.getByRole("link", { name: en("nav.search") })
+    expect(search).toHaveAttribute("aria-current", "page")
     const nav = screen.getByRole("navigation", { name: en("app.mainNavigation") })
     expect(nav.style.getPropertyValue("--indicator-x")).toBe("0px")
     expect(nav.style.getPropertyValue("--indicator-scale")).toBe("80")
     expect(indicator()).not.toBeNull()
 
-    await user.click(screen.getByRole("link", { name: en("nav.lots") }))
-    expect(screen.getByRole("link", { name: en("nav.lots") })).toHaveAttribute(
+    await user.click(screen.getByRole("link", { name: en("nav.history") }))
+    expect(screen.getByRole("link", { name: en("nav.history") })).toHaveAttribute(
       "aria-current",
       "page",
     )
-    expect(uploads).not.toHaveAttribute("aria-current")
+    expect(search).not.toHaveAttribute("aria-current")
     expect(nav.style.getPropertyValue("--indicator-x")).toBe("100px")
   })
 
-  it("treats every page inside an upload as the purchases tab", () => {
-    renderTabs("/uploads/u1/lots/7")
-    expect(screen.getByRole("link", { name: en("nav.lots") })).toHaveAttribute(
-      "aria-current",
-      "page",
-    )
+  it("treats uploads and their purchases as history, and a text query as search", () => {
+    expect(tabOf("/uploads/u1/lots/7")).toBe("history")
+    expect(tabOf("/uploads")).toBe("history")
+    expect(tabOf("/lots")).toBe("history")
+    expect(tabOf("/history")).toBe("history")
+    expect(tabOf("/uploads/u1/lots/query")).toBe("search")
+    expect(tabOf("/nowhere")).toBeNull()
   })
 
   it("marks the search tab on the search page and on a result", async () => {
@@ -100,7 +101,7 @@ describe("the navigation tabs", () => {
       "aria-current",
       "page",
     )
-    expect(screen.getAllByRole("link")).toHaveLength(4)
+    expect(screen.getAllByRole("link")).toHaveLength(3)
   })
 
   it("follows the tab when its width changes", () => {

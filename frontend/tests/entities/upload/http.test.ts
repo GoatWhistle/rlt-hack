@@ -9,6 +9,7 @@ import { recommendationFixture } from "../recommendation/fixture"
 const summary = {
   id: "u 1",
   fileName: "n.csv",
+  title: "Paper",
   createdAt: "2026-10-01",
   total: 2,
   processed: 1,

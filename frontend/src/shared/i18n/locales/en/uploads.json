@@ -1,60 +1,12 @@
 {
-  "intro": {
-    "title": "Find suppliers for your purchases",
-    "text": "Upload a CSV with procurement notices. For every purchase the system identifies the items, finds companies and shows what each conclusion rests on. The decision stays with you.",
-    "format": "Expected format",
-    "formatText": "CSV in UTF-8 or Windows-1251, separated by “;” or “,”. One row is one lot; the first row holds the column names.",
-    "required": "Required columns",
-    "optional": "Used when present",
-    "sample": "Download a sample CSV",
-    "privacy": "The file is processed on the Lotive server and is not passed on to anyone.",
-    "searchInstead": "No file? Find suppliers by description"
-  },
-  "drop": {
-    "title": "Drop the CSV here",
-    "titleTouch": "Choose a CSV file",
-    "hint": "or choose a file on your computer",
-    "choose": "Choose file",
-    "release": "Release to upload the file"
-  },
   "list": {
-    "title": "Uploads",
-    "caption": "Open a file to see its purchases and recommendations.",
-    "upload": "Upload CSV",
-    "date": "Uploaded {{date}}",
-    "notices_one": "{{count, number}} notice",
-    "notices_other": "{{count, number}} notices",
     "processing": "Processing: {{processed, number}} of {{total, number}}",
-    "done": "Processing finished",
     "ready": "ready: {{count, number}}",
     "needsCheck": "need clarifying: {{count, number}}",
     "noCandidates": "no candidates: {{count, number}}",
-    "failed": "not processed: {{count, number}}",
-    "rejected_one": "{{count, number}} row with errors was not processed",
-    "rejected_other": "{{count, number}} rows with errors were not processed",
-    "notStored": "Will be lost after a reload: the browser ran out of space.",
-    "columns": {
-      "file": "File",
-      "uploaded": "Uploaded",
-      "notices": "Notices",
-      "status": "Processing",
-      "results": "Results"
-    },
-    "finished": "{{file}} is processed: {{ready, number}} ready, {{check, number}} need clarifying"
+    "failed": "not processed: {{count, number}}"
   },
   "dialog": {
-    "title": "New upload",
-    "steps": {
-      "label": "Upload steps",
-      "file": "File",
-      "check": "Check",
-      "processing": "Processing"
-    },
-    "reading": "Reading the file",
-    "otherFile": "Choose another file",
-    "start_one": "Process {{count, number}} purchase",
-    "start_other": "Process {{count, number}} purchases",
-    "starting": "Processing…",
     "total": "Rows in the file",
     "valid": "Will be processed",
     "invalid": "Need fixing",
@@ -67,24 +19,37 @@
     "issues_one": "Error in {{count, number}} row",
     "issues_other": "Errors in {{count, number}} rows",
     "issuesNote": "These rows will not be processed; the rest will. Fix the errors in the file and upload it again to add the skipped purchases.",
-    "rowNumber": "Row",
-    "processing": {
-      "title_one": "Finding suppliers for {{count, number}} purchase",
-      "title_other": "Finding suppliers for {{count, number}} purchases",
-      "note": "This usually takes up to a minute. You can close this window — we'll let you know when the file is ready.",
-      "stage": {
-        "send": "Sending the file to the server",
-        "match": "Looking for suppliers for each purchase",
-        "rank": "Checking the evidence and ranking candidates",
-        "slow": "The file is large, processing is taking longer than usual"
-      }
+    "rowNumber": "Row"
+  },
+  "intake": {
+    "attach": "Attach file",
+    "formats": "CSV, XLSX, PDF, DOCX — up to {{limit, number}} MB",
+    "remove": "Remove",
+    "removeLabel": "Remove file {{name}}",
+    "replace": "Choose another",
+    "reading": "Checking the file…",
+    "later": "This format will be read automatically soon — for now, describe the purchase in text or upload a CSV.",
+    "size": {
+      "b": "{{size, number}} B",
+      "kb": "{{size, number}} KB",
+      "mb": "{{size, number}} MB"
     },
-    "accepted": "{{file}} is accepted, processing continues",
-    "open": "Open"
+    "rejected": {
+      "tooLarge": "The file is larger than {{limit, number}} MB. Choose a smaller file or split it into parts.",
+      "unsupported": "This format is not supported. Use CSV, XLSX, PDF, DOCX or TXT.",
+      "unreadable": "The file is damaged or can't be read. Save it again or choose another one."
+    },
+    "noValid": "The file has no rows that can be processed.",
+    "lots_one": "{{count, number}} purchase in the file",
+    "lots_other": "{{count, number}} purchases in the file",
+    "issues_one": "{{count, number}} row with errors",
+    "issues_other": "{{count, number}} rows with errors",
+    "details": "Details"
   },
   "items": {
-    "title": "Items — second CSV",
+    "title": "Items — second CSV (optional)",
     "hint": "Attach a file with lot_id, product_name, okpd2_code columns. Items join notices by lot_id. You may continue without it when no separate item file is available.",
-    "remove": "Remove items file"
+    "remove": "Remove items file",
+    "add": "Add an items file"
   }
 }

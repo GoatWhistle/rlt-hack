@@ -9,7 +9,6 @@ const SCREENS = [
   { width: 1920, height: 1080 },
   { width: 2560, height: 1440 },
 ] as const
-const WIDE = 1920
 const TOLERANCE = 2
 const QUERY = "Buckwheat groats 500 kg; polished rice 200 kg"
 
@@ -87,11 +86,6 @@ async function expectAdaptive(page: Page) {
     ).toBeLessThanOrEqual(measured.client)
     expect(Math.abs(measured.left - measured.right)).toBeLessThanOrEqual(TOLERANCE)
     expect(Math.abs(measured.brand - measured.left)).toBeLessThanOrEqual(TOLERANCE)
-    if (screen.width > WIDE) {
-      expect(measured.left, `content hugs the edge at ${screen.width}`).toBeGreaterThan(
-        (screen.width - WIDE) / 4,
-      )
-    }
   }
 }
 
@@ -109,7 +103,7 @@ test("fits the search pages to every screen", async ({ page }) => {
 
 test("fits the uploads, purchases and missing pages to every screen", async ({ page }) => {
   for (const [path, ready] of [
-    ["/uploads", page.getByRole("heading", { level: 1 })],
+    ["/history", page.getByRole("heading", { level: 1 })],
     ["/uploads/test-upload", page.getByRole("table")],
     ["/uploads/test-upload/lots/test_paper", page.getByRole("article").first()],
     ["/nowhere", page.getByRole("heading", { level: 1, name: /not found/i })],

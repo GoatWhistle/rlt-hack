@@ -12,6 +12,7 @@
   "empty_query": "Describe what you need: the query is empty.",
   "query_too_long": "The query is too long. Keep it under 4,000 characters or split it into several searches.",
   "query_not_understood": "We could not pick out any items. Name the goods or services in words, for example “buckwheat 500 kg”.",
+  "file_needs_text": "This file can't be read automatically yet. Describe the purchase in text or upload a CSV.",
   "search_unavailable": "Search is temporarily unavailable. Please try again in a minute.",
   "search_timeout": "The search took too long. Try a shorter query or search again.",
   "invalid_limit": "The number of candidates must be between 1 and 50.",

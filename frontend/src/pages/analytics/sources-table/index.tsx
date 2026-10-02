@@ -1,13 +1,12 @@
 import { useTranslation } from "react-i18next"
-import { Link } from "react-router"
 import type { AnalyticsFilters, SourceState, SourceSummary } from "@/entities/analytics/model"
 import { recordsHref } from "@/entities/analytics/scope"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { DataCell, type DataColumn, DataTable } from "@/shared/ui/data-table"
 import type { IconName } from "@/shared/ui/icon"
 import { MetaChip, type MetaChipTone } from "@/shared/ui/meta-chip"
+import { QuietLink } from "@/shared/ui/quiet-link"
 import { RatioCell } from "../ratio-figure"
-import styles from "./styles.module.css"
 
 const STATE_FACES: Record<SourceState, { icon: IconName; tone: MetaChipTone }> = {
   ok: { icon: "checkCircle", tone: "accent" },
@@ -46,12 +45,9 @@ export function SourcesTable({ sources, filters, compact = false }: SourcesTable
       {sources.map((source) => (
         <tr key={source.sourceId}>
           <DataCell>
-            <Link
-              to={recordsHref({ ...filters, sourceId: source.sourceId })}
-              className={styles.link}
-            >
+            <QuietLink to={recordsHref({ ...filters, sourceId: source.sourceId })}>
               {source.name}
-            </Link>
+            </QuietLink>
           </DataCell>
           <DataCell>
             <MetaChip

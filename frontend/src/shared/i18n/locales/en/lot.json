@@ -4,7 +4,7 @@
     "title": "Purchase not found",
     "text": "This lot is not in the upload, or the upload is not available in this browser.",
     "toFile": "Back to the file",
-    "toUploads": "Go to uploads"
+    "toUploads": "Go to history"
   },
   "queued": {
     "title": "This purchase is still processing",

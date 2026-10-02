@@ -1,0 +1,100 @@
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) var(--icon-md);
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  color: inherit;
+  text-decoration: none;
+  transition: var(--transition-control);
+}
+
+.row[data-kind="query"] {
+  grid-template-columns: minmax(0, 1fr) var(--icon-md);
+}
+
+.row:focus-visible {
+  outline-offset: calc(var(--focus-ring-width) * -1);
+}
+
+.kind {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--history-kind-size);
+  height: var(--history-kind-size);
+  padding-inline: var(--space-1);
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-md);
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+}
+
+.kind[data-kind="csv"],
+.kind[data-kind="xlsx"] {
+  border-color: var(--success-soft);
+  color: var(--success-text);
+}
+
+.kind[data-kind="pdf"] {
+  border-color: var(--warning-soft);
+  color: var(--warning-text);
+}
+
+.kind[data-kind="docx"] {
+  border-color: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+}
+
+.meta > time {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.chevron {
+  display: inline-flex;
+  justify-content: center;
+  color: var(--text-faint);
+  transition: var(--transition-control);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .row:hover {
+    background: var(--surface-canvas);
+    color: inherit;
+  }
+
+  .row:hover .chevron {
+    color: var(--accent);
+  }
+}

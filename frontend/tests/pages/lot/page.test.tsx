@@ -51,7 +51,7 @@ describe("the purchase header", () => {
     ).toHaveAttribute("href", "/uploads/u1")
     expect(screen.getByRole("link", { name: en("missing.toUploads", "lot") })).toHaveAttribute(
       "href",
-      "/uploads",
+      "/history?tab=files",
     )
   })
 

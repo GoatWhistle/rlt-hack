@@ -77,7 +77,7 @@ test("keeps an archived catalog result at its address", async ({ page }) => {
   )
 })
 
-test("opens a company profile and returns to a recent search", async ({ page }) => {
+test("opens a company profile from an archived search", async ({ page }) => {
   await openSearch(page)
   await openArchivedSearch(page, "Office paper A4 80 gsm, 300 reams")
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
@@ -88,12 +88,49 @@ test("opens a company profile and returns to a recent search", async ({ page }) 
   await expect(profile.getByRole("article", { name: /Крупа гречневая ядрица/ })).toBeVisible()
   await expectAccessible(page)
   await page.keyboard.press("Escape")
+  await expect(profile).toBeHidden()
+  await expectWithinScreen(page)
+})
+
+test("checks an attached CSV, sends it and lists it among the latest", async ({ page }) => {
+  await openSearch(page)
+  await expect(
+    page.getByRole("navigation", { name: /recent searches and files/i }),
+  ).toBeHidden()
+  await page.locator("input[type=file]").setInputFiles("public/notices-sample.csv")
+  await expect(page.getByText(/^5 purchases in the file$/)).toBeVisible()
+  await expect(page.getByRole("textbox", { name: /note on the file/i })).toBeVisible()
+  await expectAccessible(page)
+  await expectWithinScreen(page)
+  await page.getByRole("button", { name: /^find$/i }).click()
+  await expect(page).toHaveURL(/\/uploads\/test-upload$/)
 
   await page.getByRole("link", { name: /^search$/i }).click()
-  const recent = page.getByRole("region", { name: /recent searches/i })
-  await recent.getByRole("link", { name: /office paper/i }).click()
-  await expect(page).toHaveURL(/\/search\/[\w-]+$/)
-  await expectWithinScreen(page)
+  const latest = page.getByRole("navigation", { name: /recent searches and files/i })
+  await expect(latest.getByRole("link", { name: /notices-sample\.csv/ })).toHaveAttribute(
+    "href",
+    "/uploads/test-upload",
+  )
+  await expect(latest.getByRole("link", { name: /all history/i })).toHaveAttribute(
+    "href",
+    "/history",
+  )
+})
+
+test("accepts a PDF honestly and still searches by text", async ({ page }) => {
+  await openSearch(page)
+  await page.locator("input[type=file]").setInputFiles({
+    name: "terms-of-reference.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("%PDF-1.7 terms"),
+  })
+  await expect(page.getByText(/this format will be read automatically soon/i)).toBeVisible()
+  const find = page.getByRole("button", { name: /^find$/i })
+  await expect(find).toHaveAttribute("aria-disabled", "true")
+  await expectAccessible(page)
+  await page.getByRole("textbox", { name: /describe what you need/i }).fill(QUERY)
+  await find.click()
+  await expect(page).toHaveURL(/\/uploads\/[\w-]+\/lots\/query$/)
 })
 
 test("chooses a candidate and downloads the choice", async ({ page }) => {

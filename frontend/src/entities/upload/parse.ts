@@ -52,6 +52,7 @@ export function parseUploadSummary(value: unknown, path = "$"): UploadSummary {
   return {
     id: text(fields, "id", path),
     fileName: text(fields, "fileName", path),
+    title: optionalText(fields, "title", path) ?? "",
     createdAt: text(fields, "createdAt", path),
     total: count(fields, "total", path),
     processed: count(fields, "processed", path),

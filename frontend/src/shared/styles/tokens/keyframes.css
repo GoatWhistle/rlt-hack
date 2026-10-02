@@ -69,6 +69,20 @@
   }
 }
 
+@keyframes nudge-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-nudge));
+  }
+}
+
+@keyframes nudge-out {
+  to {
+    opacity: 0;
+    transform: translateY(var(--motion-nudge));
+  }
+}
+
 @keyframes collapse {
   to {
     grid-template-rows: 0fr;

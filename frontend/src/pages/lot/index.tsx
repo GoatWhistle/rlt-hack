@@ -16,7 +16,7 @@ import { CompareButton } from "@/features/compare-candidates"
 import { ExportDialog } from "@/features/export-results"
 import { RecentPlaces } from "@/features/recent-places"
 import { isApiError } from "@/shared/api/api-error"
-import { lotPath, UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
+import { historyPath, lotPath, uploadPath } from "@/shared/config/paths"
 import { useLocale } from "@/shared/i18n/locale-provider"
 import { useInView } from "@/shared/media/use-in-view"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
@@ -40,7 +40,7 @@ function LotMissing({ fileTo }: { readonly fileTo?: string }) {
       actions={
         <>
           {fileTo ? <ButtonLink to={fileTo}>{t("missing.toFile")}</ButtonLink> : null}
-          <ButtonLink to={UPLOADS_PATH} variant="secondary">
+          <ButtonLink to={historyPath("files")} variant="secondary">
             {t("missing.toUploads")}
           </ButtonLink>
         </>

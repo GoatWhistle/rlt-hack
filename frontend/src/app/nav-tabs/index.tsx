@@ -1,8 +1,10 @@
 import { type CSSProperties, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, type Location, matchPath, useLocation, useNavigation } from "react-router"
+import { TEXT_QUERY_LOT } from "@/entities/upload/model"
 import {
   ANALYTICS_PATH,
+  HISTORY_PATH,
   LOTS_ENTRY_PATH,
   SEARCH_PATH,
   UPLOADS_PATH,
@@ -12,16 +14,17 @@ import { preload, type RouteModule } from "../route-modules"
 import styles from "./styles.module.css"
 import { useIndicator } from "./use-indicator"
 
-type TabKey = "search" | "uploads" | "lots" | "analytics"
+type TabKey = "search" | "history" | "analytics"
 
 export function tabOf(pathname: string): TabKey | null {
-  if (matchPath(UPLOADS_PATH, pathname)) return "uploads"
+  if (matchPath(`${SEARCH_PATH}/*`, pathname)) return "search"
+  if (matchPath(`${UPLOADS_PATH}/:uploadId/lots/${TEXT_QUERY_LOT}`, pathname)) return "search"
   if (
-    matchPath(`${UPLOADS_PATH}/:uploadId/*`, pathname) ||
+    matchPath(HISTORY_PATH, pathname) ||
+    matchPath(`${UPLOADS_PATH}/*`, pathname) ||
     matchPath(LOTS_ENTRY_PATH, pathname)
   )
-    return "lots"
-  if (matchPath(`${SEARCH_PATH}/*`, pathname)) return "search"
+    return "history"
   if (matchPath(`${ANALYTICS_PATH}/*`, pathname)) return "analytics"
   return null
 }
@@ -35,9 +38,8 @@ function useActiveTab(): TabKey | null {
 
 const TABS: readonly { key: TabKey; to: string; icon: IconName; module: RouteModule }[] = [
   { key: "search", to: SEARCH_PATH, icon: "search", module: "search" },
-  { key: "uploads", to: UPLOADS_PATH, icon: "upload", module: "uploads" },
-  { key: "lots", to: LOTS_ENTRY_PATH, icon: "fileCheck", module: "lots" },
-  { key: "analytics", to: ANALYTICS_PATH, icon: "wave", module: "analytics" },
+  { key: "history", to: HISTORY_PATH, icon: "clock", module: "history" },
+  { key: "analytics", to: ANALYTICS_PATH, icon: "chart", module: "analytics" },
 ]
 
 export function NavTabs() {

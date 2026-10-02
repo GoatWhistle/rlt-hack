@@ -2,11 +2,12 @@ import { clsx } from "clsx"
 import type { ReactNode } from "react"
 import styles from "./styles.module.css"
 
-export type StackGap = "tight" | "normal"
+export type StackGap = "tight" | "normal" | "wide"
 
 const GAPS: Record<StackGap, string | undefined> = {
   tight: styles.tight,
   normal: styles.normal,
+  wide: styles.wide,
 }
 
 export type StackProps = {

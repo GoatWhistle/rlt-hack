@@ -10,6 +10,7 @@
   --dur-drawer: 280ms;
   --dur-panel: 460ms;
   --motion-offset: 0.5rem;
+  --motion-nudge: 0.25rem;
   --motion-scale: 0.96;
   --motion-blur: 4px;
   --press-scale: 0.97;
@@ -34,6 +35,8 @@
   --motion-slide-in: slide-in var(--dur-enter) var(--ease-out) both;
   --motion-slide-out: slide-out var(--dur-exit) var(--ease-out) both;
   --motion-collapse: collapse var(--dur-exit) var(--ease-out) both;
+  --motion-nudge-in: nudge-in var(--dur-base) var(--ease-out) both;
+  --motion-nudge-out: nudge-out var(--dur-fast) var(--ease-out) both;
   --dur-pulse: 900ms;
   --skeleton-dim: 0.5;
   --motion-pulse: pulse var(--dur-pulse) var(--ease-in-out) infinite alternate;
@@ -84,6 +87,7 @@
     --stagger-offset: 0ms;
     --vt-morph: 1ms;
     --motion-offset: 0;
+    --motion-nudge: 0;
     --motion-scale: 1;
     --motion-blur: 0;
     --pop-scale: 1;

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import type { UploadSummary } from "@/entities/upload/model"
-import { UPLOADS_PATH } from "@/shared/config/paths"
+import { historyPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { BackLink } from "@/shared/ui/back-link"
 import { Button } from "@/shared/ui/button"
@@ -21,7 +21,7 @@ export function LotsHeader({ upload, onExport, status }: LotsHeaderProps) {
   const { date, dateTime } = useFormatters()
   return (
     <header className={styles.header}>
-      <BackLink to={UPLOADS_PATH}>{t("back")}</BackLink>
+      <BackLink to={historyPath("files")}>{t("back")}</BackLink>
       <div className={styles.top}>
         <div className={styles.titles}>
           <PageTitle size="record" mono>
