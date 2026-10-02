@@ -243,6 +243,6 @@ async def test_saved_searches_can_be_read_back() -> None:
     service = harness.service()
     result = await service.search(make_query())
     assert await service.get(result.search_id) == result
-    assert await service.recent(10) == (result.summary(),)
+    assert (await service.recent(10)).searches == (result.summary(),)
     with pytest.raises(SearchNotFoundError):
         await service.get(uid("missing"))

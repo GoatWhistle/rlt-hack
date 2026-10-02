@@ -6,7 +6,7 @@ from src.models.company.supplier_profile import SupplierProfile
 from src.models.enums import CompanyRole, ComponentState
 from src.models.operations.health import ComponentHealth, Readiness
 from src.models.search.search import SearchQuery
-from src.models.search.search_result import SearchResult, SearchSummary
+from src.models.search.search_result import SearchHistory, SearchResult, SearchSummary
 from src.service.errors import SearchNotFoundError, SupplierNotFoundError
 from tests.fakes.domain import (
     make_candidate,
@@ -43,6 +43,7 @@ class FakeSupplierSearching:
     error: Exception | None = None
     queries: list[SearchQuery] = field(default_factory=list)
     limits: list[int] = field(default_factory=list)
+    cursors: list[UUID | None] = field(default_factory=list)
 
     async def search(self, query: SearchQuery) -> SearchResult:
         self.queries.append(query)
@@ -57,11 +58,16 @@ class FakeSupplierSearching:
             raise SearchNotFoundError(search_id)
         return self.result
 
-    async def recent(self, limit: int) -> tuple[SearchSummary, ...]:
+    async def recent(self, limit: int, before: UUID | None = None) -> SearchHistory:
         self.limits.append(limit)
+        self.cursors.append(before)
         if self.error is not None:
             raise self.error
-        return self.summaries
+        return SearchHistory(
+            searches=self.summaries[:limit],
+            has_more=len(self.summaries) > limit,
+            total=len(self.summaries),
+        )
 
 
 @dataclass

@@ -43,11 +43,16 @@ export function stubSuppliers(overrides: Partial<SupplierGateway> = {}): Supplie
 }
 
 export function stubSearch(overrides: Partial<SearchGateway> = {}): SearchGateway {
+  const recent = overrides.recent ?? vi.fn(async () => [])
   return {
     search: vi.fn(async () => contractResult()),
     get: vi.fn(async () => contractResult()),
-    recent: vi.fn(async () => []),
+    history: vi.fn(async (limit: number) => {
+      const searches = await recent(limit)
+      return { searches, hasMore: false, total: searches.length }
+    }),
     ...overrides,
+    recent,
   }
 }
 

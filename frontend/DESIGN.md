@@ -4,7 +4,7 @@
 
 Концепция и интерактивные макеты: https://claude.ai/artifact/QCYv9weyEP79h2jTXDXwk4 (предыдущий вариант в стиле «21n»: https://claude.ai/artifact/XH93oaVSyvsZWJFZGWgaHj).
 
-Все значения лежат в `src/shared/styles/tokens/`: палитра и семантические цвета — `color.css`, шрифты и размеры — `typography.css`, отступы, радиусы и размеры элементов — `layout.css`, движение — `motion.css`. В остальном коде используются только `var(--token)`.
+Все значения лежат в `src/shared/styles/tokens/`: палитра и семантические цвета — `color.css`, шрифты и размеры — `typography.css`, отступы, радиусы и размеры элементов — `layout.css`, движение — `motion.css`, ключевые кадры — `keyframes.css`. В остальном коде используются только `var(--token)`.
 
 ## Цвета
 

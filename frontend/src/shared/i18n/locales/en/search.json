@@ -17,7 +17,15 @@
     },
     "region": "Delivery region",
     "anyRegion": "No regional preference",
-    "regionHint": "Prefer local companies while keeping suppliers from other regions."
+    "regionPicker": {
+      "trigger": "Delivery region: {{name}}",
+      "search": "City or region",
+      "cities": "Cities",
+      "regions": "Regions",
+      "empty": "Nothing found",
+      "emptyHint": "Check the spelling or try the region name",
+      "close": "Close"
+    }
   },
   "recent": {
     "title": "Recent searches",
@@ -29,9 +37,9 @@
     "recommended_other": "<b>{{count, number}}</b> recommended",
     "none": "No candidates found",
     "retry": "Try again",
-    "today": "Today",
-    "earlier": "Earlier",
-    "collapse": "Hide"
+    "collapse": "Hide",
+    "more_one": "Show {{count, number}} more",
+    "more_other": "Show {{count, number}} more"
   },
   "header": {
     "title": "Search result: {{query}}",

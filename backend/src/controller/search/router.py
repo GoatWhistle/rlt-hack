@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request, Response
 
@@ -68,10 +69,15 @@ async def recent_searches(
     response: Response,
     service: Annotated[SupplierSearching, Depends(searching)],
     limit: Annotated[int, Query(ge=1, le=RECENT_MAX)] = RECENT_DEFAULT,
+    before: Annotated[UUID | None, Query()] = None,
 ) -> RecentSearchesDto:
     uncached(response)
-    summaries = await service.recent(limit)
-    return RecentSearchesDto(searches=[to_summary(summary) for summary in summaries])
+    history = await service.recent(limit, before)
+    return RecentSearchesDto(
+        searches=[to_summary(summary) for summary in history.searches],
+        has_more=history.has_more,
+        total=history.total,
+    )
 
 
 @router.get(

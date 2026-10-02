@@ -189,3 +189,5 @@ class SearchSummaryDto(CamelModel):
 
 class RecentSearchesDto(CamelModel):
     searches: list[SearchSummaryDto]
+    has_more: bool = False
+    total: int = 0

@@ -1,6 +1,7 @@
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta, timezone
 from decimal import Decimal
+from uuid import UUID
 
 import httpx
 import pytest
@@ -152,8 +153,41 @@ async def test_recent_uses_default_limit(
                 "recommended": 1,
                 "createdAt": "2026-10-01T12:00:00.500000Z",
             }
-        ]
+        ],
+        "hasMore": False,
+        "total": 1,
     }
+    assert provider.searching.cursors == [None]
+
+
+async def test_recent_pages_after_a_cursor(
+    client: httpx.AsyncClient, provider: FakeServiceProvider
+) -> None:
+    provider.searching.summaries = tuple(
+        SearchSummary(
+            search_id=uid(f"search-{index}"),
+            text=SearchText("рис"),
+            locale=Locale.RU,
+            items=1,
+            candidates=1,
+            recommended=0,
+            created_at=datetime(2026, 10, 1, 12, index, tzinfo=UTC),
+        )
+        for index in range(3)
+    )
+    response = await client.get("/api/searches", params={"limit": 2, "before": SEARCH_ID})
+    body = response.json()
+    assert response.status_code == 200
+    assert provider.searching.cursors == [UUID(SEARCH_ID)]
+    assert len(body["searches"]) == 2
+    assert body["hasMore"] is True
+    assert body["total"] == 3
+
+
+async def test_recent_rejects_a_malformed_cursor(client: httpx.AsyncClient) -> None:
+    response = await client.get("/api/searches", params={"before": "nope"})
+    assert response.status_code == 422
+    assert response.json()["code"] == "invalid_request"
 
 
 @pytest.mark.parametrize(("limit", "status"), [(1, 200), (50, 200), (0, 422), (51, 422)])

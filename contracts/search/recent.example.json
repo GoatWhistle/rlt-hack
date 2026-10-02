@@ -9,5 +9,7 @@
       "recommended": 1,
       "createdAt": "2026-10-01T12:00:00Z"
     }
-  ]
+  ],
+  "hasMore": false,
+  "total": 1
 }

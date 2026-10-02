@@ -1,6 +1,6 @@
 import type { HttpClient } from "@/shared/api/http-client"
 import type { SearchGateway } from "./gateway"
-import { parseRecentSearches, parseSearchResult } from "./parse"
+import { parseRecentSearches, parseSearchHistory, parseSearchResult } from "./parse"
 
 export const SEARCHES_PATH = "/searches"
 
@@ -14,5 +14,10 @@ export function createHttpSearchGateway(client: HttpClient): SearchGateway {
       }),
     recent: (limit) =>
       client.get(SEARCHES_PATH, { query: { limit }, parse: parseRecentSearches }),
+    history: (limit, before) =>
+      client.get(SEARCHES_PATH, {
+        query: before ? { limit, before } : { limit },
+        parse: parseSearchHistory,
+      }),
   }
 }

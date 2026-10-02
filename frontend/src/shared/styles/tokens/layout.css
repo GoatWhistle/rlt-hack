@@ -29,7 +29,7 @@
   --dot-size: 0.4375rem;
   --header-height: 3.5rem;
   --field-min-lines: 4;
-  --query-lift: 22dvh;
+  --query-lift: clamp(var(--space-4), calc(30dvh - 9rem), 14rem);
   --field-max-lines: 8;
   --page-fill: calc(
     100dvh -
@@ -43,6 +43,9 @@
   --target-touch: 2.75rem;
   --menu-width: 11rem;
   --menu-item-height: 2.5rem;
+  --combobox-width: 22rem;
+  --combobox-max-height: 26rem;
+  --sheet-height: min(85dvh, 40rem);
   --flag-width: 1.25rem;
   --radius-flag: 0.125rem;
   --radius-switch: 0.5rem;
@@ -69,7 +72,6 @@
   --indicator-height: 2px;
   --skeleton-line: 0.75rem;
   --state-badge: 3.5rem;
-  --state-offset: clamp(var(--space-6), 12vh, var(--space-9));
   --tip-width: 12rem;
   --marker-size: 1.125rem;
   --skeleton-title: 1.75rem;

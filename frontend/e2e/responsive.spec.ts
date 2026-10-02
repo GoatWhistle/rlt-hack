@@ -37,6 +37,10 @@ function frame(page: Page): Promise<Frame> {
         requestAnimationFrame(() =>
           requestAnimationFrame(() => {
             const root = document.documentElement
+            const shown = document.body.style.display
+            document.body.style.display = "none"
+            void document.body.offsetHeight
+            document.body.style.display = shown
             const main = document.querySelector("main")
             const brand = document.querySelector("header a")
             if (!main || !brand) throw new Error("the shell is not rendered")
@@ -60,6 +64,15 @@ function frame(page: Page): Promise<Frame> {
 async function expectAdaptive(page: Page) {
   for (const screen of SCREENS) {
     await page.setViewportSize(screen)
+    await expect
+      .poll(
+        async () => {
+          const settled = await frame(page)
+          return settled.scroll - settled.client
+        },
+        { message: `overflow at ${screen.width}` },
+      )
+      .toBeLessThanOrEqual(0)
     const measured = await frame(page)
     const overflow = await page
       .locator("body *")

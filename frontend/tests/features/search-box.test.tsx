@@ -3,6 +3,7 @@ import { en } from "@tests/support/dictionaries"
 import { stubGateway, uploadSummary } from "@tests/support/gateway"
 import { renderWithProviders } from "@tests/support/render"
 import { describe, expect, it, vi } from "vitest"
+import { DEFAULT_REGION_CODE } from "@/entities/evidence/regions"
 import { decodeFile } from "@/entities/notice/decode"
 import { MAX_QUERY_LENGTH } from "@/entities/search/model"
 import type { UploadGateway } from "@/entities/upload/gateway"
@@ -20,6 +21,12 @@ function renderBox(gateway: UploadGateway = stubGateway(), initialText = "") {
   )
   const field = screen.getByRole("textbox", { name: en("box.label", "search") })
   return { ...view, onFound, field, gateway }
+}
+
+async function sentCsv(gateway: UploadGateway): Promise<string> {
+  const [request] = vi.mocked(gateway.create).mock.calls.at(-1) ?? []
+  if (!request) throw new Error("nothing was sent")
+  return decodeFile(request.file)
 }
 
 describe("the search box", () => {
@@ -44,7 +51,8 @@ describe("the search box", () => {
 
   it("sends a regional preference without restricting the candidate pool", async () => {
     const { user, field, gateway } = renderBox()
-    await user.selectOptions(screen.getByRole("combobox"), "78")
+    await user.click(screen.getByRole("button", { name: /^Delivery region:/ }))
+    await user.type(screen.getByRole("combobox"), "msk{Enter}")
     await user.type(field, "paper")
     await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
     await waitFor(() =>
@@ -52,6 +60,17 @@ describe("the search box", () => {
         expect.objectContaining({ check: expect.objectContaining({ total: 1 }) }),
       ),
     )
+    expect(await sentCsv(gateway)).toContain(';"77"')
+  })
+
+  it("leaves the region out once the preference is switched off", async () => {
+    const { user, field, gateway } = renderBox()
+    await user.click(screen.getByRole("button", { name: /^Delivery region:/ }))
+    await user.click(screen.getByRole("option", { name: en("box.anyRegion", "search") }))
+    await user.type(field, "paper")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
+    await waitFor(() => expect(gateway.create).toHaveBeenCalledTimes(1))
+    expect(await sentCsv(gateway)).toContain(';""')
   })
   it("sends the text from the button and reports the result", async () => {
     const { user, field, onFound, gateway } = renderBox()
@@ -65,6 +84,7 @@ describe("the search box", () => {
         }),
       }),
     )
+    expect(await sentCsv(gateway)).toContain(`;"${DEFAULT_REGION_CODE}"`)
   })
 
   it("starts a new line on Enter and sends only from the button", async () => {

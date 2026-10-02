@@ -88,3 +88,26 @@ export type RegionCode = (typeof REGION_CODES)[number]
 export function isRegionCode(code: string): code is RegionCode {
   return (REGION_CODES as readonly string[]).includes(code)
 }
+
+export const DEFAULT_REGION_CODE: RegionCode = "78"
+
+export const MAJOR_CITY_CODES = [
+  "78",
+  "77",
+  "54",
+  "66",
+  "16",
+  "52",
+  "24",
+  "74",
+  "63",
+  "02",
+  "61",
+  "23",
+  "55",
+  "36",
+  "59",
+  "34",
+] as const satisfies readonly RegionCode[]
+
+export type MajorCityCode = (typeof MAJOR_CITY_CODES)[number]

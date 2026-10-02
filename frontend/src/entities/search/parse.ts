@@ -35,6 +35,7 @@ import {
   type QueryItem,
   type Score,
   type SearchFilters,
+  type SearchHistoryPage,
   type SearchQuery,
   type SearchResult,
   type SearchSummary,
@@ -211,4 +212,14 @@ function summary(value: unknown, path: string): SearchSummary {
 
 export function parseRecentSearches(value: unknown): SearchSummary[] {
   return list(record(value, "$"), "searches", "$", summary)
+}
+
+export function parseSearchHistory(value: unknown): SearchHistoryPage {
+  const fields = record(value, "$")
+  const searches = list(fields, "searches", "$", summary)
+  return {
+    searches,
+    hasMore: fields.hasMore === true,
+    total: typeof fields.total === "number" ? fields.total : searches.length,
+  }
 }

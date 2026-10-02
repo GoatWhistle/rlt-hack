@@ -9,6 +9,7 @@ export type Formatters = {
   readonly dateTime: (value: Date | string) => string
   readonly time: (value: Date | string) => string
   readonly list: (items: readonly string[]) => string
+  readonly relative: (value: number, unit: Intl.RelativeTimeFormatUnit) => string
 }
 
 const cache = new Map<Locale, Formatters>()
@@ -25,6 +26,7 @@ function build(locale: Locale): Formatters {
   const dateTimes = new Intl.DateTimeFormat(tag, { dateStyle: "medium", timeStyle: "short" })
   const times = new Intl.DateTimeFormat(tag, { timeStyle: "short" })
   const lists = new Intl.ListFormat(tag, { type: "conjunction" })
+  const relatives = new Intl.RelativeTimeFormat(tag, { numeric: "auto" })
   const prices = new Intl.NumberFormat(tag, {
     style: "currency",
     currency: "RUB",
@@ -50,6 +52,10 @@ function build(locale: Locale): Formatters {
     dateTime: (value) => dateTimes.format(toDate(value)),
     time: (value) => times.format(toDate(value)),
     list: (items) => lists.format(items),
+    relative: (value, unit) => {
+      const phrase = relatives.format(value, unit)
+      return phrase.charAt(0).toLocaleUpperCase(tag) + phrase.slice(1)
+    },
   }
 }
 

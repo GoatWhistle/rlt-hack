@@ -464,7 +464,7 @@ API получает пул такого размера, и каналы пои�
 | --- | --- | --- |
 | `POST` | `/api/searches` | 201, результат поиска и `Location: /api/searches/{id}` |
 | `GET` | `/api/searches/{searchId}` | 200 или 304, сохранённый результат |
-| `GET` | `/api/searches?limit=1..50` | 200, последние поиски (по умолчанию 10) |
+| `GET` | `/api/searches?limit=1..50&before={id}` | 200, история поисков страницами: `searches`, `hasMore`, `total`; `before` — id последнего показанного поиска (по умолчанию 10) |
 | `GET` | `/api/suppliers/{supplierId}` | 200, профиль поставщика и его карточки |
 | `GET` | `/api/uploads?limit=1..50` | 200, последние загрузки с прогрессом (по умолчанию 20) |
 | `POST` | `/api/uploads` | 201, загрузка принята, `Location: /api/uploads/{id}` |
@@ -806,8 +806,9 @@ uv run --python 3.13 python tests/supplier/productcenter_live.py \
   `supplier_lots` — строка на пару поставщик–лот с ключом
   `(supplier_id, lot_id)` (сводка участий кандидатов). Обе таблицы с тем же
   текстовым индексом.
-- `0015_archive_retention.sql` задаёт архиву поисков `searches` срок хранения
-  180 дней (`TTL created_at + 180 DAY`).
+- `0015_archive_retention.sql` задавала архиву поисков `searches` срок хранения
+  180 дней; `0017_keep_search_history.sql` снимает его — история поисков
+  хранится целиком.
 
 После загрузки или обновления истории закупок представления нужно обновить, не
 дожидаясь суточного цикла:

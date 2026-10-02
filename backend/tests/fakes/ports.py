@@ -10,7 +10,7 @@ from src.models.company.purchase import PurchaseSummary
 from src.models.ranking.retrieval import RetrievalHits
 from src.models.search.query_item import QueryItem, SearchRequest
 from src.models.search.search import SearchQuery
-from src.models.search.search_result import SearchResult, SearchSummary
+from src.models.search.search_result import SearchHistory, SearchResult
 from tests.fakes.domain import MOMENT, uid
 
 
@@ -127,9 +127,16 @@ class FakeArchive:
     async def get(self, search_id: UUID) -> SearchResult | None:
         return self.stored.get(search_id)
 
-    async def recent(self, limit: int) -> tuple[SearchSummary, ...]:
+    async def recent(self, limit: int, before: UUID | None = None) -> SearchHistory:
         ordered = sorted(self.stored.values(), key=lambda item: item.created_at, reverse=True)
-        return tuple(item.summary() for item in ordered[:limit])
+        if before is not None:
+            ids = [item.search_id for item in ordered]
+            ordered = ordered[ids.index(before) + 1 :] if before in ids else []
+        return SearchHistory(
+            searches=tuple(item.summary() for item in ordered[:limit]),
+            has_more=len(ordered) > limit,
+            total=len(self.stored),
+        )
 
 
 @dataclass(slots=True)
