@@ -29,3 +29,28 @@ test("submits the form through CSV and restores its saved recommendation", async
     violations.filter((issue) => ["serious", "critical"].includes(issue.impact ?? "")),
   ).toEqual([])
 })
+
+test("sends notices and positions together", async ({ page }) => {
+  await installApiFixture(page)
+  await page.goto("/uploads")
+  await chooseLanguage(page, /^english$/i)
+  await page.getByLabel(/choose file/i).setInputFiles({
+    name: "notices.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from("lot_id;procedure_name\n1;Water"),
+  })
+  await page.getByLabel(/items — second csv/i).setInputFiles({
+    name: "items.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from("lot_id;product_name;okpd2_code\n1;Drinking water;11.07"),
+  })
+  const sent = page.waitForRequest(
+    (request) => request.url().endsWith("/api/uploads") && request.method() === "POST",
+  )
+  await page.getByRole("button", { name: /process 1 purchase/i }).click()
+  const body = (await sent).postData()
+  expect(body).toContain('name="file"; filename="notices.csv"')
+  expect(body).toContain('name="items_file"; filename="items.csv"')
+  expect(body).toContain("Drinking water;11.07")
+  await expect(page).toHaveURL(/\/uploads\/test-upload$/)
+})

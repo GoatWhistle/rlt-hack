@@ -26,7 +26,7 @@ def lot_summary(lot: LotRecommendation) -> dict:
         "deliveryRegion": lot.notice.delivery_region or None,
         "startPrice": float(lot.notice.start_price) if lot.notice.start_price is not None else None,
         "status": "ready" if lot.candidates else "noCandidates",
-        "products": 0,
+        "products": len(lot.notice.positions),
         "candidates": len(lot.candidates),
     }
 
@@ -61,7 +61,10 @@ def result(upload: Upload, lot: LotRecommendation) -> dict:
             "fileName": upload.filename,
             "requestTitle": lot.notice.title,
             "lotLabel": lot.notice.lot_id,
-            "products": [],
+            "products": [
+                {"id": item.item_id, "name": item.name, "okpd2": item.okpd2, "origin": "notice"}
+                for item in lot.notice.positions
+            ],
             "companies": [
                 {
                     "id": candidate.inn,

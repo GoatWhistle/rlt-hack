@@ -31,7 +31,7 @@ class SupplierSearch:
         return await self._search(text, limit, None)
 
     async def search_notice(self, notice: Notice, limit: int = 10) -> list[SupplierCandidate]:
-        text = "\n".join(filter(None, (notice.title, notice.subject)))
+        text = notice.query_text
         return await self._search(
             text,
             limit,

@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
 from src.controller.uploads.csv_file import NoticeReader
+from src.controller.uploads.item_file import read_positions
 from src.controller.uploads.presentation import detail, result, summary
 from src.controller.uploads.protocols import UploadManager
 from src.controller.uploads.received import receive_file
@@ -64,9 +65,14 @@ async def list_uploads(request: Request, response: Response):
 async def create_upload(request: Request, response: Response):
     received = await receive_file(request)
     notices = await reader.read(received.content)
+    if received.positions is not None:
+        notices = await read_positions(notices, received.positions)
     manager: UploadManager = request.app.state.uploads
     try:
-        upload = await manager.create(owner(request, response), received.name, notices)
+        filename = received.name
+        if received.positions_name:
+            filename += " + " + received.positions_name
+        upload = await manager.create(owner(request, response), filename, notices)
     except (DomainError, UploadError, StorageUnavailableError):
         raise
     except Exception as error:

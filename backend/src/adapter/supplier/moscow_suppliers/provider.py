@@ -46,6 +46,7 @@ class MoscowSuppliersProvider:
             raise SourceUnavailableError("Не задан MOSCOW_SUPPLIERS_EXPORT_URL")
         suppliers: dict[str, Supplier] = {}
         offers: dict[str, Offer] = {}
+        offer_rows: dict[str, dict[str, object]] = {}
         seen_pages: set[str] = set()
         expected_suppliers: int | None = None
         expected_offers: int | None = None
@@ -98,25 +99,24 @@ class MoscowSuppliersProvider:
                 for row in rows_offers:
                     if not isinstance(row, dict):
                         raise ContentFormatError("Неверная запись оферты")
-                    seller_key = _required(row, "supplier_id")
-                    seller = suppliers.get(seller_key)
-                    if seller is None:
-                        raise ContentFormatError(
-                            f"Поставщик {seller_key} отсутствует или идёт позже оферты"
-                        )
-                    offer = self._offer(row, seller)
-                    key = offer.external_id
-                    if key in offers:
+                    key = _required(row, "id")
+                    if key in offer_rows:
                         raise ContentFormatError(f"Повтор оферты: {key}")
-                    offers[key] = offer
+                    offer_rows[key] = row
                 link = page.get("next")
                 if link is not None and (not isinstance(link, str) or not link.strip()):
                     raise ContentFormatError("Неверная ссылка следующей страницы")
                 next_url = urljoin(next_url, link) if link else None
-        if len(suppliers) != expected_suppliers or len(offers) != expected_offers:
+        if len(suppliers) != expected_suppliers or len(offer_rows) != expected_offers:
             raise ContentFormatError("Число уникальных записей не совпало с контрольным")
-        if not suppliers or not offers:
+        if not suppliers or not offer_rows:
             raise ContentFormatError("Пустой экспорт не подтверждает исчезновение оферт")
+        for key, row in offer_rows.items():
+            seller_key = _required(row, "supplier_id")
+            seller = suppliers.get(seller_key)
+            if seller is None:
+                raise ContentFormatError(f"Поставщик {seller_key} отсутствует для оферты {key}")
+            offers[key] = self._offer(row, seller)
         return SupplierPackage(self._source, tuple(suppliers.values()), tuple(offers.values()))
 
     def _supplier(self, row: object) -> Supplier:
@@ -158,6 +158,18 @@ class MoscowSuppliersProvider:
         except ValueError as exc:
             raise ContentFormatError(f"Неверный тип или статус оферты {external_id}") from exc
         attributes = {"sku_id": sku_id}
+        for key in ("delivery_days_min", "delivery_days_max", "valid_from", "valid_to"):
+            value = _optional(row, key)
+            if value:
+                attributes[key] = value
+        regions = row.get("delivery_regions", [])
+        if not isinstance(regions, list) or any(
+            not isinstance(region, str) or not region.strip() for region in regions
+        ):
+            raise ContentFormatError(f"Неверные регионы оферты {external_id}")
+        if regions:
+            attributes["delivery_regions"] = "|".join(region.strip() for region in regions)
+        article = _optional(row, "article")
         observed_at = datetime.now(UTC)
         return Offer(
             offer_id=identity.offer_id(self._source.source_id, external_id),
@@ -171,13 +183,18 @@ class MoscowSuppliersProvider:
             seller_status=VerificationStatus.UNVERIFIED,
             evidence_url=url,
             item_type=kind,
+            article=article,
             attributes=attributes,
             price=price,
             currency=_optional(row, "currency"),
             unit=_optional(row, "unit"),
             availability=status,
             content_hash=identity.offer_content_hash(
-                name=name, item_type=kind.value, unit=_optional(row, "unit"), attributes=attributes
+                name=name,
+                item_type=kind.value,
+                article=article,
+                unit=_optional(row, "unit"),
+                attributes=attributes,
             ),
         )
 

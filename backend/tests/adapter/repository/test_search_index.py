@@ -54,10 +54,10 @@ async def test_absent_term_selects_no_lot_granules(gateway: ChdbGateway) -> None
     assert rows == [("L1", "Поставка крупы гречневой", 4)]
 
 
-async def test_search_archive_has_ttl(gateway: ChdbGateway) -> None:
+async def test_search_archive_retains_history(gateway: ChdbGateway) -> None:
     rows = await gateway.select(
         f"SELECT engine_full FROM system.tables WHERE database = '{DATABASE}' AND name = 'searches'"
     )
     [(engine,)] = rows
-    assert "TTL" in str(engine)
-    assert "180" in str(engine)
+    assert "TTL" not in str(engine)
+    assert "ReplacingMergeTree(version)" in str(engine)

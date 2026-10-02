@@ -4,6 +4,7 @@ import type { LotDetail, LotResult, UploadDetail, UploadSummary } from "./model"
 
 export type NewUpload = {
   readonly file: File
+  readonly itemsFile?: File
   readonly check: CheckedFile
 }
 

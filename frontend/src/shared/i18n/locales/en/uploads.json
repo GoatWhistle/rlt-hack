@@ -81,5 +81,10 @@
     },
     "accepted": "{{file}} is accepted, processing continues",
     "open": "Open"
+  },
+  "items": {
+    "title": "Items — second CSV",
+    "hint": "Attach a file with lot_id, product_name, okpd2_code columns. Items join notices by lot_id. You may continue without it when no separate item file is available.",
+    "remove": "Remove items file"
   }
 }
