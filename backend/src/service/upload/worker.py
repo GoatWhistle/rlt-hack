@@ -12,6 +12,7 @@ from src.service.upload.protocols import (
     BatchNoticeSearchEngine,
     CandidateEnrichment,
     NoticeSearchEngine,
+    PositionTokenizer,
     SearchEngine,
     SearchVersion,
     UploadRepository,
@@ -26,9 +27,11 @@ class UploadService:
         search: SearchEngine,
         repository: UploadRepository,
         max_backlog: int = DEFAULT_MAX_BACKLOG,
+        position_tokens: PositionTokenizer | None = None,
     ) -> None:
         if max_backlog < 1:
             raise ValueError(max_backlog)
+        self._position_tokens = position_tokens
         self._search = search
         self._repository = repository
         self._refresh_lock = asyncio.Lock()
@@ -73,6 +76,8 @@ class UploadService:
                     candidates=await relevant_evidence(
                         lot.notice.query_text,
                         [next(enriched) for _ in lot.candidates],
+                        lot.notice.positions,
+                        self._position_tokens,
                     ),
                 )
                 for lot in upload.lots
@@ -83,7 +88,12 @@ class UploadService:
         if isinstance(self._search, BatchNoticeSearchEngine):
             recommendations = await self._search.search_notices(notices, 10)
             return [
-                LotRecommendation(notice, await relevant_evidence(notice.query_text, candidates))
+                LotRecommendation(
+                    notice,
+                    await relevant_evidence(
+                        notice.query_text, candidates, notice.positions, self._position_tokens
+                    ),
+                )
                 for notice, candidates in zip(notices, recommendations, strict=True)
             ]
         return [LotRecommendation(notice, await self._recommend(notice)) for notice in notices]
@@ -91,10 +101,15 @@ class UploadService:
     async def _recommend(self, notice: Notice) -> list[SupplierCandidate]:
         if isinstance(self._search, NoticeSearchEngine):
             return await relevant_evidence(
-                notice.query_text, await self._search.search_notice(notice, 10)
+                notice.query_text,
+                await self._search.search_notice(notice, 10),
+                notice.positions,
+                self._position_tokens,
             )
         query = notice.query_text
-        return await relevant_evidence(query, await self._search.search(query, 10))
+        return await relevant_evidence(
+            query, await self._search.search(query, 10), notice.positions, self._position_tokens
+        )
 
     def _version(self) -> str:
         return self._search.version if isinstance(self._search, SearchVersion) else ""

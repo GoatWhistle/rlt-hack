@@ -1,5 +1,7 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, test } from "@playwright/test"
+import { recommendationFixture } from "../tests/entities/recommendation/fixture"
+import { installApiFixture } from "./api-fixture"
 import { chooseLanguage } from "./language"
 
 test("opens a readable procurement source with accessible facts", async ({ page }) => {
@@ -40,4 +42,63 @@ test("opens a readable procurement source with accessible facts", async ({ page 
   expect(
     violations.filter((item) => item.impact === "serious" || item.impact === "critical"),
   ).toEqual([])
+})
+
+test("shows historical item matches with a dated archive source", async ({ page }) => {
+  await installApiFixture(page)
+  const company = recommendationFixture.companies[0]
+  const product = recommendationFixture.products[0]
+  if (!company || !product) throw new Error("missing synthetic fixture")
+  await page.route("**/api/uploads/test-upload/lots/test_paper", (route) =>
+    route.fulfill({
+      json: {
+        lot: {
+          id: "test_paper",
+          title: "Paper procurement",
+          status: "ready",
+          products: 1,
+          candidates: 1,
+        },
+        upload: {
+          id: "test-upload",
+          fileName: "two.csv",
+          createdAt: "2026-10-02",
+          total: 1,
+          processed: 1,
+          counts: { ready: 1, needsCheck: 0, noCandidates: 0, failed: 0 },
+          rejected: 0,
+        },
+        recommendation: {
+          ...recommendationFixture,
+          products: [product],
+          companies: [
+            {
+              ...company,
+              matches: [
+                {
+                  productId: product.id,
+                  basis: "historical",
+                  source: {
+                    kind: "purchase",
+                    title: "Verified archived procurement",
+                    url: "/uploads/test-upload/lots/test_paper/evidence/7800000011/archive-1",
+                    checkedAt: "2025-02-01",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    }),
+  )
+  await page.goto("/uploads/test-upload/lots/test_paper")
+  await chooseLanguage(page, /^english$/i)
+  await expect(
+    page.getByText("Item in a procurement with this company participating").first(),
+  ).toBeVisible()
+  await expect(
+    page.getByRole("link", { name: /Verified archived procurement/ }).first(),
+  ).toBeVisible()
+  await expect(page.getByText(/procurement date/).first()).toBeVisible()
 })

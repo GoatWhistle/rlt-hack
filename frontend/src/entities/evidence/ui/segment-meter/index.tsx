@@ -6,6 +6,7 @@ import styles from "./styles.module.css"
 const BASIS_STYLES: Record<MeterBasis, string | undefined> = {
   stock: styles.stock,
   catalog: styles.catalog,
+  historical: styles.catalog,
   inferred: styles.inferred,
   none: undefined,
 }
@@ -34,7 +35,11 @@ export function SegmentMeter({ segments, size = "sm", reveal = false }: SegmentM
   return (
     <span
       role="img"
-      aria-label={label}
+      aria-label={
+        count("historical") > 0
+          ? `${label}; ${t("meter.history", { count: count("historical") })}`
+          : label
+      }
       className={clsx(styles.meter, size === "lg" && styles.large)}
       data-reveal={reveal ? "" : undefined}
     >

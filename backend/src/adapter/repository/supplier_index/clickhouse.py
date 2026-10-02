@@ -1,22 +1,39 @@
 import asyncio
+import re
 from dataclasses import replace
+from datetime import date
 from pathlib import Path
 
 import numpy as np
 
+from src.adapter.repository.supplier_index.archive_history import enrich_archive_history
 from src.adapter.repository.supplier_index.history import enrich_history
 from src.adapter.repository.supplier_index.index import FileSupplierIndex
-from src.adapter.repository.supplier_index.protocols import SqlGateway
+from src.adapter.repository.supplier_index.protocols import SimilarityScorer, SqlGateway
 from src.models.search.search_context import SearchContext
 from src.models.search.supplier_search import SupplierCandidate, SupplierCatalogOffer
 
 
 class ClickHouseSupplierIndex(FileSupplierIndex):
-    def __init__(self, directory: Path, gateway: SqlGateway, index_id: str, database: str) -> None:
+    def __init__(
+        self,
+        directory: Path,
+        gateway: SqlGateway,
+        index_id: str,
+        database: str,
+        scorer: SimilarityScorer | None = None,
+    ) -> None:
         super().__init__(directory)
         self._gateway = gateway
         self._index_id = index_id
         self._database = database
+        self._archive_version = "pending"
+        self._scorer = scorer
+
+    @property
+    def version(self) -> str:
+        version = super().version + "/full-history-v1/" + self._archive_version
+        return version + "/gpu-profile-scores-v1" if self._scorer is not None else version
 
     async def initialize(self) -> None:
         await super().initialize()
@@ -30,6 +47,19 @@ class ClickHouseSupplierIndex(FileSupplierIndex):
         )
         if rows != [(len(self.cards), self.dimensions, self.manifest["files"]["cards.parquet"])]:
             raise ValueError("ClickHouse supplier index is not complete")
+        archive = await self._gateway.select(
+            f"SELECT prepared_sha256 FROM {self._database}.procurement_archive_imports FINAL "
+            "WHERE index_id={index:String} AND history_before={before:Date} "
+            "AND status='completed'",
+            {
+                "index": self._index_id,
+                "before": date.fromisoformat(self.manifest["history_before"]),
+            },
+        )
+        if archive:
+            if len(archive) != 1 or not re.fullmatch(r"[a-f0-9]{64}", archive[0][0]):
+                raise ValueError("Invalid completed procurement archive identity")
+            self._archive_version = "completed/" + archive[0][0]
         self._positions = {card["card_id"]: i for i, card in enumerate(self.cards)}
         del self.vectors
         del self.norms
@@ -40,16 +70,32 @@ class ClickHouseSupplierIndex(FileSupplierIndex):
     async def search_context(
         self, text: str, vector: list[float], limit: int, context: SearchContext
     ) -> list[SupplierCandidate]:
-        rows = await self._gateway.select(
-            f"SELECT card_id, 1 - cosineDistance(embedding, {{vector:Array(Float32)}}) "
-            f"FROM {self._database}.supplier_profile_embeddings FINAL "
-            "WHERE index_id = {index:String}",
-            {"index": self._index_id, "vector": vector},
+        if self._scorer is not None:
+            scores = await self._scorer.score(self._index_id, vector, len(self.cards))
+            dense = np.asarray(scores, dtype=np.float32)
+            if dense.shape != (len(self.cards),) or not np.isfinite(dense).all():
+                raise ValueError("Invalid profile similarity scores")
+            candidates = await asyncio.to_thread(self._fuse, text, dense, limit, context)
+        else:
+            rows = await self._gateway.select(
+                f"SELECT card_id, 1 - cosineDistance(embedding, {{vector:Array(Float32)}}) "
+                f"FROM {self._database}.supplier_profile_embeddings FINAL "
+                "WHERE index_id = {index:String}",
+                {"index": self._index_id, "vector": vector},
+            )
+            if len(rows) != len(self.cards):
+                raise ValueError("ClickHouse supplier index changed")
+            candidates = await asyncio.to_thread(self._combine, text, rows, limit, context)
+        candidates = await self.enrich(candidates)
+        return await enrich_archive_history(
+            self._gateway,
+            self._database,
+            self._index_id,
+            date.fromisoformat(self.manifest["history_before"]),
+            text,
+            context,
+            candidates,
         )
-        if len(rows) != len(self.cards):
-            raise ValueError("ClickHouse supplier index changed")
-        candidates = await asyncio.to_thread(self._combine, text, rows, limit, context)
-        return await self.enrich(candidates)
 
     async def enrich(self, candidates: list[SupplierCandidate]) -> list[SupplierCandidate]:
         candidates = await super().enrich(candidates)
@@ -79,8 +125,8 @@ class ClickHouseSupplierIndex(FileSupplierIndex):
             parameters,
         )
         catalog: dict[str, list[SupplierCatalogOffer]] = {}
-        for inn, name, url, date in rows:
-            catalog.setdefault(inn, []).append(SupplierCatalogOffer(name, url, date[:10]))
+        for inn, name, url, observed_at in rows:
+            catalog.setdefault(inn, []).append(SupplierCatalogOffer(name, url, observed_at[:10]))
         result = []
         for candidate in candidates:
             name, website, contacts, url = suppliers.get(candidate.inn, ("", "", {}, ""))

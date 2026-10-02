@@ -4,7 +4,7 @@ export type ProductOrigin = (typeof PRODUCT_ORIGINS)[number]
 export const COMPANY_STATUSES = ["recommended", "check", "historical"] as const
 export type CompanyStatus = (typeof COMPANY_STATUSES)[number]
 
-export const MATCH_BASES = ["stock", "catalog", "inferred"] as const
+export const MATCH_BASES = ["stock", "catalog", "historical", "inferred"] as const
 export type MatchBasis = (typeof MATCH_BASES)[number]
 
 export const SOURCE_KINDS = ["catalog", "price", "purchase", "registry"] as const

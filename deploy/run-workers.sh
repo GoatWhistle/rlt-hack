@@ -25,5 +25,9 @@ if grep -Eq '^RLT_RUN_SEARCH=true$' "${RLT_ENV_FILE:-/etc/rlt-hack/production.en
   compose run --rm --no-deps --entrypoint python \
     --volume "${RLT_HISTORY_DIR:-/root/rlt/ready-v1}:/data/history:ro" \
     search-api -m src.controller.search.import_history /data/history/procurement.duckdb /data/index
+  compose run --rm --no-deps --entrypoint python \
+    --volume "${RLT_HISTORY_DIR:-/root/rlt/ready-v1}:/data/history:ro" \
+    search-api -m src.application.import_procurements \
+    /data/history/procurement.duckdb /data/index --batch-size 5000
   compose up -d --no-deps --wait --wait-timeout 180 search-api
 fi

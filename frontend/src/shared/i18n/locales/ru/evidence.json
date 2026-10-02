@@ -14,7 +14,8 @@
   "basis": {
     "stock": "Есть в прайсе",
     "catalog": "Есть в каталоге",
-    "inferred": "Предположение системы"
+    "inferred": "Предположение системы",
+    "historical": "Товар в закупке с участием компании"
   },
   "notFound": "Не найдено",
   "noSource": "Источник не указан",
@@ -30,7 +31,8 @@
     "participant": "Участник"
   },
   "meter": {
-    "label": "Совпадение {{matched, number}} из {{total, number}}: в прайсе — {{stock, number}}, в каталоге — {{catalog, number}}, предположение — {{inferred, number}}"
+    "label": "Совпадение {{matched, number}} из {{total, number}}: в прайсе — {{stock, number}}, в каталоге — {{catalog, number}}, предположение — {{inferred, number}}",
+    "history": "Исторические совпадения — {{count, number}}"
   },
   "contacts": {
     "site": "Сайт",
@@ -219,5 +221,6 @@
     "78": "питер, спб, петербург, ленинград",
     "86": "югра, хмао",
     "89": "ямал, янао"
-  }
+  },
+  "purchaseDate": "дата закупки {{date}}"
 }

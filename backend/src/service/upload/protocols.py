@@ -37,3 +37,7 @@ class BatchNoticeSearchEngine(Protocol):
     async def search_notices(
         self, notices: list[Notice], limit: int = 10
     ) -> list[list[SupplierCandidate]]: ...
+
+
+class PositionTokenizer(Protocol):
+    def __call__(self, text: str, /) -> tuple[str, ...]: ...

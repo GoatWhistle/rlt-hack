@@ -28,6 +28,7 @@ const AVAILABILITY: Record<Availability, { readonly tone: TagTone; readonly icon
 const BASIS_TEXT: Record<MatchBasis, string | undefined> = {
   stock: styles.stock,
   catalog: styles.catalog,
+  historical: styles.catalog,
   inferred: styles.inferred,
 }
 

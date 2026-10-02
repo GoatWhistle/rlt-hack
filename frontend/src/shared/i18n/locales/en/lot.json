@@ -92,7 +92,8 @@
     "basis": {
       "stock": "In a price list",
       "catalog": "In the catalogue",
-      "inferred": "System assumption"
+      "inferred": "System assumption",
+      "historical": "Item in a procurement with this company participating"
     },
     "notFound": "Not found",
     "noSource": "No source given",

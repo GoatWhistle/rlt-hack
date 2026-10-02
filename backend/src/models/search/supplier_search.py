@@ -41,3 +41,4 @@ class SupplierCandidate:
     ranking_reasons: list[str] = field(default_factory=list)
     registered_region: str = ""
     matched_category_count: int = 0
+    position_evidence: dict[str, str] = field(default_factory=dict)

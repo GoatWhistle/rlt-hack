@@ -1,6 +1,6 @@
 from urllib.parse import urlsplit
 
-from src.controller.uploads.evidence import explanation, purchases
+from src.controller.uploads.evidence import explanation, position_matches, purchases
 from src.models.operations.upload import LotRecommendation, Upload
 
 
@@ -101,7 +101,7 @@ def result(upload: Upload, lot: LotRecommendation) -> dict:
                     "identitySource": safe_url(candidate.identity_url),
                     "rankingReasons": candidate.ranking_reasons,
                     "registeredRegion": candidate.registered_region,
-                    "matches": [],
+                    "matches": position_matches(upload, lot, candidate),
                     "similarPurchases": candidate.category_lots,
                     "wins": candidate.category_wins,
                     "purchases": purchases(upload, lot, candidate),

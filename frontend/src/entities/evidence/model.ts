@@ -1,7 +1,7 @@
 export const SOURCE_KINDS = ["catalog", "price", "purchase", "registry"] as const
 export type SourceKind = (typeof SOURCE_KINDS)[number]
 
-export const MATCH_BASES = ["stock", "catalog", "inferred"] as const
+export const MATCH_BASES = ["stock", "catalog", "historical", "inferred"] as const
 export type MatchBasis = (typeof MATCH_BASES)[number]
 export type MeterBasis = MatchBasis | "none"
 

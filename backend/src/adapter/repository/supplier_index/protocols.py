@@ -28,3 +28,7 @@ class CandidateRanking(Protocol):
         lexical_order,
         context: SearchContext | None = None,
     ) -> tuple[list[str], dict[str, int], dict[str, float], dict[str, list[str]]]: ...
+
+
+class SimilarityScorer(Protocol):
+    async def score(self, index_id: str, vector: list[float], card_count: int) -> list[float]: ...

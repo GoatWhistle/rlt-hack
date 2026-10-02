@@ -6,11 +6,17 @@ import { Icon } from "@/shared/ui/icon"
 import { SourceLine } from "../source-line"
 import styles from "./styles.module.css"
 
-export const BASIS_ORDER: Record<MatchBasis, number> = { stock: 0, catalog: 1, inferred: 2 }
+export const BASIS_ORDER: Record<MatchBasis, number> = {
+  stock: 0,
+  catalog: 1,
+  historical: 2,
+  inferred: 3,
+}
 
 const BASIS_STYLES: Record<MatchBasis, { marker?: string; label?: string }> = {
   stock: { marker: styles.stock, label: styles.stockLabel },
   catalog: { marker: styles.catalog },
+  historical: { marker: styles.catalog },
   inferred: { marker: styles.inferred, label: styles.inferredLabel },
 }
 

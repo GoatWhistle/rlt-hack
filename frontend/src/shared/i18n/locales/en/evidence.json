@@ -14,7 +14,8 @@
   "basis": {
     "stock": "In a price list",
     "catalog": "In the catalog",
-    "inferred": "System assumption"
+    "inferred": "System assumption",
+    "historical": "Item in a procurement with this company participating"
   },
   "notFound": "Not found",
   "noSource": "No source given",
@@ -30,7 +31,8 @@
     "participant": "Participant"
   },
   "meter": {
-    "label": "Match {{matched, number}} of {{total, number}}: in a price list — {{stock, number}}, in the catalog — {{catalog, number}}, assumed — {{inferred, number}}"
+    "label": "Match {{matched, number}} of {{total, number}}: in a price list — {{stock, number}}, in the catalog — {{catalog, number}}, assumed — {{inferred, number}}",
+    "history": "Historical matches — {{count, number}}"
   },
   "contacts": {
     "site": "Website",
@@ -209,5 +211,6 @@
     "78": "st petersburg, spb, piter, petersburg, leningrad",
     "86": "yugra, khmao",
     "89": "yamal, yanao"
-  }
+  },
+  "purchaseDate": "procurement date {{date}}"
 }

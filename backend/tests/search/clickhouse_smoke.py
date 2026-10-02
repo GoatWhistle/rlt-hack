@@ -57,6 +57,7 @@ async def main():
             "shape": [3, 2],
             "model": "synthetic",
             "revision": "1",
+            "history_before": "2025-01-01",
             "query_instruction": "test",
             "files": {},
         }

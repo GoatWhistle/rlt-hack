@@ -1,6 +1,7 @@
 import hashlib
 import json
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
+from datetime import date
 from pathlib import Path
 from types import SimpleNamespace, TracebackType
 from typing import Any
@@ -11,6 +12,7 @@ import pytest
 from pyarrow import parquet
 
 from src.adapter.repository.errors import RepositoryUnavailableError
+from src.adapter.repository.supplier_index.clickhouse import ClickHouseSupplierIndex
 from src.application import supplier_index as module
 from src.application.config import AppConfig
 from src.models.search.supplier_search import SupplierCandidate
@@ -30,7 +32,12 @@ def write_index(directory: Path) -> tuple[str, str]:
         name: hashlib.sha256((directory / name).read_bytes()).hexdigest()
         for name in ("cards.parquet", "card_vectors.npy", "report.json")
     }
-    manifest = {"shape": [2, 2], "query_instruction": "test", "files": files}
+    manifest = {
+        "shape": [2, 2],
+        "query_instruction": "test",
+        "files": files,
+        "history_before": "2025-01-01",
+    }
     (directory / "manifest.json").write_text(json.dumps(manifest))
     return files["card_vectors.npy"], files["cards.parquet"]
 
@@ -39,13 +46,24 @@ class FlakyGateway:
     def __init__(self, ready: list[tuple[Any, ...]]) -> None:
         self.ready = ready
         self.down = False
+        self.archive: list[tuple[Any, ...]] = []
+        self.archive_parameters: Mapping[str, Any] | None = None
 
     async def select(
         self, statement: str, parameters: Mapping[str, Any] | None = None
     ) -> list[tuple[Any, ...]]:
         if self.down:
             raise RepositoryUnavailableError("connection refused")
+        if "procurement_archive_imports" in statement:
+            assert "status='completed'" in statement
+            self.archive_parameters = parameters
+            return self.archive
         return self.ready
+
+    async def insert(
+        self, table: str, column_names: Sequence[str], rows: Sequence[Sequence[Any]]
+    ) -> None:
+        raise AssertionError("Supplier index only reads its gateway")
 
 
 class FakeContainer:
@@ -87,3 +105,26 @@ async def test_clickhouse_outage_becomes_storage_unavailable(
             await index.enrich([SupplierCandidate("1111111111", "paper", "", 1.0, 1.0)])
         with pytest.raises(StorageUnavailableError):
             await index.search("paper", [1.0, 0.0], 1)
+
+
+async def test_completed_archive_changes_index_cache_version_after_restart(tmp_path: Path) -> None:
+    index_id, cards_sha = write_index(tmp_path)
+    gateway = FlakyGateway([(len(CARDS), 2, cards_sha)])
+    pending = ClickHouseSupplierIndex(tmp_path, gateway, index_id, "db")
+    await pending.initialize()
+    assert pending.version.endswith("/full-history-v1/pending")
+    assert gateway.archive_parameters == {"index": index_id, "before": date(2025, 1, 1)}
+    gateway.archive = [("b" * 64,)]
+    completed = ClickHouseSupplierIndex(tmp_path, gateway, index_id, "db")
+    await completed.initialize()
+    assert completed.version.endswith("/full-history-v1/completed/" + "b" * 64)
+    assert completed.version != pending.version
+
+
+async def test_invalid_completed_archive_does_not_claim_ready(tmp_path: Path) -> None:
+    index_id, cards_sha = write_index(tmp_path)
+    gateway = FlakyGateway([(len(CARDS), 2, cards_sha)])
+    gateway.archive = [("invalid-checksum",)]
+    index = ClickHouseSupplierIndex(tmp_path, gateway, index_id, "db")
+    with pytest.raises(ValueError, match="archive identity"):
+        await index.initialize()

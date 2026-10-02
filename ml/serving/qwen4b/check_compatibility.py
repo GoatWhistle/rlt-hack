@@ -22,19 +22,21 @@ SAMPLES = [
 ]
 
 
-async def encode(url: str, token: str) -> np.ndarray:
+async def encode(
+    url: str, token: str, samples: list[str], model: str = MODEL
+) -> np.ndarray:
     async with httpx.AsyncClient(timeout=180, trust_env=False) as client:
         response = await client.post(
             url.rstrip("/") + "/embeddings",
             headers={"Authorization": "Bearer " + token} if token else {},
-            json={"model": MODEL, "input": SAMPLES, "encoding_format": "float"},
+            json={"model": model, "input": samples, "encoding_format": "float"},
         )
         response.raise_for_status()
         rows = sorted(response.json()["data"], key=lambda row: row["index"])
-        if [row["index"] for row in rows] != list(range(len(SAMPLES))):
+        if [row["index"] for row in rows] != list(range(len(samples))):
             raise ValueError("Unexpected response ordering")
         vectors = np.asarray([row["embedding"] for row in rows], dtype=np.float64)
-        if vectors.shape != (len(SAMPLES), 2560) or not np.isfinite(vectors).all():
+        if vectors.shape != (len(samples), 2560) or not np.isfinite(vectors).all():
             raise ValueError("Invalid embeddings")
         norms = np.linalg.norm(vectors, axis=1, keepdims=True)
         if (norms == 0).any():
@@ -43,22 +45,30 @@ async def encode(url: str, token: str) -> np.ndarray:
 
 
 async def run(args):
+    samples = json.loads(args.samples.read_text()) if args.samples else SAMPLES
+    if not isinstance(samples, list) or not samples or any(not isinstance(text, str) for text in samples):
+        raise ValueError("Expected a nonempty array of strings")
     remote, local = await asyncio.gather(
-        encode(os.environ["EMBEDDING_INFERENCE_URL"], os.getenv("EMBEDDING_INFERENCE_TOKEN", "")),
-        encode(args.local_url, ""),
+        encode(
+            os.environ["EMBEDDING_INFERENCE_URL"],
+            os.getenv("EMBEDDING_INFERENCE_TOKEN", ""),
+            samples,
+            os.getenv("EMBEDDING_INFERENCE_MODEL", MODEL),
+        ),
+        encode(args.local_url, "", samples),
     )
     cosines = np.sum(remote * local, axis=1)
     difference = float(np.max(np.abs(remote - local)))
     passed = float(cosines.min()) >= args.min_cosine and difference <= args.max_difference
     report = {
-        "samples": len(SAMPLES),
+        "samples": len(samples),
         "dimensions": 2560,
         "min_cosine": float(cosines.min()),
         "mean_cosine": float(cosines.mean()),
         "max_absolute_difference": difference,
         "thresholds": {"min_cosine": args.min_cosine, "max_difference": args.max_difference},
         "compatible": passed,
-        "scope": "synthetic numerical compatibility; not ranking quality",
+        "scope": "numerical compatibility; not ranking quality",
     }
     args.report.write_text(json.dumps(report, indent=2))
     print(json.dumps(report))
@@ -70,6 +80,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--local-url", required=True)
     parser.add_argument("--report", type=Path, required=True)
+    parser.add_argument("--samples", type=Path)
     parser.add_argument("--min-cosine", type=float, default=0.995)
     parser.add_argument("--max-difference", type=float, default=0.02)
     asyncio.run(run(parser.parse_args()))

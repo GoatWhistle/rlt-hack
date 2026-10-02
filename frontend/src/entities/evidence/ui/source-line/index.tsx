@@ -26,7 +26,14 @@ export function SourceLine({ source, stale = false }: SourceLineProps) {
       </a>
       {source.checkedAt ? (
         <span className={stale ? styles.stale : undefined}>
-          {t(stale ? "offer.staleCheck" : "checkedAt", { date: date(source.checkedAt) })}
+          {t(
+            source.kind === "purchase"
+              ? "purchaseDate"
+              : stale
+                ? "offer.staleCheck"
+                : "checkedAt",
+            { date: date(source.checkedAt) },
+          )}
         </span>
       ) : null}
     </span>

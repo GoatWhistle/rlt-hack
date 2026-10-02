@@ -66,7 +66,12 @@ export const REASON_ORDER: readonly CheckReason[] = [
   "sourceUnavailable",
 ]
 
-const BASIS_RANK: Record<MatchBasis, number> = { stock: 0, catalog: 1, inferred: 2 }
+const BASIS_RANK: Record<MatchBasis, number> = {
+  stock: 0,
+  catalog: 1,
+  historical: 2,
+  inferred: 3,
+}
 
 export function sortReasons(reasons: readonly CheckReason[]): CheckReason[] {
   return [...reasons].sort((a, b) => REASON_ORDER.indexOf(a) - REASON_ORDER.indexOf(b))
@@ -87,7 +92,7 @@ export function segmentsOf(
 }
 
 export function rowsOf(candidate: CandidateView, items: readonly ItemView[]): RowView[] {
-  const rank = (row: RowView) => (row.match ? BASIS_RANK[row.match.basis] : 3)
+  const rank = (row: RowView) => (row.match ? BASIS_RANK[row.match.basis] : 4)
   return items
     .map((item) => ({ item, match: matchFor(candidate, item.id) }))
     .sort((a, b) => rank(a) - rank(b))
