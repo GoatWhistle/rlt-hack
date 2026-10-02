@@ -5,6 +5,7 @@ from pydantic import ConfigDict, Field, StringConstraints
 
 from src.controller.http.schema import CamelModel, UtcDateTime
 from src.models.enums import (
+    Availability,
     CandidateStatus,
     CheckReason,
     CompanyRole,
@@ -15,6 +16,7 @@ from src.models.enums import (
     Locale,
     MatchBasis,
     PurchaseOutcome,
+    VerificationStatus,
     WarningCode,
 )
 
@@ -66,6 +68,27 @@ class SourceDto(CamelModel):
     title: str
     url: str
     checked_at: UtcDateTime
+
+
+class AttributeDto(CamelModel):
+    name: str
+    value: str
+
+
+class OfferDto(CamelModel):
+    id: UUID
+    name: str
+    price: str | None
+    currency: str
+    unit: str
+    availability: Availability
+    brand: str = ""
+    article: str = ""
+    okpd2: str = ""
+    attributes: list[AttributeDto] = Field(default_factory=list)
+    image_url: str | None = None
+    seller: VerificationStatus = VerificationStatus.UNVERIFIED
+    source: SourceDto | None
 
 
 class MatchDto(CamelModel):
@@ -149,6 +172,7 @@ class SearchResponseDto(CamelModel):
     pipeline: PipelineDto
     warnings: list[WarningDto]
     created_at: UtcDateTime
+    offers: dict[UUID, OfferDto] = Field(default_factory=dict)
 
 
 class SearchSummaryDto(CamelModel):

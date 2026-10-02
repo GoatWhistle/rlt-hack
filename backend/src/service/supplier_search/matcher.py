@@ -3,9 +3,11 @@ from collections.abc import Sequence
 from src.models.candidate import SupplierCandidate
 from src.models.enums import SearchStage
 from src.models.match import MatchOutcome
+from src.models.offer_summary import OfferSummary
 from src.models.query_item import SearchRequest
 from src.models.search_result import SearchWarning
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
+from src.service.supplier_search.assembly.offers import matched_offers
 from src.service.supplier_search.enrichment.loader import EnrichmentLoader
 from src.service.supplier_search.fusion.candidate import FusedCandidate
 from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
@@ -51,18 +53,19 @@ class SupplierMatcher:
         with self._stages.stage(SearchStage.CHANNELS):
             hits, channel_warnings = await self._channels.run(request, depth)
         fused = self._fusion.fuse(hits)[:depth]
-        candidates, enrichment_warnings = await self._candidates(fused, request)
+        candidates, offers, enrichment_warnings = await self._candidates(fused, request)
         return MatchOutcome(
             candidates=candidates,
             channels=tuple(channel.channel for channel in hits),
             warnings=(*channel_warnings, *enrichment_warnings),
+            offers=offers,
         )
 
     async def _candidates(
         self, fused: Sequence[FusedCandidate], request: SearchRequest
-    ) -> tuple[tuple[SupplierCandidate, ...], tuple[SearchWarning, ...]]:
+    ) -> tuple[tuple[SupplierCandidate, ...], tuple[OfferSummary, ...], tuple[SearchWarning, ...]]:
         if not fused:
-            return (), ()
+            return (), (), ()
         with self._stages.stage(SearchStage.ENRICH):
             enrichment, warnings = await self._enrichment.load(fused, request.items)
         with self._stages.stage(SearchStage.POLICY):
@@ -71,4 +74,4 @@ class SupplierMatcher:
                 (draft, self._policy.evaluate(draft)) for draft in drafts if draft is not None
             ]
             ranked = self._ranker.rank(judged, request.query.limit.value)
-        return ranked, warnings
+        return ranked, matched_offers(ranked, enrichment.offers), warnings

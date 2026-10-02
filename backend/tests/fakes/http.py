@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from uuid import UUID
 
 from src.controller.http.protocols import BackgroundTask
@@ -23,7 +23,15 @@ def make_profile() -> SupplierProfile:
     return SupplierProfile(
         supplier=supplier,
         role=CompanyRole.DISTRIBUTOR,
-        offers=(make_offer_evidence(make_offer(supplier=supplier)),),
+        offers=(
+            make_offer_evidence(
+                replace(
+                    make_offer(supplier=supplier),
+                    brand="Увелка",
+                    attributes={"Фасовка": "50 кг", "sku_id": "4607"},
+                )
+            ),
+        ),
         role_evidence=make_evidence(),
     )
 

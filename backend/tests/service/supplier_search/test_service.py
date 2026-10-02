@@ -10,6 +10,7 @@ from src.models.enums import (
     WarningCode,
 )
 from src.models.offer_evidence import OfferEvidence
+from src.models.offer_summary import OfferSummary
 from src.models.purchase import PurchaseSummary
 from src.models.retrieval import ChannelHit, ItemHit, RetrievalHits
 from src.models.search_result import SearchWarning
@@ -135,6 +136,7 @@ async def test_search_ranks_explains_and_archives_candidates() -> None:
     assert result.pipeline.channels == ("lexical", "history")
     assert (result.created_at, result.pipeline.as_of, result.warnings) == (MOMENT, MOMENT, ())
     assert harness.archive.stored == {result.search_id: result}
+    assert result.offers == (OfferSummary.of(alpha_card()),)
     assert harness.lexical.calls[0][1] == 15
     assert harness.lexical.calls[0][0].items == ITEMS
 

@@ -130,5 +130,50 @@
     "asOf": "2026-10-01T12:00:00Z"
   },
   "warnings": [],
-  "createdAt": "2026-10-01T12:00:00Z"
+  "createdAt": "2026-10-01T12:00:00Z",
+  "offers": {
+    "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d": {
+      "id": "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d",
+      "name": "Крупа гречневая ядрица 1 сорт, мешок 50 кг",
+      "price": "84.50",
+      "currency": "RUB",
+      "unit": "кг",
+      "availability": "available",
+      "brand": "Увелка",
+      "article": "4607012",
+      "okpd2": "10.61.32.110",
+      "attributes": [
+        { "name": "Фасовка", "value": "50 кг" },
+        { "name": "Сорт", "value": "первый" }
+      ],
+      "imageUrl": null,
+      "seller": "verified",
+      "source": {
+        "kind": "price",
+        "title": "Прайс-лист компании",
+        "url": "https://severny-proviant.example.org/price/grechka",
+        "checkedAt": "2026-09-29T08:00:00Z"
+      }
+    },
+    "8b7c6d5e-4f3a-4b2c-8d1e-0f9a8b7c6d5e": {
+      "id": "8b7c6d5e-4f3a-4b2c-8d1e-0f9a8b7c6d5e",
+      "name": "Рис шлифованный круглозёрный",
+      "price": null,
+      "currency": "",
+      "unit": "",
+      "availability": "unknown",
+      "brand": "",
+      "article": "",
+      "okpd2": "",
+      "attributes": [],
+      "imageUrl": null,
+      "seller": "verified",
+      "source": {
+        "kind": "catalog",
+        "title": "Каталог поставщиков",
+        "url": "https://catalog.example.org/products/ris-shlifovanny",
+        "checkedAt": "2026-09-28T10:00:00Z"
+      }
+    }
+  }
 }

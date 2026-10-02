@@ -3,6 +3,7 @@ from uuid import UUID
 
 from src.controller.http.schema import plain_decimal, score
 from src.controller.search.dto import (
+    AttributeDto,
     CandidateDto,
     ChannelRankDto,
     ContactsDto,
@@ -12,6 +13,7 @@ from src.controller.search.dto import (
     HistoryDto,
     ItemDto,
     MatchDto,
+    OfferDto,
     PipelineDto,
     PurchaseDto,
     QuantityDto,
@@ -26,6 +28,7 @@ from src.controller.search.dto import (
 from src.models.candidate import Highlight, ProductMatch, SupplierCandidate
 from src.models.enums import ItemType, Locale
 from src.models.evidence import Evidence, is_web_url
+from src.models.offer_summary import OfferSummary
 from src.models.purchase import PurchaseRecord, PurchaseSummary
 from src.models.query_item import QueryItem
 from src.models.scoring import ScoreBreakdown
@@ -118,6 +121,23 @@ def item_dto(item: QueryItem) -> ItemDto:
     )
 
 
+def offer_dto(offer: OfferSummary) -> OfferDto:
+    return OfferDto(
+        id=offer.offer_id,
+        name=offer.name,
+        price=None if offer.price is None else plain_decimal(offer.price),
+        currency=offer.currency,
+        unit=offer.unit,
+        availability=offer.availability,
+        brand=offer.brand,
+        article=offer.article,
+        okpd2=offer.okpd2_code,
+        attributes=[AttributeDto(name=item.name, value=item.value) for item in offer.attributes],
+        seller=offer.seller_status,
+        source=source_dto(offer.evidence),
+    )
+
+
 def match_dto(match: ProductMatch) -> MatchDto:
     return MatchDto(
         item_id=match.item_id,
@@ -201,6 +221,7 @@ def to_response(result: SearchResult) -> SearchResponseDto:
         pipeline=pipeline_dto(result.pipeline),
         warnings=[warning_dto(warning) for warning in result.warnings],
         created_at=result.created_at,
+        offers={offer.offer_id: offer_dto(offer) for offer in result.offers},
     )
 
 

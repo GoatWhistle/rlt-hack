@@ -12,6 +12,7 @@ from src.adapter.repository.clickhouse.search_archive.candidate_dto import (
     ScoreDto,
     SupplierDto,
 )
+from src.adapter.repository.clickhouse.search_archive.offer_dto import OfferSummaryDto
 from src.adapter.repository.clickhouse.search_archive.query_dto import (
     FrozenDto,
     QueryDto,
@@ -23,8 +24,8 @@ from src.models.enums import CandidateStatus, CheckReason, CompanyRole, WarningC
 from src.models.errors import DomainError
 from src.models.search_result import PipelineInfo, SearchResult, SearchWarning
 
-PAYLOAD_VERSION = 1
-READABLE_VERSIONS = frozenset({1})
+PAYLOAD_VERSION = 2
+READABLE_VERSIONS = frozenset({1, 2})
 
 
 class CandidateDto(FrozenDto):
@@ -101,6 +102,7 @@ class SearchResultDto(FrozenDto):
     pipeline: PipelineDto
     created_at: datetime
     warnings: tuple[WarningDto, ...]
+    offers: tuple[OfferSummaryDto, ...] = ()
 
     @classmethod
     def from_domain(cls, result: SearchResult) -> Self:
@@ -114,6 +116,7 @@ class SearchResultDto(FrozenDto):
             warnings=tuple(
                 WarningDto(code=item.code, subject=item.subject) for item in result.warnings
             ),
+            offers=tuple(OfferSummaryDto.from_domain(item) for item in result.offers),
         )
 
     def to_domain(self) -> SearchResult:
@@ -125,6 +128,7 @@ class SearchResultDto(FrozenDto):
             pipeline=self.pipeline.to_domain(),
             created_at=self.created_at,
             warnings=tuple(SearchWarning(item.code, item.subject) for item in self.warnings),
+            offers=tuple(item.to_domain() for item in self.offers),
         )
 
 

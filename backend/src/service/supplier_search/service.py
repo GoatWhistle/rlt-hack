@@ -68,6 +68,7 @@ class SupplierSearchService:
             pipeline=report.pipeline,
             created_at=report.pipeline.as_of,
             warnings=report.warnings,
+            offers=report.offers,
         )
 
     async def _archived(self, result: SearchResult) -> SearchResult:

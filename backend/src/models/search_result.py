@@ -5,6 +5,7 @@ from uuid import UUID
 from src.models.candidate import SupplierCandidate, ranking_problem
 from src.models.enums import CandidateStatus, Locale, WarningCode
 from src.models.errors import InvalidSearchResultError
+from src.models.offer_summary import OfferSummary
 from src.models.query_item import QueryItem
 from src.models.search import SearchQuery, SearchText
 
@@ -31,6 +32,7 @@ class SearchResult:
     pipeline: PipelineInfo
     created_at: datetime
     warnings: tuple[SearchWarning, ...] = ()
+    offers: tuple[OfferSummary, ...] = ()
 
     def __post_init__(self) -> None:
         problem = ranking_problem(self.candidates, self.items)
@@ -38,6 +40,9 @@ class SearchResult:
             raise InvalidSearchResultError(problem)
         if len(self.candidates) > self.query.limit.value:
             raise InvalidSearchResultError("more candidates than the limit")
+        offer_ids = [offer.offer_id for offer in self.offers]
+        if len(set(offer_ids)) != len(offer_ids):
+            raise InvalidSearchResultError("an offer is listed twice")
 
     @property
     def recommended(self) -> int:

@@ -53,4 +53,5 @@ class SearchPipeline:
                 as_of=started_at,
             ),
             warnings=(*item_warnings(items, len(parsed) > len(items)), *outcome.warnings),
+            offers=outcome.offers,
         )
