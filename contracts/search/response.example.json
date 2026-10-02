@@ -125,6 +125,10 @@
           {
             "channel": "lexical",
             "rank": 1
+          },
+          {
+            "channel": "history",
+            "rank": 2
           }
         ]
       },
@@ -132,7 +136,12 @@
         "site": "https://severny-proviant.example.org",
         "email": "sales@severny-proviant.example.org",
         "phone": "+7 812 000-00-00"
-      }
+      },
+      "origins": [
+        "catalog",
+        "history"
+      ],
+      "novelty": "known"
     },
     {
       "rank": 2,
@@ -187,7 +196,11 @@
         "site": "",
         "email": "",
         "phone": ""
-      }
+      },
+      "origins": [
+        "history"
+      ],
+      "novelty": "unknown"
     }
   ],
   "pipeline": {
@@ -199,7 +212,8 @@
     "asOf": "2026-10-01T12:00:00Z",
     "inputs": [
       "text"
-    ]
+    ],
+    "noveltySet": "inn-3f2a9c41d0b7e65a"
   },
   "warnings": [],
   "createdAt": "2026-10-01T12:00:00Z"

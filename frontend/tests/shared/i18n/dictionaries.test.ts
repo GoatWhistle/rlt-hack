@@ -43,6 +43,7 @@ const TEXT_PARAMS = new Set([
   "price",
   "query",
   "row",
+  "set",
   "title",
   "unit",
   "value",

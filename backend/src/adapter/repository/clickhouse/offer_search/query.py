@@ -12,8 +12,10 @@ SELECT_CANDIDATES = (
     "ORDER BY arrayCount(position -> position > 0, "
     "multiSearchAllPositions(o.search_text, {{needles:Array(String)}})) DESC, "
     "o.last_seen_at DESC, o.offer_id "
+    "LIMIT {{per_supplier:UInt32}} BY o.supplier_id "
     "LIMIT {{pool:UInt32}}"
 )
+OFFERS_PER_SUPPLIER = 20
 REGION_JOIN = "LEFT JOIN {db}.suppliers_current AS s ON s.supplier_id = o.supplier_id "
 REGION_CONDITION = "AND has({regions:Array(String)}, s.region) "
 TYPE_CONDITION = "AND o.item_type IN ({item_type:String}, 'unknown') "
@@ -28,7 +30,11 @@ class CandidateQuery:
 def candidate_query(
     database: str, needles: tuple[str, ...], filters: SearchFilters, pool: int
 ) -> CandidateQuery:
-    parameters: dict[str, object] = {"needles": list(needles), "pool": pool}
+    parameters: dict[str, object] = {
+        "needles": list(needles),
+        "pool": pool,
+        "per_supplier": OFFERS_PER_SUPPLIER,
+    }
     join = ""
     conditions = ""
     if filters.regions:

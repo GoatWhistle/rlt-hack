@@ -18,6 +18,12 @@ export const COMPANY_ROLES = [
 ] as const
 export type CompanyRole = (typeof COMPANY_ROLES)[number]
 
+export const CANDIDATE_ORIGINS = ["catalog", "history"] as const
+export type CandidateOrigin = (typeof CANDIDATE_ORIGINS)[number]
+
+export const NOVELTIES = ["new", "known", "unknown"] as const
+export type Novelty = (typeof NOVELTIES)[number]
+
 export const PURCHASE_OUTCOMES = ["winner", "participant"] as const
 export type PurchaseOutcome = (typeof PURCHASE_OUTCOMES)[number]
 

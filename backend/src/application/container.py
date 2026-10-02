@@ -15,8 +15,10 @@ from pathlib import Path
 from types import TracebackType
 
 from src.adapter.client.msp_registry import MspRegistryDump
+from src.adapter.file.supplier_roster.reader import CsvSupplierRoster
 from src.adapter.product.moscow.provider import MoscowProductProvider
 from src.adapter.repository.clickhouse.archive import ClickHouseArchiveRepository
+from src.adapter.repository.clickhouse.archive_roster.store import ClickHouseArchiveRoster
 from src.adapter.repository.clickhouse.client import create_client
 from src.adapter.repository.clickhouse.config import ClickHouseConfig
 from src.adapter.repository.clickhouse.gateway import ConnectGateway
@@ -67,6 +69,7 @@ from src.adapter.system.clock import SystemClock
 from src.application.config import AppConfig, api_clickhouse
 from src.models.enums import SourceType
 from src.models.source import Source
+from src.service.archive_roster.importer import ArchiveRosterImporter
 from src.service.classifier import OfferClassifier
 from src.service.normalizer import OfferNormalizer
 from src.service.product.worker import ProductCollectionWorker, ProductSyncWorker
@@ -175,6 +178,10 @@ class Container:
             offers=await self.offers(),
             batch_size=self._config.write_batch_size,
         )
+
+    async def archive_roster_import(self, path: Path) -> ArchiveRosterImporter:
+        store = ClickHouseArchiveRoster(await self.gateway(), self._config.clickhouse.database)
+        return ArchiveRosterImporter(CsvSupplierRoster(path), store)
 
     async def msp_registry(self) -> ClickHouseMspRegistryRepository:
         return ClickHouseMspRegistryRepository(

@@ -98,8 +98,9 @@ async def test_health_probes_clickhouse(failing: bool, ready: bool) -> None:
     readiness = await (await api.health()).readiness()
     assert readiness.ready is ready
     names = [component.name for component in readiness.components]
-    assert names == ["clickhouse", "catalog", "history"]
-    assert [component.required for component in readiness.components] == [True, False, False]
+    assert names == ["clickhouse", "catalog", "history", "novelty"]
+    required = [component.required for component in readiness.components]
+    assert required == [True, False, False, False]
 
 
 async def test_ml_channel_is_an_optional_component() -> None:
@@ -191,4 +192,4 @@ async def test_uploads_use_separate_gateway() -> None:
     assert len(interactive.gateway.statements) == 1
     assert "uploads" in interactive.gateway.statements[0]
     assert (await (await api.health()).readiness()).ready
-    assert len(control.gateway.statements) == 3
+    assert len(control.gateway.statements) == 4

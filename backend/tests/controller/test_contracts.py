@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from src.controller.http.error_body import ApiErrorDto
 from src.controller.search.dto import RecentSearchesDto, SearchRequestDto, SearchResponseDto
-from src.controller.search.mapper import to_query
+from src.controller.search.query_mapper import to_query
 from src.controller.supplier.dto import ArchivePurchaseDto, SupplierProfileDto
 from src.models.candidate import Highlight
 from src.models.enums import HighlightCode, ItemType, Locale, PurchaseOutcome
@@ -100,3 +100,27 @@ async def test_profile_response_matches_contract_keys(client: httpx.AsyncClient)
 async def test_error_response_matches_contract_keys(client: httpx.AsyncClient) -> None:
     response = await client.post("/api/searches", json={"text": "а" * 4001})
     assert key_paths(response.json()) == key_paths(load("search/error.example.json"))
+
+
+CASES = sorted((CONTRACTS / "search" / "cases").glob("*.example.json"))
+ORIGINS = {"lexical": "catalog", "history": "history", "semantic": "history"}
+
+
+@pytest.mark.parametrize("path", CASES, ids=lambda path: path.stem)
+def test_contract_cases_round_trip_and_explain_origins(path: Path) -> None:
+    example = json.loads(path.read_text(encoding="utf-8"))
+    dumped = SearchResponseDto.model_validate(example).model_dump(by_alias=True, mode="json")
+    assert dumped == example
+    for candidate in example["candidates"]:
+        channels = {rank["channel"] for rank in candidate["score"]["channels"]}
+        assert set(candidate["origins"]) == {ORIGINS[channel] for channel in channels}
+
+
+def test_cases_cover_the_agreed_situations() -> None:
+    assert {path.stem.removesuffix(".example") for path in CASES} == {
+        "empty",
+        "history",
+        "catalog",
+        "mixed",
+        "partial",
+    }

@@ -3,7 +3,15 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID
 
-from src.models.enums import CandidateStatus, CheckReason, CompanyRole, HighlightCode, MatchBasis
+from src.models.enums import (
+    CandidateOrigin,
+    CandidateStatus,
+    CheckReason,
+    CompanyRole,
+    HighlightCode,
+    MatchBasis,
+    Novelty,
+)
 from src.models.errors import InvalidCandidateError, InvalidMatchError
 from src.models.evidence import Evidence
 from src.models.purchase import PurchaseSummary
@@ -12,6 +20,11 @@ from src.models.scoring import ScoreBreakdown
 from src.models.supplier import Supplier
 
 EVIDENCED_BASES = frozenset({MatchBasis.STOCK, MatchBasis.CATALOG})
+CHANNEL_ORIGINS = {
+    "lexical": CandidateOrigin.CATALOG,
+    "history": CandidateOrigin.HISTORY,
+    "semantic": CandidateOrigin.HISTORY,
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +62,7 @@ class SupplierCandidate:
     matches: tuple[ProductMatch, ...] = ()
     history: PurchaseSummary = field(default_factory=PurchaseSummary.empty)
     highlights: tuple[Highlight, ...] = ()
+    novelty: Novelty = Novelty.UNKNOWN
 
     def __post_init__(self) -> None:
         if self.rank < 1:
@@ -69,6 +83,15 @@ class SupplierCandidate:
     @property
     def matched_item_ids(self) -> frozenset[str]:
         return frozenset(match.item_id for match in self.matches)
+
+    @property
+    def origins(self) -> tuple[CandidateOrigin, ...]:
+        found = {
+            CHANNEL_ORIGINS[rank.channel]
+            for rank in self.score.channels
+            if rank.channel in CHANNEL_ORIGINS
+        }
+        return tuple(origin for origin in CandidateOrigin if origin in found)
 
 
 def ranking_problem(

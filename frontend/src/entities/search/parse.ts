@@ -20,14 +20,17 @@ import {
 } from "@/shared/api/payload"
 import { LOCALES } from "@/shared/i18n/locale"
 import {
+  CANDIDATE_ORIGINS,
   CANDIDATE_STATUSES,
   type Candidate,
   type CandidateMatch,
+  type CandidateOrigin,
   COMPANY_ROLES,
   FILTER_ITEM_TYPES,
   ITEM_ORIGINS,
   ITEM_TYPES,
   MATCH_BASES,
+  NOVELTIES,
   PURCHASE_OUTCOMES,
   type PurchaseHistory,
   type PurchaseRecord,
@@ -175,8 +178,18 @@ function candidate(value: unknown, path: string): Candidate {
       highlights: parseHighlights(fields, path),
       score: score(nested(fields, "score", path), `${path}.score`),
       contacts: parseContacts(nested(fields, "contacts", path), `${path}.contacts`) ?? {},
+      origins: origins(fields, path),
+      novelty: optionalOneOf(NOVELTIES, fields, "novelty", path) ?? "unknown",
     },
     { roleSource: parseSource(fields.roleSource, `${path}.roleSource`) },
+  )
+}
+
+function origins(fields: Fields, path: string): CandidateOrigin[] {
+  if (fields.origins === undefined) return []
+  const known: readonly string[] = CANDIDATE_ORIGINS
+  return list(fields, "origins", path, plainText).filter((code): code is CandidateOrigin =>
+    known.includes(code),
   )
 }
 
@@ -207,6 +220,7 @@ export function parseSearchResult(value: unknown, path = "$"): SearchResult {
         asOf: text(pipeline, "asOf", at),
         inputs:
           pipeline.inputs === undefined ? ["text"] : list(pipeline, "inputs", at, plainText),
+        ...withOptional({}, { noveltySet: optionalText(pipeline, "noveltySet", at) }),
       },
       warnings: parseWarnings(fields, path),
       createdAt: text(fields, "createdAt", path),

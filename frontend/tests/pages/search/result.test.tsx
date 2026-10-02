@@ -181,3 +181,36 @@ describe("a search result on a narrow screen", () => {
     expect(screen.getByRole("radio", { name: en("views.evidence", "search") })).toBeChecked()
   })
 })
+
+describe("novelty and origin", () => {
+  it("marks a new supplier and explains the archive check and the channels", async () => {
+    await openVariant((payload) => ({
+      ...payload,
+      candidates: (payload.candidates as Record<string, unknown>[]).map((item, index) =>
+        index === 0 ? { ...item, novelty: "new" } : item,
+      ),
+    }))
+    const candidates = region(en("candidates.title", "search"))
+    expect(within(candidates).getByText(en("novelty.new", "evidence"))).toBeInTheDocument()
+    expect(within(candidates).queryByText(en("novelty.unknown", "evidence"))).toBeNull()
+    const grounds = screen.getByRole("article")
+    expect(
+      within(grounds).getByText(
+        /absent from the source supplier archive \(set inn-3f2a9c41d0b7e65a\)/,
+      ),
+    ).toBeInTheDocument()
+    expect(within(grounds).getByText("catalog and procurement history")).toBeInTheDocument()
+  })
+
+  it("does not claim novelty without a verifiable inn", async () => {
+    const view = await openContract()
+    await view.user.click(
+      within(region(en("candidates.title", "search"))).getByRole("button", {
+        name: /Зерновой Двор/,
+      }),
+    )
+    expect(
+      within(screen.getByRole("article")).getByText(en("evidence.noveltyUnknown", "search")),
+    ).toBeInTheDocument()
+  })
+})

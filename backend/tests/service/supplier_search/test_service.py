@@ -26,6 +26,7 @@ from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from src.service.supplier_search.matcher import SupplierMatcher
 from src.service.supplier_search.pipeline import SearchPipeline
 from src.service.supplier_search.policy.policy import CandidatePolicy
+from src.service.supplier_search.protocols import ArchiveRosterReading
 from src.service.supplier_search.ranking.ranker import CandidateRanker
 from src.service.supplier_search.service import SupplierSearchService
 from src.service.supplier_search.settings import SearchSettings
@@ -90,6 +91,7 @@ class Harness:
     )
     archive: FakeArchive = field(default_factory=FakeArchive)
     settings: SearchSettings = field(default_factory=SearchSettings)
+    roster: ArchiveRosterReading | None = None
 
     def pipeline(self) -> SearchPipeline:
         matcher = SupplierMatcher(
@@ -102,6 +104,7 @@ class Harness:
             policy=CandidatePolicy.standard(self.settings.coverage_threshold),
             ranker=CandidateRanker(self.settings.weights),
             settings=self.settings,
+            roster=self.roster,
         )
         return SearchPipeline(self.interpreter, matcher, FixedClock(), self.settings)
 

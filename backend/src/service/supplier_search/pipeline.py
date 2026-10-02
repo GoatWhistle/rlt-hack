@@ -48,6 +48,7 @@ class SearchPipeline:
                 channels=outcome.channels,
                 as_of=started_at,
                 inputs=("text", *context),
+                novelty_set=outcome.novelty_set,
             ),
             warnings=(*item_warnings(items), *outcome.warnings),
         )

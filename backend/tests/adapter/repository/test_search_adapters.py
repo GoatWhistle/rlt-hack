@@ -79,6 +79,17 @@ async def test_lexical_channel_ranks_suppliers_by_matched_items(gateway: ChdbGat
     assert len((await retriever.retrieve(request(), 1)).hits) == 1
 
 
+async def test_many_offers_of_one_supplier_do_not_crowd_out_others(
+    gateway: ChdbGateway,
+) -> None:
+    await seed_offers(gateway)
+    flood = [named(f"flood{number}", "Крупа гречневая ядрица") for number in range(40)]
+    await Seeder(gateway).offers(*flood)
+    retriever = ClickHouseLexicalRetriever(gateway, RussianAnalyzer(), candidate_pool=25)
+    hits = await retriever.retrieve(request(), 10)
+    assert GAMMA.supplier_id in {hit.supplier_id for hit in hits.hits}
+
+
 async def test_lexical_channel_respects_regions_and_item_type(gateway: ChdbGateway) -> None:
     await seed_offers(gateway)
     retriever = ClickHouseLexicalRetriever(gateway, RussianAnalyzer())

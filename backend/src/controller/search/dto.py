@@ -5,6 +5,7 @@ from pydantic import ConfigDict, Field, StringConstraints
 
 from src.controller.http.schema import CamelModel, UtcDateTime
 from src.models.enums import (
+    CandidateOrigin,
     CandidateStatus,
     CheckReason,
     CompanyRole,
@@ -14,6 +15,7 @@ from src.models.enums import (
     ItemType,
     Locale,
     MatchBasis,
+    Novelty,
     PurchaseOutcome,
     SearchOrigin,
     WarningCode,
@@ -139,6 +141,8 @@ class CandidateDto(CamelModel):
     highlights: list[HighlightDto]
     score: ScoreDto
     contacts: ContactsDto
+    origins: list[CandidateOrigin]
+    novelty: Novelty
 
 
 class PipelineDto(CamelModel):
@@ -146,6 +150,7 @@ class PipelineDto(CamelModel):
     channels: list[str]
     as_of: UtcDateTime
     inputs: list[str]
+    novelty_set: str | None
 
 
 class WarningDto(CamelModel):

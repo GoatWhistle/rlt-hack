@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
+from src.models.archive_roster import ArchiveRoster
 from src.models.offer_evidence import OfferEvidence
 from src.models.purchase import PurchaseSummary
 from src.models.query_item import QueryItem, SearchRequest
@@ -39,6 +40,10 @@ class PurchaseHistory(Protocol):
     async def summarize(
         self, supplier_ids: Sequence[UUID], items: Sequence[QueryItem], records: int
     ) -> Mapping[UUID, PurchaseSummary]: ...
+
+
+class ArchiveRosterReading(Protocol):
+    async def roster(self, inns: Sequence[str]) -> ArchiveRoster | None: ...
 
 
 class SearchArchive(Protocol):

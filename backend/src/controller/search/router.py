@@ -10,9 +10,10 @@ from src.controller.http.openapi import UuidPath, created, errors
 from src.controller.http.openapi import not_modified as conditional
 from src.controller.http.state import Services, metrics, services
 from src.controller.search.dto import RecentSearchesDto, SearchRequestDto, SearchResponseDto
-from src.controller.search.mapper import parse_search_id, to_query, to_response, to_summary
+from src.controller.search.mapper import parse_search_id, to_response, to_summary
 from src.controller.search.observe import log_search_request, report_search
 from src.controller.search.protocols import SupplierSearching
+from src.controller.search.query_mapper import to_query
 from src.models.enums import Locale, WarningCode
 
 RECENT_DEFAULT = 10

@@ -4,6 +4,7 @@ from src.adapter.repository.errors import DatasetMissingError
 PROBE_NAME = "clickhouse"
 SELECT_OFFER = "SELECT 1 FROM {db}.offers LIMIT 1"
 SELECT_EVIDENCE = "SELECT 1 FROM {db}.supplier_evidence_imports LIMIT 1"
+SELECT_ROSTER = "SELECT 1 FROM {db}.archive_supplier_sets LIMIT 1"
 
 
 class ClickHouseProbe:
@@ -35,6 +36,10 @@ class DatasetProbe:
     @classmethod
     def history(cls, gateway: SqlGateway, database: str) -> "DatasetProbe":
         return cls(gateway, "history", SELECT_EVIDENCE, database)
+
+    @classmethod
+    def novelty(cls, gateway: SqlGateway, database: str) -> "DatasetProbe":
+        return cls(gateway, "novelty", SELECT_ROSTER, database)
 
     @property
     def name(self) -> str:

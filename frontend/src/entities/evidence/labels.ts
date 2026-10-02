@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useFormatters } from "@/shared/i18n/formatters"
 import {
+  type CandidateOrigin,
   type CandidateStatus,
   type CheckReason,
   type CompanyRole,
@@ -13,6 +14,11 @@ import { isRegionCode } from "./regions"
 export function useRoleLabel(): (role: CompanyRole) => string {
   const { t } = useTranslation("evidence")
   return (role) => t(`role.${role}`)
+}
+
+export function useOriginLabel(): (origin: CandidateOrigin) => string {
+  const { t } = useTranslation("evidence")
+  return (origin) => t(`origin.${origin}`)
 }
 
 export function useStatusLabel(): (status: CandidateStatus) => string {

@@ -11,6 +11,7 @@ import json
 import logging
 import sys
 from collections.abc import Sequence
+from pathlib import Path
 from uuid import UUID, uuid4
 
 from src.application.config import AppConfig
@@ -71,6 +72,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--path",
         default=None,
         help="ZIP-выгрузка реестра: по умолчанию MSP_REGISTRY_PATH",
+    )
+
+    roster = commands.add_parser(
+        "archive-roster",
+        help="загрузить ИНН поставщиков исходного архива для проверки новизны",
+    )
+    roster.add_argument(
+        "--path",
+        default=None,
+        help="CSV поставщиков архива: по умолчанию SUPPLIER_DATASET_PATH",
     )
 
     sync = commands.add_parser("sync", help="обойти все подключённые источники")
@@ -188,6 +199,12 @@ async def _dispatch(arguments: argparse.Namespace, config: AppConfig) -> int:
                 )
             outcome = await (await container.registry_import(command.path)).run()
             print(f"Реестр МСП на {outcome.registry_date}: компаний {outcome.companies}")
+            return 0
+        if arguments.command == "archive-roster":
+            path = Path(arguments.path) if arguments.path else config.dataset_path
+            imported = await (await container.archive_roster_import(path)).run()
+            state = "уже загружен" if imported.already_present else "загружен"
+            print(f"Набор {imported.version} {state}: ИНН {imported.suppliers}")
             return 0
         if arguments.command == "coverage":
             # Контроллер ходит в сервис, а не в репозиторий напрямую.

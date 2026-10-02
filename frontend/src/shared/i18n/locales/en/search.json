@@ -98,7 +98,13 @@
     "noHighlights": "No supporting records.",
     "figure": "Match by item",
     "choose": "Choose candidate",
-    "chosen": "Remove from chosen"
+    "chosen": "Remove from chosen",
+    "novelty": "Novelty",
+    "noveltyNew": "The INN is absent from the source supplier archive (set {{set}}).",
+    "noveltyKnown": "The INN is present in the source supplier archive (set {{set}}).",
+    "noveltyUnknown": "Novelty cannot be established: no verifiable INN or the archive set is not loaded.",
+    "foundBy": "Found through",
+    "noOrigin": "No channel recorded"
   },
   "empty": {
     "title": "No suppliers found",

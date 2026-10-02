@@ -10,6 +10,7 @@ class MatchOutcome:
     candidates: tuple[SupplierCandidate, ...]
     channels: tuple[str, ...]
     warnings: tuple[SearchWarning, ...] = ()
+    novelty_set: str = ""
 
 
 @dataclass(frozen=True, slots=True)

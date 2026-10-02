@@ -8,6 +8,7 @@ from src.adapter.file.notice_csv.reader import CsvNoticeReader
 from src.adapter.repository.clickhouse.archive_evidence.combined import CombinedPurchaseHistory
 from src.adapter.repository.clickhouse.archive_evidence.history import ClickHouseArchiveEvidence
 from src.adapter.repository.clickhouse.archive_evidence.purchases import ClickHouseArchivePurchases
+from src.adapter.repository.clickhouse.archive_roster.store import ClickHouseArchiveRoster
 from src.adapter.repository.clickhouse.history_search.retriever import ClickHouseHistoryRetriever
 from src.adapter.repository.clickhouse.offer_read.catalog import ClickHouseOfferCatalog
 from src.adapter.repository.clickhouse.offer_search.retriever import ClickHouseLexicalRetriever
@@ -96,6 +97,7 @@ class ApiContainer:
             policy=CandidatePolicy.standard(settings.coverage_threshold),
             ranker=CandidateRanker(settings.weights),
             settings=settings,
+            roster=ClickHouseArchiveRoster(sql, self.database),
         )
 
     def pipeline(self, gateway: SqlGateway | None = None) -> SearchPipeline:
@@ -134,6 +136,7 @@ class ApiContainer:
             ClickHouseProbe(self._control),
             DatasetProbe.catalog(self._control, self.database),
             DatasetProbe.history(self._control, self.database),
+            DatasetProbe.novelty(self._control, self.database),
         ]
         if self._config.ml_service.enabled:
             probes.append(MlServiceProbe(self._ml()))

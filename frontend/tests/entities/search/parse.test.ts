@@ -31,7 +31,14 @@ describe("the search contract", () => {
       code: "coversItems",
       params: { matched: 2, total: 2 },
     })
-    expect(first?.score.channels).toEqual([{ channel: "lexical", rank: 1 }])
+    expect(first?.score.channels).toEqual([
+      { channel: "lexical", rank: 1 },
+      { channel: "history", rank: 2 },
+    ])
+    expect(first?.origins).toEqual(["catalog", "history"])
+    expect(first?.novelty).toBe("known")
+    expect(second?.novelty).toBe("unknown")
+    expect(result.pipeline.noveltySet).toBe("inn-3f2a9c41d0b7e65a")
     expect(second?.roleSource).toBeUndefined()
     expect(second?.matches[0]).toEqual({ itemId: "i1", basis: "inferred" })
     expect(second?.contacts).toEqual({})
@@ -109,5 +116,28 @@ describe("the search contract", () => {
       PayloadFormatError,
     )
     expect(() => parseRecentSearches([])).toThrow(PayloadFormatError)
+  })
+})
+
+describe("the contract cases", () => {
+  it.each(["empty", "history", "catalog", "mixed", "partial"])("reads the %s case", (name) => {
+    const result = parseSearchResult(contract(`search/cases/${name}.example.json`))
+    for (const candidate of result.candidates) {
+      expect(candidate.origins.length).toBeGreaterThan(0)
+    }
+    if (name === "catalog") expect(result.candidates[0]?.novelty).toBe("new")
+    if (name === "empty") expect(result.candidates).toEqual([])
+    if (name === "partial") expect(result.warnings[0]?.code).toBe("channelFailed")
+  })
+
+  it("drops unknown origin codes and reads old answers without novelty", () => {
+    const base = contract("search/response.example.json") as Record<string, unknown>
+    const candidates = (base.candidates as Record<string, unknown>[]).map((item) => {
+      const { novelty: _, ...rest } = item
+      return { ...rest, origins: ["catalog", "future"] }
+    })
+    const result = parseSearchResult({ ...base, candidates })
+    expect(result.candidates[0]?.origins).toEqual(["catalog"])
+    expect(result.candidates[0]?.novelty).toBe("unknown")
   })
 })

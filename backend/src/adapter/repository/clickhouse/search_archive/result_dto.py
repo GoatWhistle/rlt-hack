@@ -19,7 +19,7 @@ from src.adapter.repository.clickhouse.search_archive.query_dto import (
 )
 from src.adapter.repository.errors import CorruptRecordError
 from src.models.candidate import SupplierCandidate
-from src.models.enums import CandidateStatus, CheckReason, CompanyRole, WarningCode
+from src.models.enums import CandidateStatus, CheckReason, CompanyRole, Novelty, WarningCode
 from src.models.errors import DomainError
 from src.models.search_result import PipelineInfo, SearchResult, SearchWarning
 
@@ -38,6 +38,7 @@ class CandidateDto(FrozenDto):
     matches: tuple[MatchDto, ...]
     history: HistoryDto
     highlights: tuple[HighlightDto, ...]
+    novelty: Novelty = Novelty.UNKNOWN
 
     @classmethod
     def from_domain(cls, candidate: SupplierCandidate) -> Self:
@@ -52,6 +53,7 @@ class CandidateDto(FrozenDto):
             matches=tuple(MatchDto.from_domain(match) for match in candidate.matches),
             history=HistoryDto.from_domain(candidate.history),
             highlights=tuple(HighlightDto.from_domain(item) for item in candidate.highlights),
+            novelty=candidate.novelty,
         )
 
     def to_domain(self) -> SupplierCandidate:
@@ -67,6 +69,7 @@ class CandidateDto(FrozenDto):
             matches=tuple(match.to_domain() for match in self.matches),
             history=self.history.to_domain(),
             highlights=tuple(item.to_domain() for item in self.highlights),
+            novelty=self.novelty,
         )
 
 
@@ -80,6 +83,7 @@ class PipelineDto(FrozenDto):
     channels: tuple[str, ...]
     as_of: datetime
     inputs: tuple[str, ...] = ("text",)
+    novelty_set: str = ""
 
     @classmethod
     def from_domain(cls, pipeline: PipelineInfo) -> Self:
@@ -88,6 +92,7 @@ class PipelineDto(FrozenDto):
             channels=pipeline.channels,
             as_of=pipeline.as_of,
             inputs=pipeline.inputs,
+            novelty_set=pipeline.novelty_set,
         )
 
     @classmethod
@@ -95,7 +100,7 @@ class PipelineDto(FrozenDto):
         return None if pipeline is None else cls.from_domain(pipeline)
 
     def to_domain(self) -> PipelineInfo:
-        return PipelineInfo(self.version, self.channels, self.as_of, self.inputs)
+        return PipelineInfo(self.version, self.channels, self.as_of, self.inputs, self.novelty_set)
 
 
 class SearchResultDto(FrozenDto):

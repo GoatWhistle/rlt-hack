@@ -151,5 +151,14 @@
     "86": "Khanty-Mansi Autonomous Okrug — Yugra",
     "87": "Chukotka Autonomous Okrug",
     "89": "Yamalo-Nenets Autonomous Okrug"
+  },
+  "novelty": {
+    "new": "New supplier",
+    "known": "In the archive",
+    "unknown": "Novelty not established"
+  },
+  "origin": {
+    "catalog": "catalog",
+    "history": "procurement history"
   }
 }

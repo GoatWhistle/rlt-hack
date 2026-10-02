@@ -21,6 +21,7 @@ class PipelineInfo:
     channels: tuple[str, ...]
     as_of: datetime
     inputs: tuple[str, ...] = ("text",)
+    novelty_set: str = ""
 
 
 @dataclass(frozen=True, slots=True)

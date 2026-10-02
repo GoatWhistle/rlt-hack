@@ -6,6 +6,7 @@ import {
   useRoleLabel,
   useStatusLabel,
 } from "@/entities/evidence/labels"
+import { NoveltyTag } from "@/entities/evidence/ui/novelty-tag"
 import { StatusTag } from "@/entities/evidence/ui/status-tag"
 import type { Candidate } from "@/entities/search/model"
 import { useFormatters } from "@/shared/i18n/formatters"
@@ -76,6 +77,7 @@ function CandidateCard({
       <span className={styles.facts}>
         <span className={styles.tags}>
           <StatusTag status={candidate.status}>{statusLabel(candidate.status)}</StatusTag>
+          <NoveltyTag novelty={candidate.novelty} />
           {chosen ? (
             <Tag tone="accent">
               <Icon name="check" size="sm" />

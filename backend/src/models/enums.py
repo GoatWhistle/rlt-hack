@@ -136,6 +136,17 @@ class WarningCode(StrEnum):
     ITEMS_INFERRED = "itemsInferred"
 
 
+class Novelty(StrEnum):
+    NEW = "new"
+    KNOWN = "known"
+    UNKNOWN = "unknown"
+
+
+class CandidateOrigin(StrEnum):
+    CATALOG = "catalog"
+    HISTORY = "history"
+
+
 class SearchOrigin(StrEnum):
     MANUAL = "manual"
     UPLOAD = "upload"
@@ -152,6 +163,7 @@ class EnrichmentSource(StrEnum):
     OFFERS = "offers"
     CURRENT_OFFERS = "currentOffers"
     HISTORY = "history"
+    ARCHIVE = "archive"
 
 
 class ComponentState(StrEnum):

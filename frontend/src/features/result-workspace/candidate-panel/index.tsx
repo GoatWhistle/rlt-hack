@@ -23,6 +23,7 @@ export const SUMMARY_SEPARATOR = " · "
 export type CandidatePanelProps = {
   readonly candidate: Candidate
   readonly items: readonly QueryItem[]
+  readonly noveltySet?: string
   readonly chosen: boolean
   readonly onChoose: () => void
   readonly onProfile: () => void
@@ -51,6 +52,7 @@ function useReason(): (candidate: Candidate) => HeroReason {
 export function CandidatePanel({
   candidate,
   items,
+  noveltySet,
   chosen,
   onChoose,
   onProfile,
@@ -97,7 +99,7 @@ export function CandidatePanel({
       />
       <MatchBlock candidate={candidate} items={items} />
       <HistoryBlock supplierId={candidate.id} history={candidate.history} items={items} />
-      <CompanyBlock candidate={candidate} />
+      <CompanyBlock candidate={candidate} noveltySet={noveltySet} />
     </EvidenceFrame>
   )
 }

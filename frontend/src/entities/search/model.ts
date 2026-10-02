@@ -1,10 +1,12 @@
 import type {
+  CandidateOrigin,
   CandidateStatus,
   CheckReason,
   CompanyRole,
   Contacts,
   Highlight,
   MatchBasis,
+  Novelty,
   PurchaseOutcome,
   SearchWarning,
   Source,
@@ -12,7 +14,9 @@ import type {
 import type { Locale } from "@/shared/i18n/locale"
 
 export {
+  CANDIDATE_ORIGINS,
   CANDIDATE_STATUSES,
+  type CandidateOrigin,
   type CandidateStatus,
   CHECK_REASONS,
   type CheckReason,
@@ -23,6 +27,8 @@ export {
   type HighlightCode,
   MATCH_BASES,
   type MatchBasis,
+  NOVELTIES,
+  type Novelty,
   PURCHASE_OUTCOMES,
   type PurchaseOutcome,
   type SearchWarning,
@@ -119,6 +125,8 @@ export type Candidate = {
   readonly highlights: readonly Highlight[]
   readonly score: Score
   readonly contacts: Contacts
+  readonly origins: readonly CandidateOrigin[]
+  readonly novelty: Novelty
 }
 
 export type Pipeline = {
@@ -126,6 +134,7 @@ export type Pipeline = {
   readonly channels: readonly string[]
   readonly asOf: string
   readonly inputs: readonly string[]
+  readonly noveltySet?: string
 }
 
 export const SEARCH_ORIGINS = ["manual", "upload"] as const

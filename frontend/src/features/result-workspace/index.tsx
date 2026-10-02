@@ -112,6 +112,7 @@ export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
               key={selected.id}
               candidate={selected}
               items={items}
+              noveltySet={result.pipeline.noveltySet}
               chosen={shortlist.ids.includes(selected.id)}
               onChoose={() => shortlist.toggle(selected.id)}
               onProfile={() => setProfileOpen(true)}
