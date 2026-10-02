@@ -1,6 +1,10 @@
 import { contract } from "@tests/support/search"
 import { describe, expect, it } from "vitest"
-import { parseRecentSearches, parseSearchResult } from "@/entities/search/parse"
+import {
+  parseRecentSearches,
+  parseSearchHistory,
+  parseSearchResult,
+} from "@/entities/search/parse"
 import { PayloadFormatError } from "@/shared/api/payload"
 
 type Node = Record<string | number, unknown>
@@ -55,6 +59,14 @@ describe("the search contract", () => {
         createdAt: "2026-10-01T12:00:00Z",
       },
     ])
+  })
+
+  it("reads a page of the search history with its continuation", () => {
+    const page = parseSearchHistory(contract("search/recent.example.json"))
+    expect(page.searches).toHaveLength(1)
+    expect(page).toMatchObject({ hasMore: false, total: 1 })
+    const bare = parseSearchHistory({ searches: [] })
+    expect(bare).toEqual({ searches: [], hasMore: false, total: 0 })
   })
 
   it("accepts absent filters, quantity and warning subject", () => {

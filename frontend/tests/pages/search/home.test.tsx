@@ -3,7 +3,7 @@ import { en } from "@tests/support/dictionaries"
 import { contract, renderSearch, stubSearch } from "@tests/support/search"
 import { describe, expect, it, vi } from "vitest"
 import { parseRecentSearches } from "@/entities/search/parse"
-import { isToday } from "@/pages/search/recent-list"
+import { ageOf, isRecentDay } from "@/pages/search/recent-list/history-groups"
 import { ApiError } from "@/shared/api/api-error"
 
 function recentRegion() {
@@ -32,33 +32,61 @@ describe("the search page", () => {
     expect(link).not.toHaveTextContent("·")
   })
 
-  it("groups recent searches by day and marks the ones without candidates", async () => {
+  it("groups recent searches by how long ago they ran and marks empty ones", async () => {
     const [first] = parseRecentSearches(contract("search/recent.example.json"))
     if (!first) throw new Error("the contract example has no searches")
+    const daysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString()
     const recent = vi.fn(async () => [
-      { ...first, searchId: "today", text: "Paper", createdAt: new Date().toISOString() },
-      { ...first, searchId: "empty", text: "Tractor", candidates: 0, recommended: 0 },
+      { ...first, searchId: "today", text: "Paper", createdAt: daysAgo(0) },
+      { ...first, searchId: "yesterday", text: "Rice", createdAt: daysAgo(1) },
+      {
+        ...first,
+        searchId: "empty",
+        text: "Tractor",
+        candidates: 0,
+        recommended: 0,
+        createdAt: daysAgo(3),
+      },
     ])
     renderSearch("/search", { gateway: stubSearch({ recent }) })
     const region = recentRegion()
-    const today = await within(region).findByRole("heading", {
-      name: en("recent.today", "search"),
-    })
-    expect(within(today.parentElement as HTMLElement).getByRole("link")).toHaveTextContent(
-      "Paper",
-    )
-    const earlier = within(region).getByRole("heading", {
-      name: en("recent.earlier", "search"),
-    })
-    expect(within(earlier.parentElement as HTMLElement).getByRole("link")).toHaveTextContent(
-      en("recent.none", "search"),
-    )
+    const group = async (name: string) =>
+      within(region)
+        .findByRole("heading", { name })
+        .then((heading) => within(heading.parentElement as HTMLElement).getByRole("link"))
+    expect(await group("Today")).toHaveTextContent("Paper")
+    expect(await group("Yesterday")).toHaveTextContent("Rice")
+    expect(await group("3 days ago")).toHaveTextContent(en("recent.none", "search"))
   })
 
-  it("tells today apart from other days", () => {
+  it("keeps the whole history and loads older searches on demand", async () => {
+    const [first] = parseRecentSearches(contract("search/recent.example.json"))
+    if (!first) throw new Error("the contract example has no searches")
+    const older = { ...first, searchId: "older", text: "Paper" }
+    const history = vi
+      .fn()
+      .mockResolvedValueOnce({ searches: [first], hasMore: true, total: 2 })
+      .mockResolvedValueOnce({ searches: [older], hasMore: false, total: 2 })
+    const { user } = renderSearch("/search", { gateway: stubSearch({ history }) })
+    const more = await within(recentRegion()).findByRole("button", { name: "Show 1 more" })
+    await user.click(more)
+    expect(await within(recentRegion()).findByRole("link", { name: /Paper/ })).toBeVisible()
+    expect(history).toHaveBeenLastCalledWith(20, first.searchId)
+    expect(within(recentRegion()).queryByRole("button", { name: /more/ })).toBeNull()
+  })
+
+  it("tells how long ago a search ran in days, weeks, months and years", () => {
     const now = new Date(2026, 9, 2, 12)
-    expect(isToday(new Date(2026, 9, 2, 1).toISOString(), now)).toBe(true)
-    expect(isToday(new Date(2026, 9, 1, 23).toISOString(), now)).toBe(false)
+    const at = (...parts: [number, number, number]) => new Date(...parts, 9).toISOString()
+    expect(ageOf(at(2026, 9, 2), now)).toEqual({ unit: "day", value: -0 })
+    expect(ageOf(at(2026, 9, 1), now)).toEqual({ unit: "day", value: -1 })
+    expect(isRecentDay(ageOf(at(2026, 9, 1), now))).toBe(true)
+    expect(isRecentDay(ageOf(at(2026, 8, 29), now))).toBe(false)
+    expect(ageOf(at(2026, 8, 24), now)).toEqual({ unit: "week", value: -1 })
+    expect(ageOf(at(2026, 8, 15), now)).toEqual({ unit: "week", value: -2 })
+    expect(ageOf(at(2026, 7, 20), now)).toEqual({ unit: "month", value: -2 })
+    expect(ageOf(at(2025, 3, 1), now)).toEqual({ unit: "year", value: -1 })
+    expect(ageOf(at(2026, 9, 5), now)).toEqual({ unit: "day", value: -0 })
   })
 
   it("offers to retry when the recent searches fail to load", async () => {
@@ -106,5 +134,19 @@ describe("the search page", () => {
     await user.click(reveal)
     expect(screen.queryByRole("button", { name: /^Recent searches/ })).toBeNull()
     expect(window.localStorage.getItem("lotive.search.recentOpen")).toBe("true")
+  })
+
+  it("prefers Saint Petersburg unless the address names a region or none", async () => {
+    const trigger = () => screen.findByRole("button", { name: /^Delivery region:/ })
+    const first = renderSearch("/search")
+    expect(await trigger()).toHaveAccessibleName("Delivery region: Saint Petersburg")
+    first.unmount()
+    const second = renderSearch("/search?region=77")
+    expect(await trigger()).toHaveAccessibleName("Delivery region: Moscow")
+    second.unmount()
+    renderSearch("/search?region=")
+    expect(await trigger()).toHaveAccessibleName(
+      `Delivery region: ${en("box.anyRegion", "search")}`,
+    )
   })
 })

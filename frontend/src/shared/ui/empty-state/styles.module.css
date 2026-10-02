@@ -9,7 +9,10 @@
 }
 
 .page {
-  padding-block: var(--state-offset) var(--space-7);
+  align-content: center;
+  min-height: calc(var(--page-fill) + var(--space-8) - var(--space-6));
+  margin-block-end: calc(var(--space-6) - var(--space-8));
+  padding-block: 0;
 }
 
 .badge {

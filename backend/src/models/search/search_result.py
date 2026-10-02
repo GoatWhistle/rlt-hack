@@ -69,3 +69,10 @@ class SearchSummary:
     candidates: int
     recommended: int
     created_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class SearchHistory:
+    searches: tuple[SearchSummary, ...]
+    has_more: bool
+    total: int

@@ -1,6 +1,7 @@
 import { clsx } from "clsx"
-import { type FormEvent, useId, useRef, useState } from "react"
+import { type FormEvent, type ReactNode, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { DEFAULT_REGION_CODE } from "@/entities/evidence/regions"
 import { MAX_QUERY_LENGTH } from "@/entities/search/model"
 import type { UploadSummary } from "@/entities/upload/model"
 import { useCreateUpload } from "@/entities/upload/queries"
@@ -41,6 +42,7 @@ export type SearchBoxProps = {
 }
 
 type FieldBarProps = {
+  readonly region: ReactNode
   readonly compact: boolean
   readonly stage: SearchStage | null
   readonly counterId: string
@@ -49,10 +51,11 @@ type FieldBarProps = {
 }
 
 function FieldBar(props: FieldBarProps) {
-  const { compact, stage, counterId, length, pending } = props
+  const { region, compact, stage, counterId, length, pending } = props
   const { t } = useTranslation("search")
   return (
     <div className={styles.bar} data-part="query-bar">
+      {region}
       {compact ? null : <StageLine stage={stage} />}
       {length >= COUNTER_FROM ? (
         <span
@@ -77,7 +80,7 @@ function FieldBar(props: FieldBarProps) {
 
 export function SearchBox({
   initialText = "",
-  initialRegion = "",
+  initialRegion = DEFAULT_REGION_CODE,
   compact = false,
   inputId,
   autoFocus,
@@ -151,6 +154,15 @@ export function SearchBox({
           onChange={(event) => change(event.target.value)}
         />
         <FieldBar
+          region={
+            <RegionPreference
+              className={styles.region}
+              collapse={compact}
+              value={region}
+              onChange={setRegion}
+              disabled={search.isPending}
+            />
+          }
           compact={compact}
           stage={stage}
           counterId={counterId}
@@ -159,7 +171,6 @@ export function SearchBox({
         />
         {search.isPending ? <SweepBar /> : null}
       </div>
-      <RegionPreference value={region} onChange={setRegion} disabled={search.isPending} />
       <SearchError id={errorId} error={error} onRetry={() => submit()} />
     </form>
   )

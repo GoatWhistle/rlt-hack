@@ -6,7 +6,7 @@ from uuid import UUID
 
 from src.models.enums import SearchStage, WarningCode
 from src.models.search.search import SearchQuery
-from src.models.search.search_result import SearchResult, SearchSummary, SearchWarning
+from src.models.search.search_result import SearchHistory, SearchResult, SearchWarning
 from src.service.errors import SearchNotFoundError, SearchTimeoutError
 from src.service.supplier_search.pipeline import SearchPipeline
 from src.service.supplier_search.protocols import (
@@ -52,8 +52,8 @@ class SupplierSearchService:
             raise SearchNotFoundError(search_id)
         return result
 
-    async def recent(self, limit: int) -> tuple[SearchSummary, ...]:
-        return await self._archive.recent(limit)
+    async def recent(self, limit: int, before: UUID | None = None) -> SearchHistory:
+        return await self._archive.recent(limit, before)
 
     def _scope(self) -> AbstractAsyncContextManager[None]:
         return self._share.scope() if self._share is not None else nullcontext()

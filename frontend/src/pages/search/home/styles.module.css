@@ -14,7 +14,7 @@
 
 .query {
   align-self: center;
-  padding-block-end: var(--query-lift);
+  padding-block: var(--space-6) var(--query-lift);
 }
 
 .head {
@@ -58,6 +58,18 @@
 
   .page[data-recent="closed"] {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .recent {
+    position: sticky;
+    inset-block-start: var(--pane-offset);
+    display: flex;
+    flex-direction: column;
+    max-height: var(--page-fill);
+  }
+
+  .recent > * {
+    min-height: 0;
   }
 
   .query {

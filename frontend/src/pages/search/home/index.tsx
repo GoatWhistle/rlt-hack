@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router"
-import { isRegionCode } from "@/entities/evidence/regions"
+import { DEFAULT_REGION_CODE, isRegionCode } from "@/entities/evidence/regions"
 import { SearchBox } from "@/features/search-box"
 import { lotPath, SEARCH_TEXT_PARAM } from "@/shared/config/paths"
 import { withViewTransition } from "@/shared/motion/view-transition"
@@ -25,6 +25,11 @@ function useToggleFocus(open: boolean, panelId: string) {
   return { reveal, mark: () => (toggled.current = true) }
 }
 
+function regionFrom(param: string | null): string {
+  if (param === "") return ""
+  return param !== null && isRegionCode(param) ? param : DEFAULT_REGION_CODE
+}
+
 export function SearchPage() {
   const { t } = useTranslation("search")
   const { t: common } = useTranslation()
@@ -35,7 +40,7 @@ export function SearchPage() {
   const panelId = useId()
   const [open, setOpen] = useRecentOpen()
   const focus = useToggleFocus(open, panelId)
-  const region = params.get("region") ?? ""
+  const region = params.get("region")
   const draft = params.get(SEARCH_TEXT_PARAM) ?? ""
   const toggle = (next: boolean) => {
     focus.mark()
@@ -62,7 +67,7 @@ export function SearchPage() {
             autoFocus
             shortcut
             initialText={draft}
-            initialRegion={isRegionCode(region) ? region : ""}
+            initialRegion={regionFrom(region)}
             onFound={(result) =>
               navigate(lotPath(result.id, "query"), { viewTransition: true })
             }

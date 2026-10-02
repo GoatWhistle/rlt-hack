@@ -10,7 +10,7 @@ from src.models.company.purchase import PurchaseSummary
 from src.models.ranking.retrieval import RetrievalHits
 from src.models.search.query_item import QueryItem, SearchRequest
 from src.models.search.search import SearchQuery
-from src.models.search.search_result import SearchResult, SearchSummary
+from src.models.search.search_result import SearchHistory, SearchResult
 
 
 class QueryInterpreter(Protocol):
@@ -47,7 +47,7 @@ class SearchArchive(Protocol):
 
     async def get(self, search_id: UUID) -> SearchResult | None: ...
 
-    async def recent(self, limit: int) -> tuple[SearchSummary, ...]: ...
+    async def recent(self, limit: int, before: UUID | None = None) -> SearchHistory: ...
 
 
 class Clock(Protocol):

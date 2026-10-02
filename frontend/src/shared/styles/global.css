@@ -2,6 +2,7 @@
 @import "./tokens/layout.css";
 @import "./tokens/typography.css";
 @import "./tokens/motion.css";
+@import "./tokens/keyframes.css";
 @import "./reset.css";
 
 body {
@@ -38,6 +39,10 @@ a {
 
 a:hover {
   color: var(--link-hover);
+}
+
+::view-transition {
+  pointer-events: none;
 }
 
 ::view-transition-old(root) {

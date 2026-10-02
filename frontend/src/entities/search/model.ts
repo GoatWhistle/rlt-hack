@@ -36,6 +36,7 @@ export {
 export const MAX_QUERY_LENGTH = 4000
 export const DEFAULT_LIMIT = 20
 export const RECENT_LIMIT = 8
+export const HISTORY_PAGE = 20
 
 export const ITEM_ORIGINS = ["text", "inferred", "user"] as const
 export type ItemOrigin = (typeof ITEM_ORIGINS)[number]
@@ -156,6 +157,12 @@ export type SearchSummary = {
   readonly candidates: number
   readonly recommended: number
   readonly createdAt: string
+}
+
+export type SearchHistoryPage = {
+  readonly searches: readonly SearchSummary[]
+  readonly hasMore: boolean
+  readonly total: number
 }
 
 export function matchOf(candidate: Candidate, itemId: string): CandidateMatch | undefined {

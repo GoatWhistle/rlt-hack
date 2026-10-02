@@ -10,7 +10,7 @@ from src.adapter.repository.clickhouse.search.search_archive.result_dto import (
 )
 from src.models.enums import Locale
 from src.models.search.search import SearchText
-from src.models.search.search_result import SearchResult, SearchSummary
+from src.models.search.search_result import SearchHistory, SearchResult, SearchSummary
 
 SEARCH_COLUMNS = (
     "search_id",
@@ -29,8 +29,15 @@ SELECT_PAYLOAD = (
 )
 SELECT_RECENT = (
     "SELECT search_id, text, locale, items, candidates, recommended, created_at "
-    "FROM {db}.searches_current ORDER BY created_at DESC, search_id LIMIT {{limit:UInt32}}"
+    "FROM {db}.searches_current {where}"
+    "ORDER BY created_at DESC, search_id DESC LIMIT {{limit:UInt32}}"
 )
+AFTER_CURSOR = (
+    "WHERE (created_at, search_id) < ("
+    "SELECT created_at, search_id FROM {db}.searches_current "
+    "WHERE search_id = {{before:UUID}} LIMIT 1) "
+)
+COUNT_SEARCHES = "SELECT count() FROM {db}.searches_current"
 
 
 class ClickHouseSearchArchive:
@@ -71,11 +78,22 @@ class ClickHouseSearchArchive:
         )
         return decode_result(str(rows[0][0])) if rows else None
 
-    async def recent(self, limit: int) -> tuple[SearchSummary, ...]:
+    async def recent(self, limit: int, before: UUID | None = None) -> SearchHistory:
         if limit < 1:
-            return ()
-        rows = await self._gateway.select(SELECT_RECENT.format(db=self._db), {"limit": limit})
-        return tuple(_summary(row) for row in rows)
+            return SearchHistory(searches=(), has_more=False, total=0)
+        where = AFTER_CURSOR.format(db=self._db) if before is not None else ""
+        parameters: dict[str, object] = {"limit": limit + 1}
+        if before is not None:
+            parameters["before"] = str(before)
+        rows = await self._gateway.select(
+            SELECT_RECENT.format(db=self._db, where=where), parameters
+        )
+        counted = await self._gateway.select(COUNT_SEARCHES.format(db=self._db), {})
+        return SearchHistory(
+            searches=tuple(_summary(row) for row in rows[:limit]),
+            has_more=len(rows) > limit,
+            total=int(str(counted[0][0])) if counted else 0,
+        )
 
 
 def _summary(row: Sequence[object]) -> SearchSummary:

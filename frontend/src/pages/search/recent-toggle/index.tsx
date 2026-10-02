@@ -1,6 +1,6 @@
 import type { Ref } from "react"
 import { useTranslation } from "react-i18next"
-import { useRecentSearches } from "@/entities/search/queries"
+import { useSearchHistory } from "@/entities/search/queries"
 import { CountBadge } from "@/shared/ui/count-badge"
 import { Icon } from "@/shared/ui/icon"
 import styles from "./styles.module.css"
@@ -14,8 +14,8 @@ export type RecentRevealProps = {
 
 export function RecentReveal({ open, controls, ref, onOpen }: RecentRevealProps) {
   const { t } = useTranslation("search")
-  const recent = useRecentSearches()
-  const count = recent.data?.length ?? 0
+  const recent = useSearchHistory()
+  const count = recent.data?.pages[0]?.total ?? 0
   return (
     <button
       ref={ref}

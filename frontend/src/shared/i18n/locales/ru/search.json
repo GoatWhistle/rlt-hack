@@ -17,7 +17,15 @@
     },
     "region": "Регион поставки",
     "anyRegion": "Без приоритета региона",
-    "regionHint": "Местные компании выше; поставщики из других регионов остаются."
+    "regionPicker": {
+      "trigger": "Регион поставки: {{name}}",
+      "search": "Город или регион",
+      "cities": "Города",
+      "regions": "Регионы",
+      "empty": "Ничего не нашлось",
+      "emptyHint": "Проверьте написание или введите название региона",
+      "close": "Закрыть"
+    }
   },
   "recent": {
     "title": "Недавние поиски",
@@ -35,9 +43,11 @@
     "recommended_other": "<b>{{count, number}}</b> рекомендовано",
     "none": "Кандидатов не нашлось",
     "retry": "Повторить",
-    "today": "Сегодня",
-    "earlier": "Ранее",
-    "collapse": "Свернуть"
+    "collapse": "Свернуть",
+    "more_one": "Показать ещё {{count, number}}",
+    "more_few": "Показать ещё {{count, number}}",
+    "more_many": "Показать ещё {{count, number}}",
+    "more_other": "Показать ещё {{count, number}}"
   },
   "header": {
     "title": "Результат поиска: {{query}}",

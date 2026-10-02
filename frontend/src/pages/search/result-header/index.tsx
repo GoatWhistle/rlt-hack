@@ -43,7 +43,7 @@ export function ResultHeader(props: ResultHeaderProps) {
           shortcut
           inputId={inputId}
           initialText={result.query.text}
-          initialRegion={result.query.preferredRegion}
+          initialRegion={result.query.preferredRegion ?? ""}
           onStage={onStage}
           onFound={(next) => navigate(lotPath(next.id, "query"), { viewTransition: true })}
         />

@@ -4,7 +4,7 @@ from uuid import UUID
 from src.models.operations.upload import Notice
 from src.models.ranking.embedding import OfferSearchHit
 from src.models.search.search import SearchQuery
-from src.models.search.search_result import SearchResult, SearchSummary
+from src.models.search.search_result import SearchHistory, SearchResult
 from src.models.search.supplier_search import SupplierCandidate
 
 
@@ -19,7 +19,7 @@ class SupplierSearching(Protocol):
 
     async def get(self, search_id: UUID) -> SearchResult: ...
 
-    async def recent(self, limit: int) -> tuple[SearchSummary, ...]: ...
+    async def recent(self, limit: int, before: UUID | None = None) -> SearchHistory: ...
 
 
 class CatalogSearching(Protocol):

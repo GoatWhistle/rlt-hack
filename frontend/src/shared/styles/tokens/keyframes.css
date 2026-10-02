@@ -1,0 +1,165 @@
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--motion-scale));
+  }
+}
+
+@keyframes scale-out {
+  to {
+    opacity: 0;
+    transform: scale(var(--motion-scale));
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes drawer-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--pop-scale));
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-offset));
+  }
+}
+
+@keyframes slide-out {
+  to {
+    opacity: 0;
+    transform: translateY(var(--motion-offset));
+  }
+}
+
+@keyframes collapse {
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transform: translateY(var(--motion-offset));
+  }
+}
+
+@keyframes expand {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transform: translateY(calc(var(--motion-offset) * -1));
+  }
+}
+
+@keyframes reveal-x {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes panel-out {
+  to {
+    opacity: 0;
+    transform: translateY(calc(-2 * var(--motion-offset))) scale(var(--motion-scale));
+  }
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-2 * var(--motion-offset))) scale(var(--motion-scale));
+  }
+}
+
+@keyframes pane-old {
+  to {
+    opacity: 0;
+    filter: blur(var(--motion-blur));
+  }
+}
+
+@keyframes pane-new {
+  from {
+    opacity: 0;
+    filter: blur(var(--motion-blur));
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes slide-x-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--motion-offset) * var(--slide-direction, 1)));
+  }
+}
+
+@keyframes route-progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(var(--route-progress-max));
+  }
+}
+
+@keyframes scroll-edge {
+  to {
+    border-block-end-color: var(--line-hairline);
+  }
+}
+
+@keyframes pulse {
+  to {
+    opacity: var(--skeleton-dim);
+  }
+}
