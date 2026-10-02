@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest"
 import type { SearchGateway } from "@/entities/search/gateway"
 import { SearchGatewayProvider } from "@/entities/search/gateway-context"
 import { MAX_QUERY_LENGTH } from "@/entities/search/model"
-import { COUNTER_FROM, PICK_TO_FIELD, SearchBox } from "@/features/search-box"
+import { COUNTER_FROM, FINE_POINTER, PICK_TO_FIELD, SearchBox } from "@/features/search-box"
 import { ApiError } from "@/shared/api/api-error"
 
 function renderBox(gateway: SearchGateway = stubSearch(), initialText = "") {
@@ -125,6 +125,79 @@ describe("the search box", () => {
     await waitFor(() => expect(button).not.toHaveAttribute("aria-busy"))
     expect(screen.queryByText(en("box.stage.companies", "search"))).toBeNull()
     expect(screen.getByRole("status")).toBeEmptyDOMElement()
+  })
+
+  it("keeps the field neutral on a server failure and retries the same text", async () => {
+    const search = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiError({ status: 503, code: "search_busy" }))
+      .mockResolvedValue(contractResult())
+    const { user, field, onFound } = renderBox(stubSearch({ search }))
+    await user.type(field, "rice{Enter}")
+    expect(await screen.findByRole("alert")).toBeInTheDocument()
+    expect(field).not.toHaveAttribute("aria-invalid")
+    await user.click(screen.getByRole("button", { name: en("action.retry") }))
+    await waitFor(() => expect(onFound).toHaveBeenCalled())
+    expect(search).toHaveBeenCalledTimes(2)
+  })
+
+  it("marks the field only for a problem with the text itself", async () => {
+    const { user, field } = renderBox()
+    await user.type(field, "{Enter}")
+    expect(field).toHaveAttribute("aria-invalid", "true")
+    expect(screen.queryByRole("button", { name: en("action.retry") })).toBeNull()
+  })
+
+  it("jumps to the field on / and reports the stage outside", async () => {
+    const onStage = vi.fn()
+    let finish: (value: ReturnType<typeof contractResult>) => void = () => undefined
+    const search = vi.fn(
+      () =>
+        new Promise<ReturnType<typeof contractResult>>((resolve) => {
+          finish = resolve
+        }),
+    )
+    const { user } = renderWithProviders(
+      <SearchGatewayProvider gateway={stubSearch({ search })}>
+        <button type="button">elsewhere</button>
+        <SearchBox
+          compact
+          shortcut
+          showExamples={false}
+          initialText="rice"
+          onStage={onStage}
+          onFound={vi.fn()}
+        />
+      </SearchGatewayProvider>,
+    )
+    const field = screen.getByRole("textbox", { name: en("box.label", "search") })
+    expect(field).toHaveAttribute("aria-keyshortcuts", "/")
+    await user.click(screen.getByRole("button", { name: "elsewhere" }))
+    await user.keyboard("/")
+    expect(field).toHaveFocus()
+    expect(field).toHaveValue("rice")
+    await user.keyboard("{Enter}")
+    await waitFor(() => expect(onStage).toHaveBeenLastCalledWith("parse"))
+    expect(screen.queryByText(en("box.stage.parse", "search"))).toBeNull()
+    finish(contractResult())
+    await waitFor(() => expect(onStage).toHaveBeenLastCalledWith(null))
+  })
+
+  it("takes the focus on a screen with a fine pointer", () => {
+    Object.assign(window, {
+      matchMedia: (query: string) => ({
+        matches: query === FINE_POINTER,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }),
+    })
+    renderWithProviders(
+      <SearchGatewayProvider gateway={stubSearch()}>
+        <SearchBox autoFocus initialText="oats" onFound={vi.fn()} />
+      </SearchGatewayProvider>,
+    )
+    expect(screen.getByRole("textbox", { name: en("box.label", "search") })).toHaveFocus()
+    Object.assign(window, { matchMedia: undefined })
   })
 
   it("names the field without a visible label in its compact form", () => {

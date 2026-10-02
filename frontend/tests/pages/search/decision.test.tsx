@@ -4,10 +4,10 @@ import { renderSearch } from "@tests/support/search"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { resetShortlists } from "@/entities/shortlist/store"
 import { CSV_TYPE } from "@/features/export-results/csv"
-import { searchFileName } from "@/features/export-results/search-csv"
 import * as download from "@/shared/download/save-text-file"
 
 const SEARCH = "1f0c3b5e-6a1d-4c2e-9f7a-2b8d4e6f1a90"
+const EXPORT_FILE = "lotive-krupa-grechnevaya-yadritsa-2026-10-01.csv"
 const NORTH = "6c1e2f3a-4b5c-4d6e-8f70-81a2b3c4d5e6"
 const GRAIN = "7d2f3a4b-5c6d-4e7f-9081-92b3c4d5e6f7"
 
@@ -80,12 +80,12 @@ describe("deciding on a search result", () => {
       within(dialog).getByRole("button", { name: en("search.submit", "export") }),
     )
     const [name, content, type] = save.mock.calls[0] ?? []
-    expect(name).toBe(searchFileName(SEARCH))
+    expect(name).toBe(EXPORT_FILE)
     expect(type).toBe(CSV_TYPE)
     expect(content).toContain("АО «Зерновой Двор»")
     expect(content).not.toContain("Северный Провиант")
     expect(
-      (await screen.findAllByText(`File downloaded: ${searchFileName(SEARCH)}`)).length,
+      (await screen.findAllByText(`File downloaded: ${EXPORT_FILE}`)).length,
     ).toBeGreaterThan(0)
   })
 
@@ -139,6 +139,22 @@ describe("deciding on a search result", () => {
     expect(router.state.location.search).toBe(`?candidate=${NORTH}`)
     await user.click(screen.getByRole("button", { name: /Рис шлифованный/ }))
     expect(router.state.location.search).toBe(`?candidate=${NORTH}&item=i2`)
+    const grounds = screen.getByRole("article", { name: /Северный Провиант/ })
+    const focused = within(grounds).getByRole("article", { current: true })
+    expect(focused).toHaveAccessibleName(/Рис шлифованный круглозёрный/)
+  })
+
+  it("lets the user decide right from the company profile", async () => {
+    const { user } = await openResult()
+    await user.click(screen.getByRole("button", { name: en("panel.profile", "candidate") }))
+    const dialog = await screen.findByRole("dialog", { name: /Северный Провиант/ })
+    await user.click(
+      within(dialog).getByRole("button", { name: en("panel.choose", "candidate") }),
+    )
+    expect(
+      within(dialog).getByRole("button", { name: en("panel.chosen", "candidate") }),
+    ).toBeInTheDocument()
+    expect(resultHeader()).toHaveTextContent("1 chosen")
   })
 
   it("names the region instead of its code", async () => {

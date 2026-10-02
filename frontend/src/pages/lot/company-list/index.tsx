@@ -1,8 +1,8 @@
 import { clsx } from "clsx"
 import { type KeyboardEvent, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useMatchFigure } from "@/entities/evidence/labels"
-import { targetIndex } from "@/entities/evidence/ui/candidate-list"
+import { useInnText, useMatchFigure } from "@/entities/evidence/labels"
+import { targetIndex, useRevealSelected } from "@/entities/evidence/ui/candidate-list"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { COMPARE_FROM } from "@/features/compare-candidates"
 import { Caption } from "@/shared/ui/caption"
@@ -29,7 +29,7 @@ export function StatusTag({ company }: { readonly company: Company }) {
   const statusText = useStatusText()
   const { tone, dot } = STATUS_TONES[company.status]
   return (
-    <Tag tone={tone}>
+    <Tag tone={tone} wrap>
       <span aria-hidden="true" className={clsx(styles.dot, dot)} />
       {statusText(company)}
     </Tag>
@@ -91,11 +91,15 @@ export function CompanyList(props: CompanyListProps) {
   const { companies, ranks, products, selectedId, chosen, filter, onSelect } = props
   const { t } = useTranslation("lot")
   const { t: rankText } = useTranslation("candidate")
-  const [expanded, setExpanded] = useState(false)
+  const innText = useInnText()
+  const [expanded, setExpanded] = useState(
+    () => companies.findIndex((company) => company.id === selectedId) >= VISIBLE_COMPANIES,
+  )
   const hidden = companies.length - VISIBLE_COMPANIES
   const visible = expanded || hidden <= 0 ? companies : companies.slice(0, VISIBLE_COMPANIES)
   const listRef = useRef<HTMLDivElement>(null)
   const selectedVisible = visible.some((company) => company.id === selectedId)
+  useRevealSelected(listRef)
 
   function move(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     if (event.altKey || event.ctrlKey || event.metaKey) return
@@ -123,7 +127,15 @@ export function CompanyList(props: CompanyListProps) {
             <PickCard
               key={company.id}
               title={company.name}
-              subtitle={company.role}
+              subtitle={
+                <>
+                  {company.role}
+                  {" · "}
+                  <span className={company.inn ? styles.inn : undefined}>
+                    {innText(company.inn)}
+                  </span>
+                </>
+              }
               rank={ranks.get(company.id) ?? 0}
               rankLabel={rankText("card.rank", { index: ranks.get(company.id) ?? 0 })}
               selected={company.id === selectedId}

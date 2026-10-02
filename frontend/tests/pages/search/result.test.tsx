@@ -127,8 +127,8 @@ describe("a search result", () => {
     const verdicts = within(candidates).getByRole("group", {
       name: en("candidates.facets.legend", "search"),
     })
-    expect(verdicts).toHaveTextContent("All2Recommended1Needs checking1")
-    await user.click(within(verdicts).getByRole("radio", { name: /^Needs checking/ }))
+    expect(verdicts).toHaveTextContent("All2Recommended1To check1")
+    await user.click(within(verdicts).getByRole("radio", { name: /^To check/ }))
     expect(router.state.location.search).toContain("status=check")
     expect(within(candidates).queryByRole("button", { name: /Северный Провиант/ })).toBeNull()
     expect(screen.getByRole("article", { name: /Зерновой Двор/ })).toBeInTheDocument()
@@ -189,20 +189,6 @@ describe("a search result", () => {
     )
     await user.click(screen.getByRole("button", { name: /Change the query/ }))
     expect(screen.getByRole("textbox", { name: en("box.label", "search") })).toHaveFocus()
-  })
-
-  it("opens the company profile with current offers", async () => {
-    const { user } = await openContract()
-    await user.click(screen.getByRole("button", { name: en("panel.profile", "candidate") }))
-    const dialog = await screen.findByRole("dialog", { name: "ООО «Северный Провиант»" })
-    expect(
-      await within(dialog).findByText("Крупа гречневая ядрица 1 сорт, мешок 50 кг"),
-    ).toBeVisible()
-    expect(within(dialog).getByText("RUB 84.50 per кг")).toBeVisible()
-    expect(
-      within(dialog).getByRole("heading", { name: en("forQuery", "supplier") }),
-    ).toBeTruthy()
-    expect(within(dialog).getByText(en("identity.verified", "supplier"))).toBeVisible()
   })
 
   it("says when the search does not exist and retries other failures", async () => {

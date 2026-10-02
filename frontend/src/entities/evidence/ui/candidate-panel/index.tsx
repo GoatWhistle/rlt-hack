@@ -33,6 +33,7 @@ export type CandidatePanelProps = {
   readonly items: readonly ItemView[]
   readonly chosen: boolean
   readonly pager?: CandidatePagerProps
+  readonly focusItemId?: string
   readonly onChoose: () => void
   readonly onProfile: () => void
 }
@@ -59,6 +60,7 @@ export function CandidatePanel({
   items,
   chosen,
   pager,
+  focusItemId,
   onChoose,
   onProfile,
 }: CandidatePanelProps) {
@@ -105,7 +107,9 @@ export function CandidatePanel({
         reason={reasonOf(candidate)}
         pager={pager ? <CandidatePager {...pager} /> : null}
       />
-      {items.length > 0 ? <MatchBlock candidate={candidate} items={items} /> : null}
+      {items.length > 0 ? (
+        <MatchBlock candidate={candidate} items={items} focusItemId={focusItemId} />
+      ) : null}
       <ClarifyBlock items={clarifyOf(candidate, items)} />
       <HistoryBlock candidate={candidate} items={items} />
       <CompanyBlock candidate={candidate} />

@@ -167,6 +167,7 @@ export function SearchWorkspace({
               candidate={selected}
               items={items}
               chosen={chosen.includes(selected.id)}
+              focusItemId={focusItem?.id}
               pager={
                 narrow && position >= 0
                   ? {

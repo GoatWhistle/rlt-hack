@@ -43,7 +43,11 @@ export function offerEntries(rows: readonly RowView[]): OfferEntry[] {
   )
 }
 
-export function MatchBlock({ candidate, items }: BlockProps) {
+export function MatchBlock({
+  candidate,
+  items,
+  focusItemId,
+}: BlockProps & { readonly focusItemId?: string }) {
   const { t } = useTranslation("candidate")
   const figure = useMatchFigure()(candidate.matches, items.length)
   const rows = rowsOf(candidate, items)
@@ -55,7 +59,13 @@ export function MatchBlock({ candidate, items }: BlockProps) {
       aside={figure.note ? `${figure.value} ${figure.note}` : figure.value}
     >
       {offers.length > 0 ? (
-        <OfferGrid entries={offers} label={t("panel.offersLabel")} limit={OFFER_LIMIT} ribbon />
+        <OfferGrid
+          entries={offers}
+          label={t("panel.offersLabel")}
+          limit={OFFER_LIMIT}
+          focusKey={focusItemId}
+          ribbon
+        />
       ) : null}
       {rest.length > 0 ? (
         <Stack as="ul">

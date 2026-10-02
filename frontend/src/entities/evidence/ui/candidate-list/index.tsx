@@ -2,11 +2,14 @@ import {
   type AnimationEvent,
   type KeyboardEvent,
   type ReactNode,
+  type RefObject,
+  useEffect,
   useRef,
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
 import { type CandidateView, type ItemView, matchFor } from "@/entities/evidence/view"
+import { revealInPane } from "@/shared/scroll/reveal-in-pane"
 import { Caption } from "@/shared/ui/caption"
 import { FilterNote } from "@/shared/ui/filter-note"
 import { ResultSection } from "@/shared/ui/result-section"
@@ -51,6 +54,12 @@ export function targetIndex(key: string, index: number, last: number): number | 
   return null
 }
 
+export function useRevealSelected(listRef: RefObject<HTMLElement | null>): void {
+  useEffect(() => {
+    revealInPane(listRef.current?.querySelector<HTMLElement>('[aria-pressed="true"]'))
+  }, [listRef])
+}
+
 export function CandidateList({
   title,
   aside,
@@ -67,8 +76,12 @@ export function CandidateList({
 }: CandidateListProps) {
   const { t } = useTranslation("candidate")
   const listRef = useRef<HTMLDivElement>(null)
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(
+    () =>
+      candidates.findIndex((candidate) => candidate.id === selectedId) >= VISIBLE_CANDIDATES,
+  )
   const [entering, setEntering] = useState(reveal)
+  useRevealSelected(listRef)
   const hidden = candidates.length - VISIBLE_CANDIDATES
   const visible = expanded || hidden <= 0 ? candidates : candidates.slice(0, VISIBLE_CANDIDATES)
   const selectedVisible = visible.some((candidate) => candidate.id === selectedId)

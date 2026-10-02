@@ -1,7 +1,8 @@
 import { clsx } from "clsx"
-import { useId, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { OfferView } from "@/entities/evidence/model"
+import { revealInPane } from "@/shared/scroll/reveal-in-pane"
 import { Bone } from "@/shared/ui/skeleton"
 import { TextButton } from "@/shared/ui/text-button"
 import { OfferCard, type OfferLink } from "../offer-card"
@@ -18,23 +19,44 @@ export type OfferGridProps = {
   readonly label: string
   readonly limit?: number
   readonly ribbon?: boolean
+  readonly focusKey?: string
 }
 
-export function OfferGrid({ entries, label, limit, ribbon = false }: OfferGridProps) {
+function useRevealFocus(focusKey: string | undefined) {
+  const listRef = useRef<HTMLUListElement>(null)
+  useEffect(() => {
+    if (focusKey) revealInPane(listRef.current?.querySelector<HTMLElement>("[aria-current]"))
+  }, [focusKey])
+  return listRef
+}
+
+export function OfferGrid({ entries, label, limit, ribbon = false, focusKey }: OfferGridProps) {
   const { t } = useTranslation()
   const id = useId()
   const [expanded, setExpanded] = useState(false)
+  const listRef = useRevealFocus(focusKey)
   const hidden = limit === undefined ? 0 : entries.length - limit
-  const visible = expanded || hidden <= 0 ? entries : entries.slice(0, limit)
+  const focusIndex = entries.findIndex((entry) => entry.key === focusKey)
+  const open = expanded || hidden <= 0 || (limit !== undefined && focusIndex >= limit)
+  const visible = open ? entries : entries.slice(0, limit)
   return (
     <div className={styles.wrap}>
-      <ul id={id} aria-label={label} className={clsx(styles.grid, ribbon && styles.ribbon)}>
+      <ul
+        ref={listRef}
+        id={id}
+        aria-label={label}
+        className={clsx(styles.grid, ribbon && styles.ribbon)}
+      >
         {visible.map((entry, index) => (
           <li
             key={entry.key ?? entry.offer.id}
             className={clsx(styles.item, limit !== undefined && index >= limit && styles.added)}
           >
-            <OfferCard offer={entry.offer} link={entry.link} />
+            <OfferCard
+              offer={entry.offer}
+              link={entry.link}
+              focused={focusKey !== undefined && entry.key === focusKey}
+            />
           </li>
         ))}
       </ul>
