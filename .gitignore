@@ -44,3 +44,5 @@ ml/runs/
 
 var/
 backend/var/
+
+.local/
