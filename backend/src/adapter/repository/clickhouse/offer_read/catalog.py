@@ -6,6 +6,7 @@ from src.adapter.repository.clickhouse.offer_read.mapping import (
     to_offer_evidence,
 )
 from src.adapter.repository.clickhouse.protocols import SqlGateway
+from src.adapter.repository.clickhouse.rows import to_uuid
 from src.models.offer_evidence import OfferEvidence
 
 SELECT_EVIDENCE = (
@@ -14,10 +15,11 @@ SELECT_EVIDENCE = (
     "LEFT JOIN {db}.offer_matches_current AS m ON m.offer_id = o.offer_id "
 )
 BY_OFFER = "WHERE o.offer_id IN {ids:Array(UUID)}"
-CURRENT_BY_SUPPLIER = (
-    "WHERE o.supplier_id IN {ids:Array(UUID)} AND o.availability != 'unavailable' "
+CURRENT_IDS = (
+    "SELECT o.supplier_id, o.offer_id FROM {db}.offers_current AS o "
+    "WHERE o.supplier_id IN {{ids:Array(UUID)}} AND o.availability != 'unavailable' "
     "ORDER BY o.supplier_id, o.last_seen_at DESC, o.offer_id "
-    "LIMIT {per_supplier:UInt32} BY o.supplier_id"
+    "LIMIT {{per_supplier:UInt32}} BY o.supplier_id"
 )
 
 
@@ -38,18 +40,27 @@ class ClickHouseOfferCatalog:
         cards = (to_offer_evidence(row) for row in rows)
         return {card.offer.offer_id: card for card in cards}
 
-    async def current_for(
+    async def current_ids(
         self, supplier_ids: Sequence[UUID], per_supplier: int
-    ) -> Mapping[UUID, tuple[OfferEvidence, ...]]:
+    ) -> Mapping[UUID, tuple[UUID, ...]]:
         if not supplier_ids or per_supplier < 1:
             return {}
         rows = await self._gateway.select(
-            self._select + CURRENT_BY_SUPPLIER,
+            CURRENT_IDS.format(db=self._db),
             {"ids": _ids(supplier_ids), "per_supplier": per_supplier},
         )
-        grouped: dict[UUID, list[OfferEvidence]] = {}
-        for row in rows:
-            card = to_offer_evidence(row)
-            if card.offer.supplier_id is not None:
-                grouped.setdefault(card.offer.supplier_id, []).append(card)
-        return {supplier_id: tuple(cards) for supplier_id, cards in grouped.items()}
+        grouped: dict[UUID, list[UUID]] = {}
+        for supplier_id, offer_id in rows:
+            grouped.setdefault(to_uuid(supplier_id), []).append(to_uuid(offer_id))
+        return {supplier_id: tuple(offers) for supplier_id, offers in grouped.items()}
+
+    async def current_for(
+        self, supplier_ids: Sequence[UUID], per_supplier: int
+    ) -> Mapping[UUID, tuple[OfferEvidence, ...]]:
+        ids = await self.current_ids(supplier_ids, per_supplier)
+        cards = await self.get_many([offer for owned in ids.values() for offer in owned])
+        found = {
+            supplier_id: tuple(cards[offer] for offer in owned if offer in cards)
+            for supplier_id, owned in ids.items()
+        }
+        return {supplier_id: owned for supplier_id, owned in found.items() if owned}

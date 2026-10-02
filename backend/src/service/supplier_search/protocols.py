@@ -1,4 +1,5 @@
 from collections.abc import Mapping, Sequence
+from contextlib import AbstractAsyncContextManager, AbstractContextManager
 from datetime import datetime
 from typing import Protocol
 from uuid import UUID
@@ -30,9 +31,9 @@ class SupplierDirectory(Protocol):
 class OfferCatalog(Protocol):
     async def get_many(self, offer_ids: Sequence[UUID]) -> Mapping[UUID, OfferEvidence]: ...
 
-    async def current_for(
+    async def current_ids(
         self, supplier_ids: Sequence[UUID], per_supplier: int
-    ) -> Mapping[UUID, tuple[OfferEvidence, ...]]: ...
+    ) -> Mapping[UUID, tuple[UUID, ...]]: ...
 
 
 class PurchaseHistory(Protocol):
@@ -55,3 +56,11 @@ class Clock(Protocol):
 
 class IdGenerator(Protocol):
     def new(self) -> UUID: ...
+
+
+class WorkShare(Protocol):
+    def scope(self) -> AbstractAsyncContextManager[None]: ...
+
+
+class StageTimer(Protocol):
+    def stage(self, name: str) -> AbstractContextManager[None]: ...

@@ -107,6 +107,7 @@ async def seed_history(gateway: ChdbGateway) -> None:
     await seeder.participation("L1", GAMMA, won=False)
     await seeder.participation("L2", GAMMA, won=True)
     await seeder.participation("L3", ALPHA, won=True)
+    await seeder.refresh_history()
 
 
 async def test_history_channel_weights_wins(gateway: ChdbGateway) -> None:
@@ -145,3 +146,29 @@ async def test_purchase_history_counts_similar_lots(gateway: ChdbGateway) -> Non
     )
     assert await history.summarize([], ITEMS, 1) == {}
     assert await history.summarize([ALPHA.supplier_id], (make_item("i1", "ab"),), 1) == {}
+
+
+async def test_history_channel_and_summary_agree_on_similar_lots(gateway: ChdbGateway) -> None:
+    await seed_history(gateway)
+    await Seeder(gateway).lot("L4", "Поставка крупы манной")
+    await Seeder(gateway).participation("L4", ALPHA, won=False)
+    await Seeder(gateway).refresh_history()
+    analyzer = RussianAnalyzer()
+    hits = await ClickHouseHistoryRetriever(gateway, analyzer).retrieve(request(), 10)
+    channel = {
+        (hit.supplier_id, item.item_id, lot)
+        for hit in hits.hits
+        for item in hit.items
+        for lot in item.lot_ids
+    }
+    summaries = await ClickHousePurchaseHistory(gateway, analyzer).summarize(
+        [ALPHA.supplier_id, GAMMA.supplier_id], ITEMS, 10
+    )
+    summary = {
+        (supplier_id, item_id, record.lot_id)
+        for supplier_id, found in summaries.items()
+        for record in found.records
+        for item_id in record.item_ids
+    }
+    assert channel == summary
+    assert (ALPHA.supplier_id, "i1", "L4") not in channel

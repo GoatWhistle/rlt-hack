@@ -32,6 +32,7 @@ async def seed(gateway: ChdbGateway) -> None:
     await seeder.match(rice.offer_id, "accepted")
     await seeder.lot("L1", "Поставка крупы гречневой для школ")
     await seeder.participation("L1", GAMMA, won=True)
+    await seeder.refresh_history()
 
 
 @pytest.fixture

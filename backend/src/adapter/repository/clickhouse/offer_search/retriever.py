@@ -7,7 +7,11 @@ from src.adapter.repository.clickhouse.offer_search.protocols import TextAnalyze
 from src.adapter.repository.clickhouse.offer_search.query import candidate_query
 from src.adapter.repository.clickhouse.protocols import SqlGateway
 from src.adapter.repository.clickhouse.retrieval.tally import HitTally
-from src.adapter.repository.clickhouse.retrieval.terms import needles_for, relevance
+from src.adapter.repository.clickhouse.retrieval.terms import (
+    flags_of,
+    index_terms,
+    presence_relevance,
+)
 from src.adapter.repository.clickhouse.rows import to_uuid
 from src.models.enums import RetrievalChannel
 from src.models.query_item import QueryItem, SearchRequest
@@ -17,10 +21,11 @@ CHANNEL = RetrievalChannel.LEXICAL
 
 
 @dataclass(frozen=True, slots=True)
-class OfferText:
+class OfferMatch:
     offer_id: UUID
     supplier_id: UUID
-    text: str
+    length: int
+    flags: tuple[bool, ...]
 
 
 class ClickHouseLexicalRetriever:
@@ -45,18 +50,23 @@ class ClickHouseLexicalRetriever:
         tally = await asyncio.to_thread(self._tally, request.items, pools)
         return tally.hits(CHANNEL, limit)
 
-    async def _pool_for(self, item: QueryItem, request: SearchRequest) -> list[OfferText]:
-        needles = needles_for(self._analyzer, item.name)
-        if not needles:
+    async def _pool_for(self, item: QueryItem, request: SearchRequest) -> list[OfferMatch]:
+        terms = index_terms(self._analyzer, item.name)
+        if not terms:
             return []
-        query = candidate_query(self._db, needles, request.query.filters, self._pool)
+        query = candidate_query(self._db, terms, request.query.filters, self._pool)
         rows = await self._gateway.select(query.statement, query.parameters)
-        return [OfferText(to_uuid(row[0]), to_uuid(row[1]), str(row[2])) for row in rows]
+        return [
+            OfferMatch(to_uuid(row[0]), to_uuid(row[1]), int(str(row[2])), flags_of(row[-1]))
+            for row in rows
+        ]
 
-    def _tally(self, items: Sequence[QueryItem], pools: Sequence[list[OfferText]]) -> HitTally:
+    def _tally(self, items: Sequence[QueryItem], pools: Sequence[list[OfferMatch]]) -> HitTally:
         tally = HitTally(accumulate=False)
         for item, pool in zip(items, pools, strict=True):
-            scores = relevance(self._analyzer, item.name, [offer.text for offer in pool])
+            scores = presence_relevance(
+                [offer.flags for offer in pool], [offer.length for offer in pool]
+            )
             for offer, score in zip(pool, scores, strict=True):
                 if score > 0:
                     tally.add_offer(offer.supplier_id, item.item_id, offer.offer_id, score)
