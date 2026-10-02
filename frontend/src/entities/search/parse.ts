@@ -1,7 +1,10 @@
 import {
+  parseCheck,
   parseCheckReasons,
   parseContacts,
   parseHighlights,
+  parseOffer,
+  parseRequirement,
   parseSource,
   parseWarnings,
 } from "@/entities/evidence/parse"
@@ -26,7 +29,6 @@ import {
   type CandidateMatch,
   type CandidateOrigin,
   COMPANY_ROLES,
-  FILTER_ITEM_TYPES,
   ITEM_ORIGINS,
   ITEM_TYPES,
   MATCH_BASES,
@@ -36,13 +38,10 @@ import {
   type PurchaseRecord,
   type QueryItem,
   type Score,
-  SEARCH_ORIGINS,
-  type SearchContext,
-  type SearchFilters,
-  type SearchQuery,
   type SearchResult,
   type SearchSummary,
 } from "./model"
+import { parseQuery } from "./query-parse"
 
 function fraction(fields: Fields, key: string, path: string): number {
   const value = fields[key]
@@ -54,45 +53,6 @@ function fraction(fields: Fields, key: string, path: string): number {
 
 function nested(fields: Fields, key: string, path: string): Fields {
   return record(fields[key], `${path}.${key}`)
-}
-
-function filters(value: unknown, path: string): SearchFilters {
-  if (value === undefined || value === null) return {}
-  const fields = record(value, path)
-  return withOptional(
-    {},
-    {
-      regions:
-        fields.regions === undefined || fields.regions === null
-          ? undefined
-          : list(fields, "regions", path, plainText),
-      itemType: optionalOneOf(FILTER_ITEM_TYPES, fields, "itemType", path),
-    },
-  )
-}
-
-function context(value: unknown, path: string): SearchContext {
-  if (value === undefined || value === null) return {}
-  const fields = record(value, path)
-  return withOptional(
-    {},
-    {
-      customerInn: optionalText(fields, "customerInn", path),
-      startPrice: optionalText(fields, "startPrice", path),
-    },
-  )
-}
-
-function query(value: unknown, path: string): SearchQuery {
-  const fields = record(value, path)
-  return {
-    text: text(fields, "text", path),
-    locale: oneOf(LOCALES, fields, "locale", path),
-    limit: count(fields, "limit", path),
-    filters: filters(fields.filters, `${path}.filters`),
-    context: context(fields.context, `${path}.context`),
-    origin: optionalOneOf(SEARCH_ORIGINS, fields, "origin", path) ?? "manual",
-  }
 }
 
 function item(value: unknown, path: string): QueryItem {
@@ -108,6 +68,10 @@ function item(value: unknown, path: string): QueryItem {
       okpd2: text(fields, "okpd2", path),
       itemType: oneOf(ITEM_TYPES, fields, "itemType", path),
       origin: oneOf(ITEM_ORIGINS, fields, "origin", path),
+      requirements:
+        fields.requirements === undefined
+          ? []
+          : list(fields, "requirements", path, parseRequirement),
     },
     {
       quantity: quantity && {
@@ -121,10 +85,15 @@ function item(value: unknown, path: string): QueryItem {
 function match(value: unknown, path: string): CandidateMatch {
   const fields = record(value, path)
   return withOptional(
-    { itemId: text(fields, "itemId", path), basis: oneOf(MATCH_BASES, fields, "basis", path) },
+    {
+      itemId: text(fields, "itemId", path),
+      basis: oneOf(MATCH_BASES, fields, "basis", path),
+      checks: fields.checks === undefined ? [] : list(fields, "checks", path, parseCheck),
+    },
     {
       offerId: optionalText(fields, "offerId", path),
       source: parseSource(fields.source, `${path}.source`),
+      offer: parseOffer(fields.offer, `${path}.offer`),
     },
   )
 }
@@ -211,7 +180,7 @@ export function parseSearchResult(value: unknown, path = "$"): SearchResult {
   return checkLinks(
     {
       searchId: text(fields, "searchId", path),
-      query: query(fields.query, `${path}.query`),
+      query: parseQuery(fields.query, `${path}.query`),
       items: list(fields, "items", path, item),
       candidates: list(fields, "candidates", path, candidate),
       pipeline: {

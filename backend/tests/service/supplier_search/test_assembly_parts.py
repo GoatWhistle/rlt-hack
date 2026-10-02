@@ -7,17 +7,22 @@ from src.models.enums import (
     Availability,
     CompanyRole,
     HighlightCode,
+    LinkMethod,
     MatchBasis,
     MatchStatus,
+    RequirementStatus,
     SupplierRole,
     VerificationStatus,
 )
 from src.models.offer_evidence import OfferEvidence
 from src.models.purchase import PurchaseSummary
+from src.models.requirement import extract_requirements
 from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver
-from tests.fakes.domain import make_offer, make_offer_evidence, make_supplier
+from tests.fakes.domain import make_item, make_offer, make_offer_evidence, make_supplier
 from tests.fakes.drafts import stock_match
+
+ITEM = make_item("i1")
 
 
 def card(
@@ -80,7 +85,7 @@ def test_stock_needs_a_current_confirmed_available_card() -> None:
     resolver = MatchResolver()
     stocked = card("stocked")
     match = resolver.resolve(
-        "i1", (card("review", seller=VerificationStatus.UNVERIFIED), stocked), True
+        ITEM, (card("review", seller=VerificationStatus.UNVERIFIED), stocked), True
     )
     assert match is not None
     assert (match.basis, match.offer_id) == (MatchBasis.STOCK, stocked.offer.offer_id)
@@ -89,7 +94,7 @@ def test_stock_needs_a_current_confirmed_available_card() -> None:
 
 def test_catalog_needs_an_accepted_match_and_a_source() -> None:
     accepted = card("accepted", availability=Availability.UNKNOWN, match=MatchStatus.ACCEPTED)
-    match = MatchResolver().resolve("i1", (accepted,), True)
+    match = MatchResolver().resolve(ITEM, (accepted,), True)
     assert match is not None
     assert match.basis == MatchBasis.CATALOG
 
@@ -102,12 +107,12 @@ def test_catalog_needs_a_confirmed_seller_and_the_matched_content() -> None:
         seller=VerificationStatus.UNVERIFIED,
         match=MatchStatus.ACCEPTED,
     )
-    weak = resolver.resolve("i1", (unverified,), True)
+    weak = resolver.resolve(ITEM, (unverified,), True)
     assert weak is not None
     assert weak.basis == MatchBasis.INFERRED
     accepted = card("changed", availability=Availability.UNKNOWN, match=MatchStatus.ACCEPTED)
     stale = replace(accepted, matched_content_hash="before")
-    changed = resolver.resolve("i1", (stale,), True)
+    changed = resolver.resolve(ITEM, (stale,), True)
     assert changed is not None
     assert changed.basis == MatchBasis.INFERRED
 
@@ -115,17 +120,17 @@ def test_catalog_needs_a_confirmed_seller_and_the_matched_content() -> None:
 def test_unconfirmed_card_or_history_gives_only_an_inferred_match() -> None:
     resolver = MatchResolver()
     unconfirmed = card("unconfirmed", seller=VerificationStatus.UNVERIFIED)
-    inferred = resolver.resolve("i1", (unconfirmed,), True)
+    inferred = resolver.resolve(ITEM, (unconfirmed,), True)
     assert inferred is not None
     assert (inferred.basis, inferred.offer_id) == (MatchBasis.INFERRED, unconfirmed.offer.offer_id)
     sourceless = card("sourceless", seller=VerificationStatus.UNVERIFIED, url="ftp://x")
-    bare = resolver.resolve("i1", (sourceless,), False)
+    bare = resolver.resolve(ITEM, (sourceless,), False)
     assert bare is not None
     assert (bare.basis, bare.offer_id, bare.evidence) == (MatchBasis.INFERRED, None, None)
-    signal = resolver.resolve("i1", (), True)
+    signal = resolver.resolve(ITEM, (), True)
     assert signal is not None
     assert signal.evidence is None
-    assert resolver.resolve("i1", (), False) is None
+    assert resolver.resolve(ITEM, (), False) is None
 
 
 def test_highlights_report_counts_as_parameters() -> None:
@@ -149,3 +154,36 @@ def test_highlights_skip_empty_counters_and_unverified_identity() -> None:
     assert HighlightComposer().compose(supplier, (), (), PurchaseSummary(), 1) == ()
     no_inn = make_supplier(inn=None)
     assert HighlightComposer().compose(no_inn, (), (), PurchaseSummary(), 1) == ()
+
+
+def test_conflicting_offer_never_confirms_the_item() -> None:
+    resolver = MatchResolver()
+    need = make_item("i1", "Бумага А4 80 г/м2")
+    need = replace(need, requirements=extract_requirements("Бумага А4 80 г/м2"))
+    wrong = card("wrong", match=MatchStatus.ACCEPTED)
+    wrong = replace(wrong, offer=replace(wrong.offer, name="Бумага А3 65 г/м2"))
+    right = card("right", availability=Availability.UNKNOWN, match=MatchStatus.ACCEPTED)
+    right = replace(right, offer=replace(right.offer, name="Бумага A4 80г/м2"))
+    chosen = resolver.resolve(need, (wrong, right), True)
+    assert chosen is not None
+    assert (chosen.basis, chosen.offer_id) == (MatchBasis.CATALOG, right.offer.offer_id)
+    assert {check.status for check in chosen.checks} == {RequirementStatus.MET}
+    assert chosen.offer is not None
+    assert chosen.offer.link == LinkMethod.CATALOG_ACCEPTED
+    only_wrong = resolver.resolve(need, (wrong,), True)
+    assert only_wrong is not None
+    assert (only_wrong.basis, only_wrong.conflicting) == (MatchBasis.INFERRED, True)
+
+
+def test_missing_parameter_stays_unknown_and_snapshot_keeps_the_source() -> None:
+    need = replace(make_item("i1"), requirements=extract_requirements("А4"))
+    plain = card("plain")
+    match = MatchResolver().resolve(need, (plain,), True)
+    assert match is not None
+    assert [check.status for check in match.checks] == [RequirementStatus.UNKNOWN]
+    assert match.offer is not None
+    assert (match.offer.url, match.offer.observed_at, match.offer.link) == (
+        plain.offer.url,
+        plain.offer.last_seen_at,
+        LinkMethod.SELLER_VERIFIED,
+    )

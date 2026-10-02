@@ -50,6 +50,7 @@ export const CHECK_REASONS = [
   "roleUnconfirmed",
   "noCurrentOffer",
   "rangeUnconfirmed",
+  "requirementConflict",
   "sourceUnavailable",
 ] as const
 export type CheckReason = (typeof CHECK_REASONS)[number]
@@ -92,4 +93,50 @@ export type MatchCount = {
 export function countMatches(matches: readonly { readonly basis: MatchBasis }[]): MatchCount {
   const assumed = matches.filter((match) => match.basis === "inferred").length
   return { confirmed: matches.length - assumed, assumed }
+}
+
+export const LINK_METHODS = ["sellerVerified", "catalogAccepted", "unverified"] as const
+export type LinkMethod = (typeof LINK_METHODS)[number]
+
+export const AVAILABILITIES = ["unknown", "available", "unavailable", "on_order"] as const
+export type Availability = (typeof AVAILABILITIES)[number]
+
+export const SOURCE_TYPES = [
+  "directory",
+  "website",
+  "feed",
+  "price_list",
+  "registry",
+  "dataset",
+] as const
+export type SourceType = (typeof SOURCE_TYPES)[number]
+
+export const REQUIREMENT_STATUSES = ["met", "conflict", "unknown"] as const
+export type RequirementStatus = (typeof REQUIREMENT_STATUSES)[number]
+
+export type Requirement = {
+  readonly key: string
+  readonly value: string
+  readonly text: string
+}
+
+export type RequirementCheck = Requirement & {
+  readonly status: RequirementStatus
+  readonly found?: string
+}
+
+export type OfferSnapshot = {
+  readonly id: string
+  readonly name: string
+  readonly url: string
+  readonly sourceName: string
+  readonly sourceType: SourceType
+  readonly observedAt: string
+  readonly link: LinkMethod
+  readonly brand?: string
+  readonly article?: string
+  readonly unit?: string
+  readonly price?: string
+  readonly currency?: string
+  readonly availability: Availability
 }

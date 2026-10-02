@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useMatchFigure } from "@/entities/evidence/labels"
 import { BASIS_ORDER, MatchRow } from "@/entities/evidence/ui/match-row"
+import { OfferFacts } from "@/entities/evidence/ui/offer-facts"
 import { type Candidate, matchOf, type QueryItem } from "@/entities/search/model"
 import { Caption } from "@/shared/ui/caption"
 import { PanelBlock } from "@/shared/ui/panel-block"
@@ -31,7 +32,12 @@ export function MatchBlock({ candidate, items }: MatchBlockProps) {
       <Stack as="ul">
         {rows.map(({ item, match }) => (
           <li key={item.id}>
-            <MatchRow name={item.name} basis={match?.basis} source={match?.source} />
+            <MatchRow
+              name={item.name}
+              basis={match?.basis}
+              source={match?.source}
+              note={match ? <OfferFacts offer={match.offer} checks={match.checks} /> : null}
+            />
           </li>
         ))}
       </Stack>

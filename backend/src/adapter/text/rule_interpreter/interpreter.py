@@ -7,6 +7,7 @@ from src.adapter.text.rule_interpreter.quantity import extract_quantity
 from src.adapter.text.rule_interpreter.splitter import split_positions
 from src.models.enums import ItemOrigin, ItemType
 from src.models.query_item import Quantity, QueryItem
+from src.models.requirement import Requirement, extract_requirements
 from src.models.search import SearchQuery
 
 EDGE_PUNCTUATION = " \t,.;:-–—*()[]{}\"'«»"
@@ -19,6 +20,7 @@ class ParsedPosition:
     name: str
     okpd2: str = ""
     quantity: Quantity | None = None
+    requirements: tuple[Requirement, ...] = ()
 
 
 class RuleQueryInterpreter:
@@ -45,6 +47,7 @@ class RuleQueryInterpreter:
                 okpd2=position.okpd2,
                 item_type=item_type,
                 quantity=position.quantity,
+                requirements=position.requirements,
             )
             for number, position in enumerate(positions[: self._max_items], start=1)
         )
@@ -55,7 +58,12 @@ class RuleQueryInterpreter:
         name = " ".join(rest.split()).strip(EDGE_PUNCTUATION)
         if not name or not self._analyzer.analyze(name):
             return None
-        return ParsedPosition(name=name[0].upper() + name[1:], okpd2=okpd2, quantity=quantity)
+        return ParsedPosition(
+            name=name[0].upper() + name[1:],
+            okpd2=okpd2,
+            quantity=quantity,
+            requirements=extract_requirements(rest),
+        )
 
 
 def _is_service_note(segment: str) -> bool:

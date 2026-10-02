@@ -40,7 +40,7 @@ describe("the search contract", () => {
     expect(second?.novelty).toBe("unknown")
     expect(result.pipeline.noveltySet).toBe("inn-3f2a9c41d0b7e65a")
     expect(second?.roleSource).toBeUndefined()
-    expect(second?.matches[0]).toEqual({ itemId: "i1", basis: "inferred" })
+    expect(second?.matches[0]).toEqual({ itemId: "i1", basis: "inferred", checks: [] })
     expect(second?.contacts).toEqual({})
     expect(second?.checkReasons).toEqual([
       "innMissing",

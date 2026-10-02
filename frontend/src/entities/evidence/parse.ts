@@ -10,13 +10,20 @@ import {
   withOptional,
 } from "@/shared/api/payload"
 import {
+  AVAILABILITIES,
   CHECK_REASONS,
   type CheckReason,
   type Contacts,
   HIGHLIGHT_CODES,
   type Highlight,
+  LINK_METHODS,
+  type OfferSnapshot,
+  REQUIREMENT_STATUSES,
+  type Requirement,
+  type RequirementCheck,
   type SearchWarning,
   SOURCE_KINDS,
+  SOURCE_TYPES,
   type Source,
   WARNING_CODES,
 } from "./model"
@@ -83,4 +90,48 @@ export function parseWarnings(fields: Fields, path: string): SearchWarning[] {
       ? undefined
       : { code, subject: optionalText(warning, "subject", at) ?? "" }
   })
+}
+
+export function parseRequirement(value: unknown, path: string): Requirement {
+  const fields = record(value, path)
+  return {
+    key: text(fields, "key", path),
+    value: text(fields, "value", path),
+    text: text(fields, "text", path),
+  }
+}
+
+export function parseCheck(value: unknown, path: string): RequirementCheck {
+  const fields = record(value, path)
+  return withOptional(
+    {
+      ...parseRequirement(value, path),
+      status: oneOf(REQUIREMENT_STATUSES, fields, "status", path),
+    },
+    { found: optionalText(fields, "found", path) },
+  )
+}
+
+export function parseOffer(value: unknown, path: string): OfferSnapshot | undefined {
+  if (value === undefined || value === null) return undefined
+  const fields = record(value, path)
+  return withOptional(
+    {
+      id: text(fields, "id", path),
+      name: text(fields, "name", path),
+      url: text(fields, "url", path),
+      sourceName: text(fields, "sourceName", path),
+      sourceType: oneOf(SOURCE_TYPES, fields, "sourceType", path),
+      observedAt: text(fields, "observedAt", path),
+      link: oneOf(LINK_METHODS, fields, "link", path),
+      availability: oneOf(AVAILABILITIES, fields, "availability", path),
+    },
+    {
+      brand: optionalText(fields, "brand", path),
+      article: optionalText(fields, "article", path),
+      unit: optionalText(fields, "unit", path),
+      price: optionalText(fields, "price", path),
+      currency: optionalText(fields, "currency", path),
+    },
+  )
 }

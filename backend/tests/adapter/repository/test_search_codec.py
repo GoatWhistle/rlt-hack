@@ -88,9 +88,20 @@ def test_codec_round_trip_is_lossless() -> None:
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
+def without_snapshots(result: SearchResult) -> SearchResult:
+    candidates = tuple(
+        replace(
+            candidate,
+            matches=tuple(replace(match, offer=None) for match in candidate.matches),
+        )
+        for candidate in result.candidates
+    )
+    return replace(result, candidates=candidates)
+
+
 def test_v1_payload_still_decodes() -> None:
     payload = (FIXTURES / "search_payload_v1.json").read_text(encoding="utf-8")
-    assert decode_result(payload) == rich_result()
+    assert decode_result(payload) == without_snapshots(rich_result())
 
 
 def test_codec_rejects_foreign_payloads() -> None:

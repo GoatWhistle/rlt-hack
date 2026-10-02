@@ -1,0 +1,421 @@
+{
+  "searchId": "1f0c3b5e-6a1d-4c2e-9f7a-2b8d4e6f1a06",
+  "query": {
+    "text": "Бумага офисная А4 80 г/м2",
+    "locale": "ru",
+    "limit": 20,
+    "filters": {
+      "regions": [
+        "78"
+      ],
+      "itemType": "goods"
+    },
+    "context": {
+      "customerInn": null,
+      "startPrice": null
+    },
+    "origin": "manual"
+  },
+  "items": [
+    {
+      "id": "i1",
+      "name": "Бумага офисная А4 80 г/м2",
+      "okpd2": "",
+      "itemType": "goods",
+      "origin": "text",
+      "quantity": null,
+      "requirements": [
+        {
+          "key": "format",
+          "value": "A4",
+          "text": "А4"
+        },
+        {
+          "key": "г/м2",
+          "value": "80 г/м2",
+          "text": "80 г/м2"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "rank": 1,
+      "id": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4d501",
+      "name": "ООО «Офис Снаб»",
+      "inn": "7801234564",
+      "region": "78",
+      "role": "supplierDistributor",
+      "roleSource": {
+        "kind": "catalog",
+        "title": "Каталог поставщиков",
+        "url": "https://catalog.example.org/companies/severny-proviant",
+        "checkedAt": "2026-09-28T10:00:00Z"
+      },
+      "status": "check",
+      "checkReasons": [
+        "roleUnconfirmed"
+      ],
+      "matches": [
+        {
+          "itemId": "i1",
+          "basis": "catalog",
+          "offerId": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4aa01",
+          "source": {
+            "kind": "catalog",
+            "title": "Каталог поставщиков",
+            "url": "https://catalog.example.ru/item/1",
+            "checkedAt": "2026-09-29T08:00:00Z"
+          },
+          "offer": {
+            "id": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4aa01",
+            "name": "ООО «Офис Снаб»",
+            "url": "https://catalog.example.ru/item/1",
+            "sourceName": "Каталог поставщиков",
+            "sourceType": "directory",
+            "observedAt": "2026-09-29T08:00:00Z",
+            "link": "catalogAccepted",
+            "brand": null,
+            "article": null,
+            "unit": "пачка",
+            "price": null,
+            "currency": null,
+            "availability": "available"
+          },
+          "checks": [
+            {
+              "key": "format",
+              "value": "A4",
+              "text": "А4",
+              "status": "met",
+              "found": "A4"
+            },
+            {
+              "key": "г/м2",
+              "value": "80 г/м2",
+              "text": "80 г/м2",
+              "status": "met",
+              "found": "80 г/м2"
+            }
+          ]
+        }
+      ],
+      "history": {
+        "similarPurchases": 0,
+        "wins": 0,
+        "records": []
+      },
+      "highlights": [],
+      "score": {
+        "total": 0.82,
+        "fusion": 0.9,
+        "coverage": 1.0,
+        "evidence": 0.8,
+        "history": 0.4,
+        "channels": [
+          {
+            "channel": "lexical",
+            "rank": 1
+          }
+        ]
+      },
+      "contacts": {
+        "site": "https://severny-proviant.example.org",
+        "email": "sales@severny-proviant.example.org",
+        "phone": "+7 812 000-00-00"
+      },
+      "origins": [
+        "catalog"
+      ],
+      "novelty": "new"
+    },
+    {
+      "rank": 2,
+      "id": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4d502",
+      "name": "ООО «Бумажный Двор»",
+      "inn": "7707083893",
+      "region": "78",
+      "role": "supplierDistributor",
+      "roleSource": {
+        "kind": "catalog",
+        "title": "Каталог поставщиков",
+        "url": "https://catalog.example.org/companies/severny-proviant",
+        "checkedAt": "2026-09-28T10:00:00Z"
+      },
+      "status": "check",
+      "checkReasons": [
+        "roleUnconfirmed",
+        "rangeUnconfirmed"
+      ],
+      "matches": [
+        {
+          "itemId": "i1",
+          "basis": "inferred",
+          "offerId": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4aa02",
+          "source": {
+            "kind": "catalog",
+            "title": "Каталог поставщиков",
+            "url": "https://catalog.example.ru/item/2",
+            "checkedAt": "2026-09-28T08:00:00Z"
+          },
+          "offer": {
+            "id": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4aa02",
+            "name": "ООО «Бумажный Двор»",
+            "url": "https://catalog.example.ru/item/2",
+            "sourceName": "Каталог поставщиков",
+            "sourceType": "directory",
+            "observedAt": "2026-09-28T08:00:00Z",
+            "link": "sellerVerified",
+            "brand": null,
+            "article": null,
+            "unit": "пачка",
+            "price": null,
+            "currency": null,
+            "availability": "unknown"
+          },
+          "checks": [
+            {
+              "key": "format",
+              "value": "A4",
+              "text": "А4",
+              "status": "met",
+              "found": "A4"
+            },
+            {
+              "key": "г/м2",
+              "value": "80 г/м2",
+              "text": "80 г/м2",
+              "status": "unknown",
+              "found": null
+            }
+          ]
+        }
+      ],
+      "history": {
+        "similarPurchases": 0,
+        "wins": 0,
+        "records": []
+      },
+      "highlights": [],
+      "score": {
+        "total": 0.82,
+        "fusion": 0.9,
+        "coverage": 1.0,
+        "evidence": 0.8,
+        "history": 0.4,
+        "channels": [
+          {
+            "channel": "lexical",
+            "rank": 2
+          }
+        ]
+      },
+      "contacts": {
+        "site": "https://severny-proviant.example.org",
+        "email": "sales@severny-proviant.example.org",
+        "phone": "+7 812 000-00-00"
+      },
+      "origins": [
+        "catalog"
+      ],
+      "novelty": "new"
+    },
+    {
+      "rank": 3,
+      "id": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4d503",
+      "name": "ООО «Формат»",
+      "inn": "7736050003",
+      "region": "78",
+      "role": "supplierDistributor",
+      "roleSource": {
+        "kind": "catalog",
+        "title": "Каталог поставщиков",
+        "url": "https://catalog.example.org/companies/severny-proviant",
+        "checkedAt": "2026-09-28T10:00:00Z"
+      },
+      "status": "check",
+      "checkReasons": [
+        "roleUnconfirmed",
+        "rangeUnconfirmed",
+        "requirementConflict"
+      ],
+      "matches": [
+        {
+          "itemId": "i1",
+          "basis": "inferred",
+          "offerId": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4aa03",
+          "source": {
+            "kind": "catalog",
+            "title": "Каталог поставщиков",
+            "url": "https://catalog.example.ru/item/3",
+            "checkedAt": "2026-09-27T08:00:00Z"
+          },
+          "offer": {
+            "id": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4aa03",
+            "name": "ООО «Формат»",
+            "url": "https://catalog.example.ru/item/3",
+            "sourceName": "Каталог поставщиков",
+            "sourceType": "directory",
+            "observedAt": "2026-09-27T08:00:00Z",
+            "link": "sellerVerified",
+            "brand": null,
+            "article": null,
+            "unit": "пачка",
+            "price": null,
+            "currency": null,
+            "availability": "unknown"
+          },
+          "checks": [
+            {
+              "key": "format",
+              "value": "A4",
+              "text": "А4",
+              "status": "conflict",
+              "found": "A3"
+            },
+            {
+              "key": "г/м2",
+              "value": "80 г/м2",
+              "text": "80 г/м2",
+              "status": "conflict",
+              "found": "65 г/м2"
+            }
+          ]
+        }
+      ],
+      "history": {
+        "similarPurchases": 0,
+        "wins": 0,
+        "records": []
+      },
+      "highlights": [],
+      "score": {
+        "total": 0.82,
+        "fusion": 0.9,
+        "coverage": 1.0,
+        "evidence": 0.8,
+        "history": 0.4,
+        "channels": [
+          {
+            "channel": "lexical",
+            "rank": 3
+          }
+        ]
+      },
+      "contacts": {
+        "site": "https://severny-proviant.example.org",
+        "email": "sales@severny-proviant.example.org",
+        "phone": "+7 812 000-00-00"
+      },
+      "origins": [
+        "catalog"
+      ],
+      "novelty": "new"
+    },
+    {
+      "rank": 4,
+      "id": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4d504",
+      "name": "ООО «Архивная Бумага»",
+      "inn": "5022031611",
+      "region": "78",
+      "role": "supplierDistributor",
+      "roleSource": {
+        "kind": "catalog",
+        "title": "Каталог поставщиков",
+        "url": "https://catalog.example.org/companies/severny-proviant",
+        "checkedAt": "2026-09-28T10:00:00Z"
+      },
+      "status": "check",
+      "checkReasons": [
+        "roleUnconfirmed",
+        "noCurrentOffer"
+      ],
+      "matches": [
+        {
+          "itemId": "i1",
+          "basis": "catalog",
+          "offerId": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4aa04",
+          "source": {
+            "kind": "catalog",
+            "title": "Каталог поставщиков",
+            "url": "https://catalog.example.ru/item/4",
+            "checkedAt": "2025-03-01T08:00:00Z"
+          },
+          "offer": {
+            "id": "a1c1e2f3-4b5c-4d6e-8f70-81a2b3c4aa04",
+            "name": "ООО «Архивная Бумага»",
+            "url": "https://catalog.example.ru/item/4",
+            "sourceName": "Каталог поставщиков",
+            "sourceType": "directory",
+            "observedAt": "2025-03-01T08:00:00Z",
+            "link": "catalogAccepted",
+            "brand": null,
+            "article": null,
+            "unit": "пачка",
+            "price": null,
+            "currency": null,
+            "availability": "unavailable"
+          },
+          "checks": [
+            {
+              "key": "format",
+              "value": "A4",
+              "text": "А4",
+              "status": "met",
+              "found": "A4"
+            },
+            {
+              "key": "г/м2",
+              "value": "80 г/м2",
+              "text": "80 г/м2",
+              "status": "met",
+              "found": "80 г/м2"
+            }
+          ]
+        }
+      ],
+      "history": {
+        "similarPurchases": 0,
+        "wins": 0,
+        "records": []
+      },
+      "highlights": [],
+      "score": {
+        "total": 0.82,
+        "fusion": 0.9,
+        "coverage": 1.0,
+        "evidence": 0.8,
+        "history": 0.4,
+        "channels": [
+          {
+            "channel": "lexical",
+            "rank": 4
+          }
+        ]
+      },
+      "contacts": {
+        "site": "https://severny-proviant.example.org",
+        "email": "sales@severny-proviant.example.org",
+        "phone": "+7 812 000-00-00"
+      },
+      "origins": [
+        "catalog"
+      ],
+      "novelty": "new"
+    }
+  ],
+  "pipeline": {
+    "version": "search-v1",
+    "channels": [
+      "lexical",
+      "history"
+    ],
+    "asOf": "2026-10-01T12:00:00Z",
+    "inputs": [
+      "text"
+    ],
+    "noveltySet": "inn-3f2a9c41d0b7e65a"
+  },
+  "warnings": [],
+  "createdAt": "2026-10-01T12:00:00Z"
+}

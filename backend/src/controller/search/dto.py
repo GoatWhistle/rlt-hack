@@ -5,6 +5,7 @@ from pydantic import ConfigDict, Field, StringConstraints
 
 from src.controller.http.schema import CamelModel, UtcDateTime
 from src.models.enums import (
+    Availability,
     CandidateOrigin,
     CandidateStatus,
     CheckReason,
@@ -13,11 +14,14 @@ from src.models.enums import (
     HighlightCode,
     ItemOrigin,
     ItemType,
+    LinkMethod,
     Locale,
     MatchBasis,
     Novelty,
     PurchaseOutcome,
+    RequirementStatus,
     SearchOrigin,
+    SourceType,
     WarningCode,
 )
 
@@ -65,6 +69,12 @@ class QuantityDto(CamelModel):
     unit: str
 
 
+class RequirementDto(CamelModel):
+    key: str
+    value: str
+    text: str
+
+
 class ItemDto(CamelModel):
     id: str
     name: str
@@ -72,6 +82,7 @@ class ItemDto(CamelModel):
     item_type: ItemType
     origin: ItemOrigin
     quantity: QuantityDto | None
+    requirements: list[RequirementDto]
 
 
 class SourceDto(CamelModel):
@@ -81,11 +92,37 @@ class SourceDto(CamelModel):
     checked_at: UtcDateTime
 
 
+class OfferSnapshotDto(CamelModel):
+    id: UUID
+    name: str
+    url: str
+    source_name: str
+    source_type: SourceType
+    observed_at: UtcDateTime
+    link: LinkMethod
+    brand: str | None
+    article: str | None
+    unit: str | None
+    price: str | None
+    currency: str | None
+    availability: Availability
+
+
+class CheckDto(CamelModel):
+    key: str
+    value: str
+    text: str
+    status: RequirementStatus
+    found: str | None
+
+
 class MatchDto(CamelModel):
     item_id: str
     basis: MatchBasis
     offer_id: UUID | None
     source: SourceDto | None
+    offer: OfferSnapshotDto | None
+    checks: list[CheckDto]
 
 
 class PurchaseDto(CamelModel):

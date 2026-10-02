@@ -55,7 +55,8 @@
       "inferred": "Needs confirming",
       "user": "Specified by you"
     },
-    "hint": "Choose an item to keep only the candidates that cover it."
+    "hint": "Choose an item to keep only the candidates that cover it.",
+    "requirements": "Required: {{values}}"
   },
   "candidates": {
     "title": "Candidates",

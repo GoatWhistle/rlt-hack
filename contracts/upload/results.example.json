@@ -41,7 +41,8 @@
             "quantity": {
               "value": "500",
               "unit": "кг"
-            }
+            },
+            "requirements": []
           },
           {
             "id": "i2",
@@ -52,7 +53,8 @@
             "quantity": {
               "value": "200",
               "unit": "кг"
-            }
+            },
+            "requirements": []
           }
         ],
         "candidates": [
@@ -81,7 +83,23 @@
                   "title": "Прайс-лист компании",
                   "url": "https://severny-proviant.example.org/price/grechka",
                   "checkedAt": "2026-09-29T08:00:00Z"
-                }
+                },
+                "offer": {
+                  "id": "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d",
+                  "name": "Крупа гречневая ядрица 1 сорт, 25 кг",
+                  "url": "https://severny-proviant.example.org/price/grechka",
+                  "sourceName": "Прайс-лист компании",
+                  "sourceType": "directory",
+                  "observedAt": "2026-09-29T08:00:00Z",
+                  "link": "sellerVerified",
+                  "brand": null,
+                  "article": null,
+                  "unit": "кг",
+                  "price": "84.5",
+                  "currency": "RUB",
+                  "availability": "available"
+                },
+                "checks": []
               },
               {
                 "itemId": "i2",
@@ -92,7 +110,23 @@
                   "title": "Каталог поставщиков",
                   "url": "https://catalog.example.org/products/ris-shlifovanny",
                   "checkedAt": "2026-09-28T10:00:00Z"
-                }
+                },
+                "offer": {
+                  "id": "8b7c6d5e-4f3a-4b2c-8d1e-0f9a8b7c6d5e",
+                  "name": "Рис шлифованный круглый, 25 кг",
+                  "url": "https://catalog.example.org/products/ris-shlifovanny",
+                  "sourceName": "Каталог поставщиков",
+                  "sourceType": "directory",
+                  "observedAt": "2026-09-28T10:00:00Z",
+                  "link": "catalogAccepted",
+                  "brand": null,
+                  "article": null,
+                  "unit": "кг",
+                  "price": null,
+                  "currency": null,
+                  "availability": "unknown"
+                },
+                "checks": []
               }
             ],
             "history": {
@@ -178,7 +212,9 @@
                 "itemId": "i1",
                 "basis": "inferred",
                 "offerId": null,
-                "source": null
+                "source": null,
+                "offer": null,
+                "checks": []
               }
             ],
             "history": {
@@ -275,7 +311,8 @@
             "quantity": {
               "value": "500",
               "unit": "кг"
-            }
+            },
+            "requirements": []
           },
           {
             "id": "i2",
@@ -286,7 +323,8 @@
             "quantity": {
               "value": "200",
               "unit": "кг"
-            }
+            },
+            "requirements": []
           }
         ],
         "candidates": [
@@ -315,7 +353,23 @@
                   "title": "Прайс-лист компании",
                   "url": "https://severny-proviant.example.org/price/grechka",
                   "checkedAt": "2026-09-29T08:00:00Z"
-                }
+                },
+                "offer": {
+                  "id": "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d",
+                  "name": "Крупа гречневая ядрица 1 сорт, 25 кг",
+                  "url": "https://severny-proviant.example.org/price/grechka",
+                  "sourceName": "Прайс-лист компании",
+                  "sourceType": "directory",
+                  "observedAt": "2026-09-29T08:00:00Z",
+                  "link": "sellerVerified",
+                  "brand": null,
+                  "article": null,
+                  "unit": "кг",
+                  "price": "84.5",
+                  "currency": "RUB",
+                  "availability": "available"
+                },
+                "checks": []
               },
               {
                 "itemId": "i2",
@@ -326,7 +380,23 @@
                   "title": "Каталог поставщиков",
                   "url": "https://catalog.example.org/products/ris-shlifovanny",
                   "checkedAt": "2026-09-28T10:00:00Z"
-                }
+                },
+                "offer": {
+                  "id": "8b7c6d5e-4f3a-4b2c-8d1e-0f9a8b7c6d5e",
+                  "name": "Рис шлифованный круглый, 25 кг",
+                  "url": "https://catalog.example.org/products/ris-shlifovanny",
+                  "sourceName": "Каталог поставщиков",
+                  "sourceType": "directory",
+                  "observedAt": "2026-09-28T10:00:00Z",
+                  "link": "catalogAccepted",
+                  "brand": null,
+                  "article": null,
+                  "unit": "кг",
+                  "price": null,
+                  "currency": null,
+                  "availability": "unknown"
+                },
+                "checks": []
               }
             ],
             "history": {
@@ -412,7 +482,9 @@
                 "itemId": "i1",
                 "basis": "inferred",
                 "offerId": null,
-                "source": null
+                "source": null,
+                "offer": null,
+                "checks": []
               }
             ],
             "history": {

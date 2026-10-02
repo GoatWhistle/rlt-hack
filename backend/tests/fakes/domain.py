@@ -20,6 +20,7 @@ from src.models.enums import (
 from src.models.evidence import Evidence
 from src.models.offer import Offer
 from src.models.offer_evidence import OfferEvidence
+from src.models.offer_snapshot import OfferSnapshot
 from src.models.purchase import PurchaseSummary
 from src.models.query_item import Quantity, QueryItem, SearchRequest
 from src.models.scoring import ChannelRank, Score, ScoreBreakdown
@@ -164,6 +165,7 @@ def make_candidate(
                 basis=MatchBasis.STOCK,
                 offer_id=offer.offer_id,
                 evidence=make_evidence(),
+                offer=OfferSnapshot.of(make_offer_evidence(offer)),
             ),
         ),
         history=PurchaseSummary(similar=3, wins=1),

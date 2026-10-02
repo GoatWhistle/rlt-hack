@@ -123,4 +123,5 @@ def test_cases_cover_the_agreed_situations() -> None:
         "catalog",
         "mixed",
         "partial",
+        "requirements",
     }

@@ -35,4 +35,9 @@ class CandidateDraft:
 
     @property
     def coverage(self) -> float:
-        return len(self.matches) / self.total_items
+        covering = [match for match in self.matches if not match.conflicting]
+        return len(covering) / self.total_items
+
+    @property
+    def conflicting(self) -> bool:
+        return any(match.conflicting for match in self.matches)

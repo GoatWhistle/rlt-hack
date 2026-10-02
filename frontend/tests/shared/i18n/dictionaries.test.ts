@@ -36,6 +36,7 @@ const TEXT_PARAMS = new Set([
   "date",
   "file",
   "filter",
+  "found",
   "id",
   "inn",
   "name",
@@ -44,9 +45,11 @@ const TEXT_PARAMS = new Set([
   "query",
   "row",
   "set",
+  "text",
   "title",
   "unit",
   "value",
+  "values",
 ])
 const CYRILLIC_ALLOWED_IN_EN = new Set(["common:language.ru"])
 

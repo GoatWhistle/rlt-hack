@@ -56,7 +56,8 @@
     "roleUnconfirmed": "No source confirms what the company does: manufacturer, distributor or supplier.",
     "noCurrentOffer": "No current offer: the products were found only in older records.",
     "rangeUnconfirmed": "The range is not confirmed for every item.",
-    "sourceUnavailable": "One of the sources did not answer during the check."
+    "sourceUnavailable": "One of the sources did not answer during the check.",
+    "requirementConflict": "The card contradicts a required parameter."
   },
   "inn": "INN {{inn}}",
   "noInn": "INN unknown",
@@ -160,5 +161,23 @@
   "origin": {
     "catalog": "catalog",
     "history": "procurement history"
+  },
+  "link": {
+    "sellerVerified": "seller confirmed by the source",
+    "catalogAccepted": "matched to the catalog",
+    "unverified": "seller not confirmed"
+  },
+  "availability": {
+    "unknown": "availability not stated",
+    "available": "in stock per the source",
+    "unavailable": "withdrawn",
+    "on_order": "made to order"
+  },
+  "registeredNote": "Registry record: the product is registered; this is not a commercial offer.",
+  "checksLabel": "Item requirements",
+  "check": {
+    "met": "{{text}} — confirmed",
+    "conflict": "{{text}} — the card says {{found}}",
+    "unknown": "{{text}} — not stated in the card"
   }
 }

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Self
 from uuid import UUID
 
+from src.adapter.repository.clickhouse.search_archive.offer_dto import CheckDto, OfferSnapshotDto
 from src.adapter.repository.clickhouse.search_archive.query_dto import FrozenDto
 from src.models.candidate import Highlight, ProductMatch
 from src.models.enums import (
@@ -87,17 +88,30 @@ class MatchDto(FrozenDto):
     basis: MatchBasis
     offer_id: UUID | None
     evidence: EvidenceDto | None
+    offer: OfferSnapshotDto | None = None
+    checks: tuple[CheckDto, ...] = ()
 
     @classmethod
     def from_domain(cls, match: ProductMatch) -> Self:
-        evidence = EvidenceDto.maybe(match.evidence)
         return cls(
-            item_id=match.item_id, basis=match.basis, offer_id=match.offer_id, evidence=evidence
+            item_id=match.item_id,
+            basis=match.basis,
+            offer_id=match.offer_id,
+            evidence=EvidenceDto.maybe(match.evidence),
+            offer=OfferSnapshotDto.maybe(match.offer),
+            checks=tuple(CheckDto.from_domain(check) for check in match.checks),
         )
 
     def to_domain(self) -> ProductMatch:
         evidence = None if self.evidence is None else self.evidence.to_domain()
-        return ProductMatch(self.item_id, self.basis, self.offer_id, evidence)
+        return ProductMatch(
+            self.item_id,
+            self.basis,
+            self.offer_id,
+            evidence,
+            None if self.offer is None else self.offer.to_domain(),
+            tuple(check.to_domain() for check in self.checks),
+        )
 
 
 class RecordDto(FrozenDto):

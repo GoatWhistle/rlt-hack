@@ -29,8 +29,9 @@ class HighlightComposer:
             (HighlightCode.SIMILAR_PURCHASES, history.similar),
         )
         highlights: list[Highlight] = []
-        if matches:
-            coverage = {"matched": len(matches), "total": total_items}
+        covering = [match for match in matches if not match.conflicting]
+        if covering:
+            coverage = {"matched": len(covering), "total": total_items}
             highlights.append(Highlight(HighlightCode.COVERS_ITEMS, coverage))
         highlights.extend(
             Highlight(code, {"count": count}) for code, count in counters if count > 0

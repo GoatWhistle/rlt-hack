@@ -69,6 +69,11 @@ class InvalidPurchaseSummaryError(DomainError):
         super().__init__(f"purchase summary is invalid: {reason}")
 
 
+class InvalidRequirementError(DomainError):
+    def __init__(self, reason: str) -> None:
+        super().__init__(f"requirement is invalid: {reason}")
+
+
 class InvalidArchiveRosterError(DomainError):
     def __init__(self, reason: str) -> None:
         super().__init__(f"archive roster is invalid: {reason}")

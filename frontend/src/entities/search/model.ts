@@ -7,7 +7,10 @@ import type {
   Highlight,
   MatchBasis,
   Novelty,
+  OfferSnapshot,
   PurchaseOutcome,
+  Requirement,
+  RequirementCheck,
   SearchWarning,
   Source,
 } from "@/entities/evidence/model"
@@ -74,6 +77,7 @@ export type QueryItem = {
   readonly itemType: ItemType
   readonly origin: ItemOrigin
   readonly quantity?: Quantity
+  readonly requirements: readonly Requirement[]
 }
 
 export type CandidateMatch = {
@@ -81,6 +85,8 @@ export type CandidateMatch = {
   readonly basis: MatchBasis
   readonly offerId?: string
   readonly source?: Source
+  readonly offer?: OfferSnapshot
+  readonly checks: readonly RequirementCheck[]
 }
 
 export type PurchaseRecord = {

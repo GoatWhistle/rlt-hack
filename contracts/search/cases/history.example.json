@@ -26,7 +26,8 @@
       "quantity": {
         "value": "500",
         "unit": "кг"
-      }
+      },
+      "requirements": []
     },
     {
       "id": "i2",
@@ -37,7 +38,8 @@
       "quantity": {
         "value": "200",
         "unit": "кг"
-      }
+      },
+      "requirements": []
     }
   ],
   "candidates": [
@@ -61,7 +63,9 @@
           "itemId": "i1",
           "basis": "inferred",
           "offerId": null,
-          "source": null
+          "source": null,
+          "offer": null,
+          "checks": []
         }
       ],
       "history": {

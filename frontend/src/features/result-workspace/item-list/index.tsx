@@ -66,6 +66,13 @@ export function ItemList({ items, candidates, activeId, onFilter }: ItemListProp
                     {t("items.covered", { count: covered })}
                   </span>
                 </span>
+                {item.requirements.length > 0 ? (
+                  <span className={styles.requirements}>
+                    {t("items.requirements", {
+                      values: item.requirements.map((need) => need.text).join(", "),
+                    })}
+                  </span>
+                ) : null}
                 <OriginTag item={item} />
               </button>
             </li>

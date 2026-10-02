@@ -5,14 +5,17 @@ from src.controller.http.schema import plain_decimal, score
 from src.controller.search.dto import (
     CandidateDto,
     ChannelRankDto,
+    CheckDto,
     ContactsDto,
     HighlightDto,
     HistoryDto,
     ItemDto,
     MatchDto,
+    OfferSnapshotDto,
     PipelineDto,
     PurchaseDto,
     QuantityDto,
+    RequirementDto,
     ScoreDto,
     SearchResponseDto,
     SearchSummaryDto,
@@ -22,8 +25,10 @@ from src.controller.search.dto import (
 from src.controller.search.query_mapper import query_dto
 from src.models.candidate import Highlight, ProductMatch, SupplierCandidate
 from src.models.evidence import Evidence, is_web_url
+from src.models.offer_snapshot import OfferSnapshot
 from src.models.purchase import PurchaseRecord, PurchaseSummary
 from src.models.query_item import QueryItem
+from src.models.requirement import RequirementCheck
 from src.models.scoring import ScoreBreakdown
 from src.models.search_result import PipelineInfo, SearchResult, SearchSummary, SearchWarning
 from src.models.supplier import Supplier
@@ -78,6 +83,10 @@ def item_dto(item: QueryItem) -> ItemDto:
         quantity=None
         if quantity is None
         else QuantityDto(value=plain_decimal(quantity.value), unit=quantity.unit),
+        requirements=[
+            RequirementDto(key=need.key, value=need.value, text=need.text)
+            for need in item.requirements
+        ],
     )
 
 
@@ -87,6 +96,39 @@ def match_dto(match: ProductMatch) -> MatchDto:
         basis=match.basis,
         offer_id=match.offer_id,
         source=source_dto(match.evidence),
+        offer=offer_dto(match.offer),
+        checks=[check_dto(check) for check in match.checks],
+    )
+
+
+def offer_dto(offer: OfferSnapshot | None) -> OfferSnapshotDto | None:
+    if offer is None:
+        return None
+    return OfferSnapshotDto(
+        id=offer.offer_id,
+        name=offer.name,
+        url=offer.url,
+        source_name=offer.source_name,
+        source_type=offer.source_type,
+        observed_at=offer.observed_at,
+        link=offer.link,
+        brand=offer.brand or None,
+        article=offer.article or None,
+        unit=offer.unit or None,
+        price=None if offer.price is None else plain_decimal(offer.price),
+        currency=offer.currency or None,
+        availability=offer.availability,
+    )
+
+
+def check_dto(check: RequirementCheck) -> CheckDto:
+    need = check.requirement
+    return CheckDto(
+        key=need.key,
+        value=need.value,
+        text=need.text,
+        status=check.status,
+        found=check.found or None,
     )
 
 

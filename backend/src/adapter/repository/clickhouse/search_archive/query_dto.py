@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 from src.models.enums import ItemOrigin, ItemType, Locale, SearchOrigin
 from src.models.query_item import Quantity, QueryItem
+from src.models.requirement import Requirement
 from src.models.search import (
     CandidateLimit,
     SearchContext,
@@ -37,6 +38,7 @@ class QueryItemDto(FrozenDto):
     okpd2: str
     item_type: ItemType
     quantity: QuantityDto | None
+    requirements: tuple[tuple[str, str, str], ...] = ()
 
     @classmethod
     def from_domain(cls, item: QueryItem) -> Self:
@@ -47,6 +49,7 @@ class QueryItemDto(FrozenDto):
             okpd2=item.okpd2,
             item_type=item.item_type,
             quantity=None if item.quantity is None else QuantityDto.from_domain(item.quantity),
+            requirements=tuple((need.key, need.value, need.text) for need in item.requirements),
         )
 
     def to_domain(self) -> QueryItem:
@@ -57,6 +60,7 @@ class QueryItemDto(FrozenDto):
             okpd2=self.okpd2,
             item_type=self.item_type,
             quantity=None if self.quantity is None else self.quantity.to_domain(),
+            requirements=tuple(Requirement(*need) for need in self.requirements),
         )
 
 

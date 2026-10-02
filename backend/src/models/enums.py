@@ -83,6 +83,7 @@ class CheckReason(StrEnum):
     ROLE_UNCONFIRMED = "roleUnconfirmed"
     NO_CURRENT_OFFER = "noCurrentOffer"
     RANGE_UNCONFIRMED = "rangeUnconfirmed"
+    REQUIREMENT_CONFLICT = "requirementConflict"
     SOURCE_UNAVAILABLE = "sourceUnavailable"
 
 
@@ -134,6 +135,18 @@ class WarningCode(StrEnum):
     ENRICHMENT_FAILED = "enrichmentFailed"
     ARCHIVE_FAILED = "archiveFailed"
     ITEMS_INFERRED = "itemsInferred"
+
+
+class RequirementStatus(StrEnum):
+    MET = "met"
+    CONFLICT = "conflict"
+    UNKNOWN = "unknown"
+
+
+class LinkMethod(StrEnum):
+    SELLER_VERIFIED = "sellerVerified"
+    CATALOG_ACCEPTED = "catalogAccepted"
+    UNVERIFIED = "unverified"
 
 
 class Novelty(StrEnum):

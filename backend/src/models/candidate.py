@@ -11,11 +11,14 @@ from src.models.enums import (
     HighlightCode,
     MatchBasis,
     Novelty,
+    RequirementStatus,
 )
 from src.models.errors import InvalidCandidateError, InvalidMatchError
 from src.models.evidence import Evidence
+from src.models.offer_snapshot import OfferSnapshot
 from src.models.purchase import PurchaseSummary
 from src.models.query_item import QueryItem
+from src.models.requirement import RequirementCheck
 from src.models.scoring import ScoreBreakdown
 from src.models.supplier import Supplier
 
@@ -33,12 +36,22 @@ class ProductMatch:
     basis: MatchBasis
     offer_id: UUID | None = None
     evidence: Evidence | None = None
+    offer: OfferSnapshot | None = None
+    checks: tuple[RequirementCheck, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.item_id:
             raise InvalidMatchError("item id is empty")
         if self.basis in EVIDENCED_BASES and (self.offer_id is None or self.evidence is None):
             raise InvalidMatchError(f"{self.basis} needs an offer and its evidence")
+        if self.offer is not None and self.offer.offer_id != self.offer_id:
+            raise InvalidMatchError("offer snapshot belongs to another offer")
+        if self.conflicting and self.basis in EVIDENCED_BASES:
+            raise InvalidMatchError("a conflicting offer cannot confirm the item")
+
+    @property
+    def conflicting(self) -> bool:
+        return any(check.status == RequirementStatus.CONFLICT for check in self.checks)
 
 
 @dataclass(frozen=True, slots=True)

@@ -8,6 +8,7 @@ from src.models.errors import (
     InvalidQueryItemError,
     InvalidSearchRequestError,
 )
+from src.models.requirement import Requirement
 from src.models.search import SearchQuery
 
 OKPD2_PATTERN = re.compile(r"^\d{2}(\.\d{1,3}){0,4}$")
@@ -33,6 +34,7 @@ class QueryItem:
     okpd2: str = ""
     item_type: ItemType = ItemType.UNKNOWN
     quantity: Quantity | None = None
+    requirements: tuple[Requirement, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.item_id.strip():

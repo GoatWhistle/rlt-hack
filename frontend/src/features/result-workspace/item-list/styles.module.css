@@ -118,3 +118,9 @@
     opacity: 1;
   }
 }
+
+.requirements {
+  color: var(--text-primary);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+}
