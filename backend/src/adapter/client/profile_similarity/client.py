@@ -1,7 +1,6 @@
 import asyncio
 import json
 import math
-from typing import Any
 
 import httpx
 
@@ -35,7 +34,9 @@ def _scores(content: bytes, index_id: str, card_count: int) -> list[float]:
     try:
         if len(content) > card_count * 40 + 1024:
             raise ValueError("oversized similarity response")
-        payload: Any = json.loads(content)
+        payload: object = json.loads(content)
+        if not isinstance(payload, dict):
+            raise ValueError("similarity response is not an object")
         if payload["index_id"] != index_id:
             raise ValueError("similarity index identity differs")
         values = payload["scores"]
