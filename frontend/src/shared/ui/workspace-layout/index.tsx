@@ -1,5 +1,11 @@
 import { clsx } from "clsx"
-import { type CSSProperties, type ReactElement, type ReactNode, type RefObject, useState } from "react"
+import {
+  type CSSProperties,
+  type ReactElement,
+  type ReactNode,
+  type RefObject,
+  useState,
+} from "react"
 import { SegmentedControl } from "@/shared/ui/segmented-control"
 import styles from "./styles.module.css"
 import { WORKSPACE_VIEWS, type WorkspaceView } from "./use-workspace-view"

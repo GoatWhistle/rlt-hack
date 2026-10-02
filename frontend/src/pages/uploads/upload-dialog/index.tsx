@@ -87,10 +87,7 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
 
   function start(file: File, check: FileCheck) {
     if (!check.ok) return
-    create.mutate(
-      { file, check },
-      { onSuccess: (upload) => navigate(uploadPath(upload.id)) },
-    )
+    create.mutate({ file, check }, { onSuccess: (upload) => navigate(uploadPath(upload.id)) })
   }
 
   const checked = phase.kind === "checked" ? phase : null

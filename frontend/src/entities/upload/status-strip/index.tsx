@@ -41,7 +41,9 @@ export function StatusStrip({
 }: StatusStripProps) {
   const { t } = useTranslation("uploads")
   const [reveal] = useState(() =>
-    revealId ? firstReveal(`${revealId}:${total}:${RESULT_STATUSES.map((s) => counts[s]).join(",")}`) : false,
+    revealId
+      ? firstReveal(`${revealId}:${total}:${RESULT_STATUSES.map((s) => counts[s]).join(",")}`)
+      : false,
   )
   const shown = RESULT_STATUSES.filter((status) => counts[status] > 0)
   const done = shown.reduce((sum, status) => sum + counts[status], 0)
