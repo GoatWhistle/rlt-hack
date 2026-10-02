@@ -85,6 +85,8 @@ class MlServiceConfig:
 class ApiStorageConfig:
     query_timeout: int = 15
     background_pool_size: int = 2
+    background_max_threads: int = 1
+    background_priority: int = 10
     max_memory_usage: int = 0
     execution_margin_seconds: int = 2
 
@@ -105,6 +107,8 @@ def _api_storage_config() -> ApiStorageConfig:
     return ApiStorageConfig(
         query_timeout=_int("CLICKHOUSE_API_QUERY_TIMEOUT", 15),
         background_pool_size=_int("CLICKHOUSE_BACKGROUND_POOL_SIZE", 2),
+        background_max_threads=_int("CLICKHOUSE_BACKGROUND_MAX_THREADS", 1),
+        background_priority=_int("CLICKHOUSE_BACKGROUND_PRIORITY", 10),
         max_memory_usage=_int("CLICKHOUSE_API_MAX_MEMORY_USAGE", 0),
     )
 

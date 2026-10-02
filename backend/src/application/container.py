@@ -10,6 +10,7 @@
 """
 
 from collections.abc import Callable
+from dataclasses import replace
 from functools import partial
 from pathlib import Path
 from types import TracebackType
@@ -130,7 +131,12 @@ class Container:
 
     async def background_gateway(self) -> GatewayPool:
         if self._background_gateway is None:
-            config = self._api_clickhouse(self._config.upload.lot_timeout_seconds)
+            storage = self._config.api_storage
+            config = replace(
+                self._api_clickhouse(self._config.upload.lot_timeout_seconds),
+                max_threads=storage.background_max_threads,
+                priority=storage.background_priority,
+            )
             self._background_gateway = GatewayPool(
                 partial(self._open_with, config),
                 self._config.api_storage.background_pool_size,

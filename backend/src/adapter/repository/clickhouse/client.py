@@ -48,4 +48,6 @@ def session_settings(config: ClickHouseConfig) -> dict[str, int | str]:
         settings["timeout_overflow_mode"] = "throw"
     if config.max_memory_usage > 0:
         settings["max_memory_usage"] = config.max_memory_usage
+    if config.priority > 0:
+        settings["priority"] = config.priority
     return settings
