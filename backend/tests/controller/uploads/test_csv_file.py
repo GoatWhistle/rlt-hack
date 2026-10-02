@@ -100,7 +100,7 @@ def test_missing_columns_are_named() -> None:
         (b"lot_id;procedure_name\nL 1;a\n", 2, "lot_id"),
         (b"lot_id;procedure_name\n\nL1;\n", 3, "procedure_name"),
         (b"lot_id;procedure_name\nL1;a;extra\n", 2, "cells"),
-        (b"lot_id;procedure_name\nL1;" + b"x" * 4000 + b"\n", 2, "longer"),
+        (b"lot_id;procedure_name\nL1;" + b"x" * 4001 + b"\n", 2, "longer"),
     ],
     ids=["repeated", "pattern", "title", "cells", "length"],
 )

@@ -14,7 +14,7 @@ from src.models.operations.upload import Notice
 
 MAX_LINE_CHARS = 64 * 1024
 MAX_COLUMNS = 64
-MAX_TEXT_CHARS = 3999
+MAX_TEXT_CHARS = 4000
 PARALLEL_READS = 2
 REQUIRED_COLUMNS = ("lot_id", "procedure_name")
 DELIMITERS = (",", ";", "\t")

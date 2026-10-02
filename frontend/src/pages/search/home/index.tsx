@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router"
 import { isRegionCode } from "@/entities/evidence/regions"
 import { SearchBox } from "@/features/search-box"
-import { SEARCH_TEXT_PARAM, searchPath } from "@/shared/config/paths"
+import { lotPath, SEARCH_TEXT_PARAM } from "@/shared/config/paths"
 import { withViewTransition } from "@/shared/motion/view-transition"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { PageTitle } from "@/shared/ui/page-title"
@@ -64,7 +64,7 @@ export function SearchPage() {
             initialText={draft}
             initialRegion={isRegionCode(region) ? region : ""}
             onFound={(result) =>
-              navigate(searchPath(result.searchId), { viewTransition: true })
+              navigate(lotPath(result.id, "query"), { viewTransition: true })
             }
           />
         </div>

@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react"
 import { en } from "@tests/support/dictionaries"
+import { stubGateway } from "@tests/support/gateway"
 import { contractResult, renderSearch, stubSearch } from "@tests/support/search"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { ApiError } from "@/shared/api/api-error"
@@ -135,17 +136,20 @@ describe("a search result", () => {
   })
 
   it("starts a new search right from the result", async () => {
-    const next = contractResult((payload) => ({ ...payload, searchId: "next-search" }))
-    const search = vi.fn(async () => next)
-    const { user, router } = renderSearch("/search/1f0c", {
-      gateway: stubSearch({ search }),
-    })
+    const uploads = stubGateway()
+    const { user, router } = renderSearch("/search/1f0c", { uploads })
     const field = await screen.findByRole("textbox", { name: en("box.label", "search") })
     await user.clear(field)
     await user.type(field, "рис 200 кг")
     await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
-    expect(search).toHaveBeenCalledWith({ text: "рис 200 кг", limit: 20 })
-    await waitFor(() => expect(router.state.location.pathname).toBe("/search/next-search"))
+    expect(uploads.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        check: expect.objectContaining({
+          notices: [expect.objectContaining({ title: "рис 200 кг" })],
+        }),
+      }),
+    )
+    await waitFor(() => expect(router.state.location.pathname).toBe("/uploads/u1/lots/query"))
   })
 
   it("warns quietly when the result may be incomplete", async () => {

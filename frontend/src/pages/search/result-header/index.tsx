@@ -3,7 +3,7 @@ import { useNavigate } from "react-router"
 import type { SearchResult } from "@/entities/search/model"
 import { COMPARE_FROM, CompareButton } from "@/features/compare-candidates"
 import { SearchBox, type SearchStage, StageLine } from "@/features/search-box"
-import { searchPath } from "@/shared/config/paths"
+import { lotPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { Button } from "@/shared/ui/button"
 import { CountBadge } from "@/shared/ui/count-badge"
@@ -45,7 +45,7 @@ export function ResultHeader(props: ResultHeaderProps) {
           initialText={result.query.text}
           initialRegion={result.query.preferredRegion}
           onStage={onStage}
-          onFound={(next) => navigate(searchPath(next.searchId), { viewTransition: true })}
+          onFound={(next) => navigate(lotPath(next.id, "query"), { viewTransition: true })}
         />
       </div>
       {result.candidates.length > 0 ? (

@@ -12,11 +12,14 @@ import { parseSearchResult } from "@/entities/search/parse"
 import type { SupplierGateway } from "@/entities/supplier/gateway"
 import { SupplierGatewayProvider } from "@/entities/supplier/gateway-context"
 import { parseSupplierProfile } from "@/entities/supplier/parse"
+import type { UploadGateway } from "@/entities/upload/gateway"
+import { UploadGatewayProvider } from "@/entities/upload/gateway-context"
 import { SearchPage, SearchResultPage } from "@/pages/search"
 import { createQueryClient } from "@/shared/api/query-client"
 import type { Locale } from "@/shared/i18n/locale"
 import { LocaleProvider } from "@/shared/i18n/locale-provider"
 import { ToastProvider } from "@/shared/ui/toast"
+import { stubGateway } from "./gateway"
 
 const CONTRACTS = resolve(process.cwd(), "..", "contracts")
 
@@ -51,6 +54,7 @@ export function stubSearch(overrides: Partial<SearchGateway> = {}): SearchGatewa
 export type SearchPageOptions = {
   readonly gateway?: SearchGateway
   readonly suppliers?: SupplierGateway
+  readonly uploads?: UploadGateway
   readonly locale?: Locale
 }
 
@@ -58,23 +62,27 @@ export function renderSearch(path: string, options: SearchPageOptions = {}) {
   const routes = [
     { path: "/search", Component: SearchPage },
     { path: "/search/:searchId", Component: SearchResultPage },
+    { path: "/uploads/:uploadId/lots/:lotId", element: <div /> },
   ]
   const router = createMemoryRouter(routes, { initialEntries: [path] })
   const gateway = options.gateway ?? stubSearch()
   const suppliers = options.suppliers ?? stubSuppliers()
+  const uploads = options.uploads ?? stubGateway()
   const user = userEvent.setup()
   const result = render(
     <LocaleProvider initialLocale={options.locale ?? "en"}>
       <QueryClientProvider client={createQueryClient()}>
         <ToastProvider>
           <SearchGatewayProvider gateway={gateway}>
-            <SupplierGatewayProvider gateway={suppliers}>
-              <RouterProvider router={router} />
-            </SupplierGatewayProvider>
+            <UploadGatewayProvider gateway={uploads}>
+              <SupplierGatewayProvider gateway={suppliers}>
+                <RouterProvider router={router} />
+              </SupplierGatewayProvider>
+            </UploadGatewayProvider>
           </SearchGatewayProvider>
         </ToastProvider>
       </QueryClientProvider>
     </LocaleProvider>,
   )
-  return { ...result, user, router, gateway }
+  return { ...result, user, router, gateway, uploads }
 }
