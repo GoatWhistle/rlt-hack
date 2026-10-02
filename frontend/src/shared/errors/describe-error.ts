@@ -10,6 +10,7 @@ export type ErrorDescription = {
   readonly kind: ErrorKind
   readonly messageKey: ErrorMessageKey
   readonly code: string | null
+  readonly requestId: string | null
 }
 
 export const STATUS_KEYS: Readonly<Record<number, ErrorMessageKey>> = {
@@ -53,9 +54,13 @@ function codeOf(error: unknown): string | null {
 
 export function describeError(error: unknown): ErrorDescription {
   const code = codeOf(error)
-  if (isChunkLoadError(error)) return { kind: "updateRequired", messageKey: "unexpected", code }
+  const requestId = isApiError(error) ? error.requestId : null
+  if (isChunkLoadError(error)) {
+    return { kind: "updateRequired", messageKey: "unexpected", code, requestId }
+  }
   const status = statusOf(error)
   const kind: ErrorKind = isRouteErrorResponse(error) && status === 404 ? "notFound" : "failure"
-  if (code && isErrorMessageKey(code)) return { kind, messageKey: code, code }
-  return { kind, messageKey: status === null ? "unexpected" : statusKey(status), code }
+  if (code && isErrorMessageKey(code)) return { kind, messageKey: code, code, requestId }
+  const messageKey = status === null ? "unexpected" : statusKey(status)
+  return { kind, messageKey, code, requestId }
 }

@@ -22,6 +22,19 @@ describe("describeError", () => {
       kind: "failure",
       messageKey: "network",
       code: "network",
+      requestId: null,
+    })
+  })
+
+  it("keeps the request number for support", () => {
+    const error = new ApiError({
+      status: 503,
+      code: "storage_unavailable",
+      requestId: "req-7f3a",
+    })
+    expect(describeError(error)).toMatchObject({
+      code: "storage_unavailable",
+      requestId: "req-7f3a",
     })
   })
 
@@ -42,6 +55,7 @@ describe("describeError", () => {
       kind: "notFound",
       messageKey: "notFound",
       code: "http_404",
+      requestId: null,
     })
     expect(describeError(routeResponse(500))).toMatchObject({
       kind: "failure",
@@ -60,6 +74,7 @@ describe("describeError", () => {
       kind: "failure",
       messageKey: "unexpected",
       code: null,
+      requestId: null,
     })
     expect(describeError("boom").code).toBeNull()
     expect(isChunkLoadError("ChunkLoadError")).toBe(false)

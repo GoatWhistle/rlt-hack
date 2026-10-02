@@ -46,12 +46,19 @@ async function readBody(response: Response): Promise<unknown> {
   }
 }
 
-function errorFrom(status: number, body: unknown): ApiError {
+export const REQUEST_ID_HEADER = "X-Request-Id"
+
+function errorFrom(response: Response, body: unknown): ApiError {
+  const { status } = response
   const record =
     typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {}
   const code = typeof record.code === "string" ? record.code : `http_${status}`
   const message = typeof record.message === "string" ? record.message : undefined
-  return new ApiError({ status, code, message })
+  const requestId =
+    typeof record.requestId === "string"
+      ? record.requestId
+      : (response.headers.get(REQUEST_ID_HEADER) ?? undefined)
+  return new ApiError({ status, code, message, requestId })
 }
 
 function errorName(cause: unknown): string {
@@ -106,7 +113,7 @@ export function createHttpClient({
       throw transportError(cause)
     }
     const body = await readBody(response)
-    if (!response.ok) throw errorFrom(response.status, body)
+    if (!response.ok) throw errorFrom(response, body)
     return options.parse(body)
   }
   return {
