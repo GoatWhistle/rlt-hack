@@ -10,6 +10,7 @@ from src.models.ranking.retrieval import ChannelHit, ItemHit, RetrievalHits
 from src.models.search.query_item import QueryItem
 from src.service.supplier_search.assembly.match import MatchResolver
 from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
+from tests.adapter.repository.test_relevance_cost import PoolGateway
 from tests.fakes.domain import make_offer, make_offer_evidence, make_supplier
 
 
@@ -21,7 +22,7 @@ def test_description_and_short_prefix_do_not_confirm_water() -> None:
         OfferMatch(offer.offer_id, supplier.supplier_id, 10, (True,), offer.name)
         for offer in offers
     ]
-    retriever = ClickHouseLexicalRetriever(None, RussianAnalyzer())
+    retriever = ClickHouseLexicalRetriever(PoolGateway([]), RussianAnalyzer())
     hits = retriever._tally((QueryItem("water", "вода"),), (pool,)).hits("lexical", 10)
     item = hits.hits[0].items[0]
     assert set(item.offer_ids) == {offers[3].offer_id, offers[4].offer_id}
@@ -53,7 +54,7 @@ def test_weak_lexical_and_vector_signals_do_not_turn_stock_into_confirmation() -
 def test_partial_multiword_title_is_not_a_confirmed_item() -> None:
     supplier = make_supplier()
     offer = make_offer("Бумага упаковочная", supplier=supplier)
-    retriever = ClickHouseLexicalRetriever(None, RussianAnalyzer())
+    retriever = ClickHouseLexicalRetriever(PoolGateway([]), RussianAnalyzer())
     pool = [OfferMatch(offer.offer_id, supplier.supplier_id, 10, (True, False), offer.name)]
     hits = retriever._tally((QueryItem("paper", "Бумага офисная"),), (pool,)).hits("lexical", 10)
     assert hits.hits[0].items[0].inferred_offer_ids == (offer.offer_id,)
