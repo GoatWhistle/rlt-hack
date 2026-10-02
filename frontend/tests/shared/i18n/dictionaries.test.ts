@@ -44,6 +44,7 @@ const TEXT_PARAMS = new Set([
   "found",
   "id",
   "item",
+  "items",
   "inn",
   "name",
   "names",

@@ -70,9 +70,3 @@
 .insufficient {
   color: var(--text-secondary);
 }
-
-.caption {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--text-2xs);
-}

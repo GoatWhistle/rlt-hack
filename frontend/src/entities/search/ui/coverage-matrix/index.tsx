@@ -8,8 +8,10 @@ import {
   coverageOf,
 } from "@/entities/search/coverage"
 import type { Candidate, QueryItem } from "@/entities/search/model"
+import { Caption } from "@/shared/ui/caption"
 import { Icon, type IconName } from "@/shared/ui/icon"
 import { ScrollRegion } from "@/shared/ui/scroll-region"
+import { CoverSetNote } from "../cover-set"
 import styles from "./styles.module.css"
 
 const MARKS: Record<CellState, IconName> = {
@@ -99,8 +101,9 @@ export function CoverageMatrix({ candidates, items, onPick }: CoverageMatrixProp
           </tbody>
         </table>
       </ScrollRegion>
-      <p className={styles.caption}>{t("coverage.legend")}</p>
-      <p className={styles.caption}>{t("coverage.conditions")}</p>
+      <CoverSetNote candidates={candidates} items={items} />
+      <Caption>{t("coverage.legend")}</Caption>
+      <Caption>{t("coverage.conditions")}</Caption>
     </div>
   )
 }

@@ -162,5 +162,13 @@
     "title": "Compare chosen candidates",
     "open_one": "Compare chosen ({{count, number}})",
     "open_other": "Compare chosen ({{count, number}})"
+  },
+  "cover": {
+    "title": "A set of companies covering the lot",
+    "confirmed": "— confirmed: {{items}}.",
+    "toClarify": "To clarify: {{items}}.",
+    "gaps": "Not covered by any company: {{items}}.",
+    "overlaps": "Items covered by several companies of the set: {{items}}.",
+    "disclaimer": "Chosen from item data only, without prices, logistics or customer constraints; this is not an optimal procurement."
   }
 }

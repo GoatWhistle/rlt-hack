@@ -186,6 +186,10 @@ describe("the coverage matrix", () => {
     const matrix = screen.getByRole("region", { name: "Item coverage" })
     expect(within(matrix).getAllByRole("row")).toHaveLength(3)
     expect(screen.getByText(/never added to the confirmed count/)).toBeInTheDocument()
+    expect(
+      screen.getByRole("region", { name: "A set of companies covering the lot" }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/this is not an optimal procurement/)).toBeInTheDocument()
     await view.user.click(
       within(matrix).getAllByRole("button", { name: /Зерновой Двор/ })[0] as HTMLElement,
     )

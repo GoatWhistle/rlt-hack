@@ -53,3 +53,82 @@ export function coverageOf(candidate: Candidate, items: readonly QueryItem[]): C
     total: items.length,
   }
 }
+
+export type CoverPick = {
+  readonly candidate: Candidate
+  readonly confirmed: readonly string[]
+  readonly toClarify: readonly string[]
+}
+
+export type CoverSet = {
+  readonly picks: readonly CoverPick[]
+  readonly gaps: readonly string[]
+  readonly overlaps: readonly string[]
+}
+
+const COVER_LIMIT = 3
+
+function reach(candidate: Candidate, itemIds: readonly string[]): CoverPick {
+  const confirmed = itemIds.filter((id) => confirmedCell(candidate, id))
+  const toClarify = itemIds.filter((id) => {
+    const state = cellState(candidate, id)
+    return !confirmed.includes(id) && state !== "insufficient" && state !== "conflict"
+  })
+  return { candidate, confirmed, toClarify }
+}
+
+function gain(pick: CoverPick, open: ReadonlySet<string>): [number, number] {
+  return [
+    pick.confirmed.filter((id) => open.has(id)).length,
+    pick.toClarify.filter((id) => open.has(id)).length,
+  ]
+}
+
+function better(value: [number, number], best: [number, number]): boolean {
+  return value[0] > best[0] || (value[0] === best[0] && value[1] > best[1])
+}
+
+function nextPick(
+  candidates: readonly Candidate[],
+  ids: readonly string[],
+  open: ReadonlySet<string>,
+  taken: ReadonlySet<string>,
+): CoverPick | undefined {
+  let best: CoverPick | undefined
+  let bestGain: [number, number] = [0, 0]
+  for (const candidate of candidates.filter((entry) => !taken.has(entry.id))) {
+    const pick = reach(candidate, ids)
+    const value = gain(pick, open)
+    if (better(value, bestGain)) {
+      best = pick
+      bestGain = value
+    }
+  }
+  return best
+}
+
+export function coverSet(
+  candidates: readonly Candidate[],
+  items: readonly QueryItem[],
+): CoverSet {
+  const ids = items.map((item) => item.id)
+  const open = new Set(ids)
+  const taken = new Set<string>()
+  const picks: CoverPick[] = []
+  const covered = new Map<string, number>()
+  while (open.size > 0 && picks.length < COVER_LIMIT) {
+    const best = nextPick(candidates, ids, open, taken)
+    if (!best) break
+    picks.push(best)
+    taken.add(best.candidate.id)
+    for (const id of [...best.confirmed, ...best.toClarify]) {
+      covered.set(id, (covered.get(id) ?? 0) + 1)
+      open.delete(id)
+    }
+  }
+  return {
+    picks,
+    gaps: ids.filter((id) => open.has(id)),
+    overlaps: ids.filter((id) => (covered.get(id) ?? 0) > 1),
+  }
+}

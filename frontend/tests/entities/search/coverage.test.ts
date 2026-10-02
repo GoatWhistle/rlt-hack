@@ -1,6 +1,6 @@
 import { contract, contractResult } from "@tests/support/search"
 import { describe, expect, it } from "vitest"
-import { cellState, coverageOf } from "@/entities/search/coverage"
+import { cellState, coverageOf, coverSet } from "@/entities/search/coverage"
 import { parseSearchResult } from "@/entities/search/parse"
 
 const requirements = parseSearchResult(contract("search/cases/requirements.example.json"))
@@ -50,5 +50,22 @@ describe("coverage of the items", () => {
       },
     }
     expect(cellState(experienced, "i2")).toBe("history")
+  })
+})
+
+describe("a covering set of companies", () => {
+  it("prefers confirmed items, keeps gaps visible and stops at the limit", () => {
+    const base = contractResult()
+    const set = coverSet(base.candidates, base.items)
+    expect(set.picks[0]?.candidate.name).toMatch(/Северный Провиант/)
+    expect(set.picks[0]?.confirmed.length).toBeGreaterThan(0)
+    const ghost = {
+      ...base.items[0],
+      id: "ghost",
+      name: "Ghost",
+    } as (typeof base.items)[number]
+    const withGap = coverSet(base.candidates, [...base.items, ghost])
+    expect(withGap.gaps).toEqual(["ghost"])
+    expect(coverSet([], base.items)).toEqual({ picks: [], gaps: ["i1", "i2"], overlaps: [] })
   })
 })
