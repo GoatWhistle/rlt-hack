@@ -143,6 +143,14 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
+    "tests.clickhouse.offer_batch_smoke",
+    "tests.embedding.document_smoke",
+    "tests.embedding.smoke",
+]
+disallow_untyped_calls = false
+
+[[tool.mypy.overrides]]
+module = [
     "src.adapter.supplier.*",
     "src.service.supplier.*",
     "src.adapter.repository.clickhouse.offer",
