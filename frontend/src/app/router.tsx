@@ -64,6 +64,42 @@ export const routes: RouteObject[] = [
               Component: (await routeModules.search()).SearchResultPage,
             }),
           },
+          {
+            path: "analytics",
+            lazy: async () => ({ Component: (await routeModules.analytics()).AnalyticsLayout }),
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await routeModules.analytics()).OverviewPage,
+                }),
+              },
+              {
+                path: "categories/:code?",
+                lazy: async () => ({
+                  Component: (await routeModules.analytics()).CategoriesPage,
+                }),
+              },
+              {
+                path: "quality",
+                lazy: async () => ({
+                  Component: (await routeModules.analytics()).QualityPage,
+                }),
+              },
+              {
+                path: "sources",
+                lazy: async () => ({
+                  Component: (await routeModules.analytics()).SourcesPage,
+                }),
+              },
+              {
+                path: "records",
+                lazy: async () => ({
+                  Component: (await routeModules.analytics()).RecordsPage,
+                }),
+              },
+            ],
+          },
           { path: "*", Component: NotFoundPage },
         ],
       },

@@ -4,6 +4,7 @@ export const routeModules = {
   lot: () => import("@/pages/lot"),
   lotsEntry: () => import("@/pages/lots-entry"),
   search: () => import("@/pages/search"),
+  analytics: () => import("@/pages/analytics"),
 } as const
 
 export type RouteModule = keyof typeof routeModules

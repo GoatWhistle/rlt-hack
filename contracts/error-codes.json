@@ -7,6 +7,7 @@
     { "code": "query_not_understood", "status": 422 },
     { "code": "search_not_found", "status": 404 },
     { "code": "supplier_not_found", "status": 404 },
+    { "code": "analytics_unavailable", "status": 503 },
     { "code": "missing_file", "status": 400 },
     { "code": "file_too_large", "status": 413 },
     { "code": "unsupported_file_type", "status": 415 },

@@ -8,6 +8,7 @@ from src.models.operations.health import ComponentHealth, Readiness
 from src.models.search.search import SearchQuery
 from src.models.search.search_result import SearchHistory, SearchResult, SearchSummary
 from src.service.errors import SearchNotFoundError, SupplierNotFoundError
+from tests.fakes.analytics import FakeCatalogAnalytics
 from tests.fakes.domain import (
     make_candidate,
     make_evidence,
@@ -113,6 +114,7 @@ class FakeServiceProvider:
     profiles: FakeSupplierProfiles = field(default_factory=FakeSupplierProfiles)
     task: FakeBackgroundTask = field(default_factory=FakeBackgroundTask)
     readiness: FakeReadiness = field(default_factory=FakeReadiness)
+    catalog: FakeCatalogAnalytics = field(default_factory=FakeCatalogAnalytics)
     closed: int = 0
 
     async def supplier_search(self) -> FakeSupplierSearching:
@@ -123,6 +125,9 @@ class FakeServiceProvider:
 
     async def health(self) -> FakeReadiness:
         return self.readiness
+
+    async def analytics(self) -> FakeCatalogAnalytics:
+        return self.catalog
 
     async def background(self) -> tuple[BackgroundTask, ...]:
         return (self.task,)

@@ -16,6 +16,7 @@ from uuid import UUID, uuid4
 from src.application.config import AppConfig
 from src.application.container import Container
 from src.controller.job.dto import NormalizeCommand, RegistryImportCommand, SyncCommand
+from src.models.analytics.filters import AnalyticsFilters
 from src.models.operations.coverage import CoverageReport
 from src.service.errors import (
     ProviderNotConfiguredError,
@@ -55,6 +56,15 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=None,
         help="сколько позиций пересчитать: по умолчанию все",
+    )
+
+    analytics = commands.add_parser(
+        "analytics", help="пересчитать и опубликовать срез аналитики каталога"
+    )
+    analytics.add_argument(
+        "--forever",
+        action="store_true",
+        help="повторять пересчёт с интервалом ANALYTICS_TTL_SECONDS",
     )
 
     commands.add_parser("coverage", help="отчёт о покрытии нормализации и классификации")
@@ -189,6 +199,8 @@ async def _dispatch(arguments: argparse.Namespace, config: AppConfig) -> int:
             outcome = await (await container.registry_import(command.path)).run()
             print(f"Реестр МСП на {outcome.registry_date}: компаний {outcome.companies}")
             return 0
+        if arguments.command == "analytics":
+            return await _analytics(arguments, config, container)
         if arguments.command == "coverage":
             # Контроллер ходит в сервис, а не в репозиторий напрямую.
             _print_coverage(await (await container.enrichment()).coverage())
@@ -230,6 +242,21 @@ def _print_coverage(report: CoverageReport) -> None:
         for share in shares:
             name = share.name or "—"
             print(f"  {name:22} {share.offers:7}  {share.offers / total:6.1%}")
+
+
+async def _analytics(arguments: argparse.Namespace, config: AppConfig, container: Container) -> int:
+    service = await container.analytics()
+    scope = AnalyticsFilters()
+    if arguments.forever:
+        await service.run_forever(scope, config.analytics.ttl_seconds)
+        return 0
+    snapshot = await service.refresh(scope)
+    print(
+        f"snapshot={snapshot.snapshot_id} as_of={snapshot.as_of:%Y-%m-%d %H:%M:%S} "
+        f"позиций={snapshot.offers} компаний={snapshot.companies} "
+        f"источников={len(snapshot.sources)}"
+    )
+    return 0
 
 
 async def _sync(arguments: argparse.Namespace, config: AppConfig) -> int:

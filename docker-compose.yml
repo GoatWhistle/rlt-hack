@@ -194,6 +194,21 @@ services:
     mem_limit: 768m
     cpus: 1
 
+  analytics-worker:
+    extends:
+      service: sync-job
+    profiles: ["workers"]
+    restart: unless-stopped
+    command: ["analytics", "--forever"]
+    environment:
+      ANALYTICS_TTL_SECONDS: ${ANALYTICS_TTL_SECONDS:-900}
+      ANALYTICS_BUDGET_SECONDS: ${ANALYTICS_BUDGET_SECONDS:-30}
+      ANALYTICS_OFFER_DAYS: ${ANALYTICS_OFFER_DAYS:-7}
+      ANALYTICS_REGISTRY_DAYS: ${ANALYTICS_REGISTRY_DAYS:-30}
+      ANALYTICS_PERIOD_DAYS: ${ANALYTICS_PERIOD_DAYS:-30}
+    mem_limit: 512m
+    cpus: 0.5
+
   embedder:
     image: ollama/ollama:0.34.2
     profiles: ["ml"]
@@ -267,6 +282,12 @@ services:
       SEARCH_ML_ENABLED: ${SEARCH_ML_ENABLED:-false}
       ML_SERVICE_URL: ${ML_SERVICE_URL:-http://ml:8001}
       ML_SERVICE_TIMEOUT: ${ML_SERVICE_TIMEOUT:-5}
+      ANALYTICS_TTL_SECONDS: ${ANALYTICS_TTL_SECONDS:-900}
+      ANALYTICS_BUDGET_SECONDS: ${ANALYTICS_BUDGET_SECONDS:-30}
+      ANALYTICS_RUN_DETAILS: ${ANALYTICS_RUN_DETAILS:-false}
+      ANALYTICS_OFFER_DAYS: ${ANALYTICS_OFFER_DAYS:-7}
+      ANALYTICS_REGISTRY_DAYS: ${ANALYTICS_REGISTRY_DAYS:-30}
+      ANALYTICS_PERIOD_DAYS: ${ANALYTICS_PERIOD_DAYS:-30}
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:

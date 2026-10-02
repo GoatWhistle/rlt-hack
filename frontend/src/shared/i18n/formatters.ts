@@ -3,6 +3,7 @@ import { useLocale } from "./locale-provider"
 
 export type Formatters = {
   readonly number: (value: number) => string
+  readonly percent: (value: number) => string
   readonly money: (value: number, currency?: string) => string
   readonly price: (value: number) => string
   readonly date: (value: Date | string) => string
@@ -21,6 +22,7 @@ function toDate(value: Date | string): Date {
 function build(locale: Locale): Formatters {
   const tag = LOCALE_TAGS[locale]
   const numbers = new Intl.NumberFormat(tag)
+  const percents = new Intl.NumberFormat(tag, { style: "percent", maximumFractionDigits: 0 })
   const currencies = new Map<string, Intl.NumberFormat>()
   const dates = new Intl.DateTimeFormat(tag, { dateStyle: "medium", timeZone: "UTC" })
   const dateTimes = new Intl.DateTimeFormat(tag, { dateStyle: "medium", timeStyle: "short" })
@@ -46,6 +48,7 @@ function build(locale: Locale): Formatters {
   }
   return {
     number: (value) => numbers.format(value),
+    percent: (value) => percents.format(value),
     money: (value, currency = "RUB") => currencyFormat(currency).format(value),
     price: (value) => prices.format(value),
     date: (value) => dates.format(toDate(value)),

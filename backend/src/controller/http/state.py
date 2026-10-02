@@ -3,6 +3,7 @@ from typing import cast
 
 from fastapi import Request
 
+from src.controller.analytics.protocols import CatalogAnalytics
 from src.controller.health.protocols import ReadinessChecking
 from src.controller.http.middleware.metrics import Metrics
 from src.controller.http.protocols import BackgroundTask, ServiceProvider
@@ -16,6 +17,7 @@ class Services:
     supplier_search: SupplierSearching
     supplier_profiles: SupplierProfiles
     health: ReadinessChecking
+    analytics: CatalogAnalytics
     background: tuple[BackgroundTask, ...] = ()
 
     @classmethod
@@ -24,6 +26,7 @@ class Services:
             supplier_search=await provider.supplier_search(),
             supplier_profiles=await provider.supplier_profiles(),
             health=await provider.health(),
+            analytics=await provider.analytics(),
             background=await provider.background(),
         )
 

@@ -1,0 +1,19 @@
+.page {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--space-4);
+}
+
+.link {
+  color: var(--link);
+}
+
+.note {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}

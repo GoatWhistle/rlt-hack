@@ -66,6 +66,16 @@ class ApiConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class AnalyticsConfig:
+    ttl_seconds: float = 900.0
+    budget_seconds: float = 30.0
+    run_details: bool = False
+    offer_days: int = 7
+    registry_days: int = 30
+    period_days: int = 30
+
+
+@dataclass(frozen=True, slots=True)
 class SearchConfig:
     timeout_seconds: float = 15.0
     retrieval_depth_factor: int = 3
@@ -115,6 +125,17 @@ def _api_config() -> ApiConfig:
         host=os.getenv("API_HOST") or "0.0.0.0",
         port=_int("API_PORT", 8000),
         docs_enabled=_bool("API_DOCS", True),
+    )
+
+
+def _analytics_config() -> AnalyticsConfig:
+    return AnalyticsConfig(
+        ttl_seconds=_float("ANALYTICS_TTL_SECONDS", 900.0),
+        budget_seconds=_float("ANALYTICS_BUDGET_SECONDS", 30.0),
+        run_details=_bool("ANALYTICS_RUN_DETAILS", False),
+        offer_days=_int("ANALYTICS_OFFER_DAYS", 7),
+        registry_days=_int("ANALYTICS_REGISTRY_DAYS", 30),
+        period_days=_int("ANALYTICS_PERIOD_DAYS", 30),
     )
 
 
@@ -191,6 +212,7 @@ class AppConfig:
     moscow_suppliers_export_url: str = ""
     api: ApiConfig = field(default_factory=ApiConfig)
     search: SearchConfig = field(default_factory=SearchConfig)
+    analytics: AnalyticsConfig = field(default_factory=AnalyticsConfig)
     ml_service: MlServiceConfig = field(default_factory=MlServiceConfig)
     api_storage: ApiStorageConfig = field(default_factory=ApiStorageConfig)
     # ZIP-выгрузка реестра МСП ФНС для команды registry-import.
@@ -260,6 +282,7 @@ class AppConfig:
             moscow_suppliers_export_url=os.getenv("MOSCOW_SUPPLIERS_EXPORT_URL", ""),
             api=_api_config(),
             search=_search_config(),
+            analytics=_analytics_config(),
             ml_service=_ml_service_config(),
             api_storage=_api_storage_config(),
             msp_registry_path=(

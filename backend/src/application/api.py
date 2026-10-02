@@ -26,8 +26,10 @@ from src.adapter.system.clock import SystemClock
 from src.adapter.system.ids import Uuid4Generator
 from src.adapter.text.analyzer.analyzer import RussianAnalyzer
 from src.adapter.text.rule_interpreter.interpreter import RuleQueryInterpreter
+from src.application.analytics import analytics_service
 from src.application.config import AppConfig
 from src.application.deferred_gateway import Connect, DeferredGateway, DeferredShare
+from src.service.analytics.service import AnalyticsService
 from src.service.health.service import HealthService
 from src.service.supplier_profile.service import SupplierProfileService
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
@@ -129,6 +131,9 @@ class ApiContainer:
             directory=ClickHouseSupplierDirectory(self._gateway, self.database),
             offers=ClickHouseOfferCatalog(self._gateway, self.database),
         )
+
+    async def analytics(self) -> AnalyticsService:
+        return await analytics_service(self._config, self._gateway, self._writer)
 
     async def background(self) -> tuple[()]:
         return ()

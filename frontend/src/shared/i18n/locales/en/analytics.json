@@ -1,0 +1,213 @@
+{
+  "title": "Analytics",
+  "intro": "What the catalog holds, how fresh it is and how the sources behave. Every figure shows what it is counted against.",
+  "tabs": {
+    "legend": "Analytics sections",
+    "overview": "Overview",
+    "categories": "Categories",
+    "quality": "Freshness and quality",
+    "sources": "Sources and runs"
+  },
+  "snapshot": {
+    "asOf": "Snapshot: {{time}}",
+    "delay": "Computed {{time}}",
+    "refresh": "Refresh",
+    "refreshFailed": "The last recalculation failed. Showing the previous snapshot.",
+    "retry": "Check again"
+  },
+  "scope": {
+    "legend": "Filters",
+    "source": "Source",
+    "sourceType": "Data type",
+    "region": "Company region",
+    "regionHint": "Region code",
+    "all": "All",
+    "applied": "Filters applied",
+    "reset": "Reset filters",
+    "regionNote": "The region is the company's, not the delivery region."
+  },
+  "sourceType": {
+    "directory": "Directory",
+    "website": "Website",
+    "feed": "Feed",
+    "price_list": "Price list",
+    "registry": "Registry",
+    "dataset": "Dataset"
+  },
+  "metrics": {
+    "offers": "Catalog positions",
+    "companies": "Companies",
+    "fresh": "Checked on time",
+    "searchable": "Available to search"
+  },
+  "hints": {
+    "offers": "Current offers, latest version only, deleted ones excluded.",
+    "companies": "Unique companies linked to these offers.",
+    "fresh": "Last observation is within the source threshold: {{offer, number}} days for catalogs, {{registry, number}} for registries.",
+    "searchable": "Not marked unavailable and linked to a company (lexical channel).",
+    "priced": "Commercial offers (directory, website, feed, price list) with a price set."
+  },
+  "ratio": {
+    "of": "{{numerator, number}} of {{denominator, number}}",
+    "unknown": "{{count, number}} with an unknown date",
+    "noBase": "No basis for calculation"
+  },
+  "composition": {
+    "title": "Composition by data type"
+  },
+  "attention": {
+    "title": "Needs attention",
+    "none": "Nothing needs attention in this snapshot.",
+    "details": "Details",
+    "source_never_run": "{{name}} has never been run",
+    "source_failed": "The last run of {{name}} failed",
+    "source_stale": "{{name}}: {{count, number}} of {{total, number}} offers are past the freshness threshold",
+    "no_category": "{{count, number}} of {{total, number}} offers have no category",
+    "no_verified_seller": "No offer has a verified seller",
+    "unknownSource": "a source"
+  },
+  "categories": {
+    "title": "Categories (OKPD2)",
+    "top": "Largest categories",
+    "noCategory": "No category",
+    "all": "All categories",
+    "children": "Subcategories of {{code}}",
+    "showRecords": "Show offers",
+    "empty": "No classified offers yet.",
+    "companiesNote": "A company can appear in several categories, so the rows add up to more than the unique total.",
+    "origins": "Where the code comes from",
+    "path": "Category path",
+    "columns": {
+      "category": "Category",
+      "offers": "Offers",
+      "share": "Share of base",
+      "companies": "Companies",
+      "sellers": "Verified seller",
+      "fresh": "Checked on time",
+      "priced": "With price",
+      "searchable": "Searchable"
+    },
+    "origin": {
+      "system": "Assigned by the system",
+      "source": "Reported by the source",
+      "absent": "Missing"
+    },
+    "open": "Open {{name}}"
+  },
+  "quality": {
+    "ageTitle": "Age of the last observation",
+    "ageNote": "Buckets are exclusive: up to 1 day, 1 to 7, 7 to 30, over 30 days. Whether an item is overdue is judged by its source's threshold, not by these buckets.",
+    "age": {
+      "d1": "Up to 1 day",
+      "d7": "1–7 days",
+      "d30": "7–30 days",
+      "older": "More than 30 days",
+      "unknown": "Date unknown"
+    },
+    "availabilityTitle": "Availability",
+    "availability": {
+      "available": "Source reports in stock",
+      "on_order": "On order",
+      "unavailable": "Unavailable",
+      "unknown": "No data"
+    },
+    "matrixTitle": "Problems by source",
+    "matrixNote": "Every number links to the offers behind it.",
+    "priced": "Commercial offers with a price",
+    "columns": {
+      "source": "Source",
+      "offers": "Offers",
+      "noSupplier": "No company",
+      "unverifiedSeller": "Seller not verified",
+      "noCategory": "No category",
+      "noPrice": "No price",
+      "noAttributes": "No attributes",
+      "stale": "Overdue",
+      "unknownAge": "Date unknown"
+    },
+    "empty": "No sources with offers."
+  },
+  "sources": {
+    "title": "Sources",
+    "runsTitle": "Latest runs",
+    "runsSuccess": "Fully successful runs in {{days, number}} days",
+    "runsPartial": "{{count, number}} partial",
+    "neverRun": "never run",
+    "noRuns": "No completed runs.",
+    "noSources": "No sources are stored yet.",
+    "errorHidden": "Error details are available to the operator.",
+    "extracted": "{{suppliers, number}} companies, {{offers, number}} offers",
+    "duration": "{{seconds, number}} s",
+    "stateNote": "Disabled, never run and failed are different states; a source switched off in settings looks like never run here.",
+    "columns": {
+      "source": "Source",
+      "type": "Type",
+      "state": "State",
+      "offers": "Offers",
+      "companies": "Companies",
+      "fresh": "Checked on time",
+      "lastSuccess": "Last success",
+      "lastAttempt": "Last attempt",
+      "failed": "Failed runs",
+      "run": "Run",
+      "status": "Result",
+      "started": "Started",
+      "duration": "Duration",
+      "extracted": "Extracted"
+    },
+    "state": {
+      "ok": "Working",
+      "partial": "Partial",
+      "failed": "Failed",
+      "never_run": "Never run"
+    },
+    "status": {
+      "success": "Success",
+      "partial": "Partial",
+      "failed": "Failed"
+    },
+    "never": "never"
+  },
+  "records": {
+    "title": "Records behind the figure",
+    "description": "Offers that explain the number you came from.",
+    "columns": {
+      "name": "Name",
+      "source": "Source",
+      "company": "Company",
+      "category": "Category",
+      "price": "Price",
+      "seen": "Last seen"
+    },
+    "problem": {
+      "stale": "Overdue",
+      "unknown_age": "Date unknown",
+      "no_category": "No category",
+      "no_price": "No price",
+      "no_supplier": "No company",
+      "unverified_seller": "Seller not verified",
+      "no_attributes": "No attributes"
+    },
+    "filteredBy": "Showing: {{what}}",
+    "category": "category {{code}}",
+    "empty": "No records match.",
+    "range": "{{from, number}}–{{to, number}} of {{total, number}}",
+    "previous": "Previous page",
+    "next": "Next page",
+    "pages": "Pages",
+    "changed": "{{count, number}} records changed after this snapshot. Refresh the analytics to see them.",
+    "open": "Open source page",
+    "noValue": "—",
+    "back": "Back to overview",
+    "show": "Show records"
+  },
+  "state": {
+    "empty": "The catalog has no offers yet",
+    "emptyDescription": "Run a source sync, then the figures appear here.",
+    "emptyFilter": "Nothing matches these filters",
+    "emptyFilterDescription": "Reset the filters or choose another source.",
+    "partial": "Some data could not be loaded",
+    "loadFailed": "Could not load analytics",
+    "loading": "Loading"
+  }
+}

@@ -30,6 +30,14 @@ const NUMERIC_PARAMS = new Set([
   "inferred",
   "ready",
   "check",
+  "numerator",
+  "denominator",
+  "seconds",
+  "days",
+  "offer",
+  "registry",
+  "suppliers",
+  "offers",
 ])
 const TEXT_PARAMS = new Set([
   "article",
@@ -51,6 +59,8 @@ const TEXT_PARAMS = new Set([
   "title",
   "unit",
   "value",
+  "time",
+  "what",
 ])
 const CYRILLIC_ALLOWED_IN_EN = new Set(["common:language.ru"])
 
