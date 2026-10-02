@@ -3,7 +3,7 @@ name: CI and deploy
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, deploy]
   workflow_dispatch:
 
 permissions:
@@ -151,7 +151,7 @@ jobs:
       - name: Check migrations, backup and HTTP
         run: bash deploy/smoke.sh "$GITHUB_SHA" "$RUNNER_TEMP/bundle"
       - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/deploy') && github.event_name != 'pull_request'
         with:
           name: release-${{ github.sha }}
           path: ${{ runner.temp }}/bundle/
@@ -211,3 +211,52 @@ jobs:
             "cd '$incoming' && sha256sum -c SHA256SUMS && bash activate.sh '$GITHUB_SHA' '$GITHUB_RUN_ID'"
           curl --fail --silent --show-error --retry 5 --retry-all-errors \
             --connect-timeout 10 --max-time 20 "$DEPLOY_URL/nginx-health"
+
+  deploy-vm:
+    if: github.ref == 'refs/heads/deploy' && github.event_name == 'push' && vars.VM_DEPLOY_ENABLED == 'true'
+    needs: containers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment:
+      name: vm
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          lfs: false
+          persist-credentials: false
+          sparse-checkout: deploy/vm_known_hosts
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0
+        with:
+          name: release-${{ github.sha }}
+          path: bundle
+      - name: Check current deploy revision
+        id: revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/deploy" --jq .object.sha)
+          if [[ $latest == "$GITHUB_SHA" ]]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "A newer deploy revision exists; this deployment is skipped"
+          fi
+      - name: Deploy verified images to 51.250.72.225
+        if: steps.revision.outputs.current == 'true'
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.VM_DEPLOY_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_SSH_KEY"
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          trap 'rm -f "$HOME/.ssh/id_ed25519"' EXIT
+          target="rlt-deploy@51.250.72.225"
+          incoming="/opt/rlt-hack/incoming/$GITHUB_SHA"
+          options=(-o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15
+            -o "UserKnownHostsFile=$GITHUB_WORKSPACE/deploy/vm_known_hosts")
+          ssh "${options[@]}" "$target" "mkdir -p '$incoming'"
+          scp "${options[@]}" bundle/* "$target:$incoming/"
+          ssh "${options[@]}" "$target" \
+            "cd '$incoming' && sha256sum -c SHA256SUMS && bash activate.sh '$GITHUB_SHA' '$GITHUB_RUN_ID' && rm -rf '$incoming'"
