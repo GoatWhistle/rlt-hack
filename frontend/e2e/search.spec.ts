@@ -134,7 +134,9 @@ test("chooses a candidate and downloads the choice", async ({ page }) => {
   await expectAccessible(page)
   const download = page.waitForEvent("download")
   await dialog.getByRole("button", { name: /download csv/i }).click()
-  expect((await download).suggestedFilename()).toMatch(/^search-.+-suppliers\.csv$/)
+  expect((await download).suggestedFilename()).toMatch(
+    /^lotive-buckwheat-groats-500-\d{4}-\d{2}-\d{2}\.csv$/,
+  )
   await expect(page.getByRole("listitem").filter({ hasText: /file downloaded/i })).toBeVisible()
 })
 
@@ -171,7 +173,7 @@ test("shows the offers that cover the items and compares their prices", async ({
   const other = page.getByRole("article", { name: /Зерновой Двор/ })
   await expect(other.getByText(/no offer: the system infers/i)).toBeVisible()
   await other.getByRole("button", { name: /choose candidate/i }).click()
-  await page.getByRole("button", { name: /^compare$/i }).click()
+  await page.getByRole("button", { name: /compare chosen: 2/i }).click()
   const table = page.getByRole("dialog", { name: /compare/i }).getByRole("table")
   await expect(table.getByRole("row", { name: /^Крупа гречневая ядрица/ })).toContainText(
     /84\.50 per кг · In stock/,

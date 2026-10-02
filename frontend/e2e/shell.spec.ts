@@ -32,7 +32,7 @@ test.describe("application shell", () => {
   })
 
   test("reaches the main content from the skip link", async ({ page }) => {
-    await page.goto("/")
+    await page.goto("/uploads")
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
     await page.keyboard.press("Tab")
     const skip = page.getByRole("link", { name: /(skip to content|перейти к содержимому)/i })
