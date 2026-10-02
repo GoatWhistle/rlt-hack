@@ -51,15 +51,21 @@ class PoolGateway:
 ITEMS = (make_item("i1", "Крупа гречневая ядрица"), make_item("i2", "Рис шлифованный"))
 
 
-async def test_offer_texts_are_not_analyzed_in_python() -> None:
+async def test_offer_title_analysis_is_deduplicated_and_bounded_by_pool() -> None:
     rows = [
-        (uid(f"offer-{index}"), uid(f"supplier-{index % 50}"), 12, [index % 2 == 0, True])
+        (
+            uid(f"offer-{index}"),
+            uid(f"supplier-{index % 50}"),
+            12,
+            ITEMS[index % 2].name,
+            [index % 2 == 0, True],
+        )
         for index in range(POOL)
     ]
     analyzer = CountingAnalyzer()
     retriever = ClickHouseLexicalRetriever(PoolGateway(rows), analyzer, candidate_pool=POOL)
     hits = await retriever.retrieve(make_request(*ITEMS), 20)
-    assert len(analyzer.analyzed) == len(ITEMS)
+    assert len(analyzer.analyzed) == 3 * len(ITEMS)
     assert hits.hits
 
 

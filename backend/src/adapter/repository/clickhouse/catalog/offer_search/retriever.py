@@ -66,13 +66,15 @@ class ClickHouseLexicalRetriever:
 
     def _tally(self, items: Sequence[QueryItem], pools: Sequence[list[OfferMatch]]) -> HitTally:
         tally = HitTally(accumulate=False)
+        names = {offer.name for pool in pools for offer in pool}
+        title_terms_by_name = {name: set(self._analyzer.analyze(name)) for name in names}
         for item, pool in zip(items, pools, strict=True):
             query_terms = set(self._analyzer.analyze(item.name))
             scores = presence_relevance(
                 [offer.flags for offer in pool], [offer.length for offer in pool]
             )
             for offer, score in zip(pool, scores, strict=True):
-                title_terms = set(self._analyzer.analyze(offer.name))
+                title_terms = title_terms_by_name[offer.name]
                 if score > 0 and query_terms & title_terms:
                     tally.add_offer(
                         offer.supplier_id,
