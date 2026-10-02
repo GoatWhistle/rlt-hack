@@ -75,7 +75,10 @@ class UploadService:
                     lot,
                     candidates=await relevant_evidence(
                         lot.notice.query_text,
-                        [next(enriched) for _ in lot.candidates],
+                        [
+                            replace(next(enriched), purchases=candidate.purchases)
+                            for candidate in lot.candidates
+                        ],
                         lot.notice.positions,
                         self._position_tokens,
                     ),
