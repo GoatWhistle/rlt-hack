@@ -418,13 +418,21 @@ INSERT на пачку, поэтому порция размера записи 
 API получает пул такого размера, и каналы поиска с обогащением кандидатов
 выполняются параллельно; джоба сбора работает с одним клиентом, как и раньше.
 
-У API три независимых набора клиентов, чтобы фоновая работа не вытесняла
-интерактивную:
+У API три независимых набора клиентов:
 
-- интерактивный пул (`CLICKHOUSE_POOL_SIZE`) — поиск, профили, чтение загрузок;
-- фоновый пул (`CLICKHOUSE_BACKGROUND_POOL_SIZE`, по умолчанию 2) — обработка
-  закупок из загруженных файлов;
+- интерактивный пул (`CLICKHOUSE_POOL_SIZE`) — каналы поиска, обогащение,
+  профили и чтение архива;
+- пул записи из одного клиента — сохранение поиска в архив. Вставка не ждёт,
+  пока каналы соседних поисков освободят интерактивный пул, поэтому таймаут
+  архива 2 с считается почти от начала вставки;
 - управляющий клиент вне пулов — проба `/api/health/ready` и `KILL QUERY`.
+
+Один поиск занимает не больше половины интерактивного пула (`ceil(size / 2)`,
+`GatewayPool.scope`): запросы его каналов и обогащения встают в очередь внутри
+своей доли, и короткий поиск рядом с большим получает свободный клиент сразу.
+Интерактивный поиск разбирает не больше `SEARCH_MAX_ITEMS` позиций (по
+умолчанию 20); лишние отбрасываются, а ответ получает предупреждение
+`itemsTruncated`.
 
 Каждый запрос API уходит со своим `query_id`. Если вызывающий отменён (например,
 сработал `SEARCH_TIMEOUT_SECONDS`), пул отправляет `KILL QUERY ... ASYNC` через
@@ -468,7 +476,11 @@ API получает пул такого размера, и каналы пои�
 `имя@домен`; иначе поле — пустая строка.
 
 Каждый ответ содержит `X-Request-Id` (входящий токен `[A-Za-z0-9-]{8,64}`
-сохраняется, иначе выдаётся новый UUID) и `Server-Timing: app;dur=<мс>`.
+сохраняется, иначе выдаётся новый UUID) и `Server-Timing: app;dur=<мс>`. Ответ
+поиска добавляет время стадий: `parse` (разбор текста), `channels` (каналы),
+`enrich` (обогащение кандидатов), `policy` (сборка, правила и ранжирование) и
+`archive` (сохранение), например
+`app;dur=640.2, parse;dur=0.4, channels;dur=180.3, enrich;dur=420.8, policy;dur=6.1, archive;dur=12.5`.
 Ошибки приходят телом `{"code", "message", "requestId"}`:
 
 | HTTP | `code` | Когда |
@@ -581,6 +593,7 @@ curl -s http://localhost:8000/api/health/ready
 | `SEARCH_RETRIEVAL_DEPTH` | `3` | во сколько раз каналы берут больше кандидатов, чем лимит |
 | `SEARCH_COVERAGE_THRESHOLD` | `0.5` | порог покрытия позиций для статуса `recommended` |
 | `SEARCH_LEXICAL_POOL` | `500` | сколько карточек отбирает лексический поиск |
+| `SEARCH_MAX_ITEMS` | `20` | сколько позиций разбирает один поиск; лишние отбрасываются с предупреждением `itemsTruncated` |
 | `SEARCH_HISTORY_ENABLED` | `true` | канал поиска по истории закупок |
 | `SEARCH_ML_ENABLED` | `false` | ML-канал поиска |
 | `ML_SERVICE_URL` | `http://ml:8001` | адрес ML-сервиса |
@@ -813,6 +826,48 @@ uv run --python 3.13 python tests/supplier/productcenter_live.py \
   --cache-dir /tmp/productcenter-cache --out /tmp/productcenter-report.json
 ```
 
+## Индексы поиска и тексты лотов
+
+Каналы поиска не читают таблицы целиком. Миграции `0013`–`0015`:
+
+- `0013_offer_prefix_index.sql` удаляет блум-фильтры `tokenbf_v1` и
+  `ngrambf_v1`, которые не отсекали ни одной гранулы, и строит текстовый
+  индекс ClickHouse (`TYPE text(tokenizer = array)`) по префиксам слов
+  `search_text` длиной 3–6 символов. Лексический канал ищет префиксы терминов
+  запроса через `hasAnyTokens`, а флаги совпадений читает из индекса, а не
+  вычисляет по тексту. Колонка `search_terms` хранит длину текста для BM25.
+  Мутации выполняются с `mutations_sync = 2`: `migrate` завершается после
+  перестройки индекса, а не раньше. `offers_current` пересоздаётся атомарно
+  через `CREATE OR REPLACE VIEW`.
+- `0014_lot_texts.sql` собирает два производных представления истории
+  закупок, обновляемых раз в сутки (`REFRESH EVERY 1 DAY`):
+  `lot_texts` — строка на лот с нормализованным текстом предмета, названия и
+  позиций, участниками и победителями (канал истории);
+  `supplier_lots` — строка на пару поставщик–лот с ключом
+  `(supplier_id, lot_id)` (сводка участий кандидатов). Обе таблицы с тем же
+  текстовым индексом.
+- `0015_archive_retention.sql` задаёт архиву поисков `searches` срок хранения
+  180 дней (`TTL created_at + 180 DAY`).
+
+После загрузки или обновления истории закупок представления нужно обновить, не
+дожидаясь суточного цикла:
+
+```sh
+docker compose exec clickhouse clickhouse-client -q "SYSTEM REFRESH VIEW supplier_search.lot_texts_refresh"
+docker compose exec clickhouse clickhouse-client -q "SYSTEM WAIT VIEW supplier_search.lot_texts_refresh"
+docker compose exec clickhouse clickhouse-client -q "SYSTEM REFRESH VIEW supplier_search.supplier_lots_refresh"
+docker compose exec clickhouse clickhouse-client -q "SYSTEM WAIT VIEW supplier_search.supplier_lots_refresh"
+```
+
+Обновление заменяет содержимое таблиц целиком. На объёме реального датасета
+(604 тыс. лотов, 1,2 млн участий) оно занимает около 40 с для `lot_texts` и
+4 с для `supplier_lots` при двух потоках ClickHouse.
+
+Применённые миграции не меняются: исправление выкладывается следующим файлом
+(откат только вперёд). Повторное выполнение старых файлов поверх новой схемы
+не поддерживается: `0005_normalized_view.sql` ссылается на колонку, которую
+удаляет `0006`.
+
 ## Нагрузочный замер
 
 `bench/` — генератор синтетических данных и замер задержки `POST /api/searches`.
@@ -831,8 +886,18 @@ SQL по стадиям поиска берёт из `system.query_log`.
 uv run python -m bench.run --up --build --seed --out bench.json
 uv run python -m bench.run --up --pool-size 1 --max-threads 0
 uv run python -m bench.run --sequential 50 --concurrency 8 --requests 100
+uv run python -m bench.run --up --seed --reset --volume real --large 5
 docker compose -p rlt-bench stop
 ```
+
+`--volume real` наполняет базу в объёме реального датасета закупок: 1 млн
+карточек, 604 452 лота, 2 971 651 позиция ТРУ, 1,2 млн участий. `--large N`
+после основных режимов прогоняет по N поисков на 10, 25 и 50 позиций.
+Наполнение в конце обновляет `lot_texts` и `supplier_lots`. В отчёте каждого
+режима есть счётчик кодов предупреждений ответов, например `archiveFailed` и
+`itemsTruncated`. Ограничение ClickHouse как в продакшне задаётся после
+запуска: `docker update --cpus 2 --memory 1500m --memory-swap 1500m
+rlt-bench-clickhouse-1`.
 
 `--seed` наполняет пустую базу и пропускает уже наполненную, `--reset`
 очищает таблицы перед наполнением. `--pool-size` и `--max-threads`

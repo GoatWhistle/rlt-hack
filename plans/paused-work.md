@@ -47,27 +47,17 @@
   3. Закрыть оставшиеся находки.
   4. Отметить статусы.
 
-### 2. Производительность backend по аудиту 2
+### 2. Производительность backend по аудиту 2 — доведено, не запушено
 
-- **Ветка:** `worktree-agent-abaeffe7f3b53958d`.
-- **Рабочая копия:** `.claude/worktrees/agent-abaeffe7f3b53958d`.
-- **Основа:** `8fc4dba`.
-- **Готовых коммитов нет.** Снимок `7c0218d` (39 файлов, без проверки):
-  - миграции `0010_offer_prefix_index`, `0011_lot_texts`, `0012_archive_retention`, `0013_upload_progress`;
-  - таблица текстов лотов для канала истории (`history_search/lot_texts.py`);
-  - префиксный индекс и отбор (`retrieval/prefixes.py`, `retrieval/similarity.py`);
-  - справедливая доля пула на поиск (`test_pool_fairness.py`);
-  - таймаут архива без ожидания слота;
-  - TTL архивов;
-  - лёгкий прогресс загрузок;
-  - `application/clickhouse.py`, переименование `deferred_gateway.py` → `storage_gateway.py`.
-- **Где остановился:** обновлял тест, ожидания которого поменялись вместе с семантикой.
-- **Не сделано:**
-  - прогон `ruff`, `mypy` и `pytest`;
-  - замеры до и после и запись в `ml/EXPERIMENTS.md`;
-  - отметки в `plans/backend-audit-2.md` и пункты 2 и 7 в `plans/audits.md`.
-  P0 «поиск на реальном объёме дольше 8 с» остаётся открытым.
-- **Окружение замера:** compose-проект `rlt-perf` (тома `rlt-perf_clickhouse-data`, `rlt-perf_productcenter-cache`). Контейнеры остановлены, тома с синтетикой сохранены для продолжения. Удаление: `docker compose -p rlt-perf down -v`.
+- **Ветка:** `worktree-agent-a52bb151c52265b7c` от `feature/supplier-search-api` (`e6e6679`), только локально.
+- Снимок `7c0218d` перенесён без загрузок ветки: миграции перенумерованы в `0013_offer_prefix_index`, `0014_lot_texts`, `0015_archive_retention`; `0013_upload_progress`, фоновый пул и `UploadConfig` не возвращались.
+- Закрыты P0 и все P1 `plans/backend-audit-2.md`; P2 — по таблице статусов там же. Замер до и после — `ml/EXPERIMENTS.md`, `PERF-001`.
+- Проверки: `ruff check`, `ruff format --check`, `mypy`, `pytest` на Windows; полный `pytest` с chDB и `REQUIRE_CHDB=1` в Linux-контейнере; `docker compose config --quiet` для обычного и продакшн-набора.
+- **Осталось:**
+  - чтение карточек для обогащения (находка 7) — главный предел пропускной способности, ≈0,7 из 1,3 с CPU ClickHouse на поиск;
+  - текст предупреждения `itemsTruncated` во фронтенде (сейчас незнакомый код пропускается);
+  - качество поиска с новой релевантностью (BM25 по флагам префиксов вместо стемов) на отложенной выборке не проверялось;
+  - замер на сервере продакшна.
 
 ## Не начато
 
