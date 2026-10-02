@@ -16,6 +16,17 @@ async function expectAccessible(page: Page) {
   expect(blocking.map((violation) => violation.id)).toEqual([])
 }
 
+function settledWidth(page: Page): Promise<number> {
+  return page.evaluate(
+    () =>
+      new Promise<number>((resolve) =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => resolve(document.documentElement.scrollWidth)),
+        ),
+      ),
+  )
+}
+
 async function showView(page: Page, name: RegExp) {
   const views = page.getByRole("group", { name: /review section/i })
   if (await views.isVisible()) await views.getByRole("radio", { name }).check()
@@ -132,15 +143,11 @@ test("keeps every page within the screen width", async ({ page }) => {
   await uploadSample(page)
   for (const width of [1366, 390]) {
     await page.setViewportSize({ width, height: 800 })
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
-      width,
-    )
+    expect(await settledWidth(page)).toBeLessThanOrEqual(width)
   }
   await page.getByRole("table").getByRole("link").first().click()
   await expect(page.getByRole("article")).toBeVisible()
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
-    390,
-  )
+  expect(await settledWidth(page)).toBeLessThanOrEqual(390)
 })
 
 test("moves through companies with the keyboard", async ({ page }) => {

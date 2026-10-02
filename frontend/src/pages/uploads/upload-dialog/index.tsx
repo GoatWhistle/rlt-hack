@@ -89,7 +89,7 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
     if (!check.ok) return
     create.mutate(
       { file, check },
-      { onSuccess: (upload) => navigate(uploadPath(upload.id), { viewTransition: true }) },
+      { onSuccess: (upload) => navigate(uploadPath(upload.id)) },
     )
   }
 

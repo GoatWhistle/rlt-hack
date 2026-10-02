@@ -29,7 +29,7 @@ async function expectWithinScreen(page: Page) {
 
 async function showView(page: Page, name: RegExp) {
   const views = page.getByRole("group", { name: /result section|раздел результата/i })
-  if (await views.isVisible()) await views.getByRole("radio", { name }).check()
+  if ((page.viewportSize()?.width ?? 0) < 1200) await views.getByRole("radio", { name }).check()
 }
 
 async function openSearch(page: Page) {
@@ -48,7 +48,9 @@ test("finds suppliers from a description and keeps the result at its address", a
   await field.fill(QUERY)
   await field.press("Enter")
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
-  await expect(page.getByRole("heading", { level: 1, name: QUERY })).toBeVisible()
+  await expect(
+    page.getByRole("textbox", { name: /describe what you need|опишите, что нужно/i }),
+  ).toHaveValue(QUERY)
 
   await showView(page, /^candidates$/i)
   const candidates = page.getByRole("region", { name: /^candidates/i })
@@ -56,19 +58,21 @@ test("finds suppliers from a description and keeps the result at its address", a
   await candidates.getByRole("button", { name: /Зерновой Двор/ }).click()
   const grounds = page.getByRole("article", { name: /Зерновой Двор/ })
   await expect(grounds).toBeVisible()
-  await expect(grounds.getByText(/no inn: the company cannot be identified/i)).toBeVisible()
-  await expect(grounds.getByRole("heading", { name: /match for every item/i })).toBeVisible()
+  await expect(grounds.getByText(/can.t be identified for sure/i)).toBeVisible()
+  await expect(grounds.getByRole("heading", { name: /match by item/i })).toBeVisible()
   await expectAccessible(page)
   await expectWithinScreen(page)
 
   const address = page.url()
   await chooseLanguage(page, /^русский$/i)
   await expect(
-    page.getByRole("article").getByText(/Совпадение по каждой позиции/),
+    page.getByRole("article").getByRole("heading", { name: /Совпадение по позициям/ }),
   ).toBeVisible()
   await page.reload()
   expect(page.url()).toBe(address)
-  await expect(page.getByRole("heading", { level: 1, name: QUERY })).toBeVisible()
+  await expect(
+    page.getByRole("textbox", { name: /describe what you need|опишите, что нужно/i }),
+  ).toHaveValue(QUERY)
   await showView(page, /^основания$/i)
   await expect(page.getByRole("article", { name: /Зерновой Двор/ })).toBeVisible()
   await expect(page.getByRole("link", { name: /^поиск$/i })).toHaveAttribute(
@@ -80,6 +84,8 @@ test("finds suppliers from a description and keeps the result at its address", a
 test("opens a company profile and returns to a recent search", async ({ page }) => {
   await openSearch(page)
   await page.getByRole("button", { name: /office paper a4/i }).click()
+  const field = page.getByRole("textbox", { name: /describe what you need/i })
+  if ((page.viewportSize()?.width ?? 0) < 768) await field.press("Enter")
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
   await expect(page.getByRole("note", { name: /may be incomplete/i })).toBeVisible()
   await page.getByRole("button", { name: /company profile/i }).click()
@@ -88,7 +94,7 @@ test("opens a company profile and returns to a recent search", async ({ page }) 
   await expectAccessible(page)
   await page.keyboard.press("Escape")
 
-  await page.getByRole("link", { name: /new search/i }).click()
+  await page.getByRole("link", { name: /^search$/i }).click()
   const recent = page.getByRole("region", { name: /recent searches/i })
   await recent.getByRole("link", { name: /office paper/i }).click()
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
@@ -111,7 +117,9 @@ test("chooses a candidate and downloads the choice", async ({ page }) => {
   await grounds.getByRole("button", { name: /choose candidate/i }).click()
   await expect(grounds.getByRole("button", { name: /remove from chosen/i })).toBeVisible()
   await page.reload()
-  await expect(page.getByRole("heading", { level: 1, name: QUERY })).toBeVisible()
+  await expect(
+    page.getByRole("textbox", { name: /describe what you need|опишите, что нужно/i }),
+  ).toHaveValue(QUERY)
   await showView(page, /^candidates$/i)
   const card = page
     .getByRole("region", { name: /^candidates/i })
