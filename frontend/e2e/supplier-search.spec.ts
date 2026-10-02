@@ -34,15 +34,14 @@ async function showView(page: Page, name: RegExp) {
 
 async function uploadSample(page: Page) {
   await page.emulateMedia({ reducedMotion: "reduce" })
-  await page.goto("/uploads")
+  await page.goto("/search")
   await chooseLanguage(page, /^english$/i)
-  await page.getByLabel(/choose file/i).setInputFiles(SAMPLE)
-  const dialog = page.getByRole("dialog", { name: /new upload/i })
-  await expect(dialog.getByText("notices-sample.csv")).toBeVisible()
+  await page.locator("input[type=file]").setInputFiles(SAMPLE)
+  await expect(page.getByText(/^5 purchases in the file$/)).toBeVisible()
   await expectAccessible(page)
-  await dialog.getByRole("button", { name: /process 5 purchases/i }).click()
+  await page.getByRole("button", { name: /^find$/i }).click()
   await expect(page).toHaveURL(/\/uploads\/[\w-]+$/)
-  await expect(page.getByText(/processing finished/i)).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByRole("table")).toBeVisible({ timeout: 20_000 })
 }
 
 test("goes from a csv file to a reviewed purchase and two result files", async ({ page }) => {

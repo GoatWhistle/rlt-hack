@@ -68,6 +68,8 @@ export function renderSearch(path: string, options: SearchPageOptions = {}) {
     { path: "/search", Component: SearchPage },
     { path: "/search/:searchId", Component: SearchResultPage },
     { path: "/uploads/:uploadId/lots/:lotId", element: <div /> },
+    { path: "/uploads/:uploadId", element: <div /> },
+    { path: "/history", element: <div /> },
   ]
   const router = createMemoryRouter(routes, { initialEntries: [path] })
   const gateway = options.gateway ?? stubSearch()

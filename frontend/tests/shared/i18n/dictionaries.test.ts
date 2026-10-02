@@ -24,6 +24,7 @@ const NUMERIC_PARAMS = new Set([
   "matched",
   "wins",
   "limit",
+  "size",
   "hits",
   "stock",
   "catalog",

@@ -25,21 +25,10 @@
       "empty": "Nothing found",
       "emptyHint": "Check the spelling or try the region name",
       "close": "Close"
-    }
-  },
-  "recent": {
-    "title": "Recent searches",
-    "items_one": "<b>{{count, number}}</b> item",
-    "items_other": "<b>{{count, number}}</b> items",
-    "candidates_one": "<b>{{count, number}}</b> candidate",
-    "candidates_other": "<b>{{count, number}}</b> candidates",
-    "recommended_one": "<b>{{count, number}}</b> recommended",
-    "recommended_other": "<b>{{count, number}}</b> recommended",
-    "none": "No candidates found",
-    "retry": "Try again",
-    "collapse": "Hide",
-    "more_one": "Show {{count, number}} more",
-    "more_other": "Show {{count, number}} more"
+    },
+    "noteLabel": "Note on the file (optional)",
+    "notePlaceholder": "For example: delivery within 10 days, manufacturers only",
+    "drop": "Drop the file — we'll find suppliers from its contents"
   },
   "header": {
     "title": "Search result: {{query}}",
@@ -90,12 +79,9 @@
     "text": "The link is outdated, or the search was made in another browser.",
     "action": "New search"
   },
-  "guide": {
-    "title": "How to read a result",
-    "stock": "The company sells the item: there is a price list with a source and a check date. Confirm warehouse stock with the company.",
-    "catalog": "The product is in the company catalog; availability needs confirming.",
-    "inferred": "There is no direct source, the system inferred it — check before contacting.",
-    "none": "The company has no records about this item.",
-    "decision": "The decision stays with you: mark suitable candidates and download them as a CSV file."
+  "latest": {
+    "label": "Recent searches and files",
+    "title": "Recent:",
+    "all": "All history"
   }
 }

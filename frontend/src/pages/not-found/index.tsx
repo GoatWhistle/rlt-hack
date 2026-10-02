@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { RecentPlaces } from "@/features/recent-places"
-import { SEARCH_PATH, UPLOADS_PATH } from "@/shared/config/paths"
+import { HISTORY_PATH, SEARCH_PATH } from "@/shared/config/paths"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
@@ -20,7 +20,7 @@ export function NotFoundPage() {
             <Icon name="search" />
             {t("action.newSearch")}
           </ButtonLink>
-          <ButtonLink to={UPLOADS_PATH} variant="secondary">
+          <ButtonLink to={HISTORY_PATH} variant="secondary">
             {t("action.home")}
           </ButtonLink>
         </>

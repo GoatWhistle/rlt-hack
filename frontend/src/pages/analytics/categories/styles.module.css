@@ -1,17 +1,8 @@
-.page {
-  display: grid;
-  gap: var(--space-4);
-}
-
 .path {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-4);
   font-size: var(--text-sm);
-}
-
-.link {
-  color: var(--link);
 }
 
 .note {

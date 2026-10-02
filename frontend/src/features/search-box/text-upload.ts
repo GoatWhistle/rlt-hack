@@ -1,8 +1,9 @@
 import { checkNotices } from "@/entities/notice/check"
 import type { NewUpload } from "@/entities/upload/gateway"
+import { TEXT_QUERY_FILE, TEXT_QUERY_LOT } from "@/entities/upload/model"
 
-export const SEARCH_LOT_ID = "query"
-const SEARCH_FILE_NAME = "search.csv"
+export const SEARCH_LOT_ID = TEXT_QUERY_LOT
+const SEARCH_FILE_NAME = TEXT_QUERY_FILE
 
 function cell(value: string): string {
   return `"${value.replaceAll('"', '""')}"`

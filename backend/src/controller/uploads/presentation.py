@@ -36,6 +36,7 @@ def summary(upload: Upload) -> dict:
     return {
         "id": upload.upload_id,
         "fileName": upload.filename,
+        "title": upload.lots[0].notice.title if upload.lots else "",
         "createdAt": upload.created_at,
         "total": len(upload.lots),
         "processed": len(upload.lots),

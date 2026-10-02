@@ -3,11 +3,12 @@ import { Children, type ReactNode } from "react"
 import { Icon, type IconName } from "@/shared/ui/icon"
 import styles from "./styles.module.css"
 
-export type MetaChipTone = "neutral" | "accent" | "muted"
+export type MetaChipTone = "neutral" | "accent" | "warning" | "muted"
 
 const TONES: Record<MetaChipTone, string | undefined> = {
   neutral: undefined,
   accent: styles.accent,
+  warning: styles.warning,
   muted: styles.muted,
 }
 

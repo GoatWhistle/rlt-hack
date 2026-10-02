@@ -6,7 +6,7 @@ import { chooseLanguage } from "./language"
 test.beforeEach(async ({ page }) => installApiFixture(page))
 
 const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]
-const ROUTES = ["/uploads", "/lots", "/missing-page"]
+const ROUTES = ["/search", "/history", "/missing-page"]
 
 test.describe("application shell", () => {
   for (const route of ROUTES) {
@@ -32,7 +32,7 @@ test.describe("application shell", () => {
   })
 
   test("reaches the main content from the skip link", async ({ page }) => {
-    await page.goto("/uploads")
+    await page.goto("/history")
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
     await page.keyboard.press("Tab")
     const skip = page.getByRole("link", { name: /(skip to content|перейти к содержимому)/i })
@@ -43,7 +43,7 @@ test.describe("application shell", () => {
 
   test("leads from an unknown address back home", async ({ page }) => {
     await page.goto("/missing-page")
-    await page.getByRole("link", { name: /(go to uploads|к загрузкам)/i }).click()
-    await expect(page).toHaveURL(/\/uploads$/)
+    await page.getByRole("link", { name: /(go to history|к истории)/i }).click()
+    await expect(page).toHaveURL(/\/history$/)
   })
 })

@@ -15,15 +15,6 @@ test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" })
 })
 
-function bigFile() {
-  const rows = Array.from({ length: 20 }, (_, index) => {
-    const price = index % 7 === 6 ? "n/a" : String(1000 + index * 37.5)
-    return `lot_${index},Supply of goods number ${index},Subject ${index},${price}`
-  })
-  const content = ["lot_id,procedure_name,subject,start_price", ...rows].join("\n")
-  return { name: "big-file.csv", mimeType: "text/csv", buffer: Buffer.from(content) }
-}
-
 async function expectReachable(target: Locator) {
   const box = await target.boundingBox()
   expect(box).not.toBeNull()
@@ -37,40 +28,6 @@ async function expectReachable(target: Locator) {
   })
   expect(hit).toBe(true)
 }
-
-test("keeps the upload dialog on a laptop screen and reports the processing", async ({
-  page,
-}) => {
-  let release: () => void = () => undefined
-  const held = new Promise<void>((resolve) => {
-    release = resolve
-  })
-  await page.goto("/uploads")
-  await chooseLanguage(page, /^english$/i)
-  await page.route("**/api/uploads", async (route) => {
-    if (route.request().method() === "POST") await held
-    await route.fallback()
-  })
-  await page.getByLabel(/choose file/i).setInputFiles(bigFile())
-  const dialog = page.getByRole("dialog", { name: /new upload/i })
-  const start = dialog.getByRole("button", { name: /process 18 purchases/i })
-  await expect(start).toBeVisible()
-  const frame = await dialog.boundingBox()
-  expect((frame?.y ?? 0) + (frame?.height ?? 0)).toBeLessThanOrEqual(LAPTOP.height)
-  await expectReachable(start)
-  await expectReachable(dialog.getByRole("button", { name: /^close$/i }))
-
-  await start.click()
-  await expect(dialog.getByText("Finding suppliers for 18 purchases")).toBeVisible()
-  await expect(dialog.getByText(/sending the file to the server/i)).toBeVisible()
-  await dialog.getByRole("button", { name: /^close$/i }).click()
-  await expect(dialog).toBeHidden()
-  release()
-  const toast = page.getByRole("listitem").filter({ hasText: /is processed/i })
-  await expect(toast).toBeVisible()
-  await toast.getByRole("button", { name: /^open$/i }).click()
-  await expect(page).toHaveURL(/\/uploads\/test-upload$/)
-})
 
 test("puts the comparison in the header and keeps its dialog on screen", async ({ page }) => {
   await page.goto("/search")

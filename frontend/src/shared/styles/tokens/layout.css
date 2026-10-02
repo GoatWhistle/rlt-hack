@@ -29,7 +29,7 @@
   --dot-size: 0.4375rem;
   --header-height: 3.5rem;
   --field-min-lines: 4;
-  --query-lift: clamp(var(--space-4), calc(30dvh - 9rem), 14rem);
+  --query-offset: clamp(var(--space-4), calc(14dvh - 4rem), 7rem);
   --field-max-lines: 8;
   --page-fill: calc(
     100dvh -
@@ -59,8 +59,6 @@
   --z-menu: 300;
   --z-toast: 500;
   --layout-gutter: clamp(var(--space-4), 0.5rem + 2vw, var(--space-7));
-  --page-max: 120rem;
-  --page-frame: calc(var(--page-max) + 2 * var(--layout-gutter));
   --pane-products: clamp(15rem, 19vw, 24rem);
   --pane-companies: clamp(18rem, 23vw, 28rem);
   --pane-evidence-max: 54rem;
@@ -68,6 +66,13 @@
   --pane-offset: var(--space-4);
   --rail-width: 3.5rem;
   --rail-max-height: 36rem;
+  --history-kind-size: 2.25rem;
+  --history-column-height: calc(
+    100dvh -
+    var(--header-height) -
+    var(--space-9) -
+    var(--space-9)
+  );
   --z-skip-link: 600;
   --indicator-height: 2px;
   --skeleton-line: 0.75rem;

@@ -30,3 +30,12 @@ export const ANALYTICS_RECORDS_PATH = `${ANALYTICS_PATH}/records`
 export function analyticsCategoryPath(code: string, search = ""): string {
   return `${ANALYTICS_CATEGORIES_PATH}/${encodeURIComponent(code)}${search}`
 }
+
+export const HISTORY_PATH = "/history"
+export const HISTORY_TAB_PARAM = "tab"
+export const HISTORY_TABS = ["queries", "files"] as const
+export type HistoryTab = (typeof HISTORY_TABS)[number]
+
+export function historyPath(tab?: HistoryTab): string {
+  return tab ? `${HISTORY_PATH}?${HISTORY_TAB_PARAM}=${tab}` : HISTORY_PATH
+}

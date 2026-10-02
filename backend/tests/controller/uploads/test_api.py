@@ -20,6 +20,7 @@ async def test_upload_keeps_the_summary_shape(search_client: httpx.AsyncClient) 
     assert response.status_code == 200, response.text
     body = response.json()
     assert body["fileName"] == "notices.csv"
+    assert isinstance(body["title"], str)
     assert (body["total"], body["processed"], body["counts"]["ready"]) == (1, 1, 1)
     assert "rlt_session" in response.cookies
     lot = await search_client.get(f"/api/uploads/{body['id']}/lots/L1")

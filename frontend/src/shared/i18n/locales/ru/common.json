@@ -6,9 +6,8 @@
     "repository": "Исходный код на GitHub"
   },
   "nav": {
-    "uploads": "Загрузки",
-    "lots": "Закупки",
     "search": "Поиск",
+    "history": "История",
     "analytics": "Аналитика"
   },
   "action": {
@@ -16,7 +15,7 @@
     "dismiss": "Скрыть уведомление",
     "retry": "Повторить",
     "reload": "Обновить страницу",
-    "home": "К загрузкам",
+    "home": "К истории",
     "showAll": "Показать все {{count, number}}",
     "showLess": "Свернуть",
     "newSearch": "Новый поиск"
@@ -63,6 +62,7 @@
     "lot": "Лот {{id}}",
     "notFound": "Страница не найдена",
     "error": "Ошибка",
+    "history": "История",
     "analytics": "Аналитика"
   },
   "workspace": {

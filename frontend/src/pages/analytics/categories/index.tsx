@@ -9,8 +9,10 @@ import { DataCell, type DataColumn, DataTable } from "@/shared/ui/data-table"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
 import { PanelBlock } from "@/shared/ui/panel-block"
+import { QuietLink } from "@/shared/ui/quiet-link"
 import { Reveal } from "@/shared/ui/reveal"
 import { PageSkeleton } from "@/shared/ui/skeleton"
+import { Stack } from "@/shared/ui/stack"
 import { BarList } from "../bar-list"
 import { RatioCell } from "../ratio-figure"
 import { SnapshotBar } from "../snapshot-bar"
@@ -58,7 +60,7 @@ export function CategoriesPage() {
   })).filter((bar) => bar.value > 0)
   return (
     <Reveal active>
-      <div className={styles.page}>
+      <Stack gap="wide">
         <SnapshotBar
           meta={report.meta}
           refreshing={query.isFetching}
@@ -82,9 +84,9 @@ export function CategoriesPage() {
           {rows.map((item) => (
             <tr key={item.code || "none"}>
               <DataCell>
-                <Link to={hrefOf(item)} className={styles.link}>
+                <QuietLink to={hrefOf(item)}>
                   {item.code ? `${item.code} ${item.name}`.trim() : t("categories.noCategory")}
-                </Link>
+                </QuietLink>
               </DataCell>
               <DataCell numeric>{number(item.offers)}</DataCell>
               <DataCell numeric>
@@ -110,7 +112,7 @@ export function CategoriesPage() {
         <PanelBlock title={t("categories.origins")}>
           <BarList bars={origins} total={report.offers} />
         </PanelBlock>
-      </div>
+      </Stack>
     </Reveal>
   )
 }

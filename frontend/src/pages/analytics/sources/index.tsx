@@ -6,6 +6,7 @@ import { ErrorState } from "@/shared/ui/error-state"
 import { PanelBlock } from "@/shared/ui/panel-block"
 import { Reveal } from "@/shared/ui/reveal"
 import { PageSkeleton } from "@/shared/ui/skeleton"
+import { Stack } from "@/shared/ui/stack"
 import { useRatioText } from "../ratio-figure"
 import { RunsTable } from "../runs-table"
 import { SnapshotBar } from "../snapshot-bar"
@@ -31,7 +32,7 @@ export function SourcesPage() {
   }
   return (
     <Reveal active>
-      <div className={styles.page}>
+      <Stack gap="wide">
         <SnapshotBar
           meta={report.meta}
           refreshing={query.isFetching}
@@ -61,7 +62,7 @@ export function SourcesPage() {
           )}
           <p className={styles.note}>{t("sources.errorHidden")}</p>
         </PanelBlock>
-      </div>
+      </Stack>
     </Reveal>
   )
 }

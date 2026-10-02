@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next"
-import { Link } from "react-router"
 import type { Problem, RecordProblem } from "@/entities/analytics/model"
 import { useQuality } from "@/entities/analytics/queries"
 import { recordsHref } from "@/entities/analytics/scope"
@@ -8,10 +7,12 @@ import { DataCell, type DataColumn, DataTable } from "@/shared/ui/data-table"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
 import { PanelBlock } from "@/shared/ui/panel-block"
+import { QuietLink } from "@/shared/ui/quiet-link"
 import { Reveal } from "@/shared/ui/reveal"
 import { PageSkeleton } from "@/shared/ui/skeleton"
+import { Stack } from "@/shared/ui/stack"
 import { BarList } from "../bar-list"
-import { MetricCard } from "../metric-card"
+import { MetricCard, MetricGroup } from "../metric-card"
 import { useRatioText } from "../ratio-figure"
 import { SnapshotBar } from "../snapshot-bar"
 import { useScope } from "../use-scope"
@@ -67,19 +68,21 @@ export function QualityPage() {
     }))
   return (
     <Reveal active>
-      <div className={styles.page}>
+      <Stack gap="wide">
         <SnapshotBar
           meta={report.meta}
           refreshing={query.isFetching}
           onRefresh={scope.refresh}
         />
-        <MetricCard
-          label={t("quality.priced")}
-          value={priced.value}
-          basis={priced.empty ? undefined : priced.basis}
-          empty={priced.empty}
-          hint={t("hints.priced")}
-        />
+        <MetricGroup>
+          <MetricCard
+            label={t("quality.priced")}
+            value={priced.value}
+            basis={priced.empty ? undefined : priced.basis}
+            empty={priced.empty}
+            hint={t("hints.priced")}
+          />
+        </MetricGroup>
         <div className={styles.pair}>
           <PanelBlock title={t("quality.ageTitle")}>
             <BarList
@@ -105,15 +108,14 @@ export function QualityPage() {
                 <DataCell numeric>{number(row.offers)}</DataCell>
                 {MATRIX.map((cell) => (
                   <DataCell key={cell.key} numeric>
-                    <Link
+                    <QuietLink
                       to={recordsHref(
                         { ...scope.filters, sourceId: row.sourceId },
                         { problem: cell.problem },
                       )}
-                      className={styles.link}
                     >
                       {number(row[cell.key] as number)}
-                    </Link>
+                    </QuietLink>
                   </DataCell>
                 ))}
               </tr>
@@ -121,7 +123,7 @@ export function QualityPage() {
           </DataTable>
           <p className={styles.note}>{t("quality.matrixNote")}</p>
         </PanelBlock>
-      </div>
+      </Stack>
     </Reveal>
   )
 }

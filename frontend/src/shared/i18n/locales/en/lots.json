@@ -1,6 +1,6 @@
 {
   "loading": "Loading purchases",
-  "back": "Uploads",
+  "back": "History",
   "uploaded": "Uploaded {{date}}",
   "notices_one": "{{count, number}} notice",
   "notices_other": "{{count, number}} notices",
@@ -82,8 +82,8 @@
   },
   "missing": {
     "title": "Upload not found",
-    "text": "The file may have been uploaded in another browser, or its data was removed. Go back to the list of uploads.",
-    "action": "Go to uploads"
+    "text": "The file may have been uploaded in another browser, or its data was removed. Go back to your upload history.",
+    "action": "Go to history"
   },
   "entry": {
     "title": "Choose a file",

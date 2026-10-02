@@ -22,6 +22,7 @@ export type LotSummary = {
 export type UploadSummary = {
   readonly id: string
   readonly fileName: string
+  readonly title: string
   readonly createdAt: string
   readonly total: number
   readonly processed: number
@@ -42,6 +43,13 @@ export type LotResult = {
 
 export type LotDetail = LotResult & {
   readonly upload: UploadSummary
+}
+
+export const TEXT_QUERY_FILE = "search.csv"
+export const TEXT_QUERY_LOT = "query"
+
+export function isTextQuery(upload: UploadSummary): boolean {
+  return upload.fileName === TEXT_QUERY_FILE && upload.total <= 1
 }
 
 export function isProcessing(upload: UploadSummary): boolean {

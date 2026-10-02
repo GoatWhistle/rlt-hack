@@ -10,7 +10,7 @@ test("loads fonts from the application without external requests", async ({ page
     if (!["127.0.0.1", "localhost"].includes(url.hostname)) external.push(request.url())
   })
   await page.route(/fonts\.(googleapis|gstatic)\.com/, (route) => route.abort())
-  await page.goto("/uploads")
+  await page.goto("/history")
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
   const loaded = await page.evaluate(async () => {
     await document.fonts.ready
@@ -28,25 +28,23 @@ test("loads fonts from the application without external requests", async ({ page
   expect(external).toEqual([])
 })
 
-test("shows a failed upload start inside the dialog", async ({ page }) => {
+test("shows a failed file upload next to the search field and lets it retry", async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: "reduce" })
-  await page.goto("/uploads")
+  await page.goto("/search")
   await page.route("**/api/uploads", (route) =>
     route.request().method() === "POST"
       ? route.fulfill({ status: 500, json: { code: "server" } })
       : route.fallback(),
   )
   await page.locator("input[type=file]").setInputFiles("public/notices-sample.csv")
-  const dialog = page.getByRole("dialog")
-  const start = dialog.getByRole("button", { name: /^(process|обработать)/i })
+  const start = page.getByRole("button", { name: /^(find|найти)$/i })
   await start.click()
-  const alert = dialog.getByRole("alert")
+  const alert = page.getByRole("alert")
   await expect(alert).toBeVisible()
-  const inside = await alert.evaluate((element) => {
-    const box = element.getBoundingClientRect()
-    const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)
-    return Boolean(hit && element.closest("dialog")?.contains(hit))
-  })
-  expect(inside).toBe(true)
+  const box = await alert.boundingBox()
+  const viewport = page.viewportSize()
+  expect(box && viewport ? box.y + box.height <= viewport.height + 1 : false).toBe(true)
   await expect(start).toBeEnabled()
 })

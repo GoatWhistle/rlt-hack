@@ -76,7 +76,7 @@ describe("the search box", () => {
     const { user, field, onFound, gateway } = renderBox()
     await user.type(field, "  rice 200 kg  ")
     await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
-    await waitFor(() => expect(onFound).toHaveBeenCalledWith(uploadSummary()))
+    await waitFor(() => expect(onFound).toHaveBeenCalledWith(uploadSummary(), ["query"]))
     expect(gateway.create).toHaveBeenCalledWith(
       expect.objectContaining({
         check: expect.objectContaining({

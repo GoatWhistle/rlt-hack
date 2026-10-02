@@ -1,4 +1,5 @@
 .scroll {
+  position: relative;
   overflow-x: auto;
   border: var(--line-width) solid var(--line-hairline);
   border-radius: var(--radius-xl);

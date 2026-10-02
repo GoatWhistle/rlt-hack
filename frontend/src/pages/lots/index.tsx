@@ -16,7 +16,7 @@ import {
 import { useUpload } from "@/entities/upload/queries"
 import { ExportDialog } from "@/features/export-results"
 import { isApiError } from "@/shared/api/api-error"
-import { searchDraftPath, UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
+import { historyPath, searchDraftPath, uploadPath } from "@/shared/config/paths"
 import { useLocale } from "@/shared/i18n/locale-provider"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { Button, ButtonLink } from "@/shared/ui/button"
@@ -108,7 +108,7 @@ export function LotsPage() {
         <EmptyState
           title={t("missing.title")}
           description={t("missing.text")}
-          actions={<ButtonLink to={UPLOADS_PATH}>{t("missing.action")}</ButtonLink>}
+          actions={<ButtonLink to={historyPath("files")}>{t("missing.action")}</ButtonLink>}
         />
       )
     }

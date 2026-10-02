@@ -6,11 +6,10 @@ import { vi } from "vitest"
 import type { UploadGateway } from "@/entities/upload/gateway"
 import { UploadGatewayProvider } from "@/entities/upload/gateway-context"
 import type { LotSummary, UploadDetail, UploadSummary } from "@/entities/upload/model"
+import { HistoryPage } from "@/pages/history"
 import { LotPage } from "@/pages/lot"
 import { LotsPage } from "@/pages/lots"
-import { LotsEntryPage } from "@/pages/lots-entry"
 import { ProcurementSourcePage } from "@/pages/procurement-source"
-import { UploadsPage } from "@/pages/uploads"
 import { createQueryClient } from "@/shared/api/query-client"
 import type { Locale } from "@/shared/i18n/locale"
 import { LocaleProvider } from "@/shared/i18n/locale-provider"
@@ -34,6 +33,7 @@ export function uploadSummary(overrides: Partial<UploadSummary> = {}): UploadSum
   return {
     id: "u1",
     fileName: "notices.csv",
+    title: "Purchase 10",
     createdAt: "2026-10-01T10:00:00.000Z",
     total: 3,
     processed: 3,
@@ -70,10 +70,9 @@ export function stubGateway(overrides: Partial<UploadGateway> = {}): UploadGatew
 }
 
 const pageRoutes: RouteObject[] = [
-  { path: "/uploads", Component: UploadsPage },
   { path: "/uploads/:uploadId", Component: LotsPage },
   { path: "/uploads/:uploadId/lots/:lotId", Component: LotPage },
-  { path: "/lots", Component: LotsEntryPage },
+  { path: "/history", Component: HistoryPage },
   {
     path: "/uploads/:uploadId/lots/:lotId/evidence/:inn/:purchaseId",
     Component: ProcurementSourcePage,

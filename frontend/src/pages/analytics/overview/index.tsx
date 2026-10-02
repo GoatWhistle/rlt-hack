@@ -9,8 +9,9 @@ import { ErrorState } from "@/shared/ui/error-state"
 import { PanelBlock } from "@/shared/ui/panel-block"
 import { Reveal } from "@/shared/ui/reveal"
 import { PageSkeleton } from "@/shared/ui/skeleton"
+import { Stack } from "@/shared/ui/stack"
 import { BarList } from "../bar-list"
-import { MetricCard } from "../metric-card"
+import { MetricCard, MetricGroup } from "../metric-card"
 import { useRatioText } from "../ratio-figure"
 import { RunsTable } from "../runs-table"
 import { SnapshotBar } from "../snapshot-bar"
@@ -71,13 +72,13 @@ export function OverviewPage() {
   }
   return (
     <Reveal active>
-      <div className={styles.page}>
+      <Stack gap="wide">
         <SnapshotBar
           meta={overview.meta}
           refreshing={query.isFetching}
           onRefresh={scope.refresh}
         />
-        <div className={styles.metrics}>
+        <MetricGroup>
           <MetricCard
             label={t("metrics.offers")}
             value={number(overview.offers)}
@@ -99,7 +100,7 @@ export function OverviewPage() {
             href={recordsHref(scope.filters, { problem: "stale" })}
           />
           <RatioMetric name="searchable" overview={overview} />
-        </div>
+        </MetricGroup>
         <PanelBlock title={t("composition.title")}>
           <BarList
             total={overview.offers}
@@ -129,7 +130,7 @@ export function OverviewPage() {
         <PanelBlock title={t("sources.runsTitle")}>
           <RunsTable runs={overview.runs} />
         </PanelBlock>
-      </div>
+      </Stack>
     </Reveal>
   )
 }

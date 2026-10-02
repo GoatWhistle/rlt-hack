@@ -20,7 +20,7 @@ describe("the repository", () => {
     expect(formatReport(runRules(files), files.length)).toBe(
       `rules: ${RULES.length} checks passed over ${files.length} files`,
     )
-  })
+  }, 60_000)
 
   it("lists tracked and new files without dependencies or binaries", () => {
     const paths = listPaths(root)

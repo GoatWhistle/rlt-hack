@@ -1,0 +1,13 @@
+.link {
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  text-underline-offset: var(--underline-offset);
+  overflow-wrap: anywhere;
+  transition: var(--transition-control);
+}
+
+.link:hover {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}

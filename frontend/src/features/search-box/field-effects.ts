@@ -1,20 +1,28 @@
 import { type RefObject, useEffect } from "react"
 import { invalidQuery } from "@/entities/search/gateway"
 import { MAX_QUERY_LENGTH } from "@/entities/search/model"
-import { isApiError } from "@/shared/api/api-error"
+import { ApiError, isApiError } from "@/shared/api/api-error"
 import { focusAtEnd, useFocusShortcut } from "@/shared/keyboard/use-focus-shortcut"
 import { useMediaQuery } from "@/shared/media/use-media-query"
 import type { SearchStage } from "./use-stage"
 
 export const FINE_POINTER = "(hover: hover) and (pointer: fine)"
 
-const INPUT_PROBLEMS = new Set(["empty_query", "query_too_long", "query_not_understood"])
+export const FILE_NEEDS_TEXT = "file_needs_text"
+
+const INPUT_PROBLEMS = new Set([
+  "empty_query",
+  "query_too_long",
+  "query_not_understood",
+  FILE_NEEDS_TEXT,
+])
 
 export function isInputProblem(error: unknown): boolean {
   return isApiError(error) && INPUT_PROBLEMS.has(error.code)
 }
 
-export function problemOf(text: string) {
+export function problemOf(text: string, needsText = false) {
+  if (!text && needsText) return new ApiError({ status: 422, code: FILE_NEEDS_TEXT })
   if (!text) return invalidQuery("empty_query")
   if (text.length > MAX_QUERY_LENGTH) return invalidQuery("query_too_long")
   return null

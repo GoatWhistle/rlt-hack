@@ -1,12 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react"
 import { en } from "@tests/support/dictionaries"
-import {
-  lotSummary,
-  renderPage,
-  stubGateway,
-  uploadDetail,
-  uploadSummary,
-} from "@tests/support/gateway"
+import { lotSummary, renderPage, stubGateway, uploadDetail } from "@tests/support/gateway"
 import { describe, expect, it, vi } from "vitest"
 import { readLastUpload } from "@/entities/upload/last-upload"
 import { PAGE_SIZE } from "@/entities/upload/list-query"
@@ -180,7 +174,7 @@ describe("the purchases of a file", () => {
     ).toBeInTheDocument()
     expect(screen.getByRole("link", { name: en("missing.action", "lots") })).toHaveAttribute(
       "href",
-      "/uploads",
+      "/history?tab=files",
     )
   })
 
@@ -197,44 +191,6 @@ describe("the purchases of a file", () => {
       {
         timeout: 6000,
       },
-    )
-  })
-})
-
-describe("the purchases entry", () => {
-  it("offers the upload screen when there are no files yet", async () => {
-    const { router } = renderPage("/lots", stubGateway())
-    expect(
-      await screen.findByRole("heading", { level: 1, name: en("intro.title", "uploads") }),
-    ).toBeInTheDocument()
-    expect(router.state.location.pathname).toBe("/uploads")
-  })
-
-  it("opens the only file right away", async () => {
-    const { router } = renderPage(
-      "/lots",
-      stubGateway({ list: vi.fn(async () => [uploadSummary({ id: "only" })]) }),
-    )
-    await waitFor(() => expect(router.state.location.pathname).toBe("/uploads/only"))
-  })
-
-  it("lists recent files to choose from", async () => {
-    const files = Array.from({ length: 7 }, (_, index) =>
-      uploadSummary({ id: `f${index}`, fileName: `file-${index}.csv` }),
-    )
-    renderPage("/lots", stubGateway({ list: vi.fn(async () => files) }))
-    expect(
-      await screen.findByRole("heading", { level: 1, name: en("entry.title", "lots") }),
-    ).toBeInTheDocument()
-    const recent = screen.getByRole("list", { name: en("entry.recent", "lots") })
-    expect(within(recent).getAllByRole("link")).toHaveLength(5)
-    expect(within(recent).getByRole("link", { name: /file-0\.csv/ })).toHaveAttribute(
-      "href",
-      "/uploads/f0",
-    )
-    expect(screen.getByRole("link", { name: en("entry.all", "lots") })).toHaveAttribute(
-      "href",
-      "/uploads",
     )
   })
 })

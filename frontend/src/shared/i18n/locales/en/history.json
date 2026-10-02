@@ -1,0 +1,48 @@
+{
+  "title": "History",
+  "lead": "All your queries and uploaded files. Open any of them to get back to the candidates.",
+  "filter": {
+    "label": "Search history",
+    "placeholder": "Query text or file name"
+  },
+  "tabs": {
+    "legend": "History section"
+  },
+  "queries": {
+    "title": "Queries",
+    "empty": "Your queries will appear here",
+    "emptyHint": "Describe what you need to buy and the query will be saved here.",
+    "start": "New search"
+  },
+  "files": {
+    "title": "Files",
+    "empty": "Uploaded files will appear here",
+    "emptyHint": "Upload a notices export or a specification and the results will be saved here.",
+    "start": "Upload a file"
+  },
+  "noMatch": "Nothing found for “{{query}}”",
+  "reset": "Clear the filter",
+  "loading": "Loading the history",
+  "more_one": "Show {{count, number}} more",
+  "more_other": "Show {{count, number}} more",
+  "row": {
+    "lots_one": "<b>{{count, number}}</b> purchase",
+    "lots_other": "<b>{{count, number}}</b> purchases",
+    "ready_one": "<b>{{count, number}}</b> ready",
+    "ready_other": "<b>{{count, number}}</b> ready",
+    "attention_one": "<b>{{count, number}}</b> without candidates",
+    "attention_other": "<b>{{count, number}}</b> without candidates",
+    "found": "Candidates found",
+    "notFound": "No candidates found",
+    "working": "Finding candidates",
+    "progress": "Processed {{processed, number}} of {{total, number}}"
+  },
+  "kind": {
+    "csv": "CSV",
+    "xlsx": "XLSX",
+    "pdf": "PDF",
+    "docx": "DOCX",
+    "other": "File"
+  },
+  "retry": "Try again"
+}
