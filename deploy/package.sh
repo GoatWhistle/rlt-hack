@@ -15,7 +15,7 @@ docker build --label "org.opencontainers.image.revision=$revision" \
   --target api --tag "rlt/backend-api:$revision" backend
 docker save "rlt/frontend:$revision" "rlt/backend:$revision" "rlt/backend-api:$revision" \
   | gzip > "$output/images.tar.gz"
-tar -czf "$output/release.tar.gz" docker-compose.yml deploy backend/migration
+tar -czf "$output/release.tar.gz" docker-compose.yml deploy backend/migration ml/serving/qwen4b
 cp deploy/release.sh "$output/activate.sh"
 (
   cd "$output"

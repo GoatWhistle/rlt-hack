@@ -12,6 +12,13 @@ if grep -Eq '^rlt\.goatwhistle\.ru[[:space:]]*\{' "$configuration"; then
   echo "Domain already exists; inspect the existing block before changing it" >&2
   exit 1
 fi
+# Блок веб-интерфейса БД подключается с сервера: путь и доступ в репозиторий
+# не попадают. Заглушка нужна, чтобы шаблон import совпал и до установки
+# интерфейса — пустой каталог Caddy считает ошибкой.
+install -d -m 755 /etc/caddy/rlt-admin.d
+if ! compgen -G '/etc/caddy/rlt-admin.d/*.conf' >/dev/null; then
+  printf '# Заполняет deploy/install-admin-ui.sh\n' > /etc/caddy/rlt-admin.d/00-placeholder.conf
+fi
 backup="$configuration.before-rlt-$(date -u +%Y%m%dT%H%M%SZ)"
 candidate=$(mktemp /etc/caddy/.Caddyfile.rlt.XXXXXX)
 trap 'rm -f "$candidate"' EXIT
