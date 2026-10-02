@@ -23,6 +23,7 @@
     { "code": "method_not_allowed", "status": 405 },
     { "code": "search_unavailable", "status": 503 },
     { "code": "storage_unavailable", "status": 503 },
+    { "code": "search_busy", "status": 503 },
     { "code": "search_timeout", "status": 504 },
     { "code": "internal_error", "status": 500 }
   ]

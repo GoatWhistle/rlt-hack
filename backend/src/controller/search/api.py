@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 from dataclasses import asdict
 
@@ -9,6 +10,7 @@ from src.application.supplier_search import supplier_search
 from src.application.uploads import upload_service
 from src.controller.http.errors import install_error_handlers
 from src.controller.http.middleware import RequestContextMiddleware
+from src.controller.search.admission import Admission
 from src.controller.search.protocols import SearchEngine
 from src.controller.uploads.api import ENGINE, router
 from src.models.errors import EmptySearchTextError
@@ -30,6 +32,7 @@ async def lifespan(app: FastAPI):
         yield
 
 
+searches = Admission(int(os.getenv("SEARCH_MAX_ACTIVE", "4")))
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 install_error_handlers(app)
 app.add_middleware(RequestContextMiddleware)
@@ -46,11 +49,12 @@ async def search(body: SearchRequest, request: Request):
     if not body.query.strip():
         raise EmptySearchTextError
     engine: SearchEngine = request.app.state.search
-    try:
-        results = await engine.search(body.query, body.limit)
-    except StorageUnavailableError:
-        raise
-    except Exception as error:
-        logger.warning("supplier search failed", exc_info=error)
-        raise SearchUnavailableError(ENGINE) from error
+    with searches.slot():
+        try:
+            results = await engine.search(body.query, body.limit)
+        except StorageUnavailableError:
+            raise
+        except Exception as error:
+            logger.warning("supplier search failed", exc_info=error)
+            raise SearchUnavailableError(ENGINE) from error
     return {"query": body.query, "suppliers": [asdict(item) for item in results]}

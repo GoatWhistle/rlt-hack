@@ -11,6 +11,7 @@ from src.controller.errors import (
     FileTooLargeError,
     MissingFileError,
     RequestFileError,
+    SearchBusyError,
     UnsupportedFileTypeError,
 )
 from src.controller.http.error_body import (
@@ -105,6 +106,10 @@ KNOWN_ERRORS: tuple[tuple[type[Exception], ErrorKind], ...] = (
         ErrorKind(HTTPStatus.SERVICE_UNAVAILABLE, "storage_unavailable", RETRY_AFTER_SECONDS),
     ),
     (
+        SearchBusyError,
+        ErrorKind(HTTPStatus.SERVICE_UNAVAILABLE, "search_busy", RETRY_AFTER_SECONDS),
+    ),
+    (
         SearchTimeoutError,
         ErrorKind(HTTPStatus.GATEWAY_TIMEOUT, "search_timeout", RETRY_AFTER_SECONDS),
     ),
@@ -177,5 +182,6 @@ def install_error_handlers(app: FastAPI) -> None:
     app.add_exception_handler(DomainError, handle_known)
     app.add_exception_handler(ServiceError, handle_known)
     app.add_exception_handler(RequestFileError, handle_known)
+    app.add_exception_handler(SearchBusyError, handle_known)
     app.add_exception_handler(RequestValidationError, handle_validation)
     app.add_exception_handler(HTTPException, handle_http)
