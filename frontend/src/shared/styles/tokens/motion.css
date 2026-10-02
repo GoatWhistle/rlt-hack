@@ -51,6 +51,9 @@
   --vt-old: fade-out var(--dur-exit) var(--ease-out) both;
   --vt-new: slide-in var(--dur-enter) var(--ease-out) both;
   --vt-morph: var(--dur-drawer);
+  --vt-query-old: fade-out var(--dur-fast) var(--ease-out) both;
+  --vt-query-new: fade-in var(--dur-base) var(--ease-out) var(--dur-fast) both;
+  --motion-scroll-edge: scroll-edge linear both;
 }
 
 @keyframes fade-in {
@@ -164,6 +167,12 @@
 
   to {
     transform: scaleX(var(--route-progress-max));
+  }
+}
+
+@keyframes scroll-edge {
+  to {
+    border-block-end-color: var(--line-hairline);
   }
 }
 

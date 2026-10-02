@@ -81,7 +81,7 @@ export function CompareTable<T extends CompareColumn>({
   onClose,
 }: CompareTableProps<T>) {
   return (
-    <Dialog open={open} size="wide" title={title} onClose={onClose}>
+    <Dialog open={open} size="wide" fit title={title} onClose={onClose}>
       <ScrollRegion label={title} className={styles.region}>
         <table className={styles.table}>
           <thead>

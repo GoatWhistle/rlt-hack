@@ -48,6 +48,8 @@
   --line-subtle: var(--palette-whisper);
   --line-control: var(--palette-rule);
   --line-tentative: var(--palette-haze);
+  --line-clear: transparent;
+  --mask-fade-end: linear-gradient(to right, black calc(100% - var(--space-8)), transparent);
   --link: var(--palette-indigo-deep);
   --link-hover: var(--palette-ink);
   --focus-ring: var(--palette-indigo);

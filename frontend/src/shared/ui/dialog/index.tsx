@@ -12,7 +12,9 @@ export type DialogProps = {
   readonly onClose: () => void
   readonly children?: ReactNode
   readonly footer?: ReactNode
+  readonly status?: ReactNode
   readonly size?: DialogSize
+  readonly fit?: boolean
 }
 
 export type DialogSize = "default" | "wide" | "side"
@@ -29,7 +31,9 @@ export function Dialog({
   onClose,
   children,
   footer,
+  status,
   size = "default",
+  fit = false,
 }: DialogProps) {
   const { t } = useTranslation()
   const titleId = useId()
@@ -84,12 +88,15 @@ export function Dialog({
         <h2 ref={titleRef} id={titleId} tabIndex={-1} className={styles.title}>
           {title}
         </h2>
-        {children}
-        <div className={styles.footer}>
-          <Button variant="secondary" onClick={onClose}>
-            {t("action.close")}
-          </Button>
-          {footer}
+        <div className={clsx(styles.body, fit && styles.fit)}>{children}</div>
+        <div className={styles.bottom}>
+          {status}
+          <div className={styles.footer}>
+            <Button variant="secondary" onClick={onClose}>
+              {t("action.close")}
+            </Button>
+            {footer}
+          </div>
         </div>
       </div>
     </dialog>

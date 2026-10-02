@@ -6,6 +6,8 @@
   border-radius: var(--radius-xl);
   background: var(--surface-base);
   color: var(--text-primary);
+  max-height: var(--dialog-max-height);
+  overflow: hidden;
 }
 
 .dialog[data-state="open"] {
@@ -30,6 +32,7 @@
 
 .wide {
   width: min(var(--dialog-wide-width), calc(100vw - 2 * var(--space-4)));
+  max-height: var(--dialog-wide-max-height);
   margin-block: var(--dialog-offset) auto;
 }
 
@@ -50,19 +53,55 @@
   animation: var(--motion-drawer-out);
 }
 
+.dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
 .panel {
   display: grid;
+  flex: 1 1 auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  timeline-scope: --dialog-body;
+}
+
+.body {
+  display: grid;
+  align-content: start;
   gap: var(--space-4);
-  padding: var(--space-5);
+  padding: var(--space-1) var(--space-5) var(--space-5);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-timeline: --dialog-body block;
+}
+
+.fit {
+  grid-template-rows: minmax(0, 1fr);
+  align-content: stretch;
+  overflow: hidden;
 }
 
 .title {
+  padding: var(--space-5) var(--space-5) var(--space-3);
+  border-block-end: var(--line-width) solid var(--line-clear);
   font-size: var(--text-xl);
   line-height: var(--leading-tight);
+  animation: var(--motion-scroll-edge);
+  animation-timeline: --dialog-body;
+  animation-range: 0 var(--space-6);
 }
 
 .title:focus {
   outline: none;
+}
+
+.bottom {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-block-start: var(--line-width) solid var(--line-hairline);
+  background: var(--surface-base);
 }
 
 .footer {
@@ -88,18 +127,4 @@
   .footer > :last-child {
     margin-inline-start: 0;
   }
-}
-
-.side .panel {
-  min-height: 100%;
-  grid-template-rows: auto 1fr auto;
-}
-
-.side .footer {
-  position: sticky;
-  inset-block-end: 0;
-  margin: 0 calc(-1 * var(--space-5)) calc(-1 * var(--space-5));
-  padding: var(--space-3) var(--space-5);
-  border-block-start: var(--line-width) solid var(--line-hairline);
-  background: var(--surface-base);
 }

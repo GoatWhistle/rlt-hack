@@ -1,5 +1,5 @@
 .region {
-  max-height: calc(100dvh - 15rem);
+  min-height: 0;
   overflow: auto;
   overscroll-behavior: contain;
 }

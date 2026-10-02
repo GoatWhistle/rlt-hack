@@ -61,11 +61,13 @@
   --skeleton-hero: 12rem;
   --meter-gap: 3px;
   --dialog-offset: min(12dvh, 6rem);
+  --dialog-max-height: calc(100dvh - 2 * var(--space-4));
+  --dialog-wide-max-height: calc(100dvh - var(--dialog-offset) - var(--space-4));
   --col-status: 13rem;
   --score-width: 4ch;
   --offer-image: 3.5rem;
   --offer-min: 18rem;
   --offer-ribbon: 85%;
-  --dock-offset: 0rem;
+  --toast-lift: 0rem;
   --dock-height: calc(var(--target-touch) + 2 * var(--space-2) + 2 * var(--line-width));
 }
