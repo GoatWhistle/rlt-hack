@@ -1,0 +1,600 @@
+{
+  "api": "http://localhost:8080",
+  "degraded": [
+    "history",
+    "novelty"
+  ],
+  "cases": [
+    {
+      "key": "multi",
+      "title": "Несколько позиций с разным покрытием",
+      "query": "Бумага офисная А4 80 г/м2; кабель ВВГнг 3х2,5; перчатки трикотажные",
+      "searchId": "bf9bec8d-50fd-4a45-9534-573a3886b22b",
+      "createdAt": "2026-10-02T03:14:37.598879Z",
+      "pipeline": {
+        "version": "search-v2",
+        "channels": [
+          "lexical",
+          "history"
+        ],
+        "asOf": "2026-10-02T03:14:37.598879Z",
+        "inputs": [
+          "text"
+        ],
+        "noveltySet": null,
+        "models": {},
+        "contractVersion": "2"
+      },
+      "items": [
+        {
+          "name": "Бумага офисная А4 80 г/м2",
+          "requirements": [
+            {
+              "key": "format",
+              "value": "A4",
+              "text": "А4"
+            },
+            {
+              "key": "г/м2",
+              "value": "80 г/м2",
+              "text": "80 г/м2"
+            }
+          ]
+        },
+        {
+          "name": "Кабель ВВГнг 3х2,5",
+          "requirements": []
+        },
+        {
+          "name": "Перчатки трикотажные",
+          "requirements": []
+        }
+      ],
+      "top": [
+        {
+          "rank": 1,
+          "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"АЛЬБЕО\"",
+          "inn": "7731640150",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "offer",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Бумага Альбео для офисной техники, листовая А4 (210х297мм), массой 80 г/м2",
+              "url": "https://gisp.gov.ru/goods/#/product/5240396",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "А4:met",
+                "80 г/м2:met"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"ИНСТЭЛС ГРУПП\"",
+          "inn": "7816639980",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "offer",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Бумага листовая для офисной техники марки А, массой 80 г/м2 в листах формата А4, торговой марки \"Листопад\"",
+              "url": "https://gisp.gov.ru/goods/#/product/3282762",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "А4:met",
+                "80 г/м2:met"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"ПРОИЗВОДСТВЕННАЯ КОМПАНИЯ ЛИСТОПАД\"",
+          "inn": "4706083983",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "offer",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Бумага листовая для офисной техники марки C, массой 80 г/м2 в листах формата А4, торговой марки \"Листопад\"",
+              "url": "https://gisp.gov.ru/goods/#/product/4712755",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "А4:met",
+                "80 г/м2:met"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "name": "НЕПУБЛИЧНОЕ АКЦИОНЕРНОЕ ОБЩЕСТВО \"СВЕТОГОРСКИЙ ЦБК\"",
+          "inn": "4704012472",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "offer",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Бумага листовая для офисной техники формата А4 (размер 210х297 мм) с отверстиями для подшивки из бумаги рулонной марки С для офисной техники массой 80 г/м2",
+              "url": "https://gisp.gov.ru/goods/#/product/3743928",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "А4:met",
+                "80 г/м2:met"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"ЭЛЕКТОН\"",
+          "inn": "4345242086",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "offer",
+          "matches": [
+            {
+              "item": "i2",
+              "offer": "Кабель ВВГнг(А)- LS 3х2,5-1 Кв",
+              "url": "https://gisp.gov.ru/goods/#/product/5213963",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "requirements",
+      "title": "Проверка обязательных параметров по карточкам",
+      "query": "Бумага А4 100 г/м2",
+      "searchId": "d5780604-6c28-464d-8c0d-c0c907295c92",
+      "createdAt": "2026-10-02T03:14:39.536531Z",
+      "pipeline": {
+        "version": "search-v2",
+        "channels": [
+          "lexical",
+          "history"
+        ],
+        "asOf": "2026-10-02T03:14:39.536531Z",
+        "inputs": [
+          "text"
+        ],
+        "noveltySet": null,
+        "models": {},
+        "contractVersion": "2"
+      },
+      "items": [
+        {
+          "name": "Бумага А4 100 г/м2",
+          "requirements": [
+            {
+              "key": "format",
+              "value": "A4",
+              "text": "А4"
+            },
+            {
+              "key": "г/м2",
+              "value": "100 г/м2",
+              "text": "100 г/м2"
+            }
+          ]
+        }
+      ],
+      "top": [
+        {
+          "rank": 1,
+          "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"КАНЦЛЕР\"",
+          "inn": "1835058411",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "none",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Бумага для офисной техники А4, 100л",
+              "url": "https://gisp.gov.ru/goods/#/product/3810778",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "А4:met",
+                "100 г/м2:unknown"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "name": "АКЦИОНЕРНОЕ ОБЩЕСТВО \"КАМЕНСКАЯ БУМАЖНО-КАРТОННАЯ ФАБРИКА\"",
+          "inn": "6929000141",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "offer",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Бумага для гофрирования марки: SFT Medium HP, массой: 90 г/м2, 100 г/м2, 105 г/м2, 110 г/м2, 112 г/м2, 120 г/м2, 125 г/м2, 135 г/м2, 140 г/м2, 150 г/м2, 160 г/м2, 175 г/м2",
+              "url": "https://gisp.gov.ru/pp719v2/pub/prod/",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "А4:unknown",
+                "100 г/м2:met"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "name": "ФЕДЕРАЛЬНОЕ ГОСУДАРСТВЕННОЕ УНИТАРНОЕ ПРЕДПРИЯТИЕ ИЗДАТЕЛЬСТВО \"ИЗВЕСТИЯ\" УПРАВЛЕНИЯ ДЕЛАМИ ПРЕЗИДЕНТА РОССИЙСКОЙ ФЕДЕРАЦИИ",
+          "inn": "7710207002",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "offer",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Служебный дневник формата А4+ из дизайнерской бумаги 100 г/кв.м, обложка: переплётный материал, ляссе, каптал, тиснение.",
+              "url": "https://gisp.gov.ru/goods/#/product/4940639",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "А4:met",
+                "100 г/м2:met"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"БАЛАХНИНСКАЯ КАРТОННАЯ ФАБРИКА\"",
+          "inn": "5260325465",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "offer",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Бумага для гофрирования 100 г/м2",
+              "url": "https://gisp.gov.ru/goods/#/product/1841891",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "А4:unknown",
+                "100 г/м2:met"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "name": "НЕПУБЛИЧНОЕ АКЦИОНЕРНОЕ ОБЩЕСТВО \"СВЕТОГОРСКИЙ ЦБК\"",
+          "inn": "4704012472",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "offer",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Бумага офсетная в рулонах марки С массой 100 г/м2 ,с содержанием ХТММ не более 10%",
+              "url": "https://gisp.gov.ru/goods/#/product/5776266",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "А4:unknown",
+                "100 г/м2:met"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "insufficient",
+      "title": "Параметр не указан в карточках — данных недостаточно",
+      "query": "Светильник светодиодный 18 Вт",
+      "searchId": "90875509-6887-4b6a-b009-949c7e0c2b10",
+      "createdAt": "2026-10-02T03:14:40.229433Z",
+      "pipeline": {
+        "version": "search-v2",
+        "channels": [
+          "lexical",
+          "history"
+        ],
+        "asOf": "2026-10-02T03:14:40.229433Z",
+        "inputs": [
+          "text"
+        ],
+        "noveltySet": null,
+        "models": {},
+        "contractVersion": "2"
+      },
+      "items": [
+        {
+          "name": "Светильник светодиодный 18 Вт",
+          "requirements": [
+            {
+              "key": "Вт",
+              "value": "18 Вт",
+              "text": "18 Вт"
+            }
+          ]
+        }
+      ],
+      "top": [
+        {
+          "rank": 1,
+          "name": "Общество с ограниченной ответственностью \"Барнаульский завод светотехники\"",
+          "inn": "2225177392",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "none",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Светильник светодиодныйBL-PS-1",
+              "url": "https://gisp.gov.ru/pp719v2/pub/prod/",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "18 Вт:unknown"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"БАРНАУЛЬСКИЙ ЗАВОД СВЕТОТЕХНИКИ\"",
+          "inn": "2225216549",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "none",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Светильник светодиодный BL-LD-3C-7",
+              "url": "https://gisp.gov.ru/goods/#/product/2205924",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "18 Вт:unknown"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "name": "АКЦИОНЕРНОЕ ОБЩЕСТВО \"ФИЗТЕХ-ЭНЕРГО\"",
+          "inn": "7017274500",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "offer",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Светодиодный светильник Diora Piton 25/3100 Д прозрачный 4K 90Ra А ФЛРЕ.676713.906",
+              "url": "https://gisp.gov.ru/goods/#/product/5612958",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "18 Вт:unknown"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"ЛЕД-ЭФФЕКТ\"",
+          "inn": "7724759892",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "offer",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Светильники со светодиодными источниками света серии СТРУНА типа LE-СПП-26",
+              "url": "https://gisp.gov.ru/goods/#/product/1887787",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "18 Вт:unknown"
+              ]
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"ЛЕДОНИ\"",
+          "inn": "7811253566",
+          "status": "check",
+          "novelty": "unknown",
+          "roleBasis": "none",
+          "matches": [
+            {
+              "item": "i1",
+              "offer": "Светодиодный светильник А35-2",
+              "url": "https://gisp.gov.ru/pp719v2/pub/prod/",
+              "observedAt": "2026-10-01T20:50:19.099000Z",
+              "checks": [
+                "18 Вт:unknown"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "csv",
+      "title": "CSV, закупки и выгрузка",
+      "uploadId": "6d54b6b9-643c-482f-aab8-2fa019943b67",
+      "counts": {
+        "ready": 1,
+        "needsCheck": 4,
+        "noCandidates": 0,
+        "failed": 0
+      },
+      "lots": [
+        {
+          "id": "test_paper",
+          "status": "needsCheck",
+          "searchId": "d2515b8c-e82f-4259-8468-2e3eb5b2d7d2"
+        },
+        {
+          "id": "test_workwear",
+          "status": "needsCheck",
+          "searchId": "4d89aa51-6d92-417f-a2de-ca9977fca1aa"
+        },
+        {
+          "id": "test_furniture",
+          "status": "needsCheck",
+          "searchId": "69954cc1-4730-4396-afaa-97423a06d255"
+        },
+        {
+          "id": "test_cable",
+          "status": "needsCheck",
+          "searchId": "1723aa4c-e698-45c1-a32c-8beed1b5a034"
+        },
+        {
+          "id": "test_cleaning",
+          "status": "ready",
+          "searchId": "bfcfb8f8-242e-4b67-af4a-a812bd332290"
+        }
+      ],
+      "firstLot": {
+        "searchId": "d2515b8c-e82f-4259-8468-2e3eb5b2d7d2",
+        "createdAt": "2026-10-02T03:14:40.838380Z",
+        "pipeline": {
+          "version": "search-v2",
+          "channels": [
+            "lexical",
+            "history"
+          ],
+          "asOf": "2026-10-02T03:14:40.838380Z",
+          "inputs": [
+            "text"
+          ],
+          "noveltySet": null,
+          "models": {},
+          "contractVersion": "2"
+        },
+        "items": [
+          {
+            "name": "Бумага А4 белая для лазерных принтеров плотность 80 г/м2",
+            "requirements": [
+              {
+                "key": "format",
+                "value": "A4",
+                "text": "А4"
+              },
+              {
+                "key": "г/м2",
+                "value": "80 г/м2",
+                "text": "80 г/м2"
+              }
+            ]
+          }
+        ],
+        "top": [
+          {
+            "rank": 1,
+            "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"ЛЕНТА\"",
+            "inn": "5050145191",
+            "status": "check",
+            "novelty": "unknown",
+            "roleBasis": "offer",
+            "matches": [
+              {
+                "item": "i1",
+                "offer": "Бумага для офисных принтеров",
+                "url": "https://gisp.gov.ru/goods/#/product/3344966",
+                "observedAt": "2026-10-01T20:50:19.099000Z",
+                "checks": [
+                  "А4:unknown",
+                  "80 г/м2:unknown"
+                ]
+              }
+            ]
+          },
+          {
+            "rank": 2,
+            "name": "АКЦИОНЕРНОЕ ОБЩЕСТВО \"КОНДОПОЖСКИЙ ЦЕЛЛЮЛОЗНО-БУМАЖНЫЙ КОМБИНАТ\"",
+            "inn": "1003018230",
+            "status": "check",
+            "novelty": "unknown",
+            "roleBasis": "offer",
+            "matches": [
+              {
+                "item": "i1",
+                "offer": "Бумага для печати и письма потребительских форматов (А4) плотностью 60 г/ кв. м в пачках",
+                "url": "https://gisp.gov.ru/goods/#/product/3145388",
+                "observedAt": "2026-10-01T20:50:19.099000Z",
+                "checks": [
+                  "А4:met",
+                  "80 г/м2:unknown"
+                ]
+              }
+            ]
+          },
+          {
+            "rank": 3,
+            "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"ОФИС-ЛИДЕР\"",
+            "inn": "5406189042",
+            "status": "check",
+            "novelty": "unknown",
+            "roleBasis": "offer",
+            "matches": [
+              {
+                "item": "i1",
+                "offer": "Бумага листовая для офисной техники, цветной и лазерной печати",
+                "url": "https://gisp.gov.ru/goods/#/product/2529871",
+                "observedAt": "2026-10-01T20:50:19.099000Z",
+                "checks": [
+                  "А4:unknown",
+                  "80 г/м2:unknown"
+                ]
+              }
+            ]
+          },
+          {
+            "rank": 4,
+            "name": "АКЦИОНЕРНОЕ ОБЩЕСТВО \"СЕГЕЖСКИЙ ЦЕЛЛЮЛОЗНО-БУМАЖНЫЙ КОМБИНАТ\"",
+            "inn": "1006004155",
+            "status": "check",
+            "novelty": "unknown",
+            "roleBasis": "offer",
+            "matches": [
+              {
+                "item": "i1",
+                "offer": "Бумага мешочная белая полурастяжимая WSKS 80",
+                "url": "https://gisp.gov.ru/goods/#/product/2406726",
+                "observedAt": "2026-10-01T20:50:19.099000Z",
+                "checks": [
+                  "А4:unknown",
+                  "80 г/м2:unknown"
+                ]
+              }
+            ]
+          },
+          {
+            "rank": 5,
+            "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"БАНКО\"",
+            "inn": "5022031611",
+            "status": "check",
+            "novelty": "unknown",
+            "roleBasis": "offer",
+            "matches": [
+              {
+                "item": "i1",
+                "offer": "Блок бумаги для флипчартов Attache 67,5х98см плотность 80гр",
+                "url": "https://gisp.gov.ru/goods/#/product/3388026",
+                "observedAt": "2026-10-01T20:50:19.099000Z",
+                "checks": [
+                  "А4:unknown",
+                  "80 г/м2:unknown"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "note": "загрузка видна только сессии, создавшей её; для показа откройте её в том же браузере"
+    }
+  ]
+}
