@@ -43,7 +43,7 @@ export type CandidateListProps = {
   readonly onSelect: (id: string) => void
 }
 
-function targetIndex(key: string, index: number, last: number): number | null {
+export function targetIndex(key: string, index: number, last: number): number | null {
   if (NEXT_KEYS.has(key)) return Math.min(index + 1, last)
   if (PREV_KEYS.has(key)) return Math.max(index - 1, 0)
   if (key === "Home") return 0
@@ -94,15 +94,11 @@ export function CandidateList({
     <ResultSection title={title} aside={aside}>
       {toolbar}
       {filter ? (
-        <div className={styles.note}>
-          <div className={styles.clip}>
-            <FilterNote
-              text={filter.text}
-              resetLabel={filter.resetLabel}
-              onReset={filter.onReset}
-            />
-          </div>
-        </div>
+        <FilterNote
+          text={filter.text}
+          resetLabel={filter.resetLabel}
+          onReset={filter.onReset}
+        />
       ) : null}
       {candidates.length === 0 ? <Caption>{noMatch}</Caption> : null}
       <div ref={listRef} className={styles.list} onAnimationEnd={entering ? settle : undefined}>

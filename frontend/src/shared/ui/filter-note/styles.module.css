@@ -1,3 +1,14 @@
+.expand {
+  display: grid;
+  grid-template-rows: 1fr;
+  animation: var(--motion-expand);
+}
+
+.clip {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .note {
   display: flex;
   flex-wrap: wrap;

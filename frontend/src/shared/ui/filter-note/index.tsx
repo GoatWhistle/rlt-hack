@@ -10,10 +10,14 @@ export type FilterNoteProps = {
 
 export function FilterNote({ text, resetLabel, onReset }: FilterNoteProps) {
   return (
-    <p className={styles.note}>
-      <Icon name="filter" size="sm" />
-      <span className={styles.text}>{text}</span>
-      <TextButton onClick={onReset}>{resetLabel}</TextButton>
-    </p>
+    <div className={styles.expand}>
+      <div className={styles.clip}>
+        <p className={styles.note}>
+          <Icon name="filter" size="sm" />
+          <span className={styles.text}>{text}</span>
+          <TextButton onClick={onReset}>{resetLabel}</TextButton>
+        </p>
+      </div>
+    </div>
   )
 }

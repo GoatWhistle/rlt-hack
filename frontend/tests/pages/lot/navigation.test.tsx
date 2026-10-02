@@ -36,6 +36,21 @@ describe("the review address", () => {
     expect(panel("West Trade")).toBeInTheDocument()
   })
 
+  it("walks the candidates with the arrow keys from a single tab stop", async () => {
+    const { user, router } = await openLot()
+    const north = pressed()
+    expect(north).toHaveAttribute("tabindex", "0")
+    expect(screen.getByRole("button", { name: /West Trade/ })).toHaveAttribute("tabindex", "-1")
+    north.focus()
+    await user.keyboard("{ArrowDown}")
+    expect(router.state.location.search).toBe("?company=south")
+    expect(pressed()).toHaveFocus()
+    await user.keyboard("{End}")
+    expect(pressed()).toHaveAccessibleName(/West Trade/)
+    await user.keyboard("{Home}")
+    expect(pressed()).toHaveAccessibleName(/North Foods/)
+  })
+
   it("falls back to the first candidate for an unknown one", async () => {
     await openLot(undefined, { path: "/uploads/u1/lots/10?company=ghost&product=ghost" })
     expect(pressed()).toHaveAccessibleName(/North Foods/)

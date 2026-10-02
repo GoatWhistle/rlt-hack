@@ -1,7 +1,8 @@
 import { clsx } from "clsx"
-import { useState } from "react"
+import { type KeyboardEvent, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatchFigure } from "@/entities/evidence/labels"
+import { targetIndex } from "@/entities/evidence/ui/candidate-list"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { Button } from "@/shared/ui/button"
 import { Caption } from "@/shared/ui/caption"
@@ -94,6 +95,19 @@ export function CompanyList(props: CompanyListProps) {
   const [expanded, setExpanded] = useState(false)
   const hidden = companies.length - VISIBLE_COMPANIES
   const visible = expanded || hidden <= 0 ? companies : companies.slice(0, VISIBLE_COMPANIES)
+  const listRef = useRef<HTMLDivElement>(null)
+  const selectedVisible = visible.some((company) => company.id === selectedId)
+
+  function move(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (event.altKey || event.ctrlKey || event.metaKey) return
+    const next = targetIndex(event.key, index, visible.length - 1)
+    const target = next === null ? undefined : visible[next]
+    if (!target || next === null) return
+    event.preventDefault()
+    onSelect(target.id)
+    listRef.current?.querySelectorAll<HTMLButtonElement>("[aria-pressed]")[next]?.focus()
+  }
+
   return (
     <ResultSection title={t("companies.title")} aside={t("companies.order")}>
       {filter ? (
@@ -104,31 +118,35 @@ export function CompanyList(props: CompanyListProps) {
         />
       ) : null}
       {companies.length === 0 ? <Caption>{t("companies.noMatch")}</Caption> : null}
-      <Stack>
-        {visible.map((company) => (
-          <PickCard
-            key={company.id}
-            title={company.name}
-            subtitle={company.role}
-            rank={ranks.get(company.id) ?? 0}
-            rankLabel={rankText("card.rank", { index: ranks.get(company.id) ?? 0 })}
-            selected={company.id === selectedId}
-            onSelect={() => onSelect(company.id)}
-          >
-            <SegmentMeter company={company} products={products} />
-            <span className={styles.facts}>
-              <StatusTag company={company} />
-              {chosen.includes(company.id) ? (
-                <Tag tone="accent">
-                  <Icon name="check" size="sm" />
-                  {t("companies.chosen")}
-                </Tag>
-              ) : null}
-              <CompanyFacts company={company} products={products} />
-            </span>
-          </PickCard>
-        ))}
-      </Stack>
+      <div ref={listRef}>
+        <Stack>
+          {visible.map((company, index) => (
+            <PickCard
+              key={company.id}
+              title={company.name}
+              subtitle={company.role}
+              rank={ranks.get(company.id) ?? 0}
+              rankLabel={rankText("card.rank", { index: ranks.get(company.id) ?? 0 })}
+              selected={company.id === selectedId}
+              tabIndex={company.id === selectedId || (!selectedVisible && index === 0) ? 0 : -1}
+              onSelect={() => onSelect(company.id)}
+              onKeyDown={(event) => move(event, index)}
+            >
+              <SegmentMeter company={company} products={products} />
+              <span className={styles.facts}>
+                <StatusTag company={company} />
+                {chosen.includes(company.id) ? (
+                  <Tag tone="accent">
+                    <Icon name="check" size="sm" />
+                    {t("companies.chosen")}
+                  </Tag>
+                ) : null}
+                <CompanyFacts company={company} products={products} />
+              </span>
+            </PickCard>
+          ))}
+        </Stack>
+      </div>
       {hidden > 0 ? (
         <TextButton aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
           {expanded ? t("companies.showLess") : t("companies.showMore", { count: hidden })}

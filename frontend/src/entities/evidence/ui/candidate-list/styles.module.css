@@ -2,14 +2,3 @@
   display: grid;
   gap: var(--space-3);
 }
-
-.note {
-  display: grid;
-  grid-template-rows: 1fr;
-  animation: var(--motion-expand);
-}
-
-.clip {
-  min-height: 0;
-  overflow: hidden;
-}
