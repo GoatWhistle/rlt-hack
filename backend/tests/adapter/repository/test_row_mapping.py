@@ -18,6 +18,7 @@ def test_supplier_rows_tolerate_missing_collections() -> None:
         "",
         None,
         None,
+        None,
     )
     supplier = to_supplier(row)
     assert (supplier.inn, supplier.kpps, supplier.contacts) == (None, (), {})

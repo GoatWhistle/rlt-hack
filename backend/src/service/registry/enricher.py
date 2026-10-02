@@ -9,7 +9,7 @@
 import dataclasses
 import logging
 
-from src.models.enums import SupplierRole
+from src.models.enums import NameSource, SupplierRole
 from src.models.package import SupplierPackage
 from src.models.registry import MspCompany
 from src.models.supplier import Supplier
@@ -48,6 +48,9 @@ class SupplierRegistryEnricher:
         if not supplier.okved_codes:
             codes = (company.okved_main, *company.okved_extra)
             changes["okved_codes"] = tuple(dict.fromkeys(code for code in codes if code))
+        if not supplier.name.strip() and company.name.strip():
+            changes["name"] = company.name.strip()
+            changes["name_source"] = NameSource.REGISTRY
         if supplier.role == SupplierRole.UNKNOWN:
             role, evidence = role_of(company, self._roles)
             if role != SupplierRole.UNKNOWN:

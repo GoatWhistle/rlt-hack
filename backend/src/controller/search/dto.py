@@ -27,6 +27,7 @@ from src.models.enums import (
 )
 
 FilterItemType = Literal["goods", "work", "service"]
+NameStatus = Literal["source", "registry", "missing"]
 MAX_REGIONS = 100
 REGION_MAX_LENGTH = 100
 
@@ -185,6 +186,7 @@ class CandidateDto(CamelModel):
     role_product: str | None
     role_note: str | None
     role_conflict: bool
+    name_source: NameStatus
 
 
 class PipelineDto(CamelModel):

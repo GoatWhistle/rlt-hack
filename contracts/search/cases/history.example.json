@@ -106,7 +106,8 @@
       "roleBasis": "none",
       "roleProduct": null,
       "roleNote": null,
-      "roleConflict": false
+      "roleConflict": false,
+      "nameSource": "source"
     }
   ],
   "pipeline": {

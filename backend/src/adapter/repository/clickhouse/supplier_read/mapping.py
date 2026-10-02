@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 
 from src.adapter.repository.clickhouse.rows import to_uuid
-from src.models.enums import SupplierRole, VerificationStatus
+from src.models.enums import NameSource, SupplierRole, VerificationStatus
 from src.models.supplier import Supplier
 
 SUPPLIER_COLUMNS = (
@@ -17,6 +17,7 @@ SUPPLIER_COLUMNS = (
     "identity_evidence_url",
     "role",
     "role_evidence",
+    "name_source",
 )
 
 
@@ -44,4 +45,5 @@ def to_supplier(row: Sequence[object]) -> Supplier:
         identity_evidence_url=str(row[9]),
         role=SupplierRole(str(row[10] or "unknown")),
         role_evidence=str(row[11] or ""),
+        name_source=NameSource(str(row[12] or "source")),
     )

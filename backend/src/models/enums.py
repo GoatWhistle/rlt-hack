@@ -138,6 +138,11 @@ class WarningCode(StrEnum):
     ITEMS_INFERRED = "itemsInferred"
 
 
+class NameSource(StrEnum):
+    SOURCE = "source"
+    REGISTRY = "registry"
+
+
 class RoleBasis(StrEnum):
     OFFER = "offer"
     REGISTRY = "registry"

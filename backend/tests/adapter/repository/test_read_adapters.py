@@ -29,6 +29,16 @@ async def test_directory_reads_suppliers_by_id(gateway: ChdbGateway) -> None:
     assert await directory.get_many([]) == {}
 
 
+async def test_directory_drops_catalog_operator_contacts(gateway: ChdbGateway) -> None:
+    operator = replace(make_source(), base_url="https://www.productcenter.ru/")
+    listed = replace(ALPHA, website="https://productcenter.ru/producers/1")
+    seeder = Seeder(gateway)
+    await seeder.sources(operator)
+    await seeder.suppliers(listed)
+    found = await ClickHouseSupplierDirectory(gateway).get_many([ALPHA.supplier_id])
+    assert found[ALPHA.supplier_id].website == ""
+
+
 async def test_identity_maps_only_unambiguous_inns(gateway: ChdbGateway) -> None:
     await Seeder(gateway).suppliers(ALPHA, TWIN, GAMMA)
     identity = ClickHouseSupplierIdentity(gateway)

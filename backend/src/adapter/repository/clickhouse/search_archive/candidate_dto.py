@@ -9,6 +9,7 @@ from src.models.enums import (
     EvidenceKind,
     HighlightCode,
     MatchBasis,
+    NameSource,
     PurchaseOutcome,
     VerificationStatus,
 )
@@ -29,6 +30,7 @@ class SupplierDto(FrozenDto):
     okved_codes: tuple[str, ...]
     identity_status: VerificationStatus
     identity_evidence_url: str
+    name_source: NameSource = NameSource.SOURCE
 
     @classmethod
     def from_domain(cls, supplier: Supplier) -> Self:
@@ -43,6 +45,7 @@ class SupplierDto(FrozenDto):
             okved_codes=supplier.okved_codes,
             identity_status=supplier.identity_status,
             identity_evidence_url=supplier.identity_evidence_url,
+            name_source=supplier.name_source,
         )
 
     def to_domain(self) -> Supplier:
@@ -57,6 +60,7 @@ class SupplierDto(FrozenDto):
             okved_codes=self.okved_codes,
             identity_status=self.identity_status,
             identity_evidence_url=self.identity_evidence_url,
+            name_source=self.name_source,
         )
 
 

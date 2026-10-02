@@ -11,6 +11,7 @@ from src.controller.search.dto import (
     HistoryDto,
     ItemDto,
     MatchDto,
+    NameStatus,
     OfferSnapshotDto,
     PipelineDto,
     PurchaseDto,
@@ -24,6 +25,7 @@ from src.controller.search.dto import (
 )
 from src.controller.search.query_mapper import query_dto
 from src.models.candidate import Highlight, ProductMatch, SupplierCandidate
+from src.models.enums import NameSource
 from src.models.evidence import Evidence, is_web_url
 from src.models.offer_snapshot import OfferSnapshot
 from src.models.purchase import PurchaseRecord, PurchaseSummary
@@ -190,7 +192,14 @@ def candidate_dto(candidate: SupplierCandidate) -> CandidateDto:
         role_product=candidate.role_context.product or None,
         role_note=candidate.role_context.note or None,
         role_conflict=candidate.role_context.conflict,
+        name_source=name_status(supplier),
     )
+
+
+def name_status(supplier: Supplier) -> NameStatus:
+    if not supplier.name.strip():
+        return "missing"
+    return "registry" if supplier.name_source == NameSource.REGISTRY else "source"
 
 
 def pipeline_dto(pipeline: PipelineInfo) -> PipelineDto:

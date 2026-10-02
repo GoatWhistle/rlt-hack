@@ -194,7 +194,8 @@
             "roleBasis": "offer",
             "roleProduct": "Крупа гречневая ядрица 1 сорт, 25 кг",
             "roleNote": null,
-            "roleConflict": false
+            "roleConflict": false,
+            "nameSource": "source"
           },
           {
             "rank": 2,
@@ -259,7 +260,8 @@
             "roleBasis": "none",
             "roleProduct": null,
             "roleNote": null,
-            "roleConflict": false
+            "roleConflict": false,
+            "nameSource": "source"
           }
         ],
         "pipeline": {
@@ -472,7 +474,8 @@
             "roleBasis": "offer",
             "roleProduct": "Крупа гречневая ядрица 1 сорт, 25 кг",
             "roleNote": null,
-            "roleConflict": false
+            "roleConflict": false,
+            "nameSource": "source"
           },
           {
             "rank": 2,
@@ -537,7 +540,8 @@
             "roleBasis": "none",
             "roleProduct": null,
             "roleNote": null,
-            "roleConflict": false
+            "roleConflict": false,
+            "nameSource": "source"
           }
         ],
         "pipeline": {
