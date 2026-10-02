@@ -42,6 +42,7 @@ export function ResultHeader(props: ResultHeaderProps) {
           shortcut
           inputId={inputId}
           initialText={result.query.text}
+          initialRegion={result.query.preferredRegion}
           onStage={onStage}
           onFound={(next) => navigate(searchPath(next.searchId), { viewTransition: true })}
         />

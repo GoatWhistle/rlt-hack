@@ -146,7 +146,9 @@ class ApiContainer:
         if search.vector_url:
             if self._vector_client is None:
                 self._vector_client = httpx.AsyncClient(
-                    base_url=search.vector_url, timeout=httpx.Timeout(5, connect=2), trust_env=False
+                    base_url=search.vector_url,
+                    timeout=httpx.Timeout(max(1, search.timeout_seconds - 2), connect=2),
+                    trust_env=False,
                 )
             channels.append(CatalogVectorRetriever(self._vector_client))
         return tuple(channels)

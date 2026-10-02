@@ -121,6 +121,7 @@ class MatchStatus(StrEnum):
 
 
 class HighlightCode(StrEnum):
+    SAME_REGION = "sameRegion"
     COVERS_ITEMS = "coversItems"
     IN_STOCK = "inStock"
     HAS_PRICE = "hasPrice"

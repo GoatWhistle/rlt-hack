@@ -11,6 +11,7 @@ class Notice:
     subject: str = ""
     customer_inn: str = ""
     start_price: Decimal | None = None
+    delivery_region: str = ""
 
 
 @dataclass(frozen=True)

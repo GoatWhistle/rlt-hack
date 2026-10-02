@@ -17,3 +17,5 @@ class MspCompany:
     okved_extra: tuple[str, ...] = ()
     # Коды ОКПД2 продукции, которую компания заявила как собственную.
     products: tuple[str, ...] = ()
+    region: str = ""
+    region_name: str = ""

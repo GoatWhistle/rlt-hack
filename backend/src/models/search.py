@@ -61,3 +61,4 @@ class SearchQuery:
     limit: CandidateLimit = field(default_factory=CandidateLimit.default)
     locale: Locale = Locale.RU
     filters: SearchFilters = field(default_factory=SearchFilters)
+    preferred_region: str = ""

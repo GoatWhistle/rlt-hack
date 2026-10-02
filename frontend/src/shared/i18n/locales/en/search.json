@@ -14,7 +14,10 @@
       "companies": "Looking for companies…",
       "evidence": "Gathering the evidence…",
       "slow": "This is taking longer than usual — almost there"
-    }
+    },
+    "region": "Delivery region",
+    "anyRegion": "No regional preference",
+    "regionHint": "Prefer local companies while keeping suppliers from other regions."
   },
   "recent": {
     "title": "Recent searches",

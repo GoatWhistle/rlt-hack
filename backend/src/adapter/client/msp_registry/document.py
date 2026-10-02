@@ -51,6 +51,8 @@ def parse_document(element: Any) -> MspCompany | None:
     reported = main is None
     if reported:
         main = element.find("СвОКВЭДотч/СвОКВЭДОсн")
+    location = element.find("СведМН")
+    region = _attribute(location, "КодРегион")
     return MspCompany(
         inn=inn,
         name=" ".join(name.split()),
@@ -60,6 +62,8 @@ def parse_document(element: Any) -> MspCompany | None:
         okved_main_reported=reported and main is not None,
         okved_extra=_codes(element.findall("СвОКВЭД/СвОКВЭДДоп"), "КодОКВЭД"),
         products=_codes(element.findall("СвПрод"), "КодПрод"),
+        region=region if re.fullmatch(r"[0-9]{2}", region) else "",
+        region_name=_attribute(element.find("СведМН/Регион"), "Наим"),
     )
 
 

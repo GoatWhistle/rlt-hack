@@ -28,6 +28,7 @@ class SupplierDto(FrozenDto):
     okved_codes: tuple[str, ...]
     identity_status: VerificationStatus
     identity_evidence_url: str
+    registered_region: str = ""
 
     @classmethod
     def from_domain(cls, supplier: Supplier) -> Self:
@@ -37,6 +38,7 @@ class SupplierDto(FrozenDto):
             inn=supplier.inn,
             kpps=supplier.kpps,
             region=supplier.region,
+            registered_region=supplier.registered_region,
             website=supplier.website,
             contacts=dict(supplier.contacts),
             okved_codes=supplier.okved_codes,
@@ -51,6 +53,7 @@ class SupplierDto(FrozenDto):
             inn=self.inn,
             kpps=self.kpps,
             region=self.region,
+            registered_region=self.registered_region,
             website=self.website,
             contacts=dict(self.contacts),
             okved_codes=self.okved_codes,

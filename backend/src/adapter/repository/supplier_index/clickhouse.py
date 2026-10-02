@@ -64,11 +64,12 @@ class ClickHouseSupplierIndex(FileSupplierIndex):
         )
         suppliers = {row[0]: row[1:] for row in rows}
         rows = await self._gateway.select(
-            f"SELECT inn, name FROM {self._database}.msp_companies FINAL "
+            f"SELECT inn, name, region FROM {self._database}.msp_companies FINAL "
             "WHERE inn IN {inns:Array(String)}",
             parameters,
         )
-        registry_names = dict(rows)
+        registry_names = {row[0]: row[1] for row in rows}
+        registry_regions = {row[0]: row[2] for row in rows}
         rows = await self._gateway.select(
             "SELECT s.inn, o.name, o.url, toString(o.last_seen_at) "
             f"FROM {self._database}.offers_current o "
@@ -87,6 +88,7 @@ class ClickHouseSupplierIndex(FileSupplierIndex):
                 replace(
                     candidate,
                     name=name or registry_names.get(candidate.inn, ""),
+                    registered_region=registry_regions.get(candidate.inn, ""),
                     website=website,
                     email=contacts.get("email", ""),
                     phone=contacts.get("phone", ""),

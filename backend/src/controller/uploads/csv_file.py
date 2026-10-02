@@ -109,7 +109,10 @@ def notice_of(record: Record, columns: dict[str, int], width: int, seen: set[str
         raise InvalidNoticeRowError(line, "invalid start price") from error
     if price is not None and (not price.is_finite() or price < 0):
         raise InvalidNoticeRowError(line, "invalid start price")
-    return Notice(lot_id, title, subject if subject != title else "", customer, price)
+    region = cell("delivery_region")
+    if region and not re.fullmatch(r"[0-9]{2}", region):
+        raise InvalidNoticeRowError(line, "invalid delivery region")
+    return Notice(lot_id, title, subject if subject != title else "", customer, price, region)
 
 
 def decode_notices(data: bytes, max_rows: int = MAX_ROWS) -> list[Notice]:

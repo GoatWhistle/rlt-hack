@@ -60,6 +60,7 @@ class QueryDto(FrozenDto):
     locale: Locale
     regions: tuple[str, ...]
     item_type: ItemType | None
+    preferred_region: str = ""
 
     @classmethod
     def from_domain(cls, query: SearchQuery) -> Self:
@@ -67,6 +68,7 @@ class QueryDto(FrozenDto):
             text=query.text.value,
             limit=query.limit.value,
             locale=query.locale,
+            preferred_region=query.preferred_region,
             regions=query.filters.regions,
             item_type=query.filters.item_type,
         )
@@ -76,5 +78,6 @@ class QueryDto(FrozenDto):
             text=SearchText(self.text),
             limit=CandidateLimit(self.limit),
             locale=self.locale,
+            preferred_region=self.preferred_region,
             filters=SearchFilters(regions=self.regions, item_type=self.item_type),
         )

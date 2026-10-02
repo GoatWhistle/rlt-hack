@@ -40,6 +40,7 @@ class SearchRequestDto(CamelModel):
     text: str
     limit: int | None = None
     filters: FiltersDto = Field(default_factory=FiltersDto)
+    preferred_region: str = Field(default="", pattern=r"^(?:[0-9]{2})?$")
 
 
 class QueryDto(CamelModel):
@@ -47,6 +48,7 @@ class QueryDto(CamelModel):
     locale: Locale
     limit: int
     filters: FiltersDto
+    preferred_region: str = ""
 
 
 class QuantityDto(CamelModel):

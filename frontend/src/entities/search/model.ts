@@ -52,6 +52,7 @@ export type SearchFilters = {
 }
 
 export type SearchRequest = {
+  readonly preferredRegion?: string
   readonly text: string
   readonly limit?: number
   readonly filters?: SearchFilters
@@ -129,6 +130,7 @@ export type Pipeline = {
 }
 
 export type SearchQuery = {
+  readonly preferredRegion?: string
   readonly text: string
   readonly locale: Locale
   readonly limit: number

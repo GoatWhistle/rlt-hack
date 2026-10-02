@@ -22,6 +22,7 @@ class Supplier:
     # Роль компании на рынке и её основание: заполняет обогащение по реестру.
     role: SupplierRole = SupplierRole.UNKNOWN
     role_evidence: str = ""
+    registered_region: str = ""
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "contacts", MappingProxyType(dict(self.contacts)))

@@ -48,7 +48,8 @@
     "pastWins_other": "{{count, number}} wins in similar purchases",
     "similarPurchases_one": "{{count, number}} similar purchase",
     "similarPurchases_other": "{{count, number}} similar purchases",
-    "verifiedIdentity": "Company details verified"
+    "verifiedIdentity": "Company details verified",
+    "sameRegion": "MSP registry confirms registration in the selected region"
   },
   "inn": "INN {{inn}}",
   "noInn": "INN unknown",

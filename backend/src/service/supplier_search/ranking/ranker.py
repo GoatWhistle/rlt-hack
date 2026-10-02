@@ -1,7 +1,8 @@
 from collections.abc import Sequence
+from dataclasses import replace
 
-from src.models.candidate import SupplierCandidate
-from src.models.enums import CandidateStatus
+from src.models.candidate import Highlight, SupplierCandidate
+from src.models.enums import CandidateStatus, HighlightCode
 from src.models.scoring import Score, ScoreBreakdown
 from src.service.supplier_search.assembly.draft import CandidateDraft
 from src.service.supplier_search.policy.outcome import PolicyVerdict
@@ -39,8 +40,21 @@ class CandidateRanker:
             channels=draft.channels,
         )
 
-    def rank(self, judged: Sequence[Judged], limit: int) -> tuple[SupplierCandidate, ...]:
-        scored = [(draft, verdict, self.score(draft)) for draft, verdict in judged]
+    def rank(
+        self, judged: Sequence[Judged], limit: int, preferred_region: str = ""
+    ) -> tuple[SupplierCandidate, ...]:
+        scored = []
+        for original, verdict in judged:
+            draft = original
+            score = self.score(draft)
+            if preferred_region and draft.supplier.registered_region == preferred_region:
+                score = replace(
+                    score, total=Score.clamp(score.total.value + 0.05 * (1 - score.total.value))
+                )
+                draft = replace(
+                    draft, highlights=(*draft.highlights, Highlight(HighlightCode.SAME_REGION))
+                )
+            scored.append((draft, verdict, score))
         scored.sort(key=_order)
         return tuple(
             SupplierCandidate(

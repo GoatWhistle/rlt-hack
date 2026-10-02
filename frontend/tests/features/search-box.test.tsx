@@ -21,6 +21,19 @@ function renderBox(gateway: SearchGateway = stubSearch(), initialText = "") {
 }
 
 describe("the search box", () => {
+  it("sends a regional preference without restricting the candidate pool", async () => {
+    const { user, field, gateway } = renderBox()
+    await user.selectOptions(screen.getByRole("combobox"), "78")
+    await user.type(field, "paper")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
+    await waitFor(() =>
+      expect(gateway.search).toHaveBeenCalledWith({
+        text: "paper",
+        limit: 20,
+        preferredRegion: "78",
+      }),
+    )
+  })
   it("sends the text from the button and reports the result", async () => {
     const { user, field, onFound, gateway } = renderBox()
     await user.type(field, "  rice 200 kg  ")

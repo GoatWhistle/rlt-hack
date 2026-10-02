@@ -191,7 +191,8 @@
     "recency": "More recent procurement history",
     "customer": "Procurement history with this customer",
     "price": "Fit with the procurement budget",
-    "categoryCount": "Procurements in this category: {{count, number}}"
+    "categoryCount": "Procurements in this category: {{count, number}}",
+    "region": "Registered in the delivery region · MSP registry"
   },
   "archive": {
     "back": "Back to recommendation",

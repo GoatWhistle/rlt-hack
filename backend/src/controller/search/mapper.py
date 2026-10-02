@@ -59,6 +59,7 @@ def to_query(dto: SearchRequestDto, locale: Locale) -> SearchQuery:
         text=SearchText(dto.text),
         limit=CandidateLimit.default() if dto.limit is None else CandidateLimit(dto.limit),
         locale=locale,
+        preferred_region=dto.preferred_region,
         filters=SearchFilters(
             regions=tuple(dto.filters.regions),
             item_type=None if item_type is None else ItemType(item_type),
@@ -98,6 +99,7 @@ def query_dto(query: SearchQuery) -> QueryDto:
     item_type = query.filters.item_type
     return QueryDto(
         text=query.text.value,
+        preferred_region=query.preferred_region,
         locale=query.locale,
         limit=query.limit.value,
         filters=FiltersDto(

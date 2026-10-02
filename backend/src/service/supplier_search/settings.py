@@ -21,7 +21,7 @@ class ScoreWeights:
 @dataclass(frozen=True, slots=True)
 class SearchSettings:
     pipeline_version: str = "search-v1"
-    timeout_seconds: float = 8.0
+    timeout_seconds: float = 15.0
     archive_timeout_seconds: float = 2.0
     retrieval_depth_factor: int = 3
     rrf_k: int = 60

@@ -85,6 +85,7 @@ export const CHECK_REASONS = [
 export type CheckReason = (typeof CHECK_REASONS)[number]
 
 export const HIGHLIGHT_CODES = [
+  "sameRegion",
   "coversItems",
   "inStock",
   "hasPrice",

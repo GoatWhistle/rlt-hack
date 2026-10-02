@@ -39,3 +39,4 @@ class SupplierCandidate:
     category_wins: int | None = None
     category_name: str = ""
     ranking_reasons: list[str] = field(default_factory=list)
+    registered_region: str = ""

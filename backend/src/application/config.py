@@ -67,7 +67,7 @@ class ApiConfig:
 
 @dataclass(frozen=True, slots=True)
 class SearchConfig:
-    timeout_seconds: float = 8.0
+    timeout_seconds: float = 15.0
     retrieval_depth_factor: int = 3
     coverage_threshold: float = 0.5
     lexical_pool: int = 500
@@ -119,7 +119,7 @@ def _api_config() -> ApiConfig:
 
 def _search_config() -> SearchConfig:
     return SearchConfig(
-        timeout_seconds=_float("SEARCH_TIMEOUT_SECONDS", 8.0),
+        timeout_seconds=_float("SEARCH_TIMEOUT_SECONDS", 15.0),
         retrieval_depth_factor=_int("SEARCH_RETRIEVAL_DEPTH", 3),
         coverage_threshold=_float("SEARCH_COVERAGE_THRESHOLD", 0.5),
         lexical_pool=_int("SEARCH_LEXICAL_POOL", 500),

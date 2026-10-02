@@ -56,7 +56,8 @@
     "similarPurchases_few": "{{count, number}} похожие закупки",
     "similarPurchases_many": "{{count, number}} похожих закупок",
     "similarPurchases_other": "{{count, number}} похожей закупки",
-    "verifiedIdentity": "Реквизиты подтверждены"
+    "verifiedIdentity": "Реквизиты подтверждены",
+    "sameRegion": "Регистрация в выбранном регионе подтверждена МСП"
   },
   "inn": "ИНН {{inn}}",
   "noInn": "ИНН неизвестен",

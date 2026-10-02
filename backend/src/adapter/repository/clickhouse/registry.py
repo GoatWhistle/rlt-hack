@@ -16,6 +16,8 @@ COLUMNS = (
     "okved_main_reported",
     "okved_extra",
     "products",
+    "region",
+    "region_name",
 )
 
 # ИНН уходят параметром запроса, а он передаётся HTTP-формой ограниченной длины.
@@ -47,6 +49,8 @@ class ClickHouseMspRegistryRepository:
                     int(company.okved_main_reported),
                     list(company.okved_extra),
                     list(company.products),
+                    company.region,
+                    company.region_name,
                 )
                 for company in companies
             ],
@@ -84,6 +88,8 @@ def _company(row: Sequence[Any]) -> MspCompany:
         okved_main_reported,
         okved_extra,
         products,
+        region,
+        region_name,
     ) = row
     return MspCompany(
         inn=str(inn),
@@ -96,4 +102,6 @@ def _company(row: Sequence[Any]) -> MspCompany:
         okved_main_reported=bool(int(okved_main_reported)),
         okved_extra=tuple(str(code) for code in okved_extra),
         products=tuple(str(code) for code in products),
+        region=str(region),
+        region_name=str(region_name),
     )

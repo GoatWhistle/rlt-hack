@@ -28,6 +28,7 @@ class SearchRequest(BaseModel):
     limit: int = Field(default=10, ge=1, le=100)
     customer_inn: str = Field(default="", pattern=r"^(?:[0-9]{10}|[0-9]{12})?$")
     start_price: Decimal | None = Field(default=None, ge=0, allow_inf_nan=False)
+    delivery_region: str = Field(default="", pattern=r"^(?:[0-9]{2})?$")
 
 
 @asynccontextmanager
@@ -59,13 +60,14 @@ async def search(body: SearchRequest, request: Request):
     engine: SearchEngine = request.app.state.search
     with searches.slot():
         try:
-            if body.customer_inn or body.start_price is not None:
+            if body.customer_inn or body.start_price is not None or body.delivery_region:
                 results = await engine.search_notice(
                     Notice(
                         "query",
                         body.query,
                         customer_inn=body.customer_inn,
                         start_price=body.start_price,
+                        delivery_region=body.delivery_region,
                     ),
                     body.limit,
                 )

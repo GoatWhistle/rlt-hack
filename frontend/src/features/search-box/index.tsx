@@ -14,6 +14,7 @@ import {
   useFieldEffects,
   useReportStage,
 } from "./field-effects"
+import { RegionPreference } from "./region-preference"
 import { SearchError } from "./search-error"
 import { StageLine, SweepBar } from "./stage-line"
 import styles from "./styles.module.css"
@@ -27,6 +28,7 @@ export type { SearchStage } from "./use-stage"
 export const COUNTER_FROM = 3600
 
 export type SearchBoxProps = {
+  readonly initialRegion?: string
   readonly initialText?: string
   readonly compact?: boolean
   readonly inputId?: string
@@ -73,6 +75,7 @@ function FieldBar(props: FieldBarProps) {
 
 export function SearchBox({
   initialText = "",
+  initialRegion = "",
   compact = false,
   inputId,
   autoFocus,
@@ -83,6 +86,7 @@ export function SearchBox({
   const { t } = useTranslation("search")
   const search = useRunSearch()
   const [text, setText] = useState(initialText)
+  const [region, setRegion] = useState(initialRegion)
   const [problem, setProblem] = useState<unknown>(null)
   const fieldRef = useRef<HTMLTextAreaElement>(null)
   const ownId = useId()
@@ -106,7 +110,7 @@ export function SearchBox({
     setProblem(found)
     if (found) return
     search.mutate(
-      { text: query, limit: DEFAULT_LIMIT },
+      { text: query, limit: DEFAULT_LIMIT, ...(region ? { preferredRegion: region } : {}) },
       { onSuccess: (result) => onFound(result) },
     )
   }
@@ -156,6 +160,7 @@ export function SearchBox({
         />
         {search.isPending ? <SweepBar /> : null}
       </div>
+      <RegionPreference value={region} onChange={setRegion} disabled={search.isPending} />
       <SearchError id={errorId} error={error} onRetry={() => submit()} />
     </form>
   )

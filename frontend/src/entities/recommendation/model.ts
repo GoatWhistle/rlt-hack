@@ -67,6 +67,7 @@ export const RANKING_REASONS = [
   "experience",
   "category",
   "recency",
+  "region",
   "customer",
   "price",
 ] as const

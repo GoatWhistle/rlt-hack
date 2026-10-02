@@ -28,7 +28,7 @@ def test_defaults_without_environment(clean_env: pytest.MonkeyPatch) -> None:
     config = AppConfig.from_env()
     assert config.api == ApiConfig(host="0.0.0.0", port=8000, docs_enabled=True)
     assert config.search == SearchConfig(
-        timeout_seconds=8.0,
+        timeout_seconds=15.0,
         retrieval_depth_factor=3,
         coverage_threshold=0.5,
         lexical_pool=500,

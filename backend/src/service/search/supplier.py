@@ -1,5 +1,6 @@
 import asyncio
 import math
+from dataclasses import replace
 
 from src.models.search_context import SearchContext
 from src.models.supplier_search import SupplierCandidate
@@ -21,7 +22,7 @@ class SupplierSearch:
 
     @property
     def version(self) -> str:
-        return self._index.version if isinstance(self._index, IndexVersion) else ""
+        return self._index.version + "/region-v1" if isinstance(self._index, IndexVersion) else ""
 
     async def enrich(self, candidates: list[SupplierCandidate]) -> list[SupplierCandidate]:
         return await self._index.enrich(candidates)
@@ -32,7 +33,9 @@ class SupplierSearch:
     async def search_notice(self, notice: Notice, limit: int = 10) -> list[SupplierCandidate]:
         text = "\n".join(filter(None, (notice.title, notice.subject)))
         return await self._search(
-            text, limit, SearchContext(notice.customer_inn, notice.start_price)
+            text,
+            limit,
+            SearchContext(notice.customer_inn, notice.start_price, notice.delivery_region),
         )
 
     async def _search(
@@ -53,5 +56,22 @@ class SupplierSearch:
             ):
                 raise ServiceError("несовместимый вектор запроса")
             if context is not None and isinstance(self._index, ContextualSupplierIndex):
-                return await self._index.search_context(text, vectors[0], limit, context)
+                candidates = await self._index.search_context(
+                    text, vectors[0], 100 if context.delivery_region else limit, context
+                )
+                if context.delivery_region:
+                    candidates = [
+                        replace(
+                            candidate,
+                            score=candidate.score + 0.1,
+                            ranking_reasons=list(
+                                dict.fromkeys(["region", *candidate.ranking_reasons])
+                            )[:3],
+                        )
+                        if candidate.registered_region == context.delivery_region
+                        else candidate
+                        for candidate in candidates
+                    ]
+                    candidates.sort(key=lambda candidate: (-candidate.score, candidate.inn))
+                return candidates[:limit]
             return await self._index.search(text, vectors[0], limit)

@@ -74,6 +74,9 @@ function query(value: unknown, path: string): SearchQuery {
     locale: oneOf(LOCALES, fields, "locale", path),
     limit: count(fields, "limit", path),
     filters: filters(fields.filters, `${path}.filters`),
+    ...(fields.preferredRegion === undefined
+      ? {}
+      : { preferredRegion: text(fields, "preferredRegion", path) }),
   }
 }
 

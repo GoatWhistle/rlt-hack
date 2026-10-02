@@ -73,5 +73,7 @@ class SupplierMatcher:
             judged = [
                 (draft, self._policy.evaluate(draft)) for draft in drafts if draft is not None
             ]
-            ranked = self._ranker.rank(judged, request.query.limit.value)
+            ranked = self._ranker.rank(
+                judged, request.query.limit.value, request.query.preferred_region
+            )
         return ranked, matched_offers(ranked, enrichment.offers), warnings

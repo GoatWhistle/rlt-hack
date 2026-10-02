@@ -22,6 +22,16 @@ compose() {
     --file "$directory/deploy/compose.production.yml" "${extra[@]}" "$@"
 }
 
+if [[ $url == --cached ]]; then
+  [[ -s $registry_dir/rmsp.zip ]] || {
+    echo "Cached registry dump is missing" >&2
+    exit 2
+  }
+  compose up -d --no-deps --wait --wait-timeout 180 clickhouse
+  compose run --rm --no-deps sync-job registry-import
+  exit 0
+fi
+
 latest_url() {
   curl --fail --silent --show-error --location --max-time 60 "$page" |
     grep -oE 'https://file\.nalog\.ru/opendata/[^"]+/data-[0-9]{8}-[^"]+\.zip' |

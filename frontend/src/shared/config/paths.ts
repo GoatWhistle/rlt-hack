@@ -17,6 +17,6 @@ export function searchPath(searchId: string): string {
   return `${SEARCH_PATH}/${encodeURIComponent(searchId)}`
 }
 
-export function searchDraftPath(text: string): string {
-  return `${SEARCH_PATH}?${new URLSearchParams({ [SEARCH_TEXT_PARAM]: text }).toString()}`
+export function searchDraftPath(text: string, region = ""): string {
+  return `${SEARCH_PATH}?${new URLSearchParams({ [SEARCH_TEXT_PARAM]: text, ...(region ? { region } : {}) }).toString()}`
 }

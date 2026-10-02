@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router"
+import { isRegionCode } from "@/entities/evidence/regions"
 import { SearchBox } from "@/features/search-box"
 import { SEARCH_TEXT_PARAM, searchPath } from "@/shared/config/paths"
 import { withViewTransition } from "@/shared/motion/view-transition"
@@ -34,6 +35,7 @@ export function SearchPage() {
   const panelId = useId()
   const [open, setOpen] = useRecentOpen()
   const focus = useToggleFocus(open, panelId)
+  const region = params.get("region") ?? ""
   const draft = params.get(SEARCH_TEXT_PARAM) ?? ""
   const toggle = (next: boolean) => {
     focus.mark()
@@ -60,6 +62,7 @@ export function SearchPage() {
             autoFocus
             shortcut
             initialText={draft}
+            initialRegion={isRegionCode(region) ? region : ""}
             onFound={(result) =>
               navigate(searchPath(result.searchId), { viewTransition: true })
             }

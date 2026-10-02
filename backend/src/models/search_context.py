@@ -6,3 +6,4 @@ from decimal import Decimal
 class SearchContext:
     customer_inn: str = ""
     start_price: Decimal | None = None
+    delivery_region: str = ""

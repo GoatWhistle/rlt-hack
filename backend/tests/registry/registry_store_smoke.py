@@ -46,6 +46,8 @@ async def main() -> None:
                         True,
                         ("47.62", "46.18"),
                         ("17.12.14",),
+                        region="78",
+                        region_name="Санкт-Петербург",
                     ),
                     MspCompany("636200108061", "ИП Иванов", NEW, "45.20"),
                 ]
@@ -58,6 +60,7 @@ async def main() -> None:
             assert shop.okved_extra == ("47.62", "46.18"), shop
             assert shop.products == ("17.12.14",), shop
             assert shop.okved_main_reported, shop
+            assert shop.region == "78" and shop.region_name == "Санкт-Петербург"
             assert not found["636200108061"].okved_main_reported
 
             await store.remove_older(NEW)
