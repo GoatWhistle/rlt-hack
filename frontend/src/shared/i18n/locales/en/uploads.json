@@ -7,7 +7,7 @@
     "required": "Required columns",
     "optional": "Used when present",
     "sample": "Download a sample CSV",
-    "privacy": "The file is processed on the LOTIVE server and is not passed on to anyone.",
+    "privacy": "The file is processed on the Lotive server and is not passed on to anyone.",
     "searchInstead": "No file? Find suppliers by description"
   },
   "drop": {

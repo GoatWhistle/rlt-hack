@@ -21,7 +21,7 @@ export function UploadsPage() {
   const { t } = useTranslation()
   const uploads = useUploads()
   const [late] = useState(uploads.isPending)
-  useDocumentTitle([t("title.uploads")])
+  useDocumentTitle(t("title.uploads"))
   useFinishToast(uploads.data)
   const [dialog, setDialog] = useState<DialogState>({ open: false, file: null, session: 0 })
 

@@ -47,7 +47,6 @@ export function ResultHeader(props: ResultHeaderProps) {
           compact
           shortcut
           inputId={inputId}
-          showExamples={false}
           initialText={result.query.text}
           onStage={onStage}
           onFound={(next) => navigate(searchPath(next.searchId), { viewTransition: true })}

@@ -1,11 +1,10 @@
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 
-export function useDocumentTitle(parts: readonly (string | undefined)[]): void {
+export function useDocumentTitle(page?: string): void {
   const { t } = useTranslation()
-  const title = [...parts.filter((part): part is string => Boolean(part)), t("app.name")].join(
-    t("title.separator"),
-  )
+  const app = t("app.name")
+  const title = page ? `${app}${t("title.separator")}${page}` : app
   useEffect(() => {
     document.title = title
   }, [title])

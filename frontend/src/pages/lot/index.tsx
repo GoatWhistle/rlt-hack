@@ -108,7 +108,7 @@ export function LotPage() {
   const [exporting, setExporting] = useState({ open: false, session: 0 })
   const compare = useLotCompare(uploadId, lotId, lot.data?.recommendation, switching)
   const [actionsRef, actionsInView] = useInView<HTMLDivElement>()
-  useDocumentTitle([common("title.lot", { id: lotId }), lot.data?.upload.fileName])
+  useDocumentTitle(common("title.lot", { id: lotId }))
 
   if (waiting || lot.isPending) return <WorkspaceSkeleton label={t("loading")} />
   if (lot.isError) {

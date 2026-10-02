@@ -12,7 +12,7 @@ import styles from "./styles.module.css"
 export function SearchPage() {
   const { t } = useTranslation("search")
   const { t: common } = useTranslation()
-  useDocumentTitle([common("title.search")])
+  useDocumentTitle(common("title.search"))
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const titleId = useId()

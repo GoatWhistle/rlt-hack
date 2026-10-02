@@ -8,7 +8,7 @@ import { Icon } from "@/shared/ui/icon"
 
 export function NotFoundPage() {
   const { t } = useTranslation()
-  useDocumentTitle([t("title.notFound")])
+  useDocumentTitle(t("title.notFound"))
   return (
     <EmptyState
       icon="compass"

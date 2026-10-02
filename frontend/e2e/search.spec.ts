@@ -46,7 +46,7 @@ test("finds suppliers from a description and keeps the result at its address", a
   await expectAccessible(page)
   const field = page.getByRole("textbox", { name: /describe what you need/i })
   await field.fill(QUERY)
-  await field.press("Enter")
+  await page.getByRole("button", { name: /^find$/i }).click()
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
   await expect(
     page.getByRole("textbox", { name: /describe what you need|опишите, что нужно/i }),
@@ -83,9 +83,9 @@ test("finds suppliers from a description and keeps the result at its address", a
 
 test("opens a company profile and returns to a recent search", async ({ page }) => {
   await openSearch(page)
-  await page.getByRole("button", { name: /office paper a4/i }).click()
   const field = page.getByRole("textbox", { name: /describe what you need/i })
-  if ((page.viewportSize()?.width ?? 0) < 768) await field.press("Enter")
+  await field.fill("Office paper A4 80 gsm, 300 reams")
+  await page.getByRole("button", { name: /^find$/i }).click()
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
   await expect(page.getByRole("note", { name: /may be incomplete/i })).toBeVisible()
   await page.getByRole("button", { name: /company profile/i }).click()
@@ -106,7 +106,7 @@ test("chooses a candidate and downloads the choice", async ({ page }) => {
   await openSearch(page)
   const field = page.getByRole("textbox", { name: /describe what you need/i })
   await field.fill(QUERY)
-  await field.press("Enter")
+  await page.getByRole("button", { name: /^find$/i }).click()
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
   await showView(page, /^candidates$/i)
   await page
@@ -144,7 +144,7 @@ test("shows the offers that cover the items and compares their prices", async ({
   await openSearch(page)
   const field = page.getByRole("textbox", { name: /describe what you need/i })
   await field.fill(`${QUERY}; many items`)
-  await field.press("Enter")
+  await page.getByRole("button", { name: /^find$/i }).click()
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
   await expect(page.getByRole("note", { name: /may be incomplete/i })).toContainText(
     /only the first ones were used/i,
@@ -185,7 +185,7 @@ test("keeps an archived result without offers readable", async ({ page }) => {
   await openSearch(page)
   const field = page.getByRole("textbox", { name: /describe what you need/i })
   await field.fill(`${QUERY}; archived`)
-  await field.press("Enter")
+  await page.getByRole("button", { name: /^find$/i }).click()
   await showView(page, /^evidence$/i)
   const grounds = page.getByRole("article", { name: /Северный Провиант/ })
   await expect(grounds.getByRole("heading", { name: /match by item/i })).toBeVisible()
@@ -197,10 +197,10 @@ test("explains an empty result and a query it cannot read", async ({ page }) => 
   await openSearch(page)
   const field = page.getByRole("textbox", { name: /describe what you need/i })
   await field.fill("123 !!!")
-  await field.press("Enter")
+  await page.getByRole("button", { name: /^find$/i }).click()
   await expect(page.getByRole("alert")).toContainText(/could not pick out any items/i)
   await field.fill("Tractor tyres 4 pcs")
-  await field.press("Control+Enter")
+  await page.getByRole("button", { name: /^find$/i }).click()
   await expect(page.getByRole("heading", { name: /no suppliers found/i })).toBeVisible()
   await expectAccessible(page)
   await expectWithinScreen(page)

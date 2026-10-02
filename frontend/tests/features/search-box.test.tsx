@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest"
 import type { SearchGateway } from "@/entities/search/gateway"
 import { SearchGatewayProvider } from "@/entities/search/gateway-context"
 import { MAX_QUERY_LENGTH } from "@/entities/search/model"
-import { COUNTER_FROM, FINE_POINTER, PICK_TO_FIELD, SearchBox } from "@/features/search-box"
+import { COUNTER_FROM, FINE_POINTER, SearchBox } from "@/features/search-box"
 import { ApiError } from "@/shared/api/api-error"
 
 function renderBox(gateway: SearchGateway = stubSearch(), initialText = "") {
@@ -21,46 +21,22 @@ function renderBox(gateway: SearchGateway = stubSearch(), initialText = "") {
 }
 
 describe("the search box", () => {
-  it("sends the text on Enter and reports the result", async () => {
+  it("sends the text from the button and reports the result", async () => {
     const { user, field, onFound, gateway } = renderBox()
-    await user.type(field, "  rice 200 kg  {Enter}")
+    await user.type(field, "  rice 200 kg  ")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
     await waitFor(() => expect(onFound).toHaveBeenCalledWith(contractResult()))
     expect(gateway.search).toHaveBeenCalledWith({ text: "rice 200 kg", limit: 20 })
   })
 
-  it("starts a new line on Shift+Enter and sends on Ctrl+Enter", async () => {
+  it("starts a new line on Enter and sends only from the button", async () => {
     const { user, field, gateway } = renderBox()
-    await user.type(field, "rice{Shift>}{Enter}{/Shift}oats")
+    await user.type(field, "rice{Enter}oats")
     expect(field).toHaveValue("rice\noats")
-    expect(gateway.search).not.toHaveBeenCalled()
     await user.type(field, "{Control>}{Enter}{/Control}")
-    await waitFor(() => expect(gateway.search).toHaveBeenCalledTimes(1))
-  })
-
-  it("puts an example into the field on a narrow screen and waits for Enter", async () => {
-    Object.assign(window, {
-      matchMedia: (query: string) => ({
-        matches: query === PICK_TO_FIELD,
-        addEventListener: () => undefined,
-        removeEventListener: () => undefined,
-      }),
-    })
-    const { user, field, gateway } = renderBox()
-    const example = en("box.example.groats", "search")
-    await user.click(screen.getByRole("button", { name: example }))
-    expect(field).toHaveValue(example)
-    expect(field).toHaveFocus()
     expect(gateway.search).not.toHaveBeenCalled()
-    Object.assign(window, { matchMedia: undefined })
-  })
-
-  it("searches right away from an example and keeps it in the field", async () => {
-    const { user, field, gateway, onFound } = renderBox()
-    const example = en("box.example.office", "search")
-    await user.click(screen.getByRole("button", { name: example }))
-    expect(field).toHaveValue(example)
-    expect(gateway.search).toHaveBeenCalledWith({ text: example, limit: 20 })
-    await waitFor(() => expect(onFound).toHaveBeenCalled())
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
+    await waitFor(() => expect(gateway.search).toHaveBeenCalledTimes(1))
   })
 
   it("asks for text before sending an empty query", async () => {
@@ -88,7 +64,8 @@ describe("the search box", () => {
       throw new ApiError({ status: 422, code: "query_not_understood" })
     })
     const { user, field } = renderBox(stubSearch({ search }))
-    await user.type(field, "??{Enter}")
+    await user.type(field, "??")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
     expect(await screen.findByRole("alert")).toHaveTextContent(
       en("query_not_understood", "errors"),
     )
@@ -105,17 +82,14 @@ describe("the search box", () => {
         }),
     )
     const { user, field } = renderBox(stubSearch({ search }))
-    await user.type(field, "rice{Enter}")
+    await user.type(field, "rice")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
     const button = screen.getByRole("button", { name: en("box.submit", "search") })
     await waitFor(() => expect(button).toHaveAttribute("aria-busy", "true"))
     expect(button).toHaveAttribute("aria-disabled", "true")
-    await user.type(field, "{Enter}")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
     expect(search).toHaveBeenCalledTimes(1)
     expect(screen.getByRole("status")).toHaveTextContent(en("box.stage.parse", "search"))
-    const example = screen.getByRole("button", { name: en("box.example.office", "search") })
-    expect(example).toHaveAttribute("aria-disabled", "true")
-    await user.click(example)
-    expect(field).toHaveValue("rice")
     expect(
       await screen.findByText(en("box.stage.companies", "search"), undefined, {
         timeout: 2000,
@@ -133,7 +107,8 @@ describe("the search box", () => {
       .mockRejectedValueOnce(new ApiError({ status: 503, code: "search_busy" }))
       .mockResolvedValue(contractResult())
     const { user, field, onFound } = renderBox(stubSearch({ search }))
-    await user.type(field, "rice{Enter}")
+    await user.type(field, "rice")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
     expect(await screen.findByRole("alert")).toBeInTheDocument()
     expect(field).not.toHaveAttribute("aria-invalid")
     await user.click(screen.getByRole("button", { name: en("action.retry") }))
@@ -143,7 +118,7 @@ describe("the search box", () => {
 
   it("marks the field only for a problem with the text itself", async () => {
     const { user, field } = renderBox()
-    await user.type(field, "{Enter}")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
     expect(field).toHaveAttribute("aria-invalid", "true")
     expect(screen.queryByRole("button", { name: en("action.retry") })).toBeNull()
   })
@@ -160,14 +135,7 @@ describe("the search box", () => {
     const { user } = renderWithProviders(
       <SearchGatewayProvider gateway={stubSearch({ search })}>
         <button type="button">elsewhere</button>
-        <SearchBox
-          compact
-          shortcut
-          showExamples={false}
-          initialText="rice"
-          onStage={onStage}
-          onFound={vi.fn()}
-        />
+        <SearchBox compact shortcut initialText="rice" onStage={onStage} onFound={vi.fn()} />
       </SearchGatewayProvider>,
     )
     const field = screen.getByRole("textbox", { name: en("box.label", "search") })
@@ -176,7 +144,7 @@ describe("the search box", () => {
     await user.keyboard("/")
     expect(field).toHaveFocus()
     expect(field).toHaveValue("rice")
-    await user.keyboard("{Enter}")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
     await waitFor(() => expect(onStage).toHaveBeenLastCalledWith("parse"))
     expect(screen.queryByText(en("box.stage.parse", "search"))).toBeNull()
     finish(contractResult())
@@ -203,12 +171,11 @@ describe("the search box", () => {
   it("names the field without a visible label in its compact form", () => {
     renderWithProviders(
       <SearchGatewayProvider gateway={stubSearch()}>
-        <SearchBox compact showExamples={false} inputId="query" onFound={vi.fn()} />
+        <SearchBox compact inputId="query" onFound={vi.fn()} />
       </SearchGatewayProvider>,
     )
     const field = screen.getByRole("textbox", { name: en("box.label", "search") })
     expect(field).toHaveAttribute("id", "query")
     expect(field).toHaveAttribute("rows", "1")
-    expect(screen.queryByText(en("box.hint", "search"))).toBeNull()
   })
 })

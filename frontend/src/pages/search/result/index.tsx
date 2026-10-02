@@ -16,7 +16,7 @@ export function SearchResultPage() {
   const { t: common } = useTranslation()
   const { searchId = "" } = useParams()
   const result = useSearchResult(searchId)
-  useDocumentTitle([result.data?.query.text, common("title.search")])
+  useDocumentTitle(common("title.search"))
 
   if (result.isPending) return <WorkspaceSkeleton label={t("loading")} />
   if (result.isError) {

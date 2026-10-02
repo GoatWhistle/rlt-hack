@@ -1,4 +1,4 @@
-import { type KeyboardEvent, type RefObject, useEffect } from "react"
+import { type RefObject, useEffect } from "react"
 import { invalidQuery } from "@/entities/search/gateway"
 import { MAX_QUERY_LENGTH } from "@/entities/search/model"
 import { isApiError } from "@/shared/api/api-error"
@@ -18,11 +18,6 @@ export function problemOf(text: string) {
   if (!text) return invalidQuery("empty_query")
   if (text.length > MAX_QUERY_LENGTH) return invalidQuery("query_too_long")
   return null
-}
-
-export function wantsSubmit(event: KeyboardEvent<HTMLTextAreaElement>): boolean {
-  if (event.key !== "Enter" || event.nativeEvent.isComposing) return false
-  return event.metaKey || event.ctrlKey || !event.shiftKey
 }
 
 export function joinIds(ids: readonly string[]): string | undefined {

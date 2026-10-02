@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "LOTIVE",
+    "name": "Lotive",
     "skipToContent": "Skip to content",
     "mainNavigation": "Main navigation",
     "repository": "Source code on GitHub"
@@ -55,7 +55,7 @@
     "search": "last search"
   },
   "title": {
-    "separator": " — ",
+    "separator": " | ",
     "search": "Search",
     "uploads": "Uploads",
     "lots": "Purchases",

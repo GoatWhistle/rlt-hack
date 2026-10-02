@@ -79,7 +79,7 @@ describe("the search page", () => {
     const { user, router } = renderSearch("/search?q=buckwheat%20500%20kg", { gateway })
     const field = screen.getByRole("textbox", { name: en("box.label", "search") })
     expect(field).toHaveValue("buckwheat 500 kg")
-    await user.type(field, "{Enter}")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
     expect(gateway.search).toHaveBeenCalledWith(
       expect.objectContaining({ text: "buckwheat 500 kg" }),
     )

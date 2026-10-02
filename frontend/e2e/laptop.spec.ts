@@ -76,9 +76,8 @@ test("puts the comparison in the header and keeps its dialog on screen", async (
   await page.goto("/search")
   await chooseLanguage(page, /^english$/i)
   const field = page.getByRole("textbox", { name: /describe what you need/i })
-  await expect(field).toBeFocused()
-  await page.keyboard.type(QUERY)
-  await page.keyboard.press("Enter")
+  await field.fill(QUERY)
+  await page.getByRole("button", { name: /^find$/i }).click()
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
 
   const header = page.getByRole("main").locator("header")

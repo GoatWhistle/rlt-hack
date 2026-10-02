@@ -40,7 +40,7 @@ describe("a search result", () => {
     expect(screen.getByRole("textbox", { name: en("box.label", "search") })).toHaveValue(
       contractResult().query.text,
     )
-    await waitFor(() => expect(document.title).toMatch(/^Крупа.* — Search — LOTIVE$/))
+    await waitFor(() => expect(document.title).toBe("Lotive | Search"))
     const items = region(en("items.title", "search"))
     const groats = within(items).getByRole("button", { name: /Крупа гречневая ядрица/ })
     expect(groats).toHaveTextContent("500 кг")
@@ -142,7 +142,8 @@ describe("a search result", () => {
     })
     const field = await screen.findByRole("textbox", { name: en("box.label", "search") })
     await user.clear(field)
-    await user.type(field, "рис 200 кг{Enter}")
+    await user.type(field, "рис 200 кг")
+    await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
     expect(search).toHaveBeenCalledWith({ text: "рис 200 кг", limit: 20 })
     await waitFor(() => expect(router.state.location.pathname).toBe("/search/next-search"))
   })

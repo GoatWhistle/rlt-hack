@@ -95,7 +95,7 @@ export function LotsPage() {
   const [exporting, setExporting] = useState<ExportState>({ open: false, session: 0 })
   const query = readQuery(params)
   const { t: common } = useTranslation()
-  useDocumentTitle([upload.data?.fileName, common("title.lots")])
+  useDocumentTitle(common("title.lots"))
 
   useEffect(() => {
     if (upload.data) rememberUpload(upload.data.id)

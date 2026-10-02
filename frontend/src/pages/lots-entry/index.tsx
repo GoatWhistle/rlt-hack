@@ -20,7 +20,7 @@ export function LotsEntryPage() {
   const { dateTime } = useFormatters()
   const { t: common } = useTranslation()
   const uploads = useUploads()
-  useDocumentTitle([common("title.lots")])
+  useDocumentTitle(common("title.lots"))
 
   if (uploads.isPending) return <PageSkeleton label={t("loading")} rows={3} />
   if (uploads.isError) {

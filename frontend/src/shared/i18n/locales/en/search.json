@@ -2,20 +2,13 @@
   "loading": "Loading the search",
   "home": {
     "title": "Find suppliers",
-    "lead": "Describe the goods or services in your own words. LOTIVE picks out the items and suggests companies, with sources and checks for each one."
+    "lead": "Describe the goods or services in your own words. Lotive picks out the items and suggests companies, with sources and checks for each one."
   },
   "box": {
     "label": "Describe what you need",
     "placeholder": "For example: buckwheat groats 500 kg; polished rice 200 kg",
-    "hint": "Enter to search, Shift+Enter for a new line",
     "submit": "Find",
     "counter": "{{count, number}} of {{limit, number}} characters",
-    "examples": "Try an example",
-    "example": {
-      "groats": "Buckwheat groats 500 kg; polished rice 200 kg",
-      "office": "Office paper A4 80 gsm, 300 reams; blue ballpoint pens, 500 pcs",
-      "medical": "Nitrile examination gloves size M, 2000 pairs; three-layer medical masks, 5000 pcs"
-    },
     "stage": {
       "parse": "Reading the request…",
       "companies": "Looking for companies…",
