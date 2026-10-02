@@ -11,6 +11,7 @@ import { Icon } from "@/shared/ui/icon"
 import { LoadingState } from "@/shared/ui/loading-state"
 import { ResultSection } from "@/shared/ui/result-section"
 import { TextButton } from "@/shared/ui/text-button"
+import { RecentCollapse } from "../recent-toggle"
 import styles from "./styles.module.css"
 
 export function isToday(iso: string, now: Date = new Date()): boolean {
@@ -106,12 +107,26 @@ function RecentBody({ recent }: { readonly recent: ReturnType<typeof useRecentSe
   )
 }
 
-export function RecentList({ empty }: { readonly empty: ReactNode }) {
+export type RecentListProps = {
+  readonly empty: ReactNode
+  readonly controls?: string
+  readonly onCollapse?: () => void
+}
+
+export function RecentList({ empty, controls, onCollapse }: RecentListProps) {
   const { t } = useTranslation("search")
   const recent = useRecentSearches()
   if (recent.isSuccess && recent.data.length === 0) return empty
   return (
-    <ResultSection framed title={t("recent.title")}>
+    <ResultSection
+      framed
+      title={t("recent.title")}
+      aside={
+        controls && onCollapse ? (
+          <RecentCollapse controls={controls} onCollapse={onCollapse} />
+        ) : undefined
+      }
+    >
       <RecentBody recent={recent} />
     </ResultSection>
   )

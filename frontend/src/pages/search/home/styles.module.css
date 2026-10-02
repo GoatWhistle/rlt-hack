@@ -12,6 +12,12 @@
 
 .head {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-4);
+}
+
+.intro {
+  display: grid;
   gap: var(--space-2);
 }
 
@@ -22,9 +28,22 @@
   line-height: var(--leading-relaxed);
 }
 
+.recent {
+  min-width: 0;
+  view-transition-name: recent-panel;
+}
+
+.page[data-recent="closed"] .recent {
+  display: none;
+}
+
 @media (min-width: 64rem) {
   .page {
     grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
     gap: var(--space-7) var(--space-8);
+  }
+
+  .page[data-recent="closed"] {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -40,7 +40,7 @@ describe("a search result", () => {
     expect(screen.getByRole("textbox", { name: en("box.label", "search") })).toHaveValue(
       contractResult().query.text,
     )
-    await waitFor(() => expect(document.title).toBe("Lotive | Search"))
+    await waitFor(() => expect(document.title).toBe("lotive | Search"))
     const items = region(en("items.title", "search"))
     const groats = within(items).getByRole("button", { name: /Крупа гречневая ядрица/ })
     expect(groats).toHaveTextContent("500 кг")

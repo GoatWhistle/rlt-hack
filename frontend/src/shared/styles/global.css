@@ -63,3 +63,32 @@ a:hover {
 ::view-transition-new(search-query) {
   animation: var(--vt-query-new);
 }
+
+:root[data-transition="panel"]::view-transition-old(root),
+:root[data-transition="panel"]::view-transition-old(search-query) {
+  animation: var(--vt-fade-out);
+}
+
+:root[data-transition="panel"]::view-transition-new(root) {
+  animation: var(--vt-fade-in);
+}
+
+:root[data-transition="panel"]::view-transition-new(search-query) {
+  animation: none;
+}
+
+::view-transition-group(recent-panel),
+::view-transition-group(recent-reveal) {
+  animation-duration: var(--vt-morph);
+  animation-timing-function: var(--ease-drawer);
+}
+
+::view-transition-old(recent-panel),
+::view-transition-old(recent-reveal) {
+  animation: var(--vt-panel-out);
+}
+
+::view-transition-new(recent-panel),
+::view-transition-new(recent-reveal) {
+  animation: var(--vt-panel-in);
+}

@@ -53,6 +53,10 @@
   --vt-morph: var(--dur-drawer);
   --vt-query-old: fade-out var(--dur-fast) var(--ease-out) both;
   --vt-query-new: fade-in var(--dur-base) var(--ease-out) var(--dur-fast) both;
+  --vt-panel-out: panel-out var(--dur-drawer) var(--ease-drawer) both;
+  --vt-fade-out: fade-out var(--dur-base) var(--ease-out) both;
+  --vt-fade-in: fade-in var(--dur-base) var(--ease-out) both;
+  --vt-panel-in: panel-in var(--dur-drawer) var(--ease-drawer) both;
   --motion-scroll-edge: scroll-edge linear both;
 }
 
@@ -134,6 +138,20 @@
 @keyframes reveal-x {
   from {
     clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes panel-out {
+  to {
+    opacity: 0;
+    transform: translateY(calc(-2 * var(--motion-offset))) scale(var(--motion-scale));
+  }
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-2 * var(--motion-offset))) scale(var(--motion-scale));
   }
 }
 

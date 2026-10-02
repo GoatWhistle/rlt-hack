@@ -37,7 +37,7 @@ describe("the application shell", () => {
     const [first] = within(navigation).getAllByRole("link")
     expect(first).toHaveAccessibleName(en("nav.search"))
     expect(first).toHaveAttribute("aria-current", "page")
-    await waitFor(() => expect(document.title).toBe("Lotive | Search"))
+    await waitFor(() => expect(document.title).toBe("lotive | Search"))
     expect(screen.getByRole("link", { name: en("app.skipToContent") })).toHaveAttribute(
       "href",
       "#main-content",
@@ -46,7 +46,7 @@ describe("the application shell", () => {
 
   it("brands the header with the Lotive mark and name in every language", async () => {
     const { user } = renderApp()
-    const brand = await screen.findByRole("link", { name: "Lotive" })
+    const brand = await screen.findByRole("link", { name: "lotive" })
     expect(brand).toHaveAttribute("href", "/search")
     expect(brand.querySelector("svg[aria-hidden='true']")).not.toBeNull()
     await chooseLanguage(user, "ru")
@@ -125,12 +125,12 @@ describe("the not found page", () => {
       "/uploads",
     )
     expect(screen.getByRole("navigation")).toBeInTheDocument()
-    await waitFor(() => expect(document.title).toBe("Lotive | Page not found"))
+    await waitFor(() => expect(document.title).toBe("lotive | Page not found"))
   })
 
   it("names the browser tab after the uploads page", async () => {
     renderApp(["/uploads"])
     await screen.findByRole("heading", { level: 1, name: en("intro.title", "uploads") })
-    await waitFor(() => expect(document.title).toBe("Lotive | Uploads"))
+    await waitFor(() => expect(document.title).toBe("lotive | Uploads"))
   })
 })

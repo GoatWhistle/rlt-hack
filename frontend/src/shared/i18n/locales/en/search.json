@@ -27,7 +27,8 @@
     "retry": "Try again",
     "none": "no candidates",
     "today": "Today",
-    "earlier": "Earlier"
+    "earlier": "Earlier",
+    "collapse": "Hide"
   },
   "header": {
     "title": "Search result: {{query}}",

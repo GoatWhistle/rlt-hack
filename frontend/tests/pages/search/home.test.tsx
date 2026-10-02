@@ -87,4 +87,22 @@ describe("the search page", () => {
       expect(router.state.location.pathname).toBe(`/search/${contractResult().searchId}`),
     )
   })
+
+  it("hides recent searches upward, widens the field and remembers the choice", async () => {
+    window.localStorage.clear()
+    const recent = vi.fn(async () =>
+      parseRecentSearches(contract("search/recent.example.json")),
+    )
+    const { user } = renderSearch("/search", { gateway: stubSearch({ recent }) })
+    await within(recentRegion()).findByRole("link", { name: /Крупа гречневая/ })
+    expect(screen.queryByRole("button", { name: /^Recent searches/ })).toBeNull()
+    await user.click(screen.getByRole("button", { name: en("recent.collapse", "search") }))
+    const reveal = screen.getByRole("button", { name: /^Recent searches/ })
+    expect(reveal).toHaveAttribute("aria-expanded", "false")
+    expect(reveal).toHaveFocus()
+    expect(window.localStorage.getItem("lotive.search.recentOpen")).toBe("false")
+    await user.click(reveal)
+    expect(screen.queryByRole("button", { name: /^Recent searches/ })).toBeNull()
+    expect(window.localStorage.getItem("lotive.search.recentOpen")).toBe("true")
+  })
 })
