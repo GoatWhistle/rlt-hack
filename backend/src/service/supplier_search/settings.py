@@ -22,7 +22,7 @@ class ScoreWeights:
 class SearchSettings:
     pipeline_version: str = "search-v1"
     timeout_seconds: float = 15.0
-    archive_timeout_seconds: float = 2.0
+    archive_timeout_seconds: float = 5.0
     retrieval_depth_factor: int = 3
     rrf_k: int = 60
     coverage_threshold: float = 0.5

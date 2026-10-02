@@ -74,6 +74,7 @@ class SearchConfig:
     history_enabled: bool = True
     vector_url: str = ""
     max_items: int = 20
+    archive_timeout_seconds: float = 5.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,6 +121,7 @@ def _api_config() -> ApiConfig:
 def _search_config() -> SearchConfig:
     return SearchConfig(
         timeout_seconds=_float("SEARCH_TIMEOUT_SECONDS", 15.0),
+        archive_timeout_seconds=_float("SEARCH_ARCHIVE_TIMEOUT_SECONDS", 5.0),
         retrieval_depth_factor=_int("SEARCH_RETRIEVAL_DEPTH", 3),
         coverage_threshold=_float("SEARCH_COVERAGE_THRESHOLD", 0.5),
         lexical_pool=_int("SEARCH_LEXICAL_POOL", 500),

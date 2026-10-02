@@ -10,7 +10,7 @@ import asyncio
 import logging
 import zipfile
 import zlib
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from pathlib import Path
 
 from lxml import etree
@@ -26,32 +26,43 @@ class MspRegistryDump:
     def __init__(self, path: Path) -> None:
         self._path = path
 
-    async def read(self) -> AsyncIterator[list[MspCompany]]:
-        members = await asyncio.to_thread(self._members)
-        for index, member in enumerate(members, start=1):
-            companies = await asyncio.to_thread(self._parse, member)
-            logger.info(
-                "Реестр МСП: файл %d из %d, компаний — %d", index, len(members), len(companies)
-            )
-            yield companies
+    async def read(self) -> AsyncGenerator[list[MspCompany]]:
+        opening = asyncio.create_task(asyncio.to_thread(self._open))
+        try:
+            archive = await asyncio.shield(opening)
+        except asyncio.CancelledError:
+            archive = await opening
+            await asyncio.to_thread(archive.close)
+            raise
+        try:
+            members = sorted(name for name in archive.namelist() if name.lower().endswith(".xml"))
+            if not members:
+                raise RegistryDumpError(f"{self._path.name}: в архиве нет XML-файлов")
+            for index, member in enumerate(members, start=1):
+                task = asyncio.create_task(asyncio.to_thread(self._parse, archive, member))
+                try:
+                    companies = await asyncio.shield(task)
+                except asyncio.CancelledError:
+                    await task
+                    raise
+                logger.info(
+                    "Реестр МСП: файл %d из %d, компаний — %d", index, len(members), len(companies)
+                )
+                yield companies
+        finally:
+            await asyncio.to_thread(archive.close)
 
-    def _members(self) -> list[str]:
+    def _open(self) -> zipfile.ZipFile:
         if not self._path.is_file():
             raise RegistryDumpError(f"выгрузка реестра МСП не найдена: {self._path}")
         try:
-            with zipfile.ZipFile(self._path) as archive:
-                members = sorted(
-                    name for name in archive.namelist() if name.lower().endswith(".xml")
-                )
-        except zipfile.BadZipFile as error:
-            raise RegistryDumpError(f"{self._path.name}: архив повреждён: {error}") from error
-        if not members:
-            raise RegistryDumpError(f"{self._path.name}: в архиве нет XML-файлов")
-        return members
+            return zipfile.ZipFile(self._path)
+        except (zipfile.BadZipFile, OSError) as error:
+            raise RegistryDumpError(f"{self._path.name}: архив не читается: {error}") from error
 
-    def _parse(self, member: str) -> list[MspCompany]:
+    def _parse(self, archive: zipfile.ZipFile, member: str) -> list[MspCompany]:
         try:
-            with zipfile.ZipFile(self._path) as archive, archive.open(member) as stream:
+            with archive.open(member) as stream:
                 return parse_stream(stream)
         except (zipfile.BadZipFile, zlib.error, etree.XMLSyntaxError, OSError) as error:
             raise RegistryDumpError(f"{member}: не разбирается: {error}") from error

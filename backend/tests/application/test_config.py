@@ -7,6 +7,7 @@ VARIABLES = (
     "API_PORT",
     "API_DOCS",
     "SEARCH_TIMEOUT_SECONDS",
+    "SEARCH_ARCHIVE_TIMEOUT_SECONDS",
     "SEARCH_RETRIEVAL_DEPTH",
     "SEARCH_COVERAGE_THRESHOLD",
     "SEARCH_LEXICAL_POOL",
@@ -55,6 +56,7 @@ def test_values_are_read_from_environment(clean_env: pytest.MonkeyPatch) -> None
         "API_PORT": "9000",
         "API_DOCS": "false",
         "SEARCH_TIMEOUT_SECONDS": "2.5",
+        "SEARCH_ARCHIVE_TIMEOUT_SECONDS": "4.5",
         "SEARCH_RETRIEVAL_DEPTH": "4",
         "SEARCH_COVERAGE_THRESHOLD": "0.75",
         "SEARCH_LEXICAL_POOL": "200",
@@ -69,6 +71,7 @@ def test_values_are_read_from_environment(clean_env: pytest.MonkeyPatch) -> None
     assert config.api == ApiConfig(host="127.0.0.1", port=9000, docs_enabled=False)
     assert config.search == SearchConfig(
         timeout_seconds=2.5,
+        archive_timeout_seconds=4.5,
         retrieval_depth_factor=4,
         coverage_threshold=0.75,
         lexical_pool=200,

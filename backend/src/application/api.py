@@ -73,6 +73,7 @@ class ApiContainer:
         self._vector_client: httpx.AsyncClient | None = None
         self._settings = SearchSettings(
             timeout_seconds=config.search.timeout_seconds,
+            archive_timeout_seconds=config.search.archive_timeout_seconds,
             retrieval_depth_factor=config.search.retrieval_depth_factor,
             coverage_threshold=config.search.coverage_threshold,
             max_items=config.search.max_items,

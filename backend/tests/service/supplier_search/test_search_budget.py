@@ -78,3 +78,13 @@ async def test_search_runs_in_share_scope_and_archive_outside_it() -> None:
     assert share.entered == 1
     assert archive.saved_inside_share == [False]
     assert result.search_id in archive.stored
+
+
+async def test_archive_has_its_own_budget_after_search() -> None:
+    harness = Harness(
+        archive=FakeArchive(delay=0.1),
+        settings=SearchSettings(timeout_seconds=0.05, archive_timeout_seconds=0.5),
+    )
+    result = await harness.service().search(make_query())
+    assert result.warnings == ()
+    assert harness.archive.stored == {result.search_id: result}

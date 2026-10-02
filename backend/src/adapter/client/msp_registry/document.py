@@ -10,6 +10,7 @@
 
 import re
 from datetime import date, datetime
+from functools import lru_cache
 from typing import IO, Any
 
 from lxml import etree
@@ -82,6 +83,7 @@ def _codes(elements: list[Any], name: str) -> tuple[str, ...]:
     return tuple(dict.fromkeys(code for element in elements if (code := _attribute(element, name))))
 
 
+@lru_cache(maxsize=32)
 def _date(value: str | None) -> date | None:
     if not value:
         return None
