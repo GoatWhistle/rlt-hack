@@ -112,6 +112,7 @@ jobs:
       - run: python backend/tests/search/clickhouse_smoke.py
       - run: python backend/tests/search/history_smoke.py
       - run: python backend/tests/search/ranker_smoke.py
+      - run: python backend/tests/search/metadata_smoke.py
       - run: python backend/tests/search/upload_refresh_smoke.py
 
   ml:

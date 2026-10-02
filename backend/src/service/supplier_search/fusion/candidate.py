@@ -10,9 +10,18 @@ from src.models.scoring import ChannelRank, Score
 class ItemRefs:
     offer_ids: tuple[UUID, ...] = ()
     lot_ids: tuple[str, ...] = ()
+    inferred_offer_ids: tuple[UUID, ...] = ()
 
-    def merge(self, offer_ids: tuple[UUID, ...], lot_ids: tuple[str, ...]) -> "ItemRefs":
+    def merge(
+        self, offer_ids: tuple[UUID, ...], lot_ids: tuple[str, ...], *, inferred: bool = False
+    ) -> "ItemRefs":
+        uncertain = set(self.inferred_offer_ids)
+        if inferred:
+            uncertain.update(set(offer_ids) - (set(self.offer_ids) - uncertain))
+        else:
+            uncertain.difference_update(offer_ids)
         return ItemRefs(
+            inferred_offer_ids=tuple(sorted(uncertain, key=str)),
             offer_ids=tuple(dict.fromkeys((*self.offer_ids, *offer_ids))),
             lot_ids=tuple(dict.fromkeys((*self.lot_ids, *lot_ids))),
         )

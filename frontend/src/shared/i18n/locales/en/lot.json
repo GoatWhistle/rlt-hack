@@ -187,7 +187,10 @@
     "relevance": "Match with the request description",
     "experience": "Procurement participation history",
     "category": "Experience in the relevant category",
-    "recency": "More recent procurement history"
+    "recency": "More recent procurement history",
+    "customer": "Procurement history with this customer",
+    "price": "Fit with the procurement budget",
+    "categoryCount": "Procurements in this category: {{count, number}}"
   },
   "archive": {
     "back": "Back to recommendation",

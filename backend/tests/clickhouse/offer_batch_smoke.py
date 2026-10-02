@@ -8,9 +8,11 @@
 import asyncio
 import sys
 import tempfile
+from collections.abc import Callable
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any, cast
 from uuid import UUID
 
 from chdb.session import Session
@@ -78,7 +80,7 @@ async def check() -> None:
     assert count * UUID_IN_QUERY > 256 * 1024, "Пачка должна превышать предел запроса"
     assert count > ID_QUERY_LIMIT, "Пачка должна делиться на части"
     with tempfile.TemporaryDirectory(prefix="rlt-offer-batch-") as directory:
-        session = Session(str(Path(directory) / "db"))
+        session = cast("Callable[[str], Any]", Session)(str(Path(directory) / "db"))
         try:
             gateway = ChdbGateway(session)
             await Migrator(gateway).apply_pending()

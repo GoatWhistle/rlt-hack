@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from datetime import datetime
+from uuid import UUID
 
 from src.models.candidate import ProductMatch
 from src.models.enums import MatchBasis
@@ -30,12 +31,17 @@ def _backed(item_id: str, basis: MatchBasis, cards: Sequence[OfferEvidence]) -> 
 
 class MatchResolver:
     def resolve(
-        self, item_id: str, cards: Sequence[OfferEvidence], signalled: bool
+        self,
+        item_id: str,
+        cards: Sequence[OfferEvidence],
+        signalled: bool,
+        inferred_offer_ids: tuple[UUID, ...] = (),
     ) -> ProductMatch | None:
-        stock = [card for card in cards if is_stock(card)]
+        grounded = [card for card in cards if card.offer.offer_id not in inferred_offer_ids]
+        stock = [card for card in grounded if is_stock(card)]
         if stock:
             return _backed(item_id, MatchBasis.STOCK, stock)
-        catalog = [card for card in cards if is_catalog(card)]
+        catalog = [card for card in grounded if is_catalog(card)]
         if catalog:
             return _backed(item_id, MatchBasis.CATALOG, catalog)
         evidenced = [card for card in cards if card.evidence is not None]

@@ -14,6 +14,7 @@ import pyarrow.parquet as pq
 from catboost import CatBoostRanker
 from src.adapter.repository.ranker.model import CandidateRanker
 from src.adapter.repository.supplier_index.index import FileSupplierIndex
+from src.models.search_context import SearchContext
 
 from rlt_ml.common import sha256, write_json
 from rlt_ml.reranking.features import FEATURES
@@ -22,6 +23,7 @@ from rlt_ml.reranking.features import FEATURES
 async def check(data, vectors, candidates, models, out, count):
     started = time.monotonic()
     metadata = json.loads((vectors / "vectors.json").read_text())
+    full = json.loads((candidates / "metadata.json").read_text())["customer_dropout"] == 0
     frame = pq.read_table(candidates / "features.parquet").to_pandas()
     queries = pq.read_table(vectors / "queries.parquet").to_pylist()[:count]
     query_vectors = np.load(vectors / "query_vectors.npy", mmap_mode="r")
@@ -47,7 +49,7 @@ async def check(data, vectors, candidates, models, out, count):
         runtime = root / "ranker"
         runtime.mkdir()
         os.symlink(models / "ranker.cbm", runtime / "ranker.cbm")
-        for name in ("supplier_stats.parquet", "category_stats.parquet"):
+        for name in ("supplier_stats.parquet", "category_stats.parquet", "customer_stats.parquet"):
             os.symlink(data / metadata["split"] / name, runtime / name)
         write_json(
             runtime / "runtime.json",
@@ -61,7 +63,12 @@ async def check(data, vectors, candidates, models, out, count):
                 }[metadata["split"]],
                 "files": {
                     name: sha256(runtime / name)
-                    for name in ("ranker.cbm", "supplier_stats.parquet", "category_stats.parquet")
+                    for name in (
+                        "ranker.cbm",
+                        "supplier_stats.parquet",
+                        "category_stats.parquet",
+                        "customer_stats.parquet",
+                    )
                 },
             },
         )
@@ -76,7 +83,14 @@ async def check(data, vectors, candidates, models, out, count):
             expected = group.sort_values(
                 ["prediction", "supplier_inn"], ascending=[False, True]
             ).head(10)
-            actual = await index.search(query["query_text"], query_vectors[i].tolist(), 10)
+            context = (
+                SearchContext(query.get("customer_inn") or "", query.get("start_price"))
+                if full
+                else SearchContext()
+            )
+            actual = await index.search_context(
+                query["query_text"], query_vectors[i].tolist(), 10, context
+            )
             matches += [item.inn for item in actual] == expected.supplier_inn.tolist()
             expected_scores = dict(zip(group.supplier_inn, group.prediction, strict=True))
             maximum_delta = max(
@@ -84,6 +98,8 @@ async def check(data, vectors, candidates, models, out, count):
             )
     report = {
         "queries": len(queries),
+        "mode": "metadata" if full else "text",
+        "customer_stats_sha256": sha256(data / metadata["split"] / "customer_stats.parquet"),
         "identical_top10": matches,
         "max_score_delta": maximum_delta,
         "seconds": time.monotonic() - started,

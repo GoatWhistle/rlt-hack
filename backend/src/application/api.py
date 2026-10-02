@@ -2,6 +2,7 @@ from collections.abc import Awaitable, Callable
 
 import httpx
 
+from src.adapter.client.catalog_vectors.retriever import CatalogVectorRetriever
 from src.adapter.client.ml_service.retriever import MlServiceRetriever, no_correlation
 from src.adapter.repository.clickhouse.history_search.retriever import ClickHouseHistoryRetriever
 from src.adapter.repository.clickhouse.offer_read.catalog import ClickHouseOfferCatalog
@@ -54,6 +55,7 @@ class ApiContainer:
         self._correlation = correlation
         self._analyzer = RussianAnalyzer()
         self._ml_client: httpx.AsyncClient | None = None
+        self._vector_client: httpx.AsyncClient | None = None
         self._settings = SearchSettings(
             timeout_seconds=config.search.timeout_seconds,
             retrieval_depth_factor=config.search.retrieval_depth_factor,
@@ -123,9 +125,18 @@ class ApiContainer:
             channels.append(ClickHouseHistoryRetriever(sql, self._analyzer, self.database))
         if self._config.ml_service.enabled:
             channels.append(self._semantic(sql))
+        if search.vector_url:
+            if self._vector_client is None:
+                self._vector_client = httpx.AsyncClient(
+                    base_url=search.vector_url, timeout=httpx.Timeout(5, connect=2), trust_env=False
+                )
+            channels.append(CatalogVectorRetriever(self._vector_client))
         return tuple(channels)
 
     async def aclose(self) -> None:
+        if self._vector_client is not None:
+            await self._vector_client.aclose()
+            self._vector_client = None
         if self._ml_client is not None:
             await self._ml_client.aclose()
             self._ml_client = None

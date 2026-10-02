@@ -7,6 +7,7 @@ import numpy as np
 from src.adapter.repository.supplier_index.history import enrich_history
 from src.adapter.repository.supplier_index.index import FileSupplierIndex
 from src.adapter.repository.supplier_index.protocols import SqlGateway
+from src.models.search_context import SearchContext
 from src.models.supplier_search import SupplierCandidate, SupplierCatalogOffer
 
 
@@ -34,6 +35,11 @@ class ClickHouseSupplierIndex(FileSupplierIndex):
         del self.norms
 
     async def search(self, text: str, vector: list[float], limit: int) -> list[SupplierCandidate]:
+        return await self.search_context(text, vector, limit, SearchContext())
+
+    async def search_context(
+        self, text: str, vector: list[float], limit: int, context: SearchContext
+    ) -> list[SupplierCandidate]:
         rows = await self._gateway.select(
             f"SELECT card_id, 1 - cosineDistance(embedding, {{vector:Array(Float32)}}) "
             f"FROM {self._database}.supplier_profile_embeddings FINAL "
@@ -42,7 +48,7 @@ class ClickHouseSupplierIndex(FileSupplierIndex):
         )
         if len(rows) != len(self.cards):
             raise ValueError("ClickHouse supplier index changed")
-        candidates = await asyncio.to_thread(self._combine, text, rows, limit)
+        candidates = await asyncio.to_thread(self._combine, text, rows, limit, context)
         return await self.enrich(candidates)
 
     async def enrich(self, candidates: list[SupplierCandidate]) -> list[SupplierCandidate]:
@@ -90,10 +96,12 @@ class ClickHouseSupplierIndex(FileSupplierIndex):
             )
         return await enrich_history(self._gateway, self._database, self._index_id, result)
 
-    def _combine(self, text: str, rows: list[tuple], limit: int) -> list[SupplierCandidate]:
+    def _combine(
+        self, text: str, rows: list[tuple], limit: int, context: SearchContext | None = None
+    ) -> list[SupplierCandidate]:
         dense = np.zeros(len(self.cards), dtype=np.float32)
         for card_id, score in rows:
             dense[self._positions[card_id]] = score
         if not np.isfinite(dense).all():
             raise ValueError("Invalid ClickHouse distances")
-        return self._fuse(text, dense, limit)
+        return self._fuse(text, dense, limit, context)

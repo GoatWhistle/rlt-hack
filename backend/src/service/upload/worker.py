@@ -3,10 +3,13 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from uuid import uuid4
 
+from src.models.supplier_search import SupplierCandidate
 from src.models.upload import LotRecommendation, Notice, Upload
 from src.service.errors import ServiceError
+from src.service.upload.evidence import relevant_evidence
 from src.service.upload.protocols import (
     CandidateEnrichment,
+    NoticeSearchEngine,
     SearchEngine,
     SearchVersion,
     UploadRepository,
@@ -24,8 +27,7 @@ class UploadService:
             raise ServiceError("в тестовом режиме загрузите от 1 до 20 закупок")
         lots = []
         for notice in notices:
-            query = "\n".join(filter(None, (notice.title, notice.subject)))
-            candidates = await self._search.search(query, 10)
+            candidates = await self._recommend(notice)
             lots.append(LotRecommendation(notice, candidates))
         upload = Upload(
             uuid4().hex, owner, filename, datetime.now(UTC).isoformat(), lots, self._version()
@@ -42,9 +44,8 @@ class UploadService:
                 if upload is not None and upload.ranking_version != version:
                     lots = []
                     for lot in upload.lots:
-                        query = "\n".join(filter(None, (lot.notice.title, lot.notice.subject)))
                         lots.append(
-                            LotRecommendation(lot.notice, await self._search.search(query, 10))
+                            LotRecommendation(lot.notice, await self._recommend(lot.notice))
                         )
                     upload = replace(upload, lots=lots, ranking_version=version)
                     await self._repository.save(upload)
@@ -55,10 +56,24 @@ class UploadService:
         return replace(
             upload,
             lots=[
-                replace(lot, candidates=[next(enriched) for _ in lot.candidates])
+                replace(
+                    lot,
+                    candidates=await relevant_evidence(
+                        lot.notice.title + " " + lot.notice.subject,
+                        [next(enriched) for _ in lot.candidates],
+                    ),
+                )
                 for lot in upload.lots
             ],
         )
+
+    async def _recommend(self, notice: Notice) -> list[SupplierCandidate]:
+        if isinstance(self._search, NoticeSearchEngine):
+            return await relevant_evidence(
+                notice.title + " " + notice.subject, await self._search.search_notice(notice, 10)
+            )
+        query = "\n".join(filter(None, (notice.title, notice.subject)))
+        return await relevant_evidence(query, await self._search.search(query, 10))
 
     def _version(self) -> str:
         return self._search.version if isinstance(self._search, SearchVersion) else ""

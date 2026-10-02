@@ -22,6 +22,8 @@ def lot_summary(lot: LotRecommendation) -> dict:
         "id": lot.notice.lot_id,
         "title": lot.notice.title,
         "subject": lot.notice.subject,
+        "customerInn": lot.notice.customer_inn or None,
+        "startPrice": float(lot.notice.start_price) if lot.notice.start_price is not None else None,
         "status": "ready" if lot.candidates else "noCandidates",
         "products": 0,
         "candidates": len(lot.candidates),
@@ -36,7 +38,12 @@ def summary(upload: Upload) -> dict:
         "createdAt": upload.created_at,
         "total": len(upload.lots),
         "processed": len(upload.lots),
-        "counts": {"ready": found, "needsCheck": 0, "noCandidates": len(upload.lots) - found},
+        "counts": {
+            "ready": found,
+            "needsCheck": 0,
+            "noCandidates": len(upload.lots) - found,
+            "failed": 0,
+        },
         "rejected": 0,
         "stored": True,
     }

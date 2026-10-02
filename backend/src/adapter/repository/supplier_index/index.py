@@ -11,6 +11,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from src.adapter.repository.reference.loader import read_json
 from src.adapter.repository.reference.okpd2 import FileOkpd2Reference
 from src.adapter.repository.supplier_index.protocols import CandidateRanking
+from src.models.search_context import SearchContext
 from src.models.supplier_search import SupplierCandidate
 
 
@@ -74,6 +75,11 @@ class FileSupplierIndex:
     async def search(self, text: str, vector: list[float], limit: int) -> list[SupplierCandidate]:
         return await asyncio.to_thread(self._search, text, vector, limit)
 
+    async def search_context(
+        self, text: str, vector: list[float], limit: int, context: SearchContext
+    ) -> list[SupplierCandidate]:
+        return await asyncio.to_thread(self._search, text, vector, limit, context)
+
     async def enrich(self, candidates: list[SupplierCandidate]) -> list[SupplierCandidate]:
         return [self._metadata(candidate) for candidate in candidates]
 
@@ -103,13 +109,17 @@ class FileSupplierIndex:
                 break
         return result
 
-    def _search(self, text: str, vector: list[float], limit: int) -> list[SupplierCandidate]:
+    def _search(
+        self, text: str, vector: list[float], limit: int, context: SearchContext | None = None
+    ) -> list[SupplierCandidate]:
         query = np.asarray(vector, dtype=np.float32)
         query /= np.linalg.norm(query)
         dense = (self.vectors @ query) / self.norms
-        return self._fuse(text, dense, limit)
+        return self._fuse(text, dense, limit, context)
 
-    def _fuse(self, text: str, dense: np.ndarray, limit: int) -> list[SupplierCandidate]:
+    def _fuse(
+        self, text: str, dense: np.ndarray, limit: int, context: SearchContext | None = None
+    ) -> list[SupplierCandidate]:
         lexical = (self.lexical @ self.vectorizer.transform([text]).sign().T).toarray().ravel()
         scores: dict[str, float] = {}
         positions: dict[str, int] = {}
@@ -123,7 +133,7 @@ class FileSupplierIndex:
         reasons: dict[str, list[str]] = {}
         if self.ranker is not None:
             selected, positions, scores, reasons = self.ranker.rank(
-                text, self.cards, dense, lexical, scores, dense_order, lexical_order
+                text, self.cards, dense, lexical, scores, dense_order, lexical_order, context
             )
             selected = selected[:limit]
         return [

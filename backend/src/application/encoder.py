@@ -1,4 +1,5 @@
 import os
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import httpx
@@ -9,7 +10,9 @@ from src.adapter.client.ollama.client import OllamaEmbedder
 
 
 @asynccontextmanager
-async def text_encoder(*, dimensions: int = 2560, context_length: int = 512):
+async def text_encoder(
+    *, dimensions: int = 2560, context_length: int = 512
+) -> AsyncIterator[InferenceEmbedder | OllamaEmbedder]:
     transport = os.getenv("EMBEDDING_TRANSPORT", "ollama")
     if transport not in {"ollama", "inference"}:
         raise EmbeddingClientError("неизвестный транспорт энкодера")

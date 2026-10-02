@@ -1,5 +1,6 @@
 from typing import Protocol, runtime_checkable
 
+from src.models.search_context import SearchContext
 from src.models.supplier_search import SupplierCandidate
 
 
@@ -22,3 +23,10 @@ class SupplierIndex(Protocol):
 class IndexVersion(Protocol):
     @property
     def version(self) -> str: ...
+
+
+@runtime_checkable
+class ContextualSupplierIndex(Protocol):
+    async def search_context(
+        self, text: str, vector: list[float], limit: int, context: SearchContext
+    ) -> list[SupplierCandidate]: ...

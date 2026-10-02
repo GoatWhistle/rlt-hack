@@ -140,6 +140,7 @@ class RetrievalChannel(StrEnum):
     LEXICAL = "lexical"
     HISTORY = "history"
     SEMANTIC = "semantic"
+    CATALOG_VECTOR = "catalogVector"
 
 
 class EnrichmentSource(StrEnum):

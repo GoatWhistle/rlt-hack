@@ -7,9 +7,11 @@
 import asyncio
 import sys
 import tempfile
+from collections.abc import Callable
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any, cast
 from uuid import uuid4
 
 from chdb.session import Session
@@ -88,7 +90,7 @@ def test_text() -> None:
 
 async def check_freshness() -> None:
     with tempfile.TemporaryDirectory(prefix="rlt-embedding-doc-") as directory:
-        session = Session(str(Path(directory) / "db"))
+        session = cast("Callable[[str], Any]", Session)(str(Path(directory) / "db"))
         try:
             gateway = ChdbGateway(session)
             await Migrator(gateway).apply_pending()

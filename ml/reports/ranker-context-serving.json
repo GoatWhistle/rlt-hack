@@ -1,0 +1,11 @@
+{
+  "queries": 50,
+  "mode": "metadata",
+  "customer_stats_sha256": "8d53292efb5abe09bb6c8689a6e0d3475297df456ce22e4aa75cbfc6e36ef096",
+  "identical_top10": 50,
+  "max_score_delta": 0.0,
+  "seconds": 37.37136042304337,
+  "peak_rss_kib": 1932404,
+  "model_sha256": "cc79a0a0a751af3e602d149b3766df7e5c30f4f57a7b114b3f54bbbecd4ce49f",
+  "passed": true
+}

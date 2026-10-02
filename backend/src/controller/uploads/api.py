@@ -75,6 +75,11 @@ async def get_detail(upload_id: str, request: Request, response: Response):
     return detail(await get_upload(request, response, upload_id))
 
 
+@router.get("/{upload_id}/summary")
+async def get_summary(upload_id: str, request: Request, response: Response):
+    return summary(await get_upload(request, response, upload_id))
+
+
 @router.get("/{upload_id}/lots/{lot_id}")
 async def get_lot(upload_id: str, lot_id: str, request: Request, response: Response):
     upload = await get_upload(request, response, upload_id)

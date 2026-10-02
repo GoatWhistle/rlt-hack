@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest"
 import { createHttpGateway, HTTP_MAX_NOTICES, UPLOADS_PATH } from "@/entities/upload/http"
+import { parseUploadSummary } from "@/entities/upload/parse"
 import type { HttpClient } from "@/shared/api/http-client"
 import { PayloadFormatError } from "@/shared/api/payload"
+import summaryContract from "../../../../contracts/upload/summary.example.json"
 import { recommendationFixture } from "../recommendation/fixture"
 
 const summary = {
@@ -30,11 +32,14 @@ function client(payload: unknown): HttpClient {
 }
 
 describe("the http gateway", () => {
+  it("accepts the shared backend summary contract", () => {
+    expect(parseUploadSummary(summaryContract)).toEqual(summaryContract)
+  })
   it("lists, reads and creates uploads", async () => {
     const http = client({ uploads: [summary] })
     const gateway = createHttpGateway(http)
     expect(gateway.maxNotices).toBe(HTTP_MAX_NOTICES)
-    expect(HTTP_MAX_NOTICES).toBe(5000)
+    expect(HTTP_MAX_NOTICES).toBe(20)
     expect(await gateway.list()).toEqual([{ ...summary, stored: true }])
     expect(http.get).toHaveBeenCalledWith(UPLOADS_PATH, expect.anything())
 

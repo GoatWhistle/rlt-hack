@@ -19,13 +19,16 @@ SUPPLIER_DATASET_PROVIDER=false
 EOF
 
 compose() {
+  local extra=()
+  if [[ -f $scratch/search-ci.yml ]]; then extra=(--file "$scratch/search-ci.yml"); fi
   RLT_IMAGE_TAG=$revision docker compose --project-name "$RLT_PROJECT_NAME" \
     --env-file "$RLT_ENV_FILE" \
     --file "$RLT_DEPLOY_ROOT/releases/$revision/docker-compose.yml" \
-    --file "$RLT_DEPLOY_ROOT/releases/$revision/deploy/compose.production.yml" "$@"
+    --file "$RLT_DEPLOY_ROOT/releases/$revision/deploy/compose.production.yml" "${extra[@]}" --profile search "$@"
 }
 
 cleanup() {
+  docker rm -f "$RLT_PROJECT_NAME-encoder" >/dev/null 2>&1 || true
   compose logs --tail 60 api frontend clickhouse || true
   compose down --volumes || true
 }
@@ -35,6 +38,23 @@ trap cleanup EXIT
   bash activate.sh "$revision" 1
 )
 compose run --rm --no-deps migrate
+fixture=$(realpath backend/tests/search/ci_runtime.py)
+mkdir -p "$scratch/index"
+docker run --rm --entrypoint python --volume "$fixture:/fixture.py:ro"   --volume "$scratch/index:/index" "rlt/backend:$revision" /fixture.py /index
+docker run -d --name "$RLT_PROJECT_NAME-encoder" --network "${RLT_PROJECT_NAME}_default"   --network-alias ci-encoder --entrypoint python --volume "$fixture:/fixture.py:ro"   "rlt/backend:$revision" /fixture.py serve
+cat > "$scratch/search-ci.yml" <<EOF
+services:
+  search-api:
+    environment:
+      SUPPLIER_INDEX_ID: ""
+      EMBEDDING_TRANSPORT: inference
+      EMBEDDING_INFERENCE_URL: http://ci-encoder:8080/
+      EMBEDDING_INFERENCE_REVISION: synthetic-ci
+    volumes: !override
+      - $scratch/index:/data/index:ro
+      - search-uploads:/data/uploads
+EOF
+compose up -d --no-deps --wait --wait-timeout 120 search-api
 api=http://127.0.0.1:8081/api
 curl --fail --silent --show-error http://127.0.0.1:8081/nginx-health
 curl --fail --silent --show-error "$api/health/live"
@@ -70,10 +90,10 @@ supplier_id=$(jq -r '.candidates[0].id' <<<"$created")
 curl --fail --silent --show-error "$api/suppliers/$supplier_id" > /dev/null
 printf 'lot_id;procedure_name\n1001;Поставка бумаги офисной\n1002;Поставка бумаги А4\n' \
   > "$scratch/notices.csv"
-upload_id=$(curl --fail --silent --show-error --form "file=@$scratch/notices.csv;type=text/csv" \
+upload_id=$(curl --fail --silent --show-error --cookie-jar "$scratch/cookies" --form "file=@$scratch/notices.csv;type=text/csv" \
   "$api/uploads" | jq -r .id)
 for _ in $(seq 60); do
-  progress=$(curl --fail --silent --show-error "$api/uploads/$upload_id/summary")
+  progress=$(curl --fail --silent --show-error --cookie "$scratch/cookies" "$api/uploads/$upload_id/summary")
   if [[ $(jq '.processed == .total' <<<"$progress") == true ]]; then break; fi
   sleep 1
 done

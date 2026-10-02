@@ -4,6 +4,7 @@ import asyncio
 import json
 import re
 from dataclasses import asdict
+from decimal import Decimal
 from pathlib import Path
 
 from src.models.supplier_search import SupplierCandidate, SupplierCatalogOffer, SupplierPurchase
@@ -26,7 +27,11 @@ class FileUploads:
         folder = self._folder(upload.owner)
         folder.mkdir(parents=True, exist_ok=True, mode=0o700)
         temporary = folder / f"{upload.upload_id}.tmp"
-        temporary.write_text(json.dumps(asdict(upload), ensure_ascii=False), encoding="utf-8")
+        document = asdict(upload)
+        for lot in document["lots"]:
+            price = lot["notice"].get("start_price")
+            lot["notice"]["start_price"] = str(price) if price is not None else None
+        temporary.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
         temporary.chmod(0o600)
         temporary.replace(folder / f"{upload.upload_id}.json")
 
@@ -34,7 +39,14 @@ class FileUploads:
         data = json.loads(file.read_text(encoding="utf-8"))
         data["lots"] = [
             LotRecommendation(
-                Notice(**lot["notice"]),
+                Notice(
+                    **{
+                        **lot["notice"],
+                        "start_price": Decimal(str(lot["notice"]["start_price"]))
+                        if lot["notice"].get("start_price") is not None
+                        else None,
+                    }
+                ),
                 [
                     SupplierCandidate(
                         **{

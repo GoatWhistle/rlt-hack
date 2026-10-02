@@ -11,6 +11,7 @@ from src.adapter.repository.clickhouse.protocols import SqlGateway
 from src.adapter.repository.clickhouse.rows import to_uuid
 from src.adapter.repository.clickhouse.versions import VersionSequencer
 from src.models.embedding import EmbeddingDocument, OfferSearchHit
+from src.models.search import SearchFilters
 
 # Порядок совпадает с порядком полей EmbeddingDocument после content_hash.
 DOCUMENT_COLUMNS = (
@@ -98,6 +99,11 @@ class ClickHouseEmbeddingRepository:
         )
 
     async def search(self, vector: list[float], model_key: str, limit: int) -> list[OfferSearchHit]:
+        return await self.search_filtered(vector, model_key, limit, SearchFilters())
+
+    async def search_filtered(
+        self, vector: list[float], model_key: str, limit: int, filters: SearchFilters
+    ) -> list[OfferSearchHit]:
         rows = await self._gateway.select(
             f"SELECT o.offer_id, o.name, o.url, o.supplier_id, "
             "1 - cosineDistance(e.embedding, {vector:Array(Float32)}) AS similarity "
@@ -107,8 +113,17 @@ class ClickHouseEmbeddingRepository:
             + "WHERE e.entity_type = 'offer' AND e.model_key = {model:String} "
             f"AND e.dimensions = {{dimensions:UInt16}} AND e.content_hash = {DOCUMENT_HASH} "
             "AND o.availability != 'unavailable' "
-            "ORDER BY similarity DESC, o.offer_id LIMIT {limit:UInt32}",
-            {"vector": vector, "model": model_key, "dimensions": len(vector), "limit": limit},
+            "AND (empty({regions:Array(String)}) OR s.region IN {regions:Array(String)}) "
+            "AND ({item_type:String} = '' OR toString(o.item_type) = {item_type:String}) "
+            "ORDER BY similarity DESC, o.offer_id LIMIT 3 BY o.supplier_id LIMIT {limit:UInt32}",
+            {
+                "vector": vector,
+                "model": model_key,
+                "dimensions": len(vector),
+                "limit": limit,
+                "regions": list(filters.regions),
+                "item_type": str(filters.item_type or ""),
+            },
         )
         return [
             OfferSearchHit(

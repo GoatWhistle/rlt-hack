@@ -1,6 +1,8 @@
 from collections.abc import Mapping, Sequence
 from typing import Any, Protocol
 
+from src.models.search_context import SearchContext
+
 
 class SqlGateway(Protocol):
     async def select(
@@ -16,5 +18,13 @@ class CandidateRanking(Protocol):
     version: str
 
     def rank(
-        self, text, cards, dense, lexical, scores, dense_order, lexical_order
+        self,
+        text,
+        cards,
+        dense,
+        lexical,
+        scores,
+        dense_order,
+        lexical_order,
+        context: SearchContext | None = None,
     ) -> tuple[list[str], dict[str, int], dict[str, float], dict[str, list[str]]]: ...

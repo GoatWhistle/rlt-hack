@@ -14,7 +14,11 @@ export function RankingReasons({ company }: { readonly company: Company }) {
         {company.rankingReasons.map((reason) => (
           <li key={reason} className={styles.reason}>
             <Icon name="check" size="sm" />
-            <span>{t(`ranking.${reason}`)}</span>
+            <span>
+              {reason === "category" && company.similarPurchases !== null
+                ? t("ranking.categoryCount", { count: company.similarPurchases })
+                : t(`ranking.${reason}`)}
+            </span>
           </li>
         ))}
       </Stack>

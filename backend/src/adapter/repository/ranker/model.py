@@ -10,6 +10,7 @@ import pyarrow.parquet as pq
 from catboost import CatBoostRanker, Pool
 
 from src.adapter.repository.ranker.features import FEATURES, feature_row
+from src.models.search_context import SearchContext
 
 
 class CandidateRanker:
@@ -26,10 +27,17 @@ class CandidateRanker:
         if manifest["model"] != "Qwen/Qwen3-Embedding-4B":
             raise ValueError("Only the evaluated 4B ranker is supported")
         required = {"ranker.cbm", "supplier_stats.parquet", "category_stats.parquet"}
-        if set(manifest["files"]) != required:
+        if not required <= set(manifest["files"]) or set(manifest["files"]) - required - {
+            "customer_stats.parquet"
+        }:
             raise ValueError("Incomplete ranker artifact manifest")
         for name, expected in manifest["files"].items():
-            if name not in {"ranker.cbm", "supplier_stats.parquet", "category_stats.parquet"}:
+            if name not in {
+                "ranker.cbm",
+                "supplier_stats.parquet",
+                "category_stats.parquet",
+                "customer_stats.parquet",
+            }:
                 raise ValueError("Unexpected ranker artifact")
             with (self.directory / name).open("rb") as stream:
                 if hashlib.file_digest(stream, "sha256").hexdigest() != expected:
@@ -38,7 +46,11 @@ class CandidateRanker:
         self.model.load_model(str(self.directory / "ranker.cbm"))
         if self.model.feature_names_ != list(FEATURES):
             raise ValueError("Ranker model feature names mismatch")
-        self.version = manifest["files"]["ranker.cbm"]
+        self.version = (
+            manifest["files"]["ranker.cbm"]
+            + "/context-v1/"
+            + manifest["files"].get("customer_stats.parquet", "none")
+        )
         self.cutoff = date.fromisoformat(manifest["history_before"])
         self.suppliers = {
             row["supplier_inn"]: row
@@ -48,15 +60,44 @@ class CandidateRanker:
             (row["supplier_inn"], row["category"]): row
             for row in pq.read_table(self.directory / "category_stats.parquet").to_pylist()
         }
+        self.customers = {}
+        self.by_customer = defaultdict(list)
+        if "customer_stats.parquet" in manifest["files"]:
+            for row in pq.read_table(self.directory / "customer_stats.parquet").to_pylist():
+                self.customers[(row["supplier_inn"], row["customer_inn"])] = row
+                self.by_customer[row["customer_inn"]].append(row)
+            for entries in self.by_customer.values():
+                entries.sort(
+                    key=lambda row: (-row["wins"], -row["participations"], row["supplier_inn"])
+                )
         self.positions = defaultdict(list)
         for i, card in enumerate(cards):
             self.positions[card["supplier_inn"]].append(i)
 
-    def rank(self, text, cards, dense, lexical, scores, dense_order, lexical_order):
+    def rank(
+        self,
+        text,
+        cards,
+        dense,
+        lexical,
+        scores,
+        dense_order,
+        lexical_order,
+        context: SearchContext | None = None,
+    ):
+        context = context or SearchContext()
+        customer_order = [
+            row["supplier_inn"]
+            for row in self.by_customer.get(context.customer_inn, [])
+            if row["supplier_inn"] in self.positions
+        ][:100]
+        scores = dict(scores)
+        for rank, inn in enumerate(customer_order, 1):
+            scores[inn] = scores.get(inn, 0) + 0.5 / (60 + rank)
         selected = sorted(scores, key=lambda inn: (-scores[inn], inn))[:200]
         ranks = [
             {inn: rank for rank, inn in enumerate(order, 1)}
-            for order in (dense_order, lexical_order)
+            for order in (dense_order, lexical_order, customer_order)
         ]
         rows, positions = [], {}
         for inn in selected:
@@ -72,15 +113,19 @@ class CandidateRanker:
                 scores[inn],
                 ranks[0].get(inn, 301),
                 ranks[1].get(inn, 301),
-                301,
+                ranks[2].get(inn, 301),
             ]
             rows.append(
                 feature_row(
-                    {"query_text": text},
+                    {
+                        "query_text": text,
+                        "customer_inn": context.customer_inn,
+                        "start_price": context.start_price,
+                    },
                     card,
                     self.suppliers.get(inn, {}),
                     self.categories.get((inn, card["category"]), {}),
-                    {},
+                    self.customers.get((inn, context.customer_inn), {}),
                     raw,
                     self.cutoff,
                     len(options),
@@ -105,6 +150,8 @@ class CandidateRanker:
                 "relevance": float(sum(contributions[:7])),
                 "experience": float(sum(contributions[7:10])) if values[7] > 0 else 0,
                 "category": float(sum(contributions[10:13])) if values[10] > 0 else 0,
+                "customer": float(sum(contributions[13:16])) if values[13] > 0 else 0,
+                "price": float(contributions[18]) if context.start_price is not None else 0,
                 "recency": float(contributions[17])
                 if cards[positions[inn]].get("profile_last_date")
                 else 0,

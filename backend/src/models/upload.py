@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from decimal import Decimal
 
 from src.models.supplier_search import SupplierCandidate
 
@@ -8,6 +9,8 @@ class Notice:
     lot_id: str
     title: str
     subject: str = ""
+    customer_inn: str = ""
+    start_price: Decimal | None = None
 
 
 @dataclass(frozen=True)

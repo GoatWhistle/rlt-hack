@@ -1,7 +1,7 @@
 from typing import Protocol, runtime_checkable
 
 from src.models.supplier_search import SupplierCandidate
-from src.models.upload import Upload
+from src.models.upload import Notice, Upload
 
 
 class SearchEngine(Protocol):
@@ -25,3 +25,8 @@ class CandidateEnrichment(Protocol):
 class SearchVersion(Protocol):
     @property
     def version(self) -> str: ...
+
+
+@runtime_checkable
+class NoticeSearchEngine(Protocol):
+    async def search_notice(self, notice: Notice, limit: int = 10) -> list[SupplierCandidate]: ...

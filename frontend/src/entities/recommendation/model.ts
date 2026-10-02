@@ -62,7 +62,14 @@ export type CatalogOffer = {
   readonly checkedAt: string
 }
 
-export const RANKING_REASONS = ["relevance", "experience", "category", "recency"] as const
+export const RANKING_REASONS = [
+  "relevance",
+  "experience",
+  "category",
+  "recency",
+  "customer",
+  "price",
+] as const
 export type RankingReason = (typeof RANKING_REASONS)[number]
 
 export type Company = {

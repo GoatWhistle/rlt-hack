@@ -1,6 +1,7 @@
 import csv
 import io
 import re
+from decimal import Decimal, InvalidOperation
 
 from src.models.upload import Notice
 
@@ -33,7 +34,17 @@ def decode_notices(data: bytes) -> list[Notice]:
         ):
             raise ValueError("invalid CSV row")
         seen.add(lot_id)
-        result.append(Notice(lot_id, title, subject if subject != title else ""))
+        customer = (row.get("customer_inn") or "").strip()
+        if customer and not re.fullmatch(r"[0-9]{10}|[0-9]{12}", customer):
+            raise ValueError("invalid customer INN")
+        raw_price = (row.get("start_price") or "").strip().replace("\u00a0", "").replace(" ", "")
+        try:
+            price = Decimal(raw_price.replace(",", ".")) if raw_price else None
+        except InvalidOperation as error:
+            raise ValueError("invalid start price") from error
+        if price is not None and (not price.is_finite() or price < 0):
+            raise ValueError("invalid start price")
+        result.append(Notice(lot_id, title, subject if subject != title else "", customer, price))
         if len(result) > 20:
             raise ValueError("too many rows")
     if not result:

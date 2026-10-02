@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from uuid import UUID
 
+from src.models.enums import RetrievalChannel
 from src.models.retrieval import ChannelHit, RetrievalHits
 from src.models.scoring import ChannelRank, Score
 from src.service.supplier_search.fusion.candidate import FusedCandidate, ItemRefs
@@ -19,7 +20,9 @@ class _Accumulator:
         self.channels.append(ChannelRank(channel, hit.rank))
         for item in hit.items:
             refs = self.items.get(item.item_id, ItemRefs())
-            self.items[item.item_id] = refs.merge(item.offer_ids, item.lot_ids)
+            self.items[item.item_id] = refs.merge(
+                item.offer_ids, item.lot_ids, inferred=channel == RetrievalChannel.CATALOG_VECTOR
+            )
 
 
 class ReciprocalRankFusion:

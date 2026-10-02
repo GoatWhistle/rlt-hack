@@ -69,7 +69,7 @@ class CandidateAssembler:
             refs = fused.items.get(item.item_id, ItemRefs())
             cards = [by_id[offer_id] for offer_id in refs.offer_ids if offer_id in by_id]
             signalled = item.item_id in fused.items or item.item_id in historic
-            match = self._matches.resolve(item.item_id, cards, signalled)
+            match = self._matches.resolve(item.item_id, cards, signalled, refs.inferred_offer_ids)
             if match is not None:
                 resolved.append(match)
         return tuple(resolved)

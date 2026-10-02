@@ -52,7 +52,7 @@ def export(models: Path, vectors: Path, data: Path, out: Path):
     runtime = out / "ranker"
     runtime.mkdir()
     shutil.copyfile(models / "ranker.cbm", runtime / "ranker.cbm")
-    for name in ("supplier_stats.parquet", "category_stats.parquet"):
+    for name in ("supplier_stats.parquet", "category_stats.parquet", "customer_stats.parquet"):
         shutil.copyfile(data / split / name, runtime / name)
     write_json(
         runtime / "runtime.json",
@@ -63,7 +63,12 @@ def export(models: Path, vectors: Path, data: Path, out: Path):
             "history_before": before,
             "files": {
                 name: sha256(runtime / name)
-                for name in ("ranker.cbm", "supplier_stats.parquet", "category_stats.parquet")
+                for name in (
+                    "ranker.cbm",
+                    "supplier_stats.parquet",
+                    "category_stats.parquet",
+                    "customer_stats.parquet",
+                )
             },
             "evaluation": evaluation,
         },
