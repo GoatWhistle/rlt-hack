@@ -31,6 +31,7 @@ class Case:
     participant_inns: tuple[str, ...] = ()
     category: str = ""
     history_lots: int = 0
+    categories: tuple[str, ...] = ()
 
     @property
     def length(self) -> str:
@@ -73,6 +74,7 @@ def read_cases(path: Path) -> list[Case]:
                 participant_inns=tuple(str(inn) for inn in row.get("participant_inns", ())),
                 category=str(row.get("category", "")),
                 history_lots=int(row.get("history_lots", 0)),
+                categories=tuple(str(value) for value in row.get("categories", ())),
             )
         )
     return cases
@@ -163,7 +165,6 @@ def bootstrap_mrr_delta(
 
 def slices(outcomes: Sequence[Outcome]) -> dict[str, dict[str, dict[str, float | int]]]:
     groups: dict[str, Callable[[Case], str]] = {
-        "category": lambda case: case.category or "unknown",
         "length": lambda case: case.length,
         "items": lambda case: case.multi,
         "history": lambda case: case.history,
@@ -174,6 +175,14 @@ def slices(outcomes: Sequence[Outcome]) -> dict[str, dict[str, dict[str, float |
         for outcome in outcomes:
             buckets.setdefault(key(outcome.case), []).append(outcome)
         report[name] = {value: metrics(items) for value, items in sorted(buckets.items())}
+    category_buckets: dict[str, list[Outcome]] = {}
+    for outcome in outcomes:
+        categories = outcome.case.categories or ((outcome.case.category or "unknown"),)
+        for category in categories:
+            category_buckets.setdefault(category, []).append(outcome)
+    report["category"] = {
+        value: metrics(items) for value, items in sorted(category_buckets.items())
+    }
     return report
 
 

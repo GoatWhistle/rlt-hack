@@ -4,7 +4,7 @@ from pathlib import Path
 from rlt_ml.pipeline_eval import Case, bootstrap_mrr_delta, metrics, read_cases, report, run
 
 CASES = [
-    Case("1", "бумага офисная", "7801234564", ("7707083893",), "17.12", 0),
+    Case("1", "бумага офисная", "7801234564", ("7707083893",), "17.12", 0, ("17.12", "17.13")),
     Case("2", "крупа гречневая; рис", "7707083893", (), "10.61", 12),
     Case("3", "кабель", "7736050003", (), "27.32", 3),
 ]
@@ -50,6 +50,7 @@ def test_report_has_paired_delta_slices_and_a_fixed_sample(tmp_path: Path) -> No
                     "winner_inn": case.winner_inn,
                     "participant_inns": list(case.participant_inns),
                     "category": case.category,
+                    "categories": list(case.categories),
                     "history_lots": case.history_lots,
                 }
             )
@@ -66,5 +67,7 @@ def test_report_has_paired_delta_slices_and_a_fixed_sample(tmp_path: Path) -> No
     assert result["winner_mrr_delta"]["low"] == 1.0
     assert set(result["system_slices"]) == {"category", "length", "items", "history"}
     assert result["system_slices"]["items"]["multi"]["queries"] == 1
+    assert result["system_slices"]["category"]["17.12"]["queries"] == 1
+    assert result["system_slices"]["category"]["17.13"]["queries"] == 1
     assert len(result["sample_sha256"]) == 64
     assert bootstrap_mrr_delta([], [])["delta"] == 0.0

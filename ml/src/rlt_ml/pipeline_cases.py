@@ -1,8 +1,8 @@
 """Новая независимая выборка закупок для оценки полного конвейера (D2).
 
-Берутся процедуры позже границы истории индекса с однозначным победителем,
-исключаются уже использованные для принятия модели (закрытый test).
-Выборка детерминирована: seed и SHA256 списка пишутся рядом с файлом.
+Берутся процедуры строго позже границы истории индекса с однозначным победителем,
+исключаются уже использованные для принятия модели (закрытый test). Все категории
+товаров сохраняются. Выборка детерминирована: seed и SHA256 списка пишутся рядом.
 """
 
 import argparse
@@ -18,12 +18,13 @@ SELECT_LOTS = """
 SELECT l.lot_id,
        coalesce(nullif(l.procedure_name, ''), l.query_text) AS text,
        any_value(p.supplier_inn) FILTER (WHERE p.is_winner AND NOT p.label_conflict) AS winner,
-       list(DISTINCT p.supplier_inn) AS participants,
-       any_value(c.category) AS category
+       list(DISTINCT p.supplier_inn) FILTER (WHERE p.supplier_inn IS NOT NULL) AS participants,
+       list(DISTINCT c.category ORDER BY c.category)
+           FILTER (WHERE c.category IS NOT NULL) AS categories
 FROM lot_info l
 JOIN participations p USING (lot_id)
 LEFT JOIN lot_categories c USING (lot_id)
-WHERE l.publish_date >= ? AND l.winner_count = 1 AND NOT l.notice_conflict
+WHERE l.publish_date > ? AND l.winner_count = 1 AND NOT l.notice_conflict
 GROUP BY l.lot_id, text
 HAVING winner IS NOT NULL AND length(text) > 0
 ORDER BY hash(l.lot_id || ?), l.lot_id
@@ -39,7 +40,7 @@ def build(
 ) -> list[dict]:
     rows = connection.execute(SELECT_LOTS, [after, str(seed)]).fetchall()
     cases = []
-    for lot_id, text, winner, participants, category in rows:
+    for lot_id, text, winner, participants, categories in rows:
         if str(lot_id) in excluded:
             continue
         cases.append(
@@ -48,7 +49,7 @@ def build(
                 "text": str(text),
                 "winner_inn": str(winner),
                 "participant_inns": sorted(str(inn) for inn in participants if inn != winner),
-                "category": str(category or ""),
+                "categories": [str(category) for category in categories or []],
             }
         )
         if len(cases) == size:
