@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next"
+import type { CandidatePagerProps } from "@/entities/evidence/ui/candidate-pager"
 import { EvidenceAction, EvidenceFrame } from "@/entities/evidence/ui/evidence-frame"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { Icon } from "@/shared/ui/icon"
@@ -14,6 +15,7 @@ export type EvidencePanelProps = {
   readonly company: Company
   readonly products: readonly Product[]
   readonly chosen: boolean
+  readonly pager?: CandidatePagerProps
   readonly onChoose: () => void
   readonly onProfile: () => void
 }
@@ -22,6 +24,7 @@ export function EvidencePanel({
   company,
   products,
   chosen,
+  pager,
   onChoose,
   onProfile,
 }: EvidencePanelProps) {
@@ -46,7 +49,7 @@ export function EvidencePanel({
         </>
       }
     >
-      <Hero company={company} products={products} />
+      <Hero company={company} products={products} pager={pager} />
       {company.purchases.length > 0 && company.history ? (
         <>
           <ProcurementEvidence company={company} />

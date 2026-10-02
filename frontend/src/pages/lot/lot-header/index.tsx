@@ -5,8 +5,9 @@ import { BackLink } from "@/shared/ui/back-link"
 import { Button } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
 import { IconLink } from "@/shared/ui/icon-link"
-import { SplitRow } from "@/shared/ui/split-row"
+import { PageTitle } from "@/shared/ui/page-title"
 import styles from "./styles.module.css"
+import { NEXT_KEY, PREV_KEY, useNeighbourKeys } from "./use-neighbour-keys"
 
 export type Neighbours = {
   readonly prev?: string
@@ -26,6 +27,7 @@ export type LotHeaderProps = {
 export function LotHeader({ upload, lot, backTo, neighbours, onExport }: LotHeaderProps) {
   const { t } = useTranslation("lot")
   const { date, money } = useFormatters()
+  useNeighbourKeys(neighbours?.prev, neighbours?.next)
   const facts = [
     lot.customerInn ? t("header.customer", { inn: lot.customerInn }) : t("header.noCustomer"),
     lot.startPrice === undefined
@@ -35,37 +37,46 @@ export function LotHeader({ upload, lot, backTo, neighbours, onExport }: LotHead
   ]
   return (
     <header className={styles.header}>
-      <div className={styles.top}>
+      <div className={styles.back}>
         <BackLink to={backTo}>{t("header.back", { file: upload.fileName })}</BackLink>
-        {neighbours ? (
-          <nav className={styles.neighbours} aria-label={t("header.neighbours")}>
-            {neighbours.prev ? (
-              <IconLink to={neighbours.prev} icon="arrowLeft" label={t("header.prev")} />
-            ) : null}
-            <span className={styles.position}>
-              {t("header.position", { index: neighbours.index, total: neighbours.total })}
-            </span>
-            {neighbours.next ? (
-              <IconLink to={neighbours.next} icon="arrowRight" label={t("header.next")} />
-            ) : null}
-          </nav>
-        ) : null}
       </div>
-      <SplitRow>
-        <div className={styles.titles}>
-          <h1 className={styles.title}>{lot.title}</h1>
-          <p className={styles.meta}>
-            <span className={styles.code}>{t("header.lot", { id: lot.id })}</span>
-            {facts.map((fact) => (
-              <span key={fact}>{fact}</span>
-            ))}
-          </p>
-        </div>
-        <Button variant="secondary" onClick={onExport}>
+      {neighbours ? (
+        <nav className={styles.neighbours} aria-label={t("header.neighbours")}>
+          <IconLink
+            to={neighbours.prev}
+            icon="arrowLeft"
+            label={t("header.prev")}
+            shortcut={PREV_KEY}
+          />
+          <span className={styles.position}>
+            {t("header.position", { index: neighbours.index, total: neighbours.total })}
+          </span>
+          <IconLink
+            to={neighbours.next}
+            icon="arrowRight"
+            label={t("header.next")}
+            shortcut={NEXT_KEY}
+          />
+        </nav>
+      ) : null}
+      <PageTitle size="record" className={styles.title}>
+        {lot.title}
+      </PageTitle>
+      <p className={styles.meta}>
+        <span className={styles.code}>{t("header.lot", { id: lot.id })}</span>
+        {facts.map((fact) => (
+          <span key={fact} className={styles.fact}>
+            {fact}
+          </span>
+        ))}
+      </p>
+      <div className={styles.actions}>
+        <Button variant="secondary" aria-label={t("header.export")} onClick={onExport}>
           <Icon name="download" />
-          {t("header.export")}
+          <span className={styles.full}>{t("header.export")}</span>
+          <span className={styles.short}>{t("header.exportShort")}</span>
         </Button>
-      </SplitRow>
+      </div>
     </header>
   )
 }

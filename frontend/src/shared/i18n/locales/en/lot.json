@@ -10,14 +10,18 @@
     "title": "This purchase is still processing",
     "text": "The result will appear here automatically. Finished purchases from this file can already be opened from the list."
   },
+  "failed": {
+    "title": "This purchase could not be processed",
+    "text": "The system could not pick companies after several attempts. Other purchases from this file are available in the list."
+  },
   "noCandidates": {
     "title": "No candidates found",
     "text": "No suitable companies in the available records. Check the purchase contents: the products may have been identified imprecisely."
   },
   "views": {
     "legend": "Review section",
-    "products": "Products",
-    "companies": "Companies",
+    "products": "Items",
+    "companies": "Candidates",
     "evidence": "Grounds"
   },
   "header": {
@@ -32,7 +36,8 @@
     "price": "Start price {{price}}",
     "noPrice": "Start price not given",
     "published": "Published {{date}}",
-    "export": "Download results"
+    "export": "Download results",
+    "exportShort": "Download"
   },
   "chain": {
     "label": "Reasoning chain",
@@ -42,7 +47,7 @@
     "evidence": "Grounds"
   },
   "products": {
-    "title": "Products",
+    "title": "Items",
     "origin": {
       "notice": "From the notice",
       "inferred": "Needs confirming",
@@ -71,7 +76,7 @@
     "order": "by relevance",
     "filtered": "Candidates with “{{name}}”",
     "resetFilter": "Reset",
-    "noMatch": "No candidate has records for this product.",
+    "noMatch": "No candidate has records for this item.",
     "chosen": "Chosen",
     "showMore": "Show {{count, number}} more",
     "showLess": "Show fewer",
@@ -120,9 +125,6 @@
     "chosen": "Remove from chosen",
     "profile": "Company profile"
   },
-  "meter": {
-    "label": "Match {{matched, number}} of {{total, number}}: in a price list — {{stock, number}}, in the catalog — {{catalog, number}}, assumed — {{inferred, number}}"
-  },
   "profile": {
     "requisites": "Details",
     "inn": "INN",
@@ -142,7 +144,7 @@
   "compare": {
     "title": "Compare candidates",
     "criterion": "Criterion",
-    "match": "Product match",
+    "match": "Item match",
     "missing": "No records",
     "none": "none",
     "status": "Status",
@@ -151,7 +153,8 @@
     "clarify": "Key thing to clarify",
     "contacts": "Contacts",
     "unknown": "No records",
-    "note": "Past wins do not guarantee a future delivery. Prices and ratings are not shown: there is no confirmed data on them."
+    "note": "Past wins do not guarantee a future delivery. Prices and ratings are not shown: there is no confirmed data on them.",
+    "best": "Best value"
   },
   "history": {
     "whyFound": "Why this supplier was found",
