@@ -1,0 +1,7 @@
+.cell {
+  font-variant-numeric: tabular-nums;
+}
+
+.cell[data-empty] {
+  color: var(--text-muted);
+}

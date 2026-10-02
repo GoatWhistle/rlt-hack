@@ -8,7 +8,8 @@
   "nav": {
     "uploads": "Uploads",
     "lots": "Purchases",
-    "search": "Search"
+    "search": "Search",
+    "analytics": "Analytics"
   },
   "action": {
     "close": "Close",
@@ -61,7 +62,8 @@
     "lots": "Purchases",
     "lot": "Lot {{id}}",
     "notFound": "Page not found",
-    "error": "Error"
+    "error": "Error",
+    "analytics": "Analytics"
   },
   "workspace": {
     "fold": "Hide “{{name}}”",

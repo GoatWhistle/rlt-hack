@@ -325,6 +325,11 @@ PYTHONPATH=src /root/rlt/.venv/bin/python -m rlt_ml.compare_cards \
 в [backend/README.md](backend/README.md#http-api), примеры ответов — в
 [contracts](contracts). Проверка API: `GET /api/health/live`.
 
+Аналитика каталога: страница `/analytics`, API `/api/analytics/*`, пересчёт
+среза — сервис `analytics-worker` (`docker compose --profile workers up
+analytics-worker`), настройки `ANALYTICS_*` — в
+[backend/README.md](backend/README.md#аналитика-каталога).
+
 Прогресс ProductCenter сохраняется в `crawl-progress.json` внутри постоянного
 тома `productcenter-cache`. Подтверждение порции записывается после успешного
 INSERT; после перезапуска незавершённая порция повторяется, подтверждённые

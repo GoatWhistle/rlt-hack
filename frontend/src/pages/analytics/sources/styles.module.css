@@ -1,0 +1,9 @@
+.page {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.note {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}

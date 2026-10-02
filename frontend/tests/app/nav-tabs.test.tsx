@@ -100,7 +100,7 @@ describe("the navigation tabs", () => {
       "aria-current",
       "page",
     )
-    expect(screen.getAllByRole("link")).toHaveLength(3)
+    expect(screen.getAllByRole("link")).toHaveLength(4)
   })
 
   it("follows the tab when its width changes", () => {

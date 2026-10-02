@@ -21,6 +21,7 @@ async def test_lifespan_resolves_services_once_and_closes_provider() -> None:
             supplier_search=provider.searching,
             supplier_profiles=provider.profiles,
             health=provider.readiness,
+            analytics=provider.catalog,
             background=(provider.task,),
         )
         assert (provider.task.started, provider.task.stopped) == (1, 0)

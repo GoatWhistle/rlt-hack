@@ -34,5 +34,6 @@
   "method_not_allowed": "This action is not supported.",
   "internal_error": "Something went wrong on the server. Please try again later.",
   "invalid_row": "A row in the file is invalid: check the lot number, title and duplicates, then upload again.",
-  "search_busy": "Too many searches are running. Try again in a few seconds."
+  "search_busy": "Too many searches are running. Try again in a few seconds.",
+  "analytics_unavailable": "Analytics are temporarily unavailable. Please try again in a minute."
 }

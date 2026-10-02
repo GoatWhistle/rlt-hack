@@ -84,3 +84,7 @@ class RegistryNotConfiguredError(ServiceError):
 
 class EmptyRegistryDumpError(ServiceError):
     """Выгрузка реестра МСП прочитана, но компаний в ней нет."""
+
+
+class AnalyticsUnavailableError(ServiceError):
+    """Срез аналитики не рассчитан, а предыдущего опубликованного нет."""

@@ -58,6 +58,11 @@ async def load_classifier_reference(
     )
 
 
+async def load_category_names(directory: Path = REFERENCE_DIR) -> FileOkpd2Reference:
+    """Названия ОКПД2 для показа: сравнение названий здесь не нужно."""
+    return FileOkpd2Reference.of(await read_json(directory / "okpd2.json"), str.casefold)
+
+
 async def load_okved_roles(directory: Path = REFERENCE_DIR) -> FileOkvedRoles:
     return FileOkvedRoles.of(await read_json(directory / "okved_roles.json"))
 
@@ -73,6 +78,7 @@ __all__ = [
     "FileTextRules",
     "FileUnitReference",
     "NormalizerReference",
+    "load_category_names",
     "load_classifier_reference",
     "load_normalizer_reference",
     "load_okved_roles",

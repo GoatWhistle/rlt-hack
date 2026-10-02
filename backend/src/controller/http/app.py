@@ -3,6 +3,7 @@ from contextlib import AbstractAsyncContextManager, asynccontextmanager
 
 from fastapi import FastAPI
 
+from src.controller.analytics.router import router as analytics_router
 from src.controller.health.router import router as health_router
 from src.controller.http.middleware.metrics import Metrics
 from src.controller.http.middleware.pipeline import RequestContextMiddleware
@@ -62,7 +63,7 @@ def create_app(provider: ServiceProvider, settings: ApiSettings) -> FastAPI:
     app.state.metrics = Metrics()
     install_error_handlers(app)
     app.add_middleware(RequestContextMiddleware, metrics=app.state.metrics)
-    routers = (search_router, supplier_router, health_router, metrics_router)
+    routers = (search_router, supplier_router, analytics_router, health_router, metrics_router)
     for router in routers:
         app.include_router(router)
     return app

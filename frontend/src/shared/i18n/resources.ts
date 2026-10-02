@@ -1,4 +1,5 @@
 import type { Locale } from "./locale"
+import enAnalytics from "./locales/en/analytics.json"
 import enCandidate from "./locales/en/candidate.json"
 import enCommon from "./locales/en/common.json"
 import enErrors from "./locales/en/errors.json"
@@ -10,6 +11,7 @@ import enNotices from "./locales/en/notices.json"
 import enSearch from "./locales/en/search.json"
 import enSupplier from "./locales/en/supplier.json"
 import enUploads from "./locales/en/uploads.json"
+import ruAnalytics from "./locales/ru/analytics.json"
 import ruCandidate from "./locales/ru/candidate.json"
 import ruCommon from "./locales/ru/common.json"
 import ruErrors from "./locales/ru/errors.json"
@@ -34,6 +36,7 @@ export const NAMESPACES = [
   "candidate",
   "search",
   "supplier",
+  "analytics",
 ] as const
 
 export type Namespace = (typeof NAMESPACES)[number]
@@ -53,6 +56,7 @@ export const resources = {
     candidate: ruCandidate,
     search: ruSearch,
     supplier: ruSupplier,
+    analytics: ruAnalytics,
   },
   en: {
     common: enCommon,
@@ -66,6 +70,7 @@ export const resources = {
     candidate: enCandidate,
     search: enSearch,
     supplier: enSupplier,
+    analytics: enAnalytics,
   },
 } satisfies Record<Locale, Record<Namespace, object>>
 

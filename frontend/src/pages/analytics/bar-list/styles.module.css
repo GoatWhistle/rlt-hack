@@ -1,0 +1,32 @@
+.list {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  list-style: none;
+  padding: 0;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.link {
+  color: var(--link);
+}
+
+.value {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.bar {
+  grid-column: 1 / -1;
+}

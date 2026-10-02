@@ -1,0 +1,15 @@
+.page {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.head {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.intro {
+  max-width: var(--measure-prose);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}

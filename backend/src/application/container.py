@@ -66,9 +66,11 @@ from src.adapter.supplier.texzakaz_web import TexZakazWebProvider
 from src.adapter.supplier.yml_feed import PROVIDER_NAME as YML_FEED
 from src.adapter.supplier.yml_feed import YmlFeedProvider
 from src.adapter.system.clock import SystemClock
+from src.application.analytics import analytics_service
 from src.application.config import AppConfig, api_clickhouse
 from src.models.catalog.source import Source
 from src.models.enums import SourceType
+from src.service.analytics.service import AnalyticsService
 from src.service.classifier import OfferClassifier
 from src.service.normalizer import OfferNormalizer
 from src.service.product.worker import ProductCollectionWorker, ProductSyncWorker
@@ -492,6 +494,9 @@ class Container:
             await self.gateway(), self._config.clickhouse.database
         )
         return ProductCollectionWorker(self.product_provider(), storage)
+
+    async def analytics(self) -> AnalyticsService:
+        return await analytics_service(self._config, await self.gateway())
 
     async def aclose(self) -> None:
         pools = [

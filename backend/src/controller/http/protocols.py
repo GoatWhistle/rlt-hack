@@ -1,5 +1,6 @@
 from typing import Protocol
 
+from src.controller.analytics.protocols import CatalogAnalytics
 from src.controller.health.protocols import ReadinessChecking
 from src.controller.search.protocols import SupplierSearching
 from src.controller.supplier.protocols import SupplierProfiles
@@ -17,6 +18,8 @@ class ServiceProvider(Protocol):
     async def supplier_profiles(self) -> SupplierProfiles: ...
 
     async def health(self) -> ReadinessChecking: ...
+
+    async def analytics(self) -> CatalogAnalytics: ...
 
     async def background(self) -> tuple[BackgroundTask, ...]: ...
 

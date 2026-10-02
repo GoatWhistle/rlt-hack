@@ -20,3 +20,13 @@ export function searchPath(searchId: string): string {
 export function searchDraftPath(text: string, region = ""): string {
   return `${SEARCH_PATH}?${new URLSearchParams({ [SEARCH_TEXT_PARAM]: text, ...(region ? { region } : {}) }).toString()}`
 }
+
+export const ANALYTICS_PATH = "/analytics"
+export const ANALYTICS_CATEGORIES_PATH = `${ANALYTICS_PATH}/categories`
+export const ANALYTICS_QUALITY_PATH = `${ANALYTICS_PATH}/quality`
+export const ANALYTICS_SOURCES_PATH = `${ANALYTICS_PATH}/sources`
+export const ANALYTICS_RECORDS_PATH = `${ANALYTICS_PATH}/records`
+
+export function analyticsCategoryPath(code: string, search = ""): string {
+  return `${ANALYTICS_CATEGORIES_PATH}/${encodeURIComponent(code)}${search}`
+}
