@@ -7,7 +7,7 @@ ERROR_BASES = frozenset({"Exception", "ValueError", "RuntimeError", "LookupError
 CONTEXT_EXCEPTIONS = frozenset({("classifier", "normalizer")})
 SHARED_SERVICE_MODULES = frozenset({"errors"})
 SQL_BOUNDARY = (
-    "src/adapter/repository/clickhouse/pool/",
+    "src/adapter/repository/clickhouse/engine/pool/",
     "src/adapter/repository/clickhouse/upload_store/rows.py",
     "src/adapter/repository/clickhouse/upload_store/store.py",
     "src/application/deferred_gateway.py",

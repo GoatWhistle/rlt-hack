@@ -5,8 +5,8 @@ from contextlib import AbstractAsyncContextManager, nullcontext
 from uuid import UUID
 
 from src.models.enums import SearchStage, WarningCode
-from src.models.search import SearchQuery
-from src.models.search_result import SearchResult, SearchSummary, SearchWarning
+from src.models.search.search import SearchQuery
+from src.models.search.search_result import SearchResult, SearchSummary, SearchWarning
 from src.service.errors import SearchNotFoundError, SearchTimeoutError
 from src.service.supplier_search.pipeline import SearchPipeline
 from src.service.supplier_search.protocols import (

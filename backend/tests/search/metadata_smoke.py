@@ -7,8 +7,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.controller.uploads.csv_file import decode_notices
 from src.controller.uploads.presentation import lot_summary, summary
-from src.models.supplier_search import SupplierCandidate, SupplierPurchase
-from src.models.upload import LotRecommendation, Notice, Upload
+from src.models.operations.upload import LotRecommendation, Notice, Upload
+from src.models.search.supplier_search import SupplierCandidate, SupplierPurchase
 from src.service.search.supplier import SupplierSearch
 from src.service.upload.evidence import relevant_evidence
 

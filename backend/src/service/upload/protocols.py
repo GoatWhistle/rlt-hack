@@ -1,7 +1,7 @@
 from typing import Protocol, runtime_checkable
 
-from src.models.supplier_search import SupplierCandidate
-from src.models.upload import Notice, Upload
+from src.models.operations.upload import Notice, Upload
+from src.models.search.supplier_search import SupplierCandidate
 
 
 class SearchEngine(Protocol):

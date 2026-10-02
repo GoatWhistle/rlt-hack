@@ -14,14 +14,14 @@ from pyarrow import parquet
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from src.adapter.repository.clickhouse.migrator import Migrator
-from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
-from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
-from src.adapter.repository.clickhouse.versions import VersionSequencer
+from src.adapter.repository.clickhouse.catalog.offer import ClickHouseOfferRepository
+from src.adapter.repository.clickhouse.catalog.supplier import ClickHouseSupplierRepository
+from src.adapter.repository.clickhouse.engine.migrator import Migrator
+from src.adapter.repository.clickhouse.engine.versions import VersionSequencer
 from src.adapter.repository.supplier_index.clickhouse import ClickHouseSupplierIndex
 from src.adapter.repository.supplier_index.importer import import_index
-from src.models.offer import Offer
-from src.models.supplier import Supplier
+from src.models.catalog.offer import Offer
+from src.models.catalog.supplier import Supplier
 from tests.clickhouse.chdb_gateway import ChdbGateway
 
 

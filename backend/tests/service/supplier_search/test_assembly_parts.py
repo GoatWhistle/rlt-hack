@@ -2,7 +2,9 @@ from dataclasses import replace
 
 import pytest
 
-from src.models.company_role import RoleAssessment, assess_role, company_role
+from src.models.company.company_role import RoleAssessment, assess_role, company_role
+from src.models.company.offer_evidence import OfferEvidence
+from src.models.company.purchase import PurchaseSummary
 from src.models.enums import (
     Availability,
     CompanyRole,
@@ -12,8 +14,6 @@ from src.models.enums import (
     SupplierRole,
     VerificationStatus,
 )
-from src.models.offer_evidence import OfferEvidence
-from src.models.purchase import PurchaseSummary
 from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver
 from tests.fakes.domain import make_offer, make_offer_evidence, make_supplier

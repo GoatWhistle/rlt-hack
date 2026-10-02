@@ -1,11 +1,11 @@
 from typing import Protocol
 from uuid import UUID
 
-from src.models.embedding import OfferSearchHit
-from src.models.search import SearchQuery
-from src.models.search_result import SearchResult, SearchSummary
-from src.models.supplier_search import SupplierCandidate
-from src.models.upload import Notice
+from src.models.operations.upload import Notice
+from src.models.ranking.embedding import OfferSearchHit
+from src.models.search.search import SearchQuery
+from src.models.search.search_result import SearchResult, SearchSummary
+from src.models.search.supplier_search import SupplierCandidate
 
 
 class SearchEngine(Protocol):

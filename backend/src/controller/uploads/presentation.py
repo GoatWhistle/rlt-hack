@@ -1,7 +1,7 @@
 from urllib.parse import urlsplit
 
 from src.controller.uploads.evidence import explanation, purchases
-from src.models.upload import LotRecommendation, Upload
+from src.models.operations.upload import LotRecommendation, Upload
 
 
 def safe_url(value: str) -> str:

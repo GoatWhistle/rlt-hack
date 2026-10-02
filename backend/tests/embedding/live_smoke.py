@@ -14,19 +14,19 @@ import httpx
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.adapter.client.ollama.client import OllamaEmbedder
-from src.adapter.repository.clickhouse.embedding import ClickHouseEmbeddingRepository
-from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, split_statements
-from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
-from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
-from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
-from src.adapter.repository.clickhouse.versions import VersionSequencer
+from src.adapter.repository.clickhouse.catalog.offer import ClickHouseOfferRepository
+from src.adapter.repository.clickhouse.catalog.source import ClickHouseSourceRepository
+from src.adapter.repository.clickhouse.catalog.supplier import ClickHouseSupplierRepository
+from src.adapter.repository.clickhouse.engine.migrator import MIGRATION_DIR, split_statements
+from src.adapter.repository.clickhouse.engine.versions import VersionSequencer
+from src.adapter.repository.clickhouse.search.embedding import ClickHouseEmbeddingRepository
 from src.adapter.supplier import identity, page
 from src.adapter.supplier.productcenter_web.discovery import listing_links
 from src.adapter.supplier.productcenter_web.parse import product_card, supplier_card
 from src.application.config import AppConfig
 from src.application.container import Container
+from src.models.catalog.source import Source
 from src.models.enums import SourceType
-from src.models.source import Source
 from src.service.embedding.worker import EmbeddingWorker
 
 

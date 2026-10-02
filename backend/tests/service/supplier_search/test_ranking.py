@@ -1,9 +1,9 @@
 import pytest
 
-from src.models.candidate import ProductMatch
+from src.models.company.purchase import PurchaseSummary
 from src.models.enums import CandidateStatus, CheckReason, MatchBasis
-from src.models.purchase import PurchaseSummary
-from src.models.scoring import Score
+from src.models.ranking.scoring import Score
+from src.models.search.candidate import ProductMatch
 from src.service.supplier_search.policy.outcome import PolicyVerdict
 from src.service.supplier_search.ranking.components import (
     coverage_score,

@@ -14,7 +14,7 @@ from typing import IO, Any
 
 from lxml import etree
 
-from src.models.registry import MspCompany
+from src.models.company.registry import MspCompany
 
 _INN = re.compile(r"^(\d{10}|\d{12})$")
 

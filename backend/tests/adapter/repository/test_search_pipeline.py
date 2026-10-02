@@ -2,18 +2,24 @@ from dataclasses import replace
 
 import pytest
 
-from src.adapter.repository.clickhouse.history_search.retriever import ClickHouseHistoryRetriever
-from src.adapter.repository.clickhouse.offer_read.catalog import ClickHouseOfferCatalog
-from src.adapter.repository.clickhouse.offer_search.retriever import ClickHouseLexicalRetriever
-from src.adapter.repository.clickhouse.participation.history import ClickHousePurchaseHistory
-from src.adapter.repository.clickhouse.search_archive.archive import ClickHouseSearchArchive
-from src.adapter.repository.clickhouse.supplier_read.directory import ClickHouseSupplierDirectory
+from src.adapter.repository.clickhouse.catalog.offer_read.catalog import ClickHouseOfferCatalog
+from src.adapter.repository.clickhouse.catalog.offer_search.retriever import (
+    ClickHouseLexicalRetriever,
+)
+from src.adapter.repository.clickhouse.catalog.supplier_read.directory import (
+    ClickHouseSupplierDirectory,
+)
+from src.adapter.repository.clickhouse.search.history_search.retriever import (
+    ClickHouseHistoryRetriever,
+)
+from src.adapter.repository.clickhouse.search.participation.history import ClickHousePurchaseHistory
+from src.adapter.repository.clickhouse.search.search_archive.archive import ClickHouseSearchArchive
 from src.adapter.system.clock import SystemClock
 from src.adapter.system.ids import Uuid4Generator
 from src.adapter.text.analyzer.analyzer import RussianAnalyzer
 from src.adapter.text.rule_interpreter.interpreter import RuleQueryInterpreter
 from src.models.enums import CandidateStatus, CheckReason, MatchBasis
-from src.models.search import SearchQuery, SearchText
+from src.models.search.search import SearchQuery, SearchText
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
 from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver

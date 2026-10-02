@@ -4,7 +4,7 @@ import httpx
 import pytest
 from starlette.requests import Request
 
-from src.controller.http.errors import handle_http
+from src.controller.http.response.errors import handle_http
 from src.models.errors import (
     InvalidCandidateError,
     InvalidProcurementLotError,

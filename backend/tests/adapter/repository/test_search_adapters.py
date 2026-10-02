@@ -3,15 +3,19 @@ from uuid import UUID
 
 import pytest
 
-from src.adapter.repository.clickhouse.history_search.retriever import ClickHouseHistoryRetriever
-from src.adapter.repository.clickhouse.offer_search.retriever import ClickHouseLexicalRetriever
-from src.adapter.repository.clickhouse.participation.history import ClickHousePurchaseHistory
+from src.adapter.repository.clickhouse.catalog.offer_search.retriever import (
+    ClickHouseLexicalRetriever,
+)
+from src.adapter.repository.clickhouse.search.history_search.retriever import (
+    ClickHouseHistoryRetriever,
+)
+from src.adapter.repository.clickhouse.search.participation.history import ClickHousePurchaseHistory
 from src.adapter.text.analyzer.analyzer import RussianAnalyzer
+from src.models.catalog.offer import Offer
+from src.models.company.purchase import PurchaseRecord, PurchaseSummary
 from src.models.enums import Availability, ItemType, PurchaseOutcome, VerificationStatus
-from src.models.offer import Offer
-from src.models.purchase import PurchaseRecord, PurchaseSummary
-from src.models.query_item import SearchRequest
-from src.models.search import SearchFilters, SearchQuery, SearchText
+from src.models.search.query_item import SearchRequest
+from src.models.search.search import SearchFilters, SearchQuery, SearchText
 from tests.adapter.repository.seed import Seeder
 from tests.clickhouse.chdb_gateway import ChdbGateway
 from tests.fakes.domain import make_item, make_offer, make_source, make_supplier

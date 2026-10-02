@@ -2,7 +2,6 @@ from dataclasses import replace
 
 import pytest
 
-from src.models.candidate import ProductMatch
 from src.models.enums import (
     Availability,
     CandidateStatus,
@@ -11,6 +10,7 @@ from src.models.enums import (
     MatchBasis,
     VerificationStatus,
 )
+from src.models.search.candidate import ProductMatch
 from src.service.supplier_search.policy.coverage import CoverageRule
 from src.service.supplier_search.policy.current_offer import CurrentOfferRule
 from src.service.supplier_search.policy.identity_conflict import IdentityConflictRule

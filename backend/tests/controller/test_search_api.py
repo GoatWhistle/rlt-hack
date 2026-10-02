@@ -6,10 +6,10 @@ import httpx
 import pytest
 
 from src.models.enums import ItemType, Locale
-from src.models.query_item import Quantity, QueryItem
-from src.models.scoring import Score
-from src.models.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
-from src.models.search_result import PipelineInfo, SearchResult, SearchSummary
+from src.models.ranking.scoring import Score
+from src.models.search.query_item import Quantity, QueryItem
+from src.models.search.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
+from src.models.search.search_result import PipelineInfo, SearchResult, SearchSummary
 from tests.fakes.domain import MOMENT, make_candidate, make_item, make_supplier, uid
 from tests.fakes.http import FakeServiceProvider
 

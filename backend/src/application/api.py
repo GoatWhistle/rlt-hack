@@ -4,16 +4,24 @@ import httpx
 
 from src.adapter.client.catalog_vectors.retriever import CatalogVectorRetriever
 from src.adapter.client.ml_service.retriever import MlServiceRetriever, no_correlation
-from src.adapter.repository.clickhouse.history_search.retriever import ClickHouseHistoryRetriever
-from src.adapter.repository.clickhouse.offer_read.catalog import ClickHouseOfferCatalog
-from src.adapter.repository.clickhouse.offer_search.retriever import ClickHouseLexicalRetriever
-from src.adapter.repository.clickhouse.participation.history import ClickHousePurchaseHistory
-from src.adapter.repository.clickhouse.probe.probe import ClickHouseProbe
+from src.adapter.repository.clickhouse.catalog.offer_read.catalog import ClickHouseOfferCatalog
+from src.adapter.repository.clickhouse.catalog.offer_search.retriever import (
+    ClickHouseLexicalRetriever,
+)
+from src.adapter.repository.clickhouse.catalog.supplier_read.directory import (
+    ClickHouseSupplierDirectory,
+)
+from src.adapter.repository.clickhouse.catalog.supplier_read.identity import (
+    ClickHouseSupplierIdentity,
+)
+from src.adapter.repository.clickhouse.engine.probe.probe import ClickHouseProbe
 from src.adapter.repository.clickhouse.protocols import SqlGateway
-from src.adapter.repository.clickhouse.retrieval.similarity import LotSimilarity
-from src.adapter.repository.clickhouse.search_archive.archive import ClickHouseSearchArchive
-from src.adapter.repository.clickhouse.supplier_read.directory import ClickHouseSupplierDirectory
-from src.adapter.repository.clickhouse.supplier_read.identity import ClickHouseSupplierIdentity
+from src.adapter.repository.clickhouse.search.history_search.retriever import (
+    ClickHouseHistoryRetriever,
+)
+from src.adapter.repository.clickhouse.search.participation.history import ClickHousePurchaseHistory
+from src.adapter.repository.clickhouse.search.retrieval.similarity import LotSimilarity
+from src.adapter.repository.clickhouse.search.search_archive.archive import ClickHouseSearchArchive
 from src.adapter.system.clock import SystemClock
 from src.adapter.system.ids import Uuid4Generator
 from src.adapter.text.analyzer.analyzer import RussianAnalyzer

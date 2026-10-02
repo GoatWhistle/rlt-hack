@@ -8,9 +8,9 @@
 
 import logging
 
-from src.models.coverage import CoverageReport
-from src.models.enrichment import EnrichmentResult
-from src.models.package import SupplierPackage
+from src.models.catalog.package import SupplierPackage
+from src.models.company.enrichment import EnrichmentResult
+from src.models.operations.coverage import CoverageReport
 from src.service.supplier.protocols import (
     Clock,
     OfferCatalog,

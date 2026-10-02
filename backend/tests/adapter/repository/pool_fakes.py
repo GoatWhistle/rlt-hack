@@ -8,8 +8,8 @@ from typing import Any
 from clickhouse_connect.driver.exceptions import OperationalError
 from urllib3.exceptions import ProtocolError
 
-from src.adapter.repository.clickhouse.gateway import ConnectGateway
-from src.adapter.repository.clickhouse.pool.gateway import GatewayPool
+from src.adapter.repository.clickhouse.engine.gateway import ConnectGateway
+from src.adapter.repository.clickhouse.engine.pool.gateway import GatewayPool
 from src.adapter.repository.errors import RepositoryUnavailableError
 
 Settings = Mapping[str, Any] | None

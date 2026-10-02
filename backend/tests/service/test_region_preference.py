@@ -8,9 +8,9 @@ from src.adapter.client.msp_registry.document import parse_document
 from src.controller.uploads.csv_file import decode_notices
 from src.models.enums import HighlightCode
 from src.models.errors import InvalidNoticeRowError
-from src.models.search_context import SearchContext
-from src.models.supplier_search import SupplierCandidate
-from src.models.upload import Notice
+from src.models.operations.upload import Notice
+from src.models.search.search_context import SearchContext
+from src.models.search.supplier_search import SupplierCandidate
 from src.service.search.supplier import SupplierSearch
 from src.service.supplier_search.policy.outcome import PolicyVerdict
 from src.service.supplier_search.ranking.ranker import CandidateRanker

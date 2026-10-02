@@ -3,7 +3,7 @@ from typing import cast
 
 import pytest
 
-from src.models.normalization import Normalization
+from src.models.catalog.normalization import Normalization
 from tests.fakes.domain import make_offer, make_supplier
 
 

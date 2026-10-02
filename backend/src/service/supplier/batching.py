@@ -13,7 +13,7 @@
 import dataclasses
 from collections.abc import Iterator, Sequence
 
-from src.models.package import SupplierPackage
+from src.models.catalog.package import SupplierPackage
 
 
 def package_batches(package: SupplierPackage, batch_size: int) -> Iterator[SupplierPackage]:

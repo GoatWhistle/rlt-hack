@@ -3,7 +3,7 @@ import logging
 import math
 import time
 
-from src.models.embedding import EmbeddingDocument, OfferSearchHit
+from src.models.ranking.embedding import EmbeddingDocument, OfferSearchHit
 from src.service.embedding.protocols import EmbeddingRepository, TextEmbedder
 from src.service.errors import ServiceError
 

@@ -1,7 +1,7 @@
 from typing import Protocol, runtime_checkable
 
-from src.models.search_context import SearchContext
-from src.models.supplier_search import SupplierCandidate
+from src.models.search.search_context import SearchContext
+from src.models.search.supplier_search import SupplierCandidate
 
 
 class QueryEncoder(Protocol):

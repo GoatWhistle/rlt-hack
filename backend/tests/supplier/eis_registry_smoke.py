@@ -15,8 +15,8 @@ from src.adapter.supplier import identity
 from src.adapter.supplier.eis_registry import EisRegistryProvider
 from src.adapter.supplier.eis_registry.dto import DateWindow
 from src.adapter.supplier.errors import ContentFormatError, ProviderError, SourceUnavailableError
+from src.models.catalog.source import Source
 from src.models.enums import SourceType
-from src.models.source import Source
 
 SOURCE = Source(
     source_id=identity.source_id("https://zakupki.gov.ru/", "eis_registry"),

@@ -54,7 +54,7 @@ def test_long_files_and_functions_are_rejected() -> None:
     [
         ("src/service/a/b.py", "from src.adapter.text import x", ["layer:src.adapter.text"]),
         ("src/service/a/b.py", "import httpx", ["dependency:httpx"]),
-        ("src/service/a/b.py", "import asyncio\nfrom src.models.search import x", []),
+        ("src/service/a/b.py", "import asyncio\nfrom src.models.search.search import x", []),
         ("src/models/a.py", "from src.service.errors import x", ["layer:src.service.errors"]),
         ("src/controller/a/b.py", "from src.adapter.text import x", ["layer:src.adapter.text"]),
         ("src/controller/a/b.py", "from src.service.errors import x", []),

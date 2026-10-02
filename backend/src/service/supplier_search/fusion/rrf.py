@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 from uuid import UUID
 
 from src.models.enums import RetrievalChannel
-from src.models.retrieval import ChannelHit, RetrievalHits
-from src.models.scoring import ChannelRank, Score
+from src.models.ranking.retrieval import ChannelHit, RetrievalHits
+from src.models.ranking.scoring import ChannelRank, Score
 from src.service.supplier_search.fusion.candidate import FusedCandidate, ItemRefs
 
 

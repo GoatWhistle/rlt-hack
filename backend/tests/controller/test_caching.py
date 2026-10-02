@@ -3,7 +3,7 @@ from dataclasses import replace
 import httpx
 
 from src.models.enums import WarningCode
-from src.models.search_result import SearchWarning
+from src.models.search.search_result import SearchWarning
 from src.service.errors import SearchTimeoutError, SearchUnavailableError
 from tests.fakes.domain import uid
 from tests.fakes.http import FakeServiceProvider

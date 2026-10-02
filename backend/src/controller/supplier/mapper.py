@@ -2,8 +2,8 @@ from uuid import UUID
 
 from src.controller.search.mapper import contacts_dto, offer_dto, source_dto
 from src.controller.supplier.dto import SupplierProfileDto
-from src.models.offer_summary import OfferSummary
-from src.models.supplier_profile import SupplierProfile
+from src.models.company.supplier_profile import SupplierProfile
+from src.models.search.offer_summary import OfferSummary
 from src.service.errors import SupplierNotFoundError
 
 

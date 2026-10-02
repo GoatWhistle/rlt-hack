@@ -6,8 +6,8 @@ import pytest
 from src.adapter.client.catalog_vectors.retriever import CatalogVectorRetriever
 from src.adapter.client.errors import MlProtocolError, MlServiceError
 from src.models.enums import RetrievalChannel
-from src.models.query_item import QueryItem, SearchRequest
-from src.models.search import SearchQuery, SearchText
+from src.models.search.query_item import QueryItem, SearchRequest
+from src.models.search.search import SearchQuery, SearchText
 from src.service.supplier_search.fusion.candidate import ItemRefs
 
 SUPPLIER = UUID("00000000-0000-4000-8000-000000000001")

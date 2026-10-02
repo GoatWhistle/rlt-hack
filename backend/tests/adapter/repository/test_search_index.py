@@ -2,7 +2,7 @@ from dataclasses import replace
 
 import pytest
 
-from src.adapter.repository.clickhouse.retrieval.prefixes import prefix_terms
+from src.adapter.repository.clickhouse.search.retrieval.prefixes import prefix_terms
 from tests.adapter.repository.seed import DATABASE, Seeder
 from tests.clickhouse.chdb_gateway import ChdbGateway
 from tests.fakes.domain import make_offer, make_source, make_supplier

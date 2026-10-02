@@ -16,8 +16,8 @@ from src.adapter.client.ml_service.dto import (
 )
 from src.adapter.client.ml_service.protocols import SupplierIdentity
 from src.models.enums import RetrievalChannel
-from src.models.query_item import SearchRequest
-from src.models.retrieval import ChannelHit, ItemHit, RetrievalHits
+from src.models.ranking.retrieval import ChannelHit, ItemHit, RetrievalHits
+from src.models.search.query_item import SearchRequest
 
 logger = logging.getLogger(__name__)
 

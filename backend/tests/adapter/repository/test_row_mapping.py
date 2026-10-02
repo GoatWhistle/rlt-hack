@@ -1,5 +1,5 @@
-from src.adapter.repository.clickhouse.offer_read.mapping import to_offer
-from src.adapter.repository.clickhouse.supplier_read.mapping import to_supplier
+from src.adapter.repository.clickhouse.catalog.offer_read.mapping import to_offer
+from src.adapter.repository.clickhouse.catalog.supplier_read.mapping import to_supplier
 from src.models.enums import VerificationStatus
 from tests.fakes.domain import uid
 

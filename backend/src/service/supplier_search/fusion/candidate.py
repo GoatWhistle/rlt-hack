@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID
 
-from src.models.scoring import ChannelRank, Score
+from src.models.ranking.scoring import ChannelRank, Score
 
 
 @dataclass(frozen=True, slots=True)

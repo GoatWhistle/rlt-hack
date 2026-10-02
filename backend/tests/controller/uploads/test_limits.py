@@ -6,8 +6,8 @@ import pytest
 from src.controller.errors import SearchBusyError
 from src.controller.search import api
 from src.controller.search.admission import Admission
-from src.models.supplier_search import SupplierCandidate
-from src.models.upload import Notice, Upload
+from src.models.operations.upload import Notice, Upload
+from src.models.search.supplier_search import SupplierCandidate
 from src.service.errors import UploadQueueFullError
 from tests.controller.uploads.conftest import CSV, assert_error
 

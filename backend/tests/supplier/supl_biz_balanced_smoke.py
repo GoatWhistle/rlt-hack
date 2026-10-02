@@ -16,8 +16,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.adapter.supplier import identity
 from src.adapter.supplier.errors import ContentFormatError, SourceUnavailableError
 from src.adapter.supplier.supl_biz_web import PROVIDER_NAME, SuplBizWebProvider
+from src.models.catalog.source import Source
 from src.models.enums import SourceType
-from src.models.source import Source
 from tests.supplier.supl_biz_smoke import card, expect
 
 TREE = "https://supl.biz/proposals/"

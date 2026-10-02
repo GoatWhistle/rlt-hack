@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from src.adapter.repository.clickhouse.gateway import ConnectGateway
+from src.adapter.repository.clickhouse.engine.gateway import ConnectGateway
 
 
 @dataclass(slots=True)

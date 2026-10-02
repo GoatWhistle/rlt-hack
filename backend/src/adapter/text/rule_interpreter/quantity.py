@@ -1,7 +1,7 @@
 import re
 from decimal import Decimal
 
-from src.models.query_item import Quantity
+from src.models.search.query_item import Quantity
 
 UNITS: tuple[tuple[str, str], ...] = (
     ("м2", r"м2|м²|кв\.?\s?м(?:етр(?:а|ов)?)?"),

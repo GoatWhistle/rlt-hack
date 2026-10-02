@@ -3,8 +3,8 @@ import asyncio
 import pytest
 
 from src.models.errors import NoValidLotsError, TooManyNoticeRowsError
-from src.models.supplier_search import SupplierCandidate
-from src.models.upload import Notice, Upload
+from src.models.operations.upload import Notice, Upload
+from src.models.search.supplier_search import SupplierCandidate
 from src.service.errors import UploadQueueFullError
 from src.service.upload.worker import MAX_LOTS, UploadService
 

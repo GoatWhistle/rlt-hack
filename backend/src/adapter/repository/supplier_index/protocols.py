@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 from typing import Any, Protocol
 
-from src.models.search_context import SearchContext
+from src.models.search.search_context import SearchContext
 
 
 class SqlGateway(Protocol):

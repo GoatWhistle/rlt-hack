@@ -1,11 +1,11 @@
 from collections.abc import Sequence
 
-from src.models.candidate import SupplierCandidate
 from src.models.enums import SearchStage
-from src.models.match import MatchOutcome
-from src.models.offer_summary import OfferSummary
-from src.models.query_item import SearchRequest
-from src.models.search_result import SearchWarning
+from src.models.search.candidate import SupplierCandidate
+from src.models.search.match import MatchOutcome
+from src.models.search.offer_summary import OfferSummary
+from src.models.search.query_item import SearchRequest
+from src.models.search.search_result import SearchWarning
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
 from src.service.supplier_search.assembly.offers import matched_offers
 from src.service.supplier_search.enrichment.loader import EnrichmentLoader

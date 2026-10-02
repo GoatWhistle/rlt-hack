@@ -8,8 +8,8 @@ from src.adapter.text.rule_interpreter.okpd2 import extract_okpd2
 from src.adapter.text.rule_interpreter.quantity import canonical_unit, extract_quantity
 from src.adapter.text.rule_interpreter.splitter import split_positions
 from src.models.enums import ItemOrigin, ItemType
-from src.models.query_item import Quantity
-from src.models.search import SearchFilters, SearchQuery, SearchText
+from src.models.search.query_item import Quantity
+from src.models.search.search import SearchFilters, SearchQuery, SearchText
 
 
 def query(text: str, item_type: ItemType | None = None) -> SearchQuery:

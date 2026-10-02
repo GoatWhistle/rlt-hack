@@ -1,6 +1,6 @@
 import pytest
 
-from src.adapter.repository.clickhouse.search_archive.archive import ClickHouseSearchArchive
+from src.adapter.repository.clickhouse.search.search_archive.archive import ClickHouseSearchArchive
 from tests.clickhouse.chdb_gateway import ChdbGateway
 from tests.fakes.domain import make_candidate, make_result, make_supplier, uid
 

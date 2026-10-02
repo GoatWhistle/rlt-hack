@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from src.models.embedding import EmbeddingDocument, OfferSearchHit
+from src.models.ranking.embedding import EmbeddingDocument, OfferSearchHit
 
 
 class TextEmbedder(Protocol):

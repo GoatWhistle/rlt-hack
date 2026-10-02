@@ -12,9 +12,9 @@ import dataclasses
 import logging
 from collections.abc import Sequence
 
-from src.models.normalization import Normalization
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
+from src.models.catalog.normalization import Normalization
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
 from src.service.normalizer import attributes as attribute_rules
 from src.service.normalizer import names, units
 from src.service.normalizer.protocols import TextRules, UnitReference

@@ -1,9 +1,9 @@
 import asyncio
 import math
 
-from src.models.embedding import OfferSearchHit
 from src.models.enums import ItemType
-from src.models.search import SearchFilters
+from src.models.ranking.embedding import OfferSearchHit
+from src.models.search.search import SearchFilters
 from src.service.catalog_search.protocols import CatalogIndex, QueryEncoder
 from src.service.errors import ServiceError
 

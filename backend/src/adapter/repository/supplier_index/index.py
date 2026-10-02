@@ -11,8 +11,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from src.adapter.repository.reference.loader import read_json
 from src.adapter.repository.reference.okpd2 import FileOkpd2Reference
 from src.adapter.repository.supplier_index.protocols import CandidateRanking
-from src.models.search_context import SearchContext
-from src.models.supplier_search import SupplierCandidate
+from src.models.search.search_context import SearchContext
+from src.models.search.supplier_search import SupplierCandidate
 
 
 class FileSupplierIndex:

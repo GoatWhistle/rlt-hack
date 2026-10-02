@@ -2,9 +2,9 @@ import asyncio
 import math
 from dataclasses import replace
 
-from src.models.search_context import SearchContext
-from src.models.supplier_search import SupplierCandidate
-from src.models.upload import Notice
+from src.models.operations.upload import Notice
+from src.models.search.search_context import SearchContext
+from src.models.search.supplier_search import SupplierCandidate
 from src.service.errors import ServiceError
 from src.service.search.protocols import (
     ContextualSupplierIndex,

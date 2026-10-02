@@ -1,7 +1,7 @@
 import re
 from uuid import UUID
 
-from src.controller.http.schema import plain_decimal, score
+from src.controller.http.response.schema import plain_decimal, score
 from src.controller.search.dto import (
     AttributeDto,
     CandidateDto,
@@ -25,16 +25,16 @@ from src.controller.search.dto import (
     SourceDto,
     WarningDto,
 )
-from src.models.candidate import Highlight, ProductMatch, SupplierCandidate
+from src.models.catalog.supplier import Supplier
+from src.models.company.evidence import Evidence, is_web_url
+from src.models.company.purchase import PurchaseRecord, PurchaseSummary
 from src.models.enums import ItemType, Locale
-from src.models.evidence import Evidence, is_web_url
-from src.models.offer_summary import OfferSummary
-from src.models.purchase import PurchaseRecord, PurchaseSummary
-from src.models.query_item import QueryItem
-from src.models.scoring import ScoreBreakdown
-from src.models.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
-from src.models.search_result import PipelineInfo, SearchResult, SearchSummary, SearchWarning
-from src.models.supplier import Supplier
+from src.models.ranking.scoring import ScoreBreakdown
+from src.models.search.candidate import Highlight, ProductMatch, SupplierCandidate
+from src.models.search.offer_summary import OfferSummary
+from src.models.search.query_item import QueryItem
+from src.models.search.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
+from src.models.search.search_result import PipelineInfo, SearchResult, SearchSummary, SearchWarning
 from src.service.errors import SearchNotFoundError
 
 EMAIL = re.compile(r"[^@\s?&#/:]+@[^@\s?&#/:]+\.[^@\s?&#/:]+")

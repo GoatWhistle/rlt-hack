@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator, Sequence
 from typing import Protocol
 from uuid import UUID
 
-from src.models.product import Product
+from src.models.catalog.product import Product
 
 
 class ProductPage(Protocol):

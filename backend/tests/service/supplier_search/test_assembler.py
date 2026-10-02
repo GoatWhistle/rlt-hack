@@ -1,6 +1,6 @@
+from src.models.company.purchase import PurchaseRecord, PurchaseSummary
 from src.models.enums import CompanyRole, MatchBasis, PurchaseOutcome
-from src.models.purchase import PurchaseRecord, PurchaseSummary
-from src.models.scoring import ChannelRank, Score
+from src.models.ranking.scoring import ChannelRank, Score
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
 from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver

@@ -3,11 +3,17 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request, Response
 
-from src.controller.http.caching import entity_tag, fresh, not_modified, revalidated, uncached
-from src.controller.http.locale import request_locale
-from src.controller.http.metrics import Metrics
-from src.controller.http.openapi import UuidPath, created, errors
-from src.controller.http.openapi import not_modified as conditional
+from src.controller.http.middleware.caching import (
+    entity_tag,
+    fresh,
+    not_modified,
+    revalidated,
+    uncached,
+)
+from src.controller.http.middleware.locale import request_locale
+from src.controller.http.middleware.metrics import Metrics
+from src.controller.http.response.openapi import UuidPath, created, errors
+from src.controller.http.response.openapi import not_modified as conditional
 from src.controller.http.state import Services, metrics, services
 from src.controller.search.dto import RecentSearchesDto, SearchRequestDto, SearchResponseDto
 from src.controller.search.mapper import parse_search_id, to_query, to_response, to_summary

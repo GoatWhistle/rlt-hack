@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from src.controller.http.correlation import RequestIdFilter
-from src.controller.http.log_format import JsonFormatter, configure_logging
+from src.controller.http.middleware.correlation import RequestIdFilter
+from src.controller.http.middleware.log_format import JsonFormatter, configure_logging
 
 LOG_CONFIG = Path(__file__).resolve().parents[2] / "src" / "controller" / "api" / "logging.json"
 

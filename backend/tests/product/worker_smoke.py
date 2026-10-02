@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.adapter.product.moscow.parse import parse_product
-from src.models.product import Product
+from src.models.catalog.product import Product
 from src.service.product.worker import ProductSyncWorker
 
 

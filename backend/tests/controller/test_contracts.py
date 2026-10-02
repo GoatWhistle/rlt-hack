@@ -9,16 +9,16 @@ import httpx
 import pytest
 from pydantic import BaseModel
 
-from src.controller.http.error_body import ApiErrorDto
+from src.controller.http.response.error_body import ApiErrorDto
 from src.controller.search.dto import RecentSearchesDto, SearchRequestDto, SearchResponseDto
 from src.controller.search.mapper import to_query
 from src.controller.supplier.dto import SupplierProfileDto
-from src.models.candidate import Highlight
+from src.models.company.purchase import PurchaseRecord, PurchaseSummary
 from src.models.enums import Availability, HighlightCode, ItemType, Locale, PurchaseOutcome
-from src.models.offer_summary import OfferAttribute, OfferSummary
-from src.models.purchase import PurchaseRecord, PurchaseSummary
-from src.models.search import SearchFilters
-from src.models.search_result import SearchResult
+from src.models.search.candidate import Highlight
+from src.models.search.offer_summary import OfferAttribute, OfferSummary
+from src.models.search.search import SearchFilters
+from src.models.search.search_result import SearchResult
 from tests.fakes.domain import make_candidate, make_evidence, make_result, make_supplier, uid
 from tests.fakes.http import FakeServiceProvider
 

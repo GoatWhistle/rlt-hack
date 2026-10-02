@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from src.models.health import Readiness
+from src.models.operations.health import Readiness
 
 
 class ReadinessChecking(Protocol):

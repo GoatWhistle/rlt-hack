@@ -4,11 +4,11 @@ from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from fastapi import FastAPI
 
 from src.controller.health.router import router as health_router
-from src.controller.http.errors import install_error_handlers
-from src.controller.http.metrics import Metrics
-from src.controller.http.middleware import RequestContextMiddleware
-from src.controller.http.openapi import operation_id
+from src.controller.http.middleware.metrics import Metrics
+from src.controller.http.middleware.pipeline import RequestContextMiddleware
 from src.controller.http.protocols import BackgroundTask, ServiceProvider
+from src.controller.http.response.errors import install_error_handlers
+from src.controller.http.response.openapi import operation_id
 from src.controller.http.settings import ApiSettings
 from src.controller.http.state import Services
 from src.controller.metrics.router import router as metrics_router

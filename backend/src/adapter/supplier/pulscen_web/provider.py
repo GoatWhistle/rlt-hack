@@ -22,8 +22,8 @@ from src.adapter.supplier import page
 from src.adapter.supplier.errors import BotProtectionError, SourceUnavailableError
 from src.adapter.supplier.pulscen_web import parsing, sitemaps
 from src.adapter.supplier.pulscen_web.builders import ModelBuilder
-from src.models.package import SupplierPackage
-from src.models.source import Source
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
 
 logger = logging.getLogger(__name__)
 

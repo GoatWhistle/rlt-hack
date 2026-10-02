@@ -4,7 +4,7 @@ from typing import cast
 from fastapi import Request
 
 from src.controller.health.protocols import ReadinessChecking
-from src.controller.http.metrics import Metrics
+from src.controller.http.middleware.metrics import Metrics
 from src.controller.http.protocols import BackgroundTask, ServiceProvider
 from src.controller.http.settings import ApiSettings
 from src.controller.search.protocols import SupplierSearching

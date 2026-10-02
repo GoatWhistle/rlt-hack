@@ -17,11 +17,11 @@ sys.path.insert(0, str(ROOT))
 from src.adapter.client.errors import RegistryDumpError
 from src.adapter.client.msp_registry import MspRegistryDump
 from src.adapter.repository.reference import load_okved_roles
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
+from src.models.company.registry import MspCompany
 from src.models.enums import SourceType, SupplierRole
-from src.models.package import SupplierPackage
-from src.models.registry import MspCompany
-from src.models.source import Source
-from src.models.supplier import Supplier
 from src.service.errors import EmptyRegistryDumpError
 from src.service.registry import RegistryImportService, SupplierRegistryEnricher
 from src.service.registry.roles import role_of

@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 from src.models.enums import ItemOrigin
-from src.models.query_item import QueryItem, SearchRequest
+from src.models.search.query_item import QueryItem, SearchRequest
 
 SCHEMA_VERSION = "1.0"
 MAX_CANDIDATE_LIMIT = 100

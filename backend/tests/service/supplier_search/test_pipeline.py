@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from src.models.enums import ItemOrigin, WarningCode
-from src.models.search_result import SearchWarning
+from src.models.search.search_result import SearchWarning
 from tests.fakes.domain import make_item, make_query
 from tests.fakes.ports import FakeInterpreter
 from tests.service.supplier_search.test_service import Harness

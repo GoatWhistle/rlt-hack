@@ -2,9 +2,9 @@ from collections.abc import Sequence
 from datetime import datetime
 from uuid import UUID
 
-from src.models.candidate import ProductMatch
+from src.models.company.offer_evidence import OfferEvidence
 from src.models.enums import MatchBasis
-from src.models.offer_evidence import OfferEvidence
+from src.models.search.candidate import ProductMatch
 
 
 def is_stock(card: OfferEvidence) -> bool:

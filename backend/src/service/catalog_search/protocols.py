@@ -1,7 +1,7 @@
 from typing import Protocol
 
-from src.models.embedding import OfferSearchHit
-from src.models.search import SearchFilters
+from src.models.ranking.embedding import OfferSearchHit
+from src.models.search.search import SearchFilters
 
 
 class QueryEncoder(Protocol):

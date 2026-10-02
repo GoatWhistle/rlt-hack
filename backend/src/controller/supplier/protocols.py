@@ -1,7 +1,7 @@
 from typing import Protocol
 from uuid import UUID
 
-from src.models.supplier_profile import SupplierProfile
+from src.models.company.supplier_profile import SupplierProfile
 
 
 class SupplierProfiles(Protocol):

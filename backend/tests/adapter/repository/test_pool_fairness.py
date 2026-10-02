@@ -3,8 +3,8 @@ import time
 
 import pytest
 
-from src.adapter.repository.clickhouse.gateway import ConnectGateway
-from src.adapter.repository.clickhouse.pool.gateway import GatewayPool, fair_share
+from src.adapter.repository.clickhouse.engine.gateway import ConnectGateway
+from src.adapter.repository.clickhouse.engine.pool.gateway import GatewayPool, fair_share
 from tests.adapter.repository.pool_fakes import Driver, FakeDriver, select_many
 
 QUERY_SECONDS = 0.05

@@ -3,15 +3,15 @@ import re
 import httpx
 
 from src.controller.http.app import create_app
-from src.controller.http.settings import ApiSettings
-from src.controller.http.timing import (
+from src.controller.http.middleware.timing import (
     ServerTimingStages,
     bind_stages,
     release_stages,
     server_timing,
 )
-from src.models.search import SearchQuery
-from src.models.search_result import SearchResult
+from src.controller.http.settings import ApiSettings
+from src.models.search.search import SearchQuery
+from src.models.search.search_result import SearchResult
 from tests.fakes.http import FakeServiceProvider, FakeSupplierSearching
 
 STAGED = re.compile(r"^app;dur=\d+\.\d, parse;dur=\d+\.\d, channels;dur=\d+\.\d$")

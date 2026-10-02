@@ -16,10 +16,10 @@ sys.path.insert(0, str(ROOT))
 
 from src.adapter.supplier import identity
 from src.adapter.supplier.offer_identity import OfferIdentityRules
-from src.models.coverage import CoverageReport
+from src.models.catalog.offer import Offer
+from src.models.catalog.source import Source
 from src.models.enums import SourceType
-from src.models.offer import Offer
-from src.models.source import Source
+from src.models.operations.coverage import CoverageReport
 from src.service.supplier.reidentify import OfferReidentifyService
 
 EARLY = datetime(2026, 9, 1, tzinfo=UTC)

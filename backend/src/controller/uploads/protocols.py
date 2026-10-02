@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from src.models.upload import Notice, Upload
+from src.models.operations.upload import Notice, Upload
 
 
 class UploadManager(Protocol):

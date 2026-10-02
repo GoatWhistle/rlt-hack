@@ -1,9 +1,9 @@
 from collections.abc import Sequence
 from dataclasses import replace
 
-from src.models.candidate import Highlight, SupplierCandidate
 from src.models.enums import CandidateStatus, HighlightCode
-from src.models.scoring import Score, ScoreBreakdown
+from src.models.ranking.scoring import Score, ScoreBreakdown
+from src.models.search.candidate import Highlight, SupplierCandidate
 from src.service.supplier_search.assembly.draft import CandidateDraft
 from src.service.supplier_search.policy.outcome import PolicyVerdict
 from src.service.supplier_search.ranking.components import (

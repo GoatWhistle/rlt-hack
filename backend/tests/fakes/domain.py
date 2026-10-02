@@ -2,7 +2,12 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID, uuid5
 
-from src.models.candidate import Highlight, ProductMatch, SupplierCandidate
+from src.models.catalog.offer import Offer
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
+from src.models.company.evidence import Evidence
+from src.models.company.offer_evidence import OfferEvidence
+from src.models.company.purchase import PurchaseSummary
 from src.models.enums import (
     Availability,
     CandidateStatus,
@@ -17,16 +22,11 @@ from src.models.enums import (
     SupplierRole,
     VerificationStatus,
 )
-from src.models.evidence import Evidence
-from src.models.offer import Offer
-from src.models.offer_evidence import OfferEvidence
-from src.models.purchase import PurchaseSummary
-from src.models.query_item import Quantity, QueryItem, SearchRequest
-from src.models.scoring import ChannelRank, Score, ScoreBreakdown
-from src.models.search import CandidateLimit, SearchQuery, SearchText
-from src.models.search_result import PipelineInfo, SearchResult
-from src.models.source import Source
-from src.models.supplier import Supplier
+from src.models.ranking.scoring import ChannelRank, Score, ScoreBreakdown
+from src.models.search.candidate import Highlight, ProductMatch, SupplierCandidate
+from src.models.search.query_item import Quantity, QueryItem, SearchRequest
+from src.models.search.search import CandidateLimit, SearchQuery, SearchText
+from src.models.search.search_result import PipelineInfo, SearchResult
 
 MOMENT = datetime(2026, 10, 1, 12, 0, tzinfo=UTC)
 CHECKED = datetime(2026, 9, 29, 8, 0, tzinfo=UTC)

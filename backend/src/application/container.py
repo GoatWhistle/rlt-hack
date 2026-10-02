@@ -16,21 +16,23 @@ from types import TracebackType
 
 from src.adapter.client.msp_registry import MspRegistryDump
 from src.adapter.product.moscow.provider import MoscowProductProvider
-from src.adapter.repository.clickhouse.archive import ClickHouseArchiveRepository
-from src.adapter.repository.clickhouse.client import create_client
-from src.adapter.repository.clickhouse.config import ClickHouseConfig
-from src.adapter.repository.clickhouse.gateway import ConnectGateway
-from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepository
-from src.adapter.repository.clickhouse.migrator import Migrator
-from src.adapter.repository.clickhouse.moscow_product import ClickHouseMoscowProductRepository
-from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
-from src.adapter.repository.clickhouse.package import ClickHousePackageRepository
-from src.adapter.repository.clickhouse.pool.control import ControlChannel
-from src.adapter.repository.clickhouse.pool.gateway import GatewayPool
-from src.adapter.repository.clickhouse.registry import ClickHouseMspRegistryRepository
-from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
-from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
-from src.adapter.repository.clickhouse.versions import VersionSequencer
+from src.adapter.repository.clickhouse.catalog.journal import ClickHouseJournalRepository
+from src.adapter.repository.clickhouse.catalog.moscow_product import (
+    ClickHouseMoscowProductRepository,
+)
+from src.adapter.repository.clickhouse.catalog.offer import ClickHouseOfferRepository
+from src.adapter.repository.clickhouse.catalog.package import ClickHousePackageRepository
+from src.adapter.repository.clickhouse.catalog.registry import ClickHouseMspRegistryRepository
+from src.adapter.repository.clickhouse.catalog.source import ClickHouseSourceRepository
+from src.adapter.repository.clickhouse.catalog.supplier import ClickHouseSupplierRepository
+from src.adapter.repository.clickhouse.engine.client import create_client
+from src.adapter.repository.clickhouse.engine.config import ClickHouseConfig
+from src.adapter.repository.clickhouse.engine.gateway import ConnectGateway
+from src.adapter.repository.clickhouse.engine.migrator import Migrator
+from src.adapter.repository.clickhouse.engine.pool.control import ControlChannel
+from src.adapter.repository.clickhouse.engine.pool.gateway import GatewayPool
+from src.adapter.repository.clickhouse.engine.versions import VersionSequencer
+from src.adapter.repository.clickhouse.search.archive import ClickHouseArchiveRepository
 from src.adapter.repository.reference import (
     load_classifier_reference,
     load_normalizer_reference,
@@ -65,8 +67,8 @@ from src.adapter.supplier.yml_feed import PROVIDER_NAME as YML_FEED
 from src.adapter.supplier.yml_feed import YmlFeedProvider
 from src.adapter.system.clock import SystemClock
 from src.application.config import AppConfig, api_clickhouse
+from src.models.catalog.source import Source
 from src.models.enums import SourceType
-from src.models.source import Source
 from src.service.classifier import OfferClassifier
 from src.service.normalizer import OfferNormalizer
 from src.service.product.worker import ProductCollectionWorker, ProductSyncWorker

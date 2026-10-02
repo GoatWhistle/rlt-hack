@@ -2,14 +2,14 @@ from collections.abc import Sequence
 from datetime import datetime
 from uuid import UUID
 
-from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
+from src.adapter.repository.clickhouse.catalog.offer import ClickHouseOfferRepository
+from src.adapter.repository.clickhouse.catalog.source import ClickHouseSourceRepository
+from src.adapter.repository.clickhouse.catalog.supplier import ClickHouseSupplierRepository
+from src.adapter.repository.clickhouse.engine.versions import VersionSequencer
 from src.adapter.repository.clickhouse.protocols import SqlGateway
-from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
-from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
-from src.adapter.repository.clickhouse.versions import VersionSequencer
-from src.models.offer import Offer
-from src.models.source import Source
-from src.models.supplier import Supplier
+from src.models.catalog.offer import Offer
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 from tests.fakes.domain import CHECKED, uid
 
 DATABASE = "supplier_search"

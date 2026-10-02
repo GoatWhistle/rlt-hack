@@ -8,7 +8,7 @@ from uuid import uuid4
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from src.models.embedding import EmbeddingDocument
+from src.models.ranking.embedding import EmbeddingDocument
 from src.service.embedding.worker import EmbeddingWorker
 
 

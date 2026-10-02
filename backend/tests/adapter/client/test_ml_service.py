@@ -10,9 +10,9 @@ import pytest
 from src.adapter.client.errors import MlProtocolError, MlServiceError, MlServiceUnavailableError
 from src.adapter.client.ml_service.retriever import MlServiceRetriever, no_correlation, utc_now
 from src.models.enums import ItemOrigin
-from src.models.query_item import QueryItem, SearchRequest
-from src.models.retrieval import ItemHit
-from src.models.search import SearchFilters, SearchQuery, SearchText
+from src.models.ranking.retrieval import ItemHit
+from src.models.search.query_item import QueryItem, SearchRequest
+from src.models.search.search import SearchFilters, SearchQuery, SearchText
 from tests.fakes.domain import MOMENT, make_item, make_request, uid
 
 REQUEST_ID = uid("request")

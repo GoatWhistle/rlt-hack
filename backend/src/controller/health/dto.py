@@ -1,8 +1,8 @@
 from typing import Literal
 
-from src.controller.http.schema import CamelModel
+from src.controller.http.response.schema import CamelModel
 from src.models.enums import ComponentState
-from src.models.health import Readiness
+from src.models.operations.health import Readiness
 
 
 class LiveDto(CamelModel):

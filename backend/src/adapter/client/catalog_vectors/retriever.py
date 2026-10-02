@@ -5,10 +5,10 @@ import httpx
 from pydantic import BaseModel, Field, ValidationError
 
 from src.adapter.client.errors import MlProtocolError, MlServiceError
-from src.adapter.repository.clickhouse.retrieval.tally import HitTally
+from src.adapter.repository.clickhouse.search.retrieval.tally import HitTally
 from src.models.enums import RetrievalChannel
-from src.models.query_item import QueryItem, SearchRequest
-from src.models.retrieval import RetrievalHits
+from src.models.ranking.retrieval import RetrievalHits
+from src.models.search.query_item import QueryItem, SearchRequest
 
 
 class OfferHitDto(BaseModel):

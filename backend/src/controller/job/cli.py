@@ -16,7 +16,7 @@ from uuid import UUID, uuid4
 from src.application.config import AppConfig
 from src.application.container import Container
 from src.controller.job.dto import NormalizeCommand, RegistryImportCommand, SyncCommand
-from src.models.coverage import CoverageReport
+from src.models.operations.coverage import CoverageReport
 from src.service.errors import (
     ProviderNotConfiguredError,
     RegistryNotConfiguredError,

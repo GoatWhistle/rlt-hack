@@ -44,7 +44,7 @@ def test_service_contexts_stay_apart(path: str, statement: str, found: bool) -> 
 def test_any_is_kept_at_the_sql_boundary() -> None:
     typed = "from typing import Any\n"
     assert [item.rule for item in no_any(snippet(typed))] == ["no-any"]
-    boundary = "src/adapter/repository/clickhouse/pool/gateway.py"
+    boundary = "src/adapter/repository/clickhouse/engine/pool/gateway.py"
     assert no_any(snippet(typed, boundary)) == []
     assert no_any(snippet("from typing import Protocol\n")) == []
 

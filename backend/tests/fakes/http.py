@@ -2,11 +2,11 @@ from dataclasses import dataclass, field, replace
 from uuid import UUID
 
 from src.controller.http.protocols import BackgroundTask
+from src.models.company.supplier_profile import SupplierProfile
 from src.models.enums import CompanyRole, ComponentState
-from src.models.health import ComponentHealth, Readiness
-from src.models.search import SearchQuery
-from src.models.search_result import SearchResult, SearchSummary
-from src.models.supplier_profile import SupplierProfile
+from src.models.operations.health import ComponentHealth, Readiness
+from src.models.search.search import SearchQuery
+from src.models.search.search_result import SearchResult, SearchSummary
 from src.service.errors import SearchNotFoundError, SupplierNotFoundError
 from tests.fakes.domain import (
     make_candidate,

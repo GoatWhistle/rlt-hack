@@ -34,10 +34,10 @@ from src.adapter.supplier.supl_biz_web.state import (
     parse_profile,
     parse_proposal,
 )
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
-from src.models.source import Source
-from src.models.supplier import Supplier
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 
 logger = logging.getLogger(__name__)
 

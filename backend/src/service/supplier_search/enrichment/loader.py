@@ -3,10 +3,10 @@ import logging
 from collections.abc import Awaitable, Mapping, Sequence
 from uuid import UUID
 
+from src.models.company.offer_evidence import OfferEvidence
 from src.models.enums import EnrichmentSource, WarningCode
-from src.models.offer_evidence import OfferEvidence
-from src.models.query_item import QueryItem
-from src.models.search_result import SearchWarning
+from src.models.search.query_item import QueryItem
+from src.models.search.search_result import SearchWarning
 from src.service.supplier_search.enrichment.bundle import Enrichment
 from src.service.supplier_search.fusion.candidate import FusedCandidate
 from src.service.supplier_search.protocols import OfferCatalog, PurchaseHistory, SupplierDirectory

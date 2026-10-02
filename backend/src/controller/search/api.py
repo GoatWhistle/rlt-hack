@@ -10,14 +10,14 @@ from pydantic import BaseModel, Field
 from src.application.catalog_search import catalog_search
 from src.application.supplier_search import supplier_search
 from src.application.uploads import upload_service
-from src.controller.http.errors import install_error_handlers
-from src.controller.http.middleware import RequestContextMiddleware
+from src.controller.http.middleware.pipeline import RequestContextMiddleware
+from src.controller.http.response.errors import install_error_handlers
 from src.controller.search.admission import Admission
 from src.controller.search.catalog import router as catalog_router
 from src.controller.search.protocols import SearchEngine
 from src.controller.uploads.api import ENGINE, router
 from src.models.errors import EmptySearchTextError
-from src.models.upload import Notice
+from src.models.operations.upload import Notice
 from src.service.errors import SearchUnavailableError, StorageUnavailableError
 
 logger = logging.getLogger(__name__)

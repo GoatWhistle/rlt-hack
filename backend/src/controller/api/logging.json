@@ -3,7 +3,7 @@
   "disable_existing_loggers": false,
   "handlers": {
     "json": {
-      "()": "src.controller.http.log_format.json_handler"
+      "()": "src.controller.http.middleware.log_format.json_handler"
     }
   },
   "loggers": {

@@ -24,11 +24,11 @@ import httpx
 from src.adapter.supplier import identity, page, sitemap
 from src.adapter.supplier.errors import SourceUnavailableError
 from src.adapter.supplier.inn import find_inn, find_kpp, normalize_inn
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 from src.models.enums import ItemType, SupplierRole, VerificationStatus
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
-from src.models.source import Source
-from src.models.supplier import Supplier
 
 logger = logging.getLogger(__name__)
 

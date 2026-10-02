@@ -10,7 +10,7 @@ import pyarrow.parquet as pq
 from catboost import CatBoostRanker, Pool
 
 from src.adapter.repository.ranker.features import FEATURES, feature_row
-from src.models.search_context import SearchContext
+from src.models.search.search_context import SearchContext
 
 
 class CandidateRanker:

@@ -6,9 +6,9 @@ import time
 
 import pytest
 
-from src.adapter.repository.clickhouse.pool.control import KILL_QUERY, ControlChannel
-from src.adapter.repository.clickhouse.pool.gateway import GatewayPool
-from src.adapter.repository.clickhouse.probe.probe import ClickHouseProbe
+from src.adapter.repository.clickhouse.engine.pool.control import KILL_QUERY, ControlChannel
+from src.adapter.repository.clickhouse.engine.pool.gateway import GatewayPool
+from src.adapter.repository.clickhouse.engine.probe.probe import ClickHouseProbe
 from tests.adapter.repository.pool_fakes import Driver, KillSwitch
 
 QUERY_ID = re.compile(r"[0-9a-f]{32}")

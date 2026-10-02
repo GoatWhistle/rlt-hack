@@ -16,12 +16,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.adapter.client.errors import EmbeddingClientError
 from src.adapter.client.ollama.client import OllamaEmbedder
-from src.adapter.repository.clickhouse.embedding import ClickHouseEmbeddingRepository
-from src.adapter.repository.clickhouse.migrator import Migrator
-from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
-from src.adapter.repository.clickhouse.versions import VersionSequencer
+from src.adapter.repository.clickhouse.catalog.offer import ClickHouseOfferRepository
+from src.adapter.repository.clickhouse.engine.migrator import Migrator
+from src.adapter.repository.clickhouse.engine.versions import VersionSequencer
+from src.adapter.repository.clickhouse.search.embedding import ClickHouseEmbeddingRepository
+from src.models.catalog.offer import Offer
 from src.models.enums import Availability
-from src.models.offer import Offer
 from src.service.embedding.worker import EmbeddingWorker
 from src.service.errors import ServiceError
 from tests.clickhouse.chdb_gateway import ChdbGateway

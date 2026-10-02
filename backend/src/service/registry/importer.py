@@ -12,8 +12,8 @@
 import logging
 from collections.abc import Sequence
 
-from src.models.enrichment import RegistryImportResult
-from src.models.registry import MspCompany
+from src.models.company.enrichment import RegistryImportResult
+from src.models.company.registry import MspCompany
 from src.service.errors import EmptyRegistryDumpError
 from src.service.registry.protocols import RegistryDump, RegistryStore
 

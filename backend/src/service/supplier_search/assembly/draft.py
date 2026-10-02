@@ -1,13 +1,13 @@
 from dataclasses import dataclass, field
 from uuid import UUID
 
-from src.models.candidate import Highlight, ProductMatch
+from src.models.catalog.supplier import Supplier
+from src.models.company.evidence import Evidence
+from src.models.company.offer_evidence import OfferEvidence
+from src.models.company.purchase import PurchaseSummary
 from src.models.enums import CompanyRole
-from src.models.evidence import Evidence
-from src.models.offer_evidence import OfferEvidence
-from src.models.purchase import PurchaseSummary
-from src.models.scoring import ChannelRank, Score
-from src.models.supplier import Supplier
+from src.models.ranking.scoring import ChannelRank, Score
+from src.models.search.candidate import Highlight, ProductMatch
 
 
 @dataclass(frozen=True, slots=True)

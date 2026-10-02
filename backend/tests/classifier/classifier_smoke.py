@@ -18,10 +18,10 @@ from src.adapter.repository.reference import (
     load_classifier_reference,
     load_normalizer_reference,
 )
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
 from src.models.enums import ClassificationMethod, ItemType, SourceType
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
-from src.models.source import Source
 from src.service.classifier import OfferClassifier
 from src.service.classifier.taxonomy import level_of, normalize_code, rubric_of
 from src.service.normalizer import OfferNormalizer

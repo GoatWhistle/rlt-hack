@@ -8,9 +8,9 @@ from uuid import UUID
 from src.adapter.supplier import identity, jsonld, page
 from src.adapter.supplier.errors import ContentFormatError
 from src.adapter.supplier.inn import find_inn, find_kpp, normalize_inn
+from src.models.catalog.offer import Offer
+from src.models.catalog.supplier import Supplier
 from src.models.enums import Availability, ItemType, SupplierRole, VerificationStatus
-from src.models.offer import Offer
-from src.models.supplier import Supplier
 
 _PRODUCER = re.compile(r"^/producers/(\d+)/[^/]+/?$")
 _FEATURE_LABELS = ("характеристики", "условия продажи", "минимальный заказ")

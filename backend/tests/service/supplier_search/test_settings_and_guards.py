@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 import pytest
 
-from src.models.retrieval import ChannelHit, RetrievalHits
+from src.models.ranking.retrieval import ChannelHit, RetrievalHits
 from src.service.supplier_search.enrichment.loader import EnrichmentLoader
 from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from src.service.supplier_search.retrieval.runner import ChannelRunner

@@ -2,7 +2,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
-from src.adapter.repository.clickhouse.search_archive.archive import ClickHouseSearchArchive
+from src.adapter.repository.clickhouse.search.search_archive.archive import ClickHouseSearchArchive
 from src.application.config import AppConfig
 from src.application.container import Container
 from src.application.deferred_gateway import DeferredShare

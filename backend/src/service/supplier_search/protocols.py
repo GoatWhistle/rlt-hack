@@ -4,13 +4,13 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
-from src.models.offer_evidence import OfferEvidence
-from src.models.purchase import PurchaseSummary
-from src.models.query_item import QueryItem, SearchRequest
-from src.models.retrieval import RetrievalHits
-from src.models.search import SearchQuery
-from src.models.search_result import SearchResult, SearchSummary
-from src.models.supplier import Supplier
+from src.models.catalog.supplier import Supplier
+from src.models.company.offer_evidence import OfferEvidence
+from src.models.company.purchase import PurchaseSummary
+from src.models.ranking.retrieval import RetrievalHits
+from src.models.search.query_item import QueryItem, SearchRequest
+from src.models.search.search import SearchQuery
+from src.models.search.search_result import SearchResult, SearchSummary
 
 
 class QueryInterpreter(Protocol):

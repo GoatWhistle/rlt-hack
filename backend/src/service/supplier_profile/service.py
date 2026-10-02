@@ -1,8 +1,8 @@
 import asyncio
 from uuid import UUID
 
-from src.models.company_role import assess_role
-from src.models.supplier_profile import SupplierProfile
+from src.models.company.company_role import assess_role
+from src.models.company.supplier_profile import SupplierProfile
 from src.service.errors import SupplierNotFoundError
 from src.service.supplier_profile.protocols import OfferCatalog, SupplierDirectory
 

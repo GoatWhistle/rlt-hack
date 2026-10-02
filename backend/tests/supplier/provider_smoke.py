@@ -25,6 +25,7 @@ from src.adapter.supplier.schema_org_web import SchemaOrgWebProvider
 from src.adapter.supplier.supplier_dataset import SupplierDatasetProvider
 from src.adapter.supplier.texzakaz_web import TexZakazWebProvider
 from src.adapter.supplier.yml_feed import YmlFeedProvider
+from src.models.catalog.source import Source
 from src.models.enums import (
     Availability,
     ItemType,
@@ -32,7 +33,6 @@ from src.models.enums import (
     SupplierRole,
     VerificationStatus,
 )
-from src.models.source import Source
 from tests.supplier.fixtures import (
     ABOUTPARTNER_CARD,
     ABOUTPARTNER_SERVICE,

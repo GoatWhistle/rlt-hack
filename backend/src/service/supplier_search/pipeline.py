@@ -1,10 +1,10 @@
 from collections.abc import Sequence
 
 from src.models.enums import ItemOrigin, SearchStage, WarningCode
-from src.models.match import MatchReport
-from src.models.query_item import QueryItem, SearchRequest
-from src.models.search import SearchQuery
-from src.models.search_result import PipelineInfo, SearchWarning
+from src.models.search.match import MatchReport
+from src.models.search.query_item import QueryItem, SearchRequest
+from src.models.search.search import SearchQuery
+from src.models.search.search_result import PipelineInfo, SearchWarning
 from src.service.errors import UninterpretableQueryError
 from src.service.supplier_search.matcher import SupplierMatcher
 from src.service.supplier_search.protocols import Clock, QueryInterpreter, StageTimer

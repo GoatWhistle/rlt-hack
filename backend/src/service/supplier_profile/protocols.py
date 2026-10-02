@@ -2,8 +2,8 @@ from collections.abc import Mapping, Sequence
 from typing import Protocol
 from uuid import UUID
 
-from src.models.offer_evidence import OfferEvidence
-from src.models.supplier import Supplier
+from src.models.catalog.supplier import Supplier
+from src.models.company.offer_evidence import OfferEvidence
 
 
 class SupplierDirectory(Protocol):

@@ -3,10 +3,14 @@ from datetime import timedelta
 
 import pytest
 
-from src.adapter.repository.clickhouse.offer_read.catalog import ClickHouseOfferCatalog
-from src.adapter.repository.clickhouse.probe.probe import ClickHouseProbe
-from src.adapter.repository.clickhouse.supplier_read.directory import ClickHouseSupplierDirectory
-from src.adapter.repository.clickhouse.supplier_read.identity import ClickHouseSupplierIdentity
+from src.adapter.repository.clickhouse.catalog.offer_read.catalog import ClickHouseOfferCatalog
+from src.adapter.repository.clickhouse.catalog.supplier_read.directory import (
+    ClickHouseSupplierDirectory,
+)
+from src.adapter.repository.clickhouse.catalog.supplier_read.identity import (
+    ClickHouseSupplierIdentity,
+)
+from src.adapter.repository.clickhouse.engine.probe.probe import ClickHouseProbe
 from src.models.enums import Availability, MatchStatus
 from tests.adapter.repository.seed import Seeder
 from tests.clickhouse.chdb_gateway import ChdbGateway

@@ -18,14 +18,14 @@ from uuid import UUID
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from src.models.classification import Classification
+from src.models.catalog.classification import Classification
+from src.models.catalog.normalization import Normalization
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 from src.models.enums import FetchStatus, SourceType, SupplierRole
-from src.models.journal import CrawlRun
-from src.models.normalization import Normalization
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
-from src.models.source import Source
-from src.models.supplier import Supplier
+from src.models.operations.journal import CrawlRun
 from src.service.supplier.worker import SupplierSyncWorker
 
 PROVIDER_DELAY = 0.2

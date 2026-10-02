@@ -5,7 +5,7 @@ import time
 import pytest
 from clickhouse_connect.driver.exceptions import DatabaseError, OperationalError
 
-from src.adapter.repository.clickhouse.pool.gateway import GatewayPool
+from src.adapter.repository.clickhouse.engine.pool.gateway import GatewayPool
 from src.adapter.repository.errors import RepositoryError, RepositoryUnavailableError
 from tests.adapter.repository.pool_fakes import Driver, select_many, transport_error
 

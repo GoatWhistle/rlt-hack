@@ -16,9 +16,9 @@ from uuid import UUID
 from src.adapter.supplier import identity
 from src.adapter.supplier.errors import ContentFormatError
 from src.adapter.supplier.inn import normalize_inn, normalize_kpp
+from src.models.catalog.offer import Offer
+from src.models.catalog.supplier import Supplier
 from src.models.enums import Availability, ItemType, VerificationStatus
-from src.models.offer import Offer
-from src.models.supplier import Supplier
 
 BASE_URL = "https://supl.biz"
 

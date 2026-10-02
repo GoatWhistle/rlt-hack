@@ -4,8 +4,8 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from src.models.errors import NoValidLotsError, TooManyNoticeRowsError
-from src.models.supplier_search import SupplierCandidate
-from src.models.upload import LotRecommendation, Notice, Upload
+from src.models.operations.upload import LotRecommendation, Notice, Upload
+from src.models.search.supplier_search import SupplierCandidate
 from src.service.errors import UploadQueueFullError
 from src.service.upload.evidence import relevant_evidence
 from src.service.upload.protocols import (

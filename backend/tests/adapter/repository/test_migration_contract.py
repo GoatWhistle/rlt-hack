@@ -2,8 +2,8 @@ import re
 
 import pytest
 
-from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR
-from src.adapter.repository.clickhouse.retrieval.prefixes import prefix_terms, term_count
+from src.adapter.repository.clickhouse.engine.migrator import MIGRATION_DIR
+from src.adapter.repository.clickhouse.search.retrieval.prefixes import prefix_terms, term_count
 
 FORWARD_FROM = "0013"
 

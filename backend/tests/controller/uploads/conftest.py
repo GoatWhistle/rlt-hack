@@ -6,7 +6,7 @@ import pytest
 
 from src.adapter.repository.uploads.files import FileUploads
 from src.controller.search.api import app
-from src.models.supplier_search import SupplierCandidate
+from src.models.search.supplier_search import SupplierCandidate
 from src.service.upload.worker import UploadService
 
 CSV = b"lot_id,procedure_name\nL1,paper\n"

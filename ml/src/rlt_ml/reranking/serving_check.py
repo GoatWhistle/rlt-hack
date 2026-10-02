@@ -14,7 +14,7 @@ import pyarrow.parquet as pq
 from catboost import CatBoostRanker
 from src.adapter.repository.ranker.model import CandidateRanker
 from src.adapter.repository.supplier_index.index import FileSupplierIndex
-from src.models.search_context import SearchContext
+from src.models.search.search_context import SearchContext
 
 from rlt_ml.common import sha256, write_json
 from rlt_ml.reranking.features import FEATURES

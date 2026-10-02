@@ -18,17 +18,17 @@ from chdb.session import Session
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from src.adapter.repository.clickhouse.embedding import ClickHouseEmbeddingRepository
-from src.adapter.repository.clickhouse.migrator import Migrator
-from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
-from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
-from src.adapter.repository.clickhouse.versions import VersionSequencer
-from src.models.classification import Classification
-from src.models.embedding import EmbeddingDocument
+from src.adapter.repository.clickhouse.catalog.offer import ClickHouseOfferRepository
+from src.adapter.repository.clickhouse.catalog.supplier import ClickHouseSupplierRepository
+from src.adapter.repository.clickhouse.engine.migrator import Migrator
+from src.adapter.repository.clickhouse.engine.versions import VersionSequencer
+from src.adapter.repository.clickhouse.search.embedding import ClickHouseEmbeddingRepository
+from src.models.catalog.classification import Classification
+from src.models.catalog.normalization import Normalization
+from src.models.catalog.offer import Offer
+from src.models.catalog.supplier import Supplier
 from src.models.enums import ClassificationMethod, ItemType, SupplierRole, VerificationStatus
-from src.models.normalization import Normalization
-from src.models.offer import Offer
-from src.models.supplier import Supplier
+from src.models.ranking.embedding import EmbeddingDocument
 from src.service.embedding.worker import document_text
 from tests.clickhouse.chdb_gateway import ChdbGateway
 

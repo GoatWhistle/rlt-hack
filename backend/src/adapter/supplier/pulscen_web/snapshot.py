@@ -14,9 +14,9 @@ from typing import Any
 from src.adapter.supplier.errors import ContentFormatError, SourceUnavailableError
 from src.adapter.supplier.pulscen_web import parsing
 from src.adapter.supplier.pulscen_web.builders import ModelBuilder
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
 from src.models.enums import Availability, SupplierRole
-from src.models.package import SupplierPackage
-from src.models.source import Source
 
 PROVIDER_NAME = "pulscen_snapshot"
 

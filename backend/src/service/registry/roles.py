@@ -7,8 +7,8 @@
 реальной деятельности говорят мало. Без совпадения роль остаётся неизвестной.
 """
 
+from src.models.company.registry import MspCompany
 from src.models.enums import SupplierRole
-from src.models.registry import MspCompany
 from src.service.registry.protocols import OkvedRoles
 
 

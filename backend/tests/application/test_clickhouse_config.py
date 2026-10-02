@@ -2,8 +2,8 @@ from dataclasses import replace
 
 import pytest
 
-from src.adapter.repository.clickhouse.client import session_settings
-from src.adapter.repository.clickhouse.config import ClickHouseConfig
+from src.adapter.repository.clickhouse.engine.client import session_settings
+from src.adapter.repository.clickhouse.engine.config import ClickHouseConfig
 from src.application.config import ApiStorageConfig, AppConfig, api_clickhouse
 
 VARIABLES = (

@@ -1,7 +1,7 @@
 import re
 from dataclasses import replace
 
-from src.models.supplier_search import SupplierCandidate, SupplierPurchase
+from src.models.search.supplier_search import SupplierCandidate, SupplierPurchase
 
 STOP_WORDS = frozenset({"поставка", "закупка", "для", "нужд", "оказание", "выполнение", "году"})
 

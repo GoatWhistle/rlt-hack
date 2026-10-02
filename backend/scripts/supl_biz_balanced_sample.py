@@ -19,8 +19,8 @@ from pathlib import Path
 
 from src.adapter.supplier import identity
 from src.adapter.supplier.supl_biz_web import PROVIDER_NAME, SuplBizWebProvider
+from src.models.catalog.source import Source
 from src.models.enums import SourceType
-from src.models.source import Source
 
 BASE_URL = "https://supl.biz/"
 

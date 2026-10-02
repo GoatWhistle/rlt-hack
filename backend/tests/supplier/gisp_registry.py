@@ -14,8 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.adapter.supplier import identity
 from src.adapter.supplier.errors import ContentFormatError, SourceUnavailableError
 from src.adapter.supplier.gisp_registry import GispRegistryProvider
+from src.models.catalog.source import Source
 from src.models.enums import SourceType, SupplierRole
-from src.models.source import Source
 
 URL = "https://gisp.gov.ru/pp719v2/pub/prod/"
 EXPORT = "https://gisp.gov.ru/export.xlsx"

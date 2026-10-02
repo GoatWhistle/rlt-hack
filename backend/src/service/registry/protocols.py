@@ -4,8 +4,8 @@ from collections.abc import AsyncIterator, Sequence
 from datetime import date
 from typing import Protocol
 
+from src.models.company.registry import MspCompany
 from src.models.enums import SupplierRole
-from src.models.registry import MspCompany
 
 
 class CompanyRegistry(Protocol):

@@ -5,12 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from src.adapter.repository.clickhouse.search_archive.result_dto import (
+from src.adapter.repository.clickhouse.search.search_archive.result_dto import (
     decode_result,
     encode_result,
 )
 from src.adapter.repository.errors import CorruptRecordError
-from src.models.candidate import Highlight, ProductMatch
+from src.models.company.purchase import PurchaseRecord, PurchaseSummary
 from src.models.enums import (
     Availability,
     CheckReason,
@@ -23,11 +23,11 @@ from src.models.enums import (
     PurchaseOutcome,
     WarningCode,
 )
-from src.models.offer_summary import OfferAttribute, OfferSummary
-from src.models.purchase import PurchaseRecord, PurchaseSummary
-from src.models.query_item import Quantity, QueryItem
-from src.models.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
-from src.models.search_result import SearchResult, SearchWarning
+from src.models.search.candidate import Highlight, ProductMatch
+from src.models.search.offer_summary import OfferAttribute, OfferSummary
+from src.models.search.query_item import Quantity, QueryItem
+from src.models.search.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
+from src.models.search.search_result import SearchResult, SearchWarning
 from tests.fakes.domain import make_candidate, make_evidence, make_result, make_supplier, uid
 
 

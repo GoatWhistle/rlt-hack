@@ -1,6 +1,7 @@
 from hypothesis import given
 from hypothesis import strategies as st
 
+from src.models.company.offer_evidence import OfferEvidence
 from src.models.enums import (
     Availability,
     CandidateStatus,
@@ -9,8 +10,7 @@ from src.models.enums import (
     MatchStatus,
     VerificationStatus,
 )
-from src.models.offer_evidence import OfferEvidence
-from src.models.scoring import ChannelRank, Score
+from src.models.ranking.scoring import ChannelRank, Score
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
 from src.service.supplier_search.assembly.draft import CandidateDraft
 from src.service.supplier_search.assembly.highlights import HighlightComposer

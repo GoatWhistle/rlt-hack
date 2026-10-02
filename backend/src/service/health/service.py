@@ -3,7 +3,7 @@ import logging
 from collections.abc import Sequence
 
 from src.models.enums import ComponentState
-from src.models.health import ComponentHealth, Readiness
+from src.models.operations.health import ComponentHealth, Readiness
 from src.service.health.protocols import DependencyProbe
 
 logger = logging.getLogger(__name__)

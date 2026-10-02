@@ -7,11 +7,11 @@ from uuid import UUID
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 from src.models.enums import ItemType, SourceType, VerificationStatus
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
-from src.models.source import Source
-from src.models.supplier import Supplier
 from src.service.supplier.batching import package_batches
 
 NOW = datetime(2026, 10, 2, 12, tzinfo=UTC)

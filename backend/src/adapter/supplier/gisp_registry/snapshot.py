@@ -10,10 +10,10 @@ from uuid import UUID
 from src.adapter.supplier.errors import ContentFormatError, SourceUnavailableError
 from src.adapter.supplier.gisp_registry.api import parse_organization, parse_product
 from src.adapter.supplier.gisp_registry.supplier import merge_supplier
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
-from src.models.source import Source
-from src.models.supplier import Supplier
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 
 FORMAT = "gisp-browser-snapshot-v1"
 

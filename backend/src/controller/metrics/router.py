@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
 
-from src.controller.http.metrics import Metrics
+from src.controller.http.middleware.metrics import Metrics
 from src.controller.http.state import metrics
 
 PROMETHEUS_TEXT = "text/plain; version=0.0.4; charset=utf-8"

@@ -2,7 +2,7 @@ import httpx
 import pytest
 
 from src.controller.search.api import app
-from src.models.upload import Notice, Upload
+from src.models.operations.upload import Notice, Upload
 from src.service.errors import StorageUnavailableError
 from tests.controller.uploads.conftest import CSV, FakeEngine, assert_error
 

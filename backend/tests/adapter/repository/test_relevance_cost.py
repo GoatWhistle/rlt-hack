@@ -2,8 +2,12 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
-from src.adapter.repository.clickhouse.history_search.retriever import ClickHouseHistoryRetriever
-from src.adapter.repository.clickhouse.offer_search.retriever import ClickHouseLexicalRetriever
+from src.adapter.repository.clickhouse.catalog.offer_search.retriever import (
+    ClickHouseLexicalRetriever,
+)
+from src.adapter.repository.clickhouse.search.history_search.retriever import (
+    ClickHouseHistoryRetriever,
+)
 from src.adapter.text.analyzer.analyzer import RussianAnalyzer
 from tests.fakes.domain import make_item, make_request, uid
 

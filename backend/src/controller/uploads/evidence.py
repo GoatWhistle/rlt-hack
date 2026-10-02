@@ -1,7 +1,7 @@
 from urllib.parse import quote
 
-from src.models.supplier_search import SupplierCandidate
-from src.models.upload import LotRecommendation, Upload
+from src.models.operations.upload import LotRecommendation, Upload
+from src.models.search.supplier_search import SupplierCandidate
 
 
 def purchases(upload: Upload, lot: LotRecommendation, candidate: SupplierCandidate) -> list[dict]:

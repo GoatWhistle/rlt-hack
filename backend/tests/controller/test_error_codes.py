@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from src.controller.http.errors import HTTP_CODES, INTERNAL, INVALID_REQUEST, KNOWN_ERRORS
+from src.controller.http.response.errors import HTTP_CODES, INTERNAL, INVALID_REQUEST, KNOWN_ERRORS
 from src.models.enums import EnrichmentSource, RetrievalChannel, WarningCode
 
 CONTRACTS = Path(__file__).resolve().parents[3] / "contracts"

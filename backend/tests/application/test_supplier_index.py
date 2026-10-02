@@ -13,7 +13,7 @@ from pyarrow import parquet
 from src.adapter.repository.errors import RepositoryUnavailableError
 from src.application import supplier_index as module
 from src.application.config import AppConfig
-from src.models.supplier_search import SupplierCandidate
+from src.models.search.supplier_search import SupplierCandidate
 from src.service.errors import StorageUnavailableError
 
 CARDS = [

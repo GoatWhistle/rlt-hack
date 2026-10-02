@@ -1,10 +1,10 @@
 from collections.abc import Sequence
 
-from src.models.candidate import ProductMatch
-from src.models.company_role import assess_role
-from src.models.offer_evidence import OfferEvidence
-from src.models.query_item import QueryItem
-from src.models.supplier import Supplier
+from src.models.catalog.supplier import Supplier
+from src.models.company.company_role import assess_role
+from src.models.company.offer_evidence import OfferEvidence
+from src.models.search.candidate import ProductMatch
+from src.models.search.query_item import QueryItem
 from src.service.supplier_search.assembly.draft import CandidateDraft
 from src.service.supplier_search.assembly.highlights import HighlightComposer
 from src.service.supplier_search.assembly.match import MatchResolver

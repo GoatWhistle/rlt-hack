@@ -17,7 +17,7 @@ from lxml import etree
 
 from src.adapter.client.errors import RegistryDumpError
 from src.adapter.client.msp_registry.document import parse_stream
-from src.models.registry import MspCompany
+from src.models.company.registry import MspCompany
 
 logger = logging.getLogger(__name__)
 

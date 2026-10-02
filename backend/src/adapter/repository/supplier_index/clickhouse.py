@@ -7,8 +7,8 @@ import numpy as np
 from src.adapter.repository.supplier_index.history import enrich_history
 from src.adapter.repository.supplier_index.index import FileSupplierIndex
 from src.adapter.repository.supplier_index.protocols import SqlGateway
-from src.models.search_context import SearchContext
-from src.models.supplier_search import SupplierCandidate, SupplierCatalogOffer
+from src.models.search.search_context import SearchContext
+from src.models.search.supplier_search import SupplierCandidate, SupplierCatalogOffer
 
 
 class ClickHouseSupplierIndex(FileSupplierIndex):

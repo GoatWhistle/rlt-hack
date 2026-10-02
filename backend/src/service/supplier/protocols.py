@@ -15,11 +15,11 @@ from datetime import datetime
 from typing import Protocol, runtime_checkable
 from uuid import UUID
 
-from src.models.coverage import CoverageReport
-from src.models.journal import CrawlRun
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
-from src.models.source import Source
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.operations.coverage import CoverageReport
+from src.models.operations.journal import CrawlRun
 
 
 class SupplierProvider(Protocol):

@@ -12,8 +12,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.adapter.supplier import identity
 from src.adapter.supplier.errors import ContentFormatError, SourceUnavailableError
 from src.adapter.supplier.moscow_suppliers import MoscowSuppliersProvider
+from src.models.catalog.source import Source
 from src.models.enums import SourceType
-from src.models.source import Source
 
 URL = "https://example.test/export"
 SOURCE = Source(

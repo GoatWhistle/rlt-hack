@@ -13,14 +13,14 @@ from chdb.session import Session
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from src.adapter.repository.clickhouse.migrator import Migrator
+from src.adapter.repository.clickhouse.engine.migrator import Migrator
 from src.adapter.repository.supplier_index.history import enrich_history
 from src.adapter.repository.supplier_index.history_import import import_history
 from src.adapter.repository.uploads.files import FileUploads
 from src.controller.search.api import app
 from src.controller.uploads.presentation import result
-from src.models.supplier_search import SupplierCandidate
-from src.models.upload import LotRecommendation, Notice, Upload
+from src.models.operations.upload import LotRecommendation, Notice, Upload
+from src.models.search.supplier_search import SupplierCandidate
 from src.service.upload.worker import UploadService
 from tests.clickhouse.chdb_gateway import ChdbGateway
 

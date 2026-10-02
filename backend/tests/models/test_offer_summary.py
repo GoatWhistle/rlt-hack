@@ -5,7 +5,7 @@ import pytest
 
 from src.models.enums import Availability, VerificationStatus
 from src.models.errors import InvalidSearchResultError
-from src.models.offer_summary import OfferAttribute, OfferSummary, notable_attributes
+from src.models.search.offer_summary import OfferAttribute, OfferSummary, notable_attributes
 from tests.fakes.domain import (
     make_candidate,
     make_offer,

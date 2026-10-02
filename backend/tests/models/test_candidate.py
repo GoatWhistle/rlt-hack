@@ -4,7 +4,7 @@ from typing import cast
 
 import pytest
 
-from src.models.candidate import Highlight, ProductMatch
+from src.models.company.purchase import PurchaseRecord, PurchaseSummary
 from src.models.enums import (
     Availability,
     CandidateStatus,
@@ -24,9 +24,9 @@ from src.models.errors import (
     InvalidRankError,
     InvalidScoreError,
 )
-from src.models.purchase import PurchaseRecord, PurchaseSummary
-from src.models.retrieval import ChannelHit, ItemHit, RetrievalHits
-from src.models.scoring import ChannelRank, Score
+from src.models.ranking.retrieval import ChannelHit, ItemHit, RetrievalHits
+from src.models.ranking.scoring import ChannelRank, Score
+from src.models.search.candidate import Highlight, ProductMatch
 from tests.fakes.domain import (
     make_candidate,
     make_evidence,

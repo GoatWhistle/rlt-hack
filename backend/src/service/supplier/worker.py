@@ -5,9 +5,9 @@ import logging
 from collections.abc import AsyncIterator
 from uuid import uuid4
 
+from src.models.catalog.package import SupplierPackage
 from src.models.enums import FetchStatus
-from src.models.journal import CrawlRun, SourceSyncResult, SyncResult
-from src.models.package import SupplierPackage
+from src.models.operations.journal import CrawlRun, SourceSyncResult, SyncResult
 from src.service.supplier.batching import package_batches
 from src.service.supplier.protocols import (
     Clock,

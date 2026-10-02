@@ -5,7 +5,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
+from src.adapter.repository.clickhouse.engine.migrator import MIGRATION_DIR, Migrator
 from src.adapter.repository.clickhouse.protocols import SqlGateway
 from src.application.api import ApiContainer
 from src.application.config import AppConfig

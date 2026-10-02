@@ -18,8 +18,8 @@ from src.adapter.supplier.errors import ContentFormatError, SourceUnavailableErr
 from src.adapter.supplier.productcenter_web import ProductCenterWebProvider
 from src.adapter.supplier.productcenter_web.cache import PageCache
 from src.adapter.supplier.productcenter_web.request import RequestPacer, get
+from src.models.catalog.source import Source
 from src.models.enums import SourceType, SupplierRole, VerificationStatus
-from src.models.source import Source
 
 BASE = "https://productcenter.ru"
 INDEX = f"{BASE}/sitemaps/sitemaps.xml"

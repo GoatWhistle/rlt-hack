@@ -18,7 +18,7 @@ from src.models.errors import (
     UnreadableNoticeFileError,
     UnsupportedNoticeFormatError,
 )
-from src.models.upload import Notice
+from src.models.operations.upload import Notice
 
 TWO_MEGABYTES = 2 * 1024 * 1024
 PEAK_LIMIT = 32 * 1024 * 1024

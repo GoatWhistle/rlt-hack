@@ -2,6 +2,8 @@ from dataclasses import dataclass, field, replace
 
 import pytest
 
+from src.models.company.offer_evidence import OfferEvidence
+from src.models.company.purchase import PurchaseSummary
 from src.models.enums import (
     CandidateStatus,
     CheckReason,
@@ -9,11 +11,9 @@ from src.models.enums import (
     MatchBasis,
     WarningCode,
 )
-from src.models.offer_evidence import OfferEvidence
-from src.models.offer_summary import OfferSummary
-from src.models.purchase import PurchaseSummary
-from src.models.retrieval import ChannelHit, ItemHit, RetrievalHits
-from src.models.search_result import SearchWarning
+from src.models.ranking.retrieval import ChannelHit, ItemHit, RetrievalHits
+from src.models.search.offer_summary import OfferSummary
+from src.models.search.search_result import SearchWarning
 from src.service.errors import (
     SearchNotFoundError,
     SearchTimeoutError,

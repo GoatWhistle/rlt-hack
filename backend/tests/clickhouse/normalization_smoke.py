@@ -21,13 +21,13 @@ from chdb.session import Session
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
-from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
-from src.adapter.repository.clickhouse.versions import VersionSequencer
-from src.models.classification import Classification
+from src.adapter.repository.clickhouse.catalog.offer import ClickHouseOfferRepository
+from src.adapter.repository.clickhouse.engine.migrator import MIGRATION_DIR, Migrator
+from src.adapter.repository.clickhouse.engine.versions import VersionSequencer
+from src.models.catalog.classification import Classification
+from src.models.catalog.normalization import Normalization
+from src.models.catalog.offer import Offer
 from src.models.enums import Availability, ClassificationMethod, ItemType
-from src.models.normalization import Normalization
-from src.models.offer import Offer
 from tests.clickhouse.chdb_gateway import ChdbGateway
 
 NOW = datetime(2026, 10, 1, 12, tzinfo=UTC)

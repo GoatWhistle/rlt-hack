@@ -7,12 +7,12 @@ import pytest
 from fastapi import FastAPI
 
 from src.controller.http.app import create_app
-from src.controller.http.correlation import RequestIdFilter, current_request_id
-from src.controller.http.metrics import Metrics
+from src.controller.http.middleware.correlation import RequestIdFilter, current_request_id
+from src.controller.http.middleware.metrics import Metrics
 from src.controller.http.settings import ApiSettings
 from src.models.enums import CheckReason, WarningCode
-from src.models.search import SearchQuery
-from src.models.search_result import SearchResult, SearchWarning
+from src.models.search.search import SearchQuery
+from src.models.search.search_result import SearchResult, SearchWarning
 from src.service.supplier_search.retrieval.runner import ChannelRunner
 from tests.fakes.domain import make_candidate, make_request, make_result, make_supplier
 from tests.fakes.http import FakeServiceProvider, FakeSupplierSearching

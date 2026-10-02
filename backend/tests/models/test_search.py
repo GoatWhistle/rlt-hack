@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import pytest
 
+from src.models.company.evidence import Evidence, is_web_url
 from src.models.enums import EvidenceKind, ItemType
 from src.models.errors import (
     EmptySearchTextError,
@@ -13,9 +14,8 @@ from src.models.errors import (
     InvalidSearchRequestError,
     SearchTextTooLongError,
 )
-from src.models.evidence import Evidence, is_web_url
-from src.models.query_item import Quantity, QueryItem, SearchRequest
-from src.models.search import CandidateLimit, SearchFilters, SearchText
+from src.models.search.query_item import Quantity, QueryItem, SearchRequest
+from src.models.search.search import CandidateLimit, SearchFilters, SearchText
 from tests.fakes.domain import CHECKED, make_item, make_query
 
 

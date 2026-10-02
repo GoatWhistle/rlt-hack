@@ -19,8 +19,8 @@ sys.path.insert(0, str(ROOT))
 
 from src.adapter.supplier import identity
 from src.adapter.supplier.productcenter_web import ProductCenterWebProvider
+from src.models.catalog.source import Source
 from src.models.enums import SourceType
-from src.models.source import Source
 
 
 async def git_state() -> tuple[str, bool]:

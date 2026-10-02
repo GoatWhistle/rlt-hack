@@ -6,8 +6,8 @@ from tempfile import TemporaryDirectory
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.adapter.repository.uploads.files import FileUploads
-from src.models.supplier_search import SupplierCandidate
-from src.models.upload import Notice
+from src.models.operations.upload import Notice
+from src.models.search.supplier_search import SupplierCandidate
 from src.service.upload.worker import UploadService
 
 

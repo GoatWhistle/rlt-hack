@@ -4,7 +4,7 @@ import pytest
 
 from src.models.enums import CheckReason, ComponentState, Locale
 from src.models.errors import InvalidSearchResultError
-from src.models.health import ComponentHealth, Readiness
+from src.models.operations.health import ComponentHealth, Readiness
 from tests.fakes.domain import (
     make_candidate,
     make_item,

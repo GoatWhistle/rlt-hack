@@ -11,7 +11,7 @@ from chdb.session import Session
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "backend"))
 
-from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
+from src.adapter.repository.clickhouse.engine.migrator import MIGRATION_DIR, Migrator
 from tests.clickhouse.chdb_gateway import ChdbGateway
 
 REQUIRED_OBJECTS = {

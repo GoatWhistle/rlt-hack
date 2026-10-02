@@ -15,8 +15,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.adapter.supplier import identity
 from src.adapter.supplier.eis_registry import PROVIDER_NAME, EisRegistryProvider
+from src.models.catalog.source import Source
 from src.models.enums import SourceType
-from src.models.source import Source
 
 BASE_URL = "https://zakupki.gov.ru/"
 

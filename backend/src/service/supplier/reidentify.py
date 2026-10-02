@@ -14,8 +14,8 @@ import dataclasses
 import logging
 from uuid import UUID
 
-from src.models.enrichment import ReidentifyResult
-from src.models.offer import Offer
+from src.models.catalog.offer import Offer
+from src.models.company.enrichment import ReidentifyResult
 from src.service.supplier.protocols import (
     Clock,
     OfferCatalog,

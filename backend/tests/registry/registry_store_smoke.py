@@ -11,9 +11,9 @@ from chdb.session import Session
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
-from src.adapter.repository.clickhouse.registry import ClickHouseMspRegistryRepository
-from src.models.registry import MspCompany
+from src.adapter.repository.clickhouse.catalog.registry import ClickHouseMspRegistryRepository
+from src.adapter.repository.clickhouse.engine.migrator import MIGRATION_DIR, Migrator
+from src.models.company.registry import MspCompany
 from tests.clickhouse.chdb_gateway import ChdbGateway
 
 OLD = date(2026, 8, 10)

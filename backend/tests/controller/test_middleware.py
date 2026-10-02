@@ -5,7 +5,7 @@ import httpx
 import pytest
 from starlette.types import Message, Receive, Scope, Send
 
-from src.controller.http.middleware import RequestContextMiddleware
+from src.controller.http.middleware.pipeline import RequestContextMiddleware
 
 TIMING = re.compile(r"^app;dur=\d+\.\d$")
 

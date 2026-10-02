@@ -11,7 +11,7 @@ from src.models.errors import (
     UnreadableNoticeFileError,
     UnsupportedNoticeFormatError,
 )
-from src.models.upload import Notice
+from src.models.operations.upload import Notice
 
 MAX_ROWS = 20
 MAX_LINE_CHARS = 64 * 1024

@@ -21,14 +21,14 @@ from chdb.session import Session
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepository
-from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
-from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
-from src.adapter.repository.clickhouse.package import ClickHousePackageRepository
-from src.adapter.repository.clickhouse.registry import ClickHouseMspRegistryRepository
-from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
-from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
-from src.adapter.repository.clickhouse.versions import VersionSequencer
+from src.adapter.repository.clickhouse.catalog.journal import ClickHouseJournalRepository
+from src.adapter.repository.clickhouse.catalog.offer import ClickHouseOfferRepository
+from src.adapter.repository.clickhouse.catalog.package import ClickHousePackageRepository
+from src.adapter.repository.clickhouse.catalog.registry import ClickHouseMspRegistryRepository
+from src.adapter.repository.clickhouse.catalog.source import ClickHouseSourceRepository
+from src.adapter.repository.clickhouse.catalog.supplier import ClickHouseSupplierRepository
+from src.adapter.repository.clickhouse.engine.migrator import MIGRATION_DIR, Migrator
+from src.adapter.repository.clickhouse.engine.versions import VersionSequencer
 from src.adapter.repository.reference import (
     load_classifier_reference,
     load_normalizer_reference,
@@ -38,6 +38,8 @@ from src.adapter.supplier import identity
 from src.adapter.supplier.supplier_dataset import SupplierDatasetProvider
 from src.adapter.supplier.yml_feed import YmlFeedProvider
 from src.adapter.system.clock import SystemClock
+from src.models.catalog.source import Source
+from src.models.company.registry import MspCompany
 from src.models.enums import (
     ClassificationMethod,
     FetchStatus,
@@ -45,8 +47,6 @@ from src.models.enums import (
     SupplierRole,
     VerificationStatus,
 )
-from src.models.registry import MspCompany
-from src.models.source import Source
 from src.service.classifier import OfferClassifier
 from src.service.normalizer import OfferNormalizer
 from src.service.registry import SupplierRegistryEnricher

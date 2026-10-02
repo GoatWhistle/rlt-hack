@@ -2,9 +2,9 @@ import hashlib
 import logging
 from collections import Counter
 
-from src.controller.http.metrics import Metrics
+from src.controller.http.middleware.metrics import Metrics
 from src.models.enums import CandidateStatus
-from src.models.search_result import SearchResult
+from src.models.search.search_result import SearchResult
 
 logger = logging.getLogger(__name__)
 

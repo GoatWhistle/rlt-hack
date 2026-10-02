@@ -61,8 +61,8 @@ ban-relative-imports = "all"
 "tests/supplier/gisp_*.py" = ["PLR0912", "PLR0915", "PT017", "PT018"]
 "tests/supplier/eis_registry_smoke.py" = ["E501"]
 "src/adapter/supplier/**" = ["ANN", "ERA", "PL", "N"]
-"src/adapter/repository/clickhouse/gateway.py" = ["ANN401", "N801"]
-"src/adapter/repository/clickhouse/client.py" = ["ANN401"]
+"src/adapter/repository/clickhouse/engine/gateway.py" = ["ANN401", "N801"]
+"src/adapter/repository/clickhouse/engine/client.py" = ["ANN401"]
 "src/adapter/repository/clickhouse/protocols.py" = ["ANN401"]
 "src/controller/job/**" = ["ANN", "PL"]
 "src/application/container.py" = ["PLR0912"]
@@ -97,19 +97,19 @@ omit = [
     "src/adapter/supplier/*",
     "src/controller/job/*",
     "src/service/supplier/*",
-    "src/adapter/repository/clickhouse/client.py",
-    "src/adapter/repository/clickhouse/journal.py",
-    "src/adapter/repository/clickhouse/package.py",
-    "src/adapter/repository/clickhouse/source.py",
-    "src/adapter/repository/clickhouse/offer.py",
-    "src/adapter/repository/clickhouse/supplier.py",
-    "src/adapter/repository/clickhouse/migrator.py",
-    "src/adapter/repository/clickhouse/versions.py",
+    "src/adapter/repository/clickhouse/engine/client.py",
+    "src/adapter/repository/clickhouse/catalog/journal.py",
+    "src/adapter/repository/clickhouse/catalog/package.py",
+    "src/adapter/repository/clickhouse/catalog/source.py",
+    "src/adapter/repository/clickhouse/catalog/offer.py",
+    "src/adapter/repository/clickhouse/catalog/supplier.py",
+    "src/adapter/repository/clickhouse/engine/migrator.py",
+    "src/adapter/repository/clickhouse/engine/versions.py",
     "src/application/container.py",
-    "src/adapter/repository/clickhouse/gateway.py",
-    "src/adapter/repository/clickhouse/config.py",
-    "src/models/journal.py",
-    "src/models/package.py",
+    "src/adapter/repository/clickhouse/engine/gateway.py",
+    "src/adapter/repository/clickhouse/engine/config.py",
+    "src/models/operations/journal.py",
+    "src/models/catalog/package.py",
     "src/controller/api/__main__.py",
 ]
 
@@ -152,7 +152,7 @@ disallow_untyped_calls = false
 module = [
     "src.adapter.supplier.*",
     "src.service.supplier.*",
-    "src.adapter.repository.clickhouse.offer",
+    "src.adapter.repository.clickhouse.catalog.offer",
     "src.controller.job.*",
     "src.adapter.repository.ranker.*",
     "src.adapter.repository.supplier_index.*",

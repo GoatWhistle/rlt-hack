@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from src.models.enums import MatchBasis
-from src.models.offer_summary import OfferSummary
+from src.models.search.offer_summary import OfferSummary
 from src.service.supplier_search.assembly.offers import matched_offers
 from tests.fakes.domain import make_candidate, make_offer, make_offer_evidence, make_supplier, uid
 

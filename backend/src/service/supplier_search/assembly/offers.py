@@ -1,9 +1,9 @@
 from collections.abc import Mapping, Sequence
 from uuid import UUID
 
-from src.models.candidate import SupplierCandidate
-from src.models.offer_evidence import OfferEvidence
-from src.models.offer_summary import OfferSummary
+from src.models.company.offer_evidence import OfferEvidence
+from src.models.search.candidate import SupplierCandidate
+from src.models.search.offer_summary import OfferSummary
 
 
 def matched_offers(

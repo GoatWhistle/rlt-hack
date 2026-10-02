@@ -8,12 +8,12 @@ from hypothesis import strategies as st
 
 from src.adapter.text.analyzer.analyzer import RussianAnalyzer
 from src.adapter.text.rule_interpreter.interpreter import MAX_ITEMS, RuleQueryInterpreter
-from src.controller.http.locale import parse_accept_language
-from src.controller.http.schema import rfc3339
+from src.controller.http.middleware.locale import parse_accept_language
+from src.controller.http.response.schema import rfc3339
 from src.models.enums import Locale
 from src.models.errors import EmptySearchTextError, SearchTextTooLongError
-from src.models.scoring import Score
-from src.models.search import SearchQuery, SearchText
+from src.models.ranking.scoring import Score
+from src.models.search.search import SearchQuery, SearchText
 
 ALPHABET = st.characters(
     codec="utf-8",

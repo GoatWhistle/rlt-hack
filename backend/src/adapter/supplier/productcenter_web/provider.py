@@ -23,10 +23,10 @@ from src.adapter.supplier.productcenter_web.discovery import (
 from src.adapter.supplier.productcenter_web.parse import product_card, supplier_card
 from src.adapter.supplier.productcenter_web.progress import CrawlProgress
 from src.adapter.supplier.productcenter_web.request import RequestPacer, get
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
-from src.models.source import Source
-from src.models.supplier import Supplier
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 
 logger = logging.getLogger(__name__)
 PROVIDER_NAME = "productcenter_web"

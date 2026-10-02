@@ -2,8 +2,8 @@ from typing import cast
 
 import pytest
 
-from src.models.retrieval import ChannelHit, ItemHit, RetrievalHits
-from src.models.scoring import ChannelRank, Score
+from src.models.ranking.retrieval import ChannelHit, ItemHit, RetrievalHits
+from src.models.ranking.scoring import ChannelRank, Score
 from src.service.supplier_search.fusion.candidate import FusedCandidate, ItemRefs
 from src.service.supplier_search.fusion.rrf import ReciprocalRankFusion
 from tests.fakes.domain import uid

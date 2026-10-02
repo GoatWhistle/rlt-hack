@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
+from src.adapter.repository.clickhouse.engine.migrator import MIGRATION_DIR, Migrator
 from tests.clickhouse.chdb_gateway import ChdbGateway
 
 

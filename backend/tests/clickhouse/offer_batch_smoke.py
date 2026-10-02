@@ -19,20 +19,20 @@ from chdb.session import Session
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from src.adapter.repository.clickhouse.migrator import Migrator
-from src.adapter.repository.clickhouse.offer import (
+from src.adapter.repository.clickhouse.catalog.offer import (
     ID_QUERY_LIMIT,
     ClickHouseOfferRepository,
 )
-from src.adapter.repository.clickhouse.package import ClickHousePackageRepository
-from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
-from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
-from src.adapter.repository.clickhouse.versions import VersionSequencer
+from src.adapter.repository.clickhouse.catalog.package import ClickHousePackageRepository
+from src.adapter.repository.clickhouse.catalog.source import ClickHouseSourceRepository
+from src.adapter.repository.clickhouse.catalog.supplier import ClickHouseSupplierRepository
+from src.adapter.repository.clickhouse.engine.migrator import Migrator
+from src.adapter.repository.clickhouse.engine.versions import VersionSequencer
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 from src.models.enums import ItemType, SourceType, VerificationStatus
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
-from src.models.source import Source
-from src.models.supplier import Supplier
 from src.service.supplier.batching import package_batches
 from tests.clickhouse.chdb_gateway import ChdbGateway
 

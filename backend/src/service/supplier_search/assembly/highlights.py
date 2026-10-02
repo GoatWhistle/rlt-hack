@@ -1,10 +1,10 @@
 from collections.abc import Sequence
 
-from src.models.candidate import Highlight, ProductMatch
+from src.models.catalog.supplier import Supplier
+from src.models.company.offer_evidence import OfferEvidence
+from src.models.company.purchase import PurchaseSummary
 from src.models.enums import HighlightCode, MatchBasis, VerificationStatus
-from src.models.offer_evidence import OfferEvidence
-from src.models.purchase import PurchaseSummary
-from src.models.supplier import Supplier
+from src.models.search.candidate import Highlight, ProductMatch
 
 
 def _priced(matches: Sequence[ProductMatch], cards: Sequence[OfferEvidence]) -> int:

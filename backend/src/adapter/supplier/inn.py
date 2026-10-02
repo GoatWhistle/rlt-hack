@@ -6,8 +6,8 @@
 
 import re
 
-from src.models.inn import is_valid_inn as is_valid_inn
-from src.models.inn import normalize_inn as normalize_inn
+from src.models.company.inn import is_valid_inn as is_valid_inn
+from src.models.company.inn import normalize_inn as normalize_inn
 
 _INN_IN_TEXT = re.compile(r"ИНН\D{0,10}(\d{10}|\d{12})", re.IGNORECASE)
 _KPP_IN_TEXT = re.compile(r"КПП\D{0,10}(\d{9})", re.IGNORECASE)

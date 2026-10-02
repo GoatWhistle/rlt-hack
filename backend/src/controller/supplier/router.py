@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from src.controller.http.openapi import UuidPath, errors
+from src.controller.http.response.openapi import UuidPath, errors
 from src.controller.http.state import Services, services
 from src.controller.supplier.dto import SupplierProfileDto
 from src.controller.supplier.mapper import parse_supplier_id, to_profile

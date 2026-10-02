@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from src.controller.http.locale import parse_accept_language
+from src.controller.http.middleware.locale import parse_accept_language
 from src.models.enums import Locale
 from tests.fakes.http import FakeServiceProvider
 

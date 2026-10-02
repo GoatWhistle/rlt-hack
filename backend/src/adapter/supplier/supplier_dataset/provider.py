@@ -16,10 +16,10 @@ from pathlib import Path
 from src.adapter.supplier import identity
 from src.adapter.supplier.errors import ContentFormatError, SourceUnavailableError
 from src.adapter.supplier.inn import normalize_inn, normalize_kpp
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 from src.models.enums import VerificationStatus
-from src.models.package import SupplierPackage
-from src.models.source import Source
-from src.models.supplier import Supplier
 
 logger = logging.getLogger(__name__)
 

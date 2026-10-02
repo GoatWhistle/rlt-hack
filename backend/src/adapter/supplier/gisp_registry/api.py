@@ -8,10 +8,10 @@ from src.adapter.supplier import identity
 from src.adapter.supplier.errors import ContentFormatError
 from src.adapter.supplier.gisp_registry.record import active_record, registry_external_id
 from src.adapter.supplier.inn import normalize_inn
+from src.models.catalog.offer import Offer
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 from src.models.enums import ItemType, SupplierRole, VerificationStatus
-from src.models.offer import Offer
-from src.models.source import Source
-from src.models.supplier import Supplier
 
 
 def _value(item: dict[str, Any], key: str) -> str:

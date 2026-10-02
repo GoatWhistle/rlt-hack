@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import ConfigDict, Field, StringConstraints
 
-from src.controller.http.schema import CamelModel, UtcDateTime
+from src.controller.http.response.schema import CamelModel, UtcDateTime
 from src.models.enums import (
     Availability,
     CandidateStatus,

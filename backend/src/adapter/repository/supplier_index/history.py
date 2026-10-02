@@ -1,7 +1,7 @@
 from dataclasses import replace
 
 from src.adapter.repository.supplier_index.protocols import SqlGateway
-from src.models.supplier_search import SupplierCandidate, SupplierPurchase
+from src.models.search.supplier_search import SupplierCandidate, SupplierPurchase
 
 
 async def enrich_history(

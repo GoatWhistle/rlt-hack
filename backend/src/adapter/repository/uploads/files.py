@@ -7,8 +7,12 @@ from dataclasses import asdict
 from decimal import Decimal
 from pathlib import Path
 
-from src.models.supplier_search import SupplierCandidate, SupplierCatalogOffer, SupplierPurchase
-from src.models.upload import LotRecommendation, Notice, Upload
+from src.models.operations.upload import LotRecommendation, Notice, Upload
+from src.models.search.supplier_search import (
+    SupplierCandidate,
+    SupplierCatalogOffer,
+    SupplierPurchase,
+)
 
 
 class FileUploads:

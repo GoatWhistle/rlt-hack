@@ -9,10 +9,10 @@
 import dataclasses
 import logging
 
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.supplier import Supplier
+from src.models.company.registry import MspCompany
 from src.models.enums import SupplierRole
-from src.models.package import SupplierPackage
-from src.models.registry import MspCompany
-from src.models.supplier import Supplier
 from src.service.registry.protocols import CompanyRegistry, OkvedRoles
 from src.service.registry.roles import role_of
 

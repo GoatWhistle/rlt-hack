@@ -5,10 +5,10 @@ from uuid import UUID
 
 from src.adapter.supplier import identity
 from src.adapter.supplier.pulscen_web import parsing
+from src.models.catalog.offer import Offer
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 from src.models.enums import ItemType, SupplierRole, VerificationStatus
-from src.models.offer import Offer
-from src.models.source import Source
-from src.models.supplier import Supplier
 
 
 class ModelBuilder:

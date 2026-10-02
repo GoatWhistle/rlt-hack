@@ -17,9 +17,9 @@ from src.adapter.supplier.gisp_registry.api import parse_organizations, parse_pr
 from src.adapter.supplier.gisp_registry.snapshot import parse_snapshot
 from src.adapter.supplier.gisp_registry.supplier import merge_supplier
 from src.adapter.supplier.gisp_registry.workbook import parse_workbook
-from src.models.package import SupplierPackage
-from src.models.source import Source
-from src.models.supplier import Supplier
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"

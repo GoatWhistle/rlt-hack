@@ -6,8 +6,8 @@ from src.adapter.text.rule_interpreter.protocols import TextAnalyzer
 from src.adapter.text.rule_interpreter.quantity import extract_quantity
 from src.adapter.text.rule_interpreter.splitter import split_positions
 from src.models.enums import ItemOrigin, ItemType
-from src.models.query_item import Quantity, QueryItem
-from src.models.search import SearchQuery
+from src.models.search.query_item import Quantity, QueryItem
+from src.models.search.search import SearchQuery
 
 EDGE_PUNCTUATION = " \t,.;:-–—*()[]{}\"'«»"
 SERVICE_PREFIXES = ("доставк", "срок", "оплат", "адрес", "контакт", "телефон")

@@ -16,10 +16,10 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from src.adapter.repository.reference import load_normalizer_reference
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
 from src.models.enums import SourceType
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
-from src.models.source import Source
 from src.service.normalizer import OfferNormalizer
 from src.service.normalizer.text import clean, fix_numbers, stem
 

@@ -11,7 +11,7 @@ from dataclasses import dataclass, field, replace
 from datetime import date
 from pathlib import Path
 
-from src.adapter.repository.clickhouse.config import ClickHouseConfig
+from src.adapter.repository.clickhouse.engine.config import ClickHouseConfig
 from src.adapter.repository.reference import REFERENCE_DIR
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]

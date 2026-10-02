@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager, contextmanager
 from dataclasses import dataclass, field
 
 from src.models.enums import SearchStage, WarningCode
-from src.models.search_result import SearchResult, SearchWarning
+from src.models.search.search_result import SearchResult, SearchWarning
 from src.service.supplier_search.settings import SearchSettings
 from tests.fakes.domain import make_item, make_query
 from tests.fakes.ports import FakeArchive, FakeInterpreter

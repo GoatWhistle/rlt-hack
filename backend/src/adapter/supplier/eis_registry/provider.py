@@ -29,10 +29,10 @@ from src.adapter.supplier.eis_registry.dto import (
 )
 from src.adapter.supplier.eis_registry.http import HEADERS, EisHttp, Sleeper
 from src.adapter.supplier.errors import ContentFormatError, ProviderError
+from src.models.catalog.package import SupplierPackage
+from src.models.catalog.source import Source
+from src.models.catalog.supplier import Supplier
 from src.models.enums import VerificationStatus
-from src.models.package import SupplierPackage
-from src.models.source import Source
-from src.models.supplier import Supplier
 
 logger = logging.getLogger(__name__)
 

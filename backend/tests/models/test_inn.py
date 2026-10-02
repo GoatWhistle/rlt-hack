@@ -2,7 +2,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from src.models.inn import WEIGHTS_10, WEIGHTS_11, WEIGHTS_12, is_valid_inn, normalize_inn
+from src.models.company.inn import WEIGHTS_10, WEIGHTS_11, WEIGHTS_12, is_valid_inn, normalize_inn
 from tests.fakes.domain import make_supplier
 
 

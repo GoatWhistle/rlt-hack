@@ -1,8 +1,8 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from src.adapter.repository.clickhouse.embedding import ClickHouseEmbeddingRepository
-from src.adapter.repository.clickhouse.versions import VersionSequencer
+from src.adapter.repository.clickhouse.engine.versions import VersionSequencer
+from src.adapter.repository.clickhouse.search.embedding import ClickHouseEmbeddingRepository
 from src.application.config import AppConfig
 from src.application.container import Container
 from src.application.encoder import text_encoder

@@ -11,10 +11,10 @@ import dataclasses
 import logging
 from collections.abc import Callable, Mapping, Sequence
 
-from src.models.classification import Classification
+from src.models.catalog.classification import Classification
+from src.models.catalog.offer import Offer
+from src.models.catalog.package import SupplierPackage
 from src.models.enums import ClassificationMethod, ItemType
-from src.models.offer import Offer
-from src.models.package import SupplierPackage
 from src.service.classifier import channels
 from src.service.classifier.archive import build_index
 from src.service.classifier.protocols import (

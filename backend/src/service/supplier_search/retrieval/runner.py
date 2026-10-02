@@ -3,9 +3,9 @@ import logging
 from collections.abc import Sequence
 
 from src.models.enums import WarningCode
-from src.models.query_item import SearchRequest
-from src.models.retrieval import RetrievalHits
-from src.models.search_result import SearchWarning
+from src.models.ranking.retrieval import RetrievalHits
+from src.models.search.query_item import SearchRequest
+from src.models.search.search_result import SearchWarning
 from src.service.errors import SearchUnavailableError
 from src.service.supplier_search.protocols import CandidateRetriever
 

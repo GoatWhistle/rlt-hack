@@ -3,10 +3,10 @@
 from typing import Protocol
 from uuid import UUID
 
-from src.models.coverage import CoverageReport
-from src.models.enrichment import EnrichmentResult, RegistryImportResult, ReidentifyResult
-from src.models.journal import CrawlRun, SyncResult
-from src.models.source import Source
+from src.models.catalog.source import Source
+from src.models.company.enrichment import EnrichmentResult, RegistryImportResult, ReidentifyResult
+from src.models.operations.coverage import CoverageReport
+from src.models.operations.journal import CrawlRun, SyncResult
 
 
 class SupplierSyncing(Protocol):

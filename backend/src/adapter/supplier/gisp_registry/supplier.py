@@ -1,6 +1,6 @@
 """Объединение реквизитов одной компании из двух перечней ГИСП."""
 
-from src.models.supplier import Supplier
+from src.models.catalog.supplier import Supplier
 
 
 def merge_supplier(primary: Supplier, secondary: Supplier) -> Supplier:

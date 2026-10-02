@@ -13,7 +13,7 @@ from src.adapter.product.moscow.errors import (
     MoscowProductIncompleteError,
 )
 from src.adapter.product.moscow.parse import parse_product
-from src.models.product import Product
+from src.models.catalog.product import Product
 
 INDEX_URL = "https://zakupki.mos.ru/newapi/api/Sku/QueryIndex"
 CARD_URL = "https://zakupki.mos.ru/classifier/api/Sku/GetSku"

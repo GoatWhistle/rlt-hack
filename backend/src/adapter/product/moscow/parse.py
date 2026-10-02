@@ -6,8 +6,8 @@ from collections.abc import Mapping
 from uuid import NAMESPACE_URL, UUID, uuid5
 
 from src.adapter.product.moscow.errors import MoscowProductFormatError
+from src.models.catalog.product import Product
 from src.models.enums import ItemType
-from src.models.product import Product
 
 EXCLUDED_FIELDS = {
     "companyId",
