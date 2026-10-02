@@ -61,7 +61,17 @@ async function expectAdaptive(page: Page) {
   for (const screen of SCREENS) {
     await page.setViewportSize(screen)
     const measured = await frame(page)
-    expect(measured.scroll, `overflow at ${screen.width}`).toBeLessThanOrEqual(measured.client)
+    const overflow = await page
+      .locator("body *")
+      .evaluateAll((nodes) =>
+        nodes
+          .filter((node) => node.getBoundingClientRect().right > window.innerWidth)
+          .map((node) => `${node.tagName}.${node.className}`),
+      )
+    expect(
+      measured.scroll,
+      `overflow at ${screen.width}: ${overflow.join(", ")}`,
+    ).toBeLessThanOrEqual(measured.client)
     expect(Math.abs(measured.left - measured.right)).toBeLessThanOrEqual(TOLERANCE)
     expect(Math.abs(measured.brand - measured.left)).toBeLessThanOrEqual(TOLERANCE)
     if (screen.width > WIDE) {
@@ -79,7 +89,7 @@ test("fits the search pages to every screen", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.getByRole("textbox", { name: /describe what you need/i }).fill(QUERY)
   await page.getByRole("button", { name: /^find$/i }).click()
-  await expect(page).toHaveURL(/\/search\/[\w-]+$/)
+  await expect(page).toHaveURL(/\/uploads\/[\w-]+\/lots\/query$/)
   await expect(page.getByRole("article").first()).toBeVisible()
   await expectAdaptive(page)
 })

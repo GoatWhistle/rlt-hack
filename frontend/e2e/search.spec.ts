@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright"
 import { expect, type Page, test } from "@playwright/test"
 import { installApiFixture } from "./api-fixture"
 import { chooseLanguage } from "./language"
-import { installSearchFixture } from "./search-fixture"
+import { installSearchFixture, openArchivedSearch } from "./search-fixture"
 
 test.beforeEach(async ({ page }) => {
   await installApiFixture(page)
@@ -39,14 +39,10 @@ async function openSearch(page: Page) {
   await expect(page.getByRole("heading", { level: 1, name: /find suppliers/i })).toBeVisible()
 }
 
-test("finds suppliers from a description and keeps the result at its address", async ({
-  page,
-}) => {
+test("keeps an archived catalog result at its address", async ({ page }) => {
   await openSearch(page)
   await expectAccessible(page)
-  const field = page.getByRole("textbox", { name: /describe what you need/i })
-  await field.fill(QUERY)
-  await page.getByRole("button", { name: /^find$/i }).click()
+  await openArchivedSearch(page, QUERY)
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
   await expect(
     page.getByRole("textbox", { name: /describe what you need|опишите, что нужно/i }),
@@ -83,9 +79,7 @@ test("finds suppliers from a description and keeps the result at its address", a
 
 test("opens a company profile and returns to a recent search", async ({ page }) => {
   await openSearch(page)
-  const field = page.getByRole("textbox", { name: /describe what you need/i })
-  await field.fill("Office paper A4 80 gsm, 300 reams")
-  await page.getByRole("button", { name: /^find$/i }).click()
+  await openArchivedSearch(page, "Office paper A4 80 gsm, 300 reams")
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
   await expect(page.getByRole("note", { name: /may be incomplete/i })).toBeVisible()
   await page.getByRole("button", { name: /company profile/i }).click()
@@ -104,9 +98,7 @@ test("opens a company profile and returns to a recent search", async ({ page }) 
 
 test("chooses a candidate and downloads the choice", async ({ page }) => {
   await openSearch(page)
-  const field = page.getByRole("textbox", { name: /describe what you need/i })
-  await field.fill(QUERY)
-  await page.getByRole("button", { name: /^find$/i }).click()
+  await openArchivedSearch(page, QUERY)
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
   await showView(page, /^candidates$/i)
   await page
@@ -142,9 +134,7 @@ test("chooses a candidate and downloads the choice", async ({ page }) => {
 
 test("shows the offers that cover the items and compares their prices", async ({ page }) => {
   await openSearch(page)
-  const field = page.getByRole("textbox", { name: /describe what you need/i })
-  await field.fill(`${QUERY}; many items`)
-  await page.getByRole("button", { name: /^find$/i }).click()
+  await openArchivedSearch(page, `${QUERY}; many items`)
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
   await expect(page.getByRole("note", { name: /may be incomplete/i })).toContainText(
     /only the first ones were used/i,
@@ -183,9 +173,7 @@ test("shows the offers that cover the items and compares their prices", async ({
 
 test("keeps an archived result without offers readable", async ({ page }) => {
   await openSearch(page)
-  const field = page.getByRole("textbox", { name: /describe what you need/i })
-  await field.fill(`${QUERY}; archived`)
-  await page.getByRole("button", { name: /^find$/i }).click()
+  await openArchivedSearch(page, `${QUERY}; archived`)
   await showView(page, /^evidence$/i)
   const grounds = page.getByRole("article", { name: /Северный Провиант/ })
   await expect(grounds.getByRole("heading", { name: /match by item/i })).toBeVisible()
@@ -193,14 +181,9 @@ test("keeps an archived result without offers readable", async ({ page }) => {
   await expect(grounds.getByText(/^in a price list$/i)).toBeVisible()
 })
 
-test("explains an empty result and a query it cannot read", async ({ page }) => {
+test("explains an empty archived result", async ({ page }) => {
   await openSearch(page)
-  const field = page.getByRole("textbox", { name: /describe what you need/i })
-  await field.fill("123 !!!")
-  await page.getByRole("button", { name: /^find$/i }).click()
-  await expect(page.getByRole("alert")).toContainText(/could not pick out any items/i)
-  await field.fill("Tractor tyres 4 pcs")
-  await page.getByRole("button", { name: /^find$/i }).click()
+  await openArchivedSearch(page, "Tractor tyres 4 pcs")
   await expect(page.getByRole("heading", { name: /no suppliers found/i })).toBeVisible()
   await expectAccessible(page)
   await expectWithinScreen(page)

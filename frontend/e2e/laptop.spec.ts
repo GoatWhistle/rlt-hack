@@ -1,7 +1,7 @@
 import { expect, type Locator, test } from "@playwright/test"
 import { installApiFixture } from "./api-fixture"
 import { chooseLanguage } from "./language"
-import { installSearchFixture } from "./search-fixture"
+import { installSearchFixture, openArchivedSearch } from "./search-fixture"
 
 const LAPTOP = { width: 1366, height: 768 }
 const QUERY = "Buckwheat groats 500 kg; polished rice 200 kg"
@@ -75,9 +75,7 @@ test("keeps the upload dialog on a laptop screen and reports the processing", as
 test("puts the comparison in the header and keeps its dialog on screen", async ({ page }) => {
   await page.goto("/search")
   await chooseLanguage(page, /^english$/i)
-  const field = page.getByRole("textbox", { name: /describe what you need/i })
-  await field.fill(QUERY)
-  await page.getByRole("button", { name: /^find$/i }).click()
+  await openArchivedSearch(page, QUERY)
   await expect(page).toHaveURL(/\/search\/[\w-]+$/)
 
   const header = page.getByRole("main").locator("header")

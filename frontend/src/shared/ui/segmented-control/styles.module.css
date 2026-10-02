@@ -5,6 +5,8 @@
   position: relative;
   display: inline-flex;
   flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
   gap: var(--space-1);
   padding: var(--space-1);
   border: var(--line-width) solid var(--line-hairline);
@@ -30,6 +32,8 @@
 
 .option {
   position: relative;
+  min-width: 0;
+  max-width: 100%;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);

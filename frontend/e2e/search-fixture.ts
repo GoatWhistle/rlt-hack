@@ -4,6 +4,18 @@ import type { Page } from "@playwright/test"
 
 type Payload = Record<string, unknown>
 
+export async function openArchivedSearch(page: Page, text: string) {
+  const result = await page.evaluate(async (query) => {
+    const response = await fetch("/api/searches", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: query }),
+    })
+    return response.json() as Promise<{ searchId: string }>
+  }, text)
+  await page.goto(`/search/${result.searchId}`)
+}
+
 const CONTRACTS = resolve(process.cwd(), "..", "contracts")
 const UNREADABLE = /^[\d\s!?.,;:-]*$/
 const NOTHING_FOUND = /tractor/i

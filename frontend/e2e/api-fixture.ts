@@ -1,9 +1,10 @@
-import type { Page } from "@playwright/test"
+import type { Page, Request } from "@playwright/test"
+import { checkNotices } from "../src/entities/notice/check"
 import { recommendationFixture } from "../tests/entities/recommendation/fixture"
 
 export async function installApiFixture(page: Page) {
   let uploaded = false
-  const lots = [
+  let lots = [
     "test_paper",
     "test_workwear",
     "test_furniture",
@@ -38,6 +39,23 @@ export async function installApiFixture(page: Page) {
       lotLabel: lot.id,
     },
   })
+  function acceptTextSearch(request: Request) {
+    const body = request.postData() ?? ""
+    if (body.includes('filename="search.csv"')) {
+      const csv = body.split("\r\n\r\n")[1]?.split("\r\n--")[0] ?? ""
+      const parsed = checkNotices(csv, "search.csv")
+      const first = lots[0]
+      if (!parsed.ok || !parsed.notices[0] || !first)
+        throw new Error("invalid search fixture input")
+      lots = [{ ...first, id: "query", title: parsed.notices[0].title }]
+      Object.assign(summary, {
+        fileName: "search.csv",
+        total: 1,
+        processed: 1,
+        counts: { ready: 1, needsCheck: 0, noCandidates: 0, failed: 0 },
+      })
+    }
+  }
   await page.route(
     (url) => url.pathname.startsWith("/api/"),
     async (route) => {
@@ -46,6 +64,7 @@ export async function installApiFixture(page: Page) {
       let payload: unknown
       if (path === "/api/uploads") {
         if (request.method() === "POST") {
+          acceptTextSearch(request)
           uploaded = true
           payload = summary
         } else payload = { uploads: uploaded ? [summary] : [] }

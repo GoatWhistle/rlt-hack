@@ -6,6 +6,8 @@
   align-self: stretch;
   gap: var(--space-1);
   min-width: 0;
+  overflow: clip;
+  overflow-clip-margin: var(--focus-ring-offset);
 }
 
 .tab {
