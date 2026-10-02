@@ -11,6 +11,7 @@ QUERIES = [
 def answer(text: str) -> dict:
     if text == "Крупа":
         return {
+            "pipeline": {"noveltySet": "archive-2026-10"},
             "candidates": [
                 {
                     "rank": 1,
@@ -20,10 +21,11 @@ def answer(text: str) -> dict:
                     "status": "check",
                     "matches": [],
                 }
-            ]
+            ],
         }
     offer = {"name": "Бумага SvetoCopy A4", "url": "https://x.ru/1", "observedAt": "2026-09-29"}
     return {
+        "pipeline": {"noveltySet": "archive-2026-10"},
         "candidates": [
             {
                 "rank": rank,
@@ -34,7 +36,7 @@ def answer(text: str) -> dict:
                 "matches": [{"offer": offer}],
             }
             for rank in range(1, 8)
-        ]
+        ],
     }
 
 
@@ -60,3 +62,25 @@ def test_aggregate_counts_false_confirmations_and_unknown_fields() -> None:
     assert summary["broken_evidence"] == 0.8
     assert summary["unknown_fields"] == 0.8
     assert summary["reviewers"] == 1
+
+
+def test_sheet_refuses_api_without_novelty_roster() -> None:
+    def unsupported(_: str) -> dict:
+        return {"pipeline": {}, "candidates": []}
+
+    try:
+        sheet_rows(QUERIES, unsupported)
+    except ValueError as error:
+        assert "archive novelty set" in str(error)
+    else:
+        raise AssertionError("missing novelty support must not look like zero new suppliers")
+
+
+def test_sheet_keeps_failed_queries_and_aggregate_counts_them() -> None:
+    def failed(_: str) -> dict:
+        raise TimeoutError
+
+    rows = sheet_rows([QUERIES[0]], failed)
+
+    assert rows[0]["system_status"] == "error:TimeoutError"
+    assert aggregate(rows)["error_queries"] == 1

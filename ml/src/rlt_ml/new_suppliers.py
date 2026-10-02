@@ -8,6 +8,7 @@
 import argparse
 import csv
 import json
+import urllib.error
 import urllib.request
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -52,9 +53,21 @@ def http_searcher(base_url: str) -> Searcher:
 def sheet_rows(queries: Sequence[dict], search: Searcher) -> list[dict]:
     rows = []
     for query in queries:
-        result = search(query["text"])
-        new = [item for item in result["candidates"] if item.get("novelty") == "new"]
         base = {"query_id": query["id"], "category": query["category"], "query": query["text"]}
+        try:
+            result = search(query["text"])
+        except (urllib.error.URLError, TimeoutError, KeyError, ValueError) as error:
+            rows.append(
+                {
+                    **base,
+                    "system_status": f"error:{type(error).__name__}",
+                    "rationale": "search failed",
+                }
+            )
+            continue
+        if not result.get("pipeline", {}).get("noveltySet"):
+            raise ValueError("search API does not provide the archive novelty set")
+        new = [item for item in result["candidates"] if item.get("novelty") == "new"]
         if not new:
             rows.append({**base, "rank": "", "label": "", "rationale": "no new candidates"})
         for candidate in new[:PER_QUERY]:
@@ -84,6 +97,9 @@ def write_sheet(path: Path, rows: Sequence[dict]) -> None:
 def aggregate(rows: Sequence[dict]) -> dict:
     reviewed = [row for row in rows if row.get("rank")]
     queries = {row["query_id"] for row in rows}
+    error_queries = {
+        row["query_id"] for row in rows if str(row.get("system_status", "")).startswith("error:")
+    }
     with_fit = {row["query_id"] for row in reviewed if row.get("label") == "fits"}
     total = len(reviewed)
 
@@ -94,6 +110,7 @@ def aggregate(rows: Sequence[dict]) -> dict:
         "queries": len(queries),
         "categories": len({row["category"] for row in rows}),
         "candidates": total,
+        "error_queries": len(error_queries),
         "queries_with_suitable_new": len(with_fit) / len(queries) if queries else 0.0,
         "labels": {
             label: share(lambda row, label=label: row.get("label") == label) for label in LABELS
