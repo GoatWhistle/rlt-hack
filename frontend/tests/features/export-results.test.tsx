@@ -10,19 +10,13 @@ import { ExportDialog, type ExportDialogProps } from "@/features/export-results"
 import {
   CSV_BOM,
   CSV_TYPE,
-  type CsvLabels,
   exportFileNames,
   productsCsv,
   suppliersCsv,
   toCsv,
 } from "@/features/export-results/csv"
 import * as download from "@/shared/download/save-text-file"
-import { LONG_NAME, recommendationFixture } from "../entities/recommendation/fixture"
-
-const labels: CsvLabels = {
-  checkReason: (reason) => en(`checkReason.${reason}`, "evidence"),
-  highlight: (highlight) => highlight.code,
-}
+import { recommendationFixture } from "../entities/recommendation/fixture"
 
 const results: LotResult[] = [
   { lot: lotSummary("10"), recommendation: recommendationFixture },
@@ -40,18 +34,12 @@ describe("the result files", () => {
     expect(products.startsWith(CSV_BOM)).toBe(true)
     expect(products).toContain("lot_id;product_name;okpd2_code;origin\r\n")
     expect(products).toContain("10;Sugar;10.81.12;inferred\r\n")
-    const suppliers = suppliersCsv(results, labels)
-    expect(suppliers).toContain("status;check_reasons;check_notes;matched_products")
+    const suppliers = suppliersCsv(results)
     expect(suppliers).toContain(
-      "10;1;7800000011;North Foods;supplier;recommended;;;5;5;1;3;1;11;4;coversItems · inStock · pastWins\r\n",
+      "10;1;7800000011;North Foods;Supplier;recommended;;5;5;1;3;1;11;4;",
     )
-    expect(suppliers).toContain(
-      `10;2;7800000022;${LONG_NAME};unknown;check;rangeUnconfirmed;${en("checkReason.rangeUnconfirmed", "evidence")};1;5;0;0;1;1;0;coversItems\r\n`,
-    )
-    expect(suppliers).toContain(
-      "10;3;7800000033;West Trade;distributor;check;;;1;5;0;1;0;3;0;\r\n",
-    )
-    const chosen = suppliersCsv(results, labels, { "10": ["west"] })
+    expect(suppliers).toContain("10;3;7800000033;West Trade;Distributor;check;;1;5;0;1;0;3;0;")
+    const chosen = suppliersCsv(results, { "10": ["west"] })
     expect(chosen).not.toContain("North Foods")
     expect(chosen).toContain("West Trade")
   })
@@ -138,15 +126,14 @@ describe("the export dialog", () => {
     expect(screen.queryByText(/still processing/)).toBeNull()
   })
 
-  it("writes reasons and highlights in the interface language", async () => {
+  it("writes the summary of each company", async () => {
     const save = vi.spyOn(download, "saveTextFile").mockImplementation(() => {})
     const gateway = stubGateway({ results: vi.fn(async () => results) })
     const { user, onClose } = openDialog({ currentLotId: "10" }, gateway)
     await user.click(screen.getByRole("button", { name: en("submit", "export") }))
     await waitFor(() => expect(onClose).toHaveBeenCalled())
     const suppliers = String(save.mock.calls[1]?.[1])
-    expect(suppliers).toContain("Covers 5 of 5 items · In stock for 1 item")
-    expect(suppliers).toContain(en("checkReason.rangeUnconfirmed", "evidence"))
+    expect(suppliers).toContain(recommendationFixture.companies[0]?.summary ?? "")
   })
 
   it("warns when nothing is ready or nothing was chosen, and reports failures", async () => {

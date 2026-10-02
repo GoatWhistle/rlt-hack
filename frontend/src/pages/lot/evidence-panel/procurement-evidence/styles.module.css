@@ -1,0 +1,68 @@
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.metrics > div {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-subtle);
+}
+
+.metrics dt {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.metrics dd {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.explanation {
+  margin-bottom: var(--space-4);
+  color: var(--text-body);
+  font-size: var(--text-sm);
+}
+
+.purchase {
+  padding: var(--space-4);
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-md);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.title {
+  margin: var(--space-3) 0;
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+}
+
+.products {
+  margin-bottom: var(--space-3);
+  padding-left: var(--space-4);
+  color: var(--text-body);
+  font-size: var(--text-sm);
+  list-style: disc;
+}
+
+.link {
+  display: inline-block;
+  margin-top: var(--space-3);
+  color: var(--link);
+  font-size: var(--text-sm);
+  text-underline-offset: 3px;
+}

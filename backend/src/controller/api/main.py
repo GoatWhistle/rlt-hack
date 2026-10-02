@@ -21,14 +21,12 @@ def build_app() -> FastAPI:
         title=API_TITLE,
         version=API_VERSION,
         docs_enabled=config.api.docs_enabled,
-        upload_max_bytes=config.upload.max_bytes,
     )
     container = Container(config, current_request_id)
     api = ApiContainer(
         config,
         container.api_gateway,
         container.aclose,
-        background=container.background_gateway,
         control=container.control_gateway,
         correlation=current_request_id,
     )

@@ -1,0 +1,9 @@
+{
+  "queries": 20,
+  "identical_top10": 20,
+  "max_score_delta": 0.0,
+  "seconds": 17.303056234959513,
+  "peak_rss_kib": 1423972,
+  "model_sha256": "cc79a0a0a751af3e602d149b3766df7e5c30f4f57a7b114b3f54bbbecd4ce49f",
+  "passed": true
+}

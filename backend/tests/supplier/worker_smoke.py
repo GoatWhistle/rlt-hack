@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from src.models.classification import Classification
-from src.models.enums import FetchStatus, SourceType
+from src.models.enums import FetchStatus, SourceType, SupplierRole
 from src.models.journal import CrawlRun
 from src.models.normalization import Normalization
 from src.models.offer import Offer
@@ -111,6 +111,21 @@ class FakeClock:
         return datetime.now(UTC)
 
 
+class FakeEnricher:
+    """Проставляет компаниям роль и записывает порядок вызова."""
+
+    def __init__(self, calls: list[str]) -> None:
+        self._calls = calls
+
+    async def enrich(self, package: SupplierPackage) -> SupplierPackage:
+        self._calls.append("enrich")
+        suppliers = tuple(
+            dataclasses.replace(supplier, role=SupplierRole.DISTRIBUTOR)
+            for supplier in package.suppliers
+        )
+        return dataclasses.replace(package, suppliers=suppliers)
+
+
 class FakeNormalizer:
     """Отмечает позиции нормализацией и записывает порядок вызова."""
 
@@ -154,6 +169,8 @@ def worker(
     journal,
     max_parallel: int = 4,
     calls: list[str] | None = None,
+    batch_size: int = 32,
+    package_batch_size: int = 500,
 ) -> SupplierSyncWorker:
     recorded = calls if calls is not None else []
     return SupplierSyncWorker(
@@ -161,9 +178,12 @@ def worker(
         storage=storage,
         journal=journal,
         clock=FakeClock(),
+        enricher=FakeEnricher(recorded),
         normalizer=FakeNormalizer(recorded),
         classifier=FakeClassifier(recorded),
         max_parallel_sources=max_parallel,
+        batch_size=batch_size,
+        package_batch_size=package_batch_size,
     )
 
 
@@ -227,18 +247,71 @@ async def check_journal_failure_keeps_data() -> None:
 async def check_enrichment_before_save() -> None:
     calls: list[str] = []
     storage = FakeStorage()
-    provider = FakeProvider("enriched", offers=2)
+    provider = FakeProvider("enriched", suppliers=2, offers=2)
     await worker([provider], storage, FakeJournal(), calls=calls).run_once()
 
-    # Классификатору нужно нормализованное название, поэтому порядок обязателен.
-    assert calls == ["normalize", "classify"], calls
+    # Обогащение идёт сразу после обхода, а классификатору нужно нормализованное
+    # название, поэтому порядок обязателен.
+    assert calls == ["enrich", "normalize", "classify"], calls
+    assert all(s.role == SupplierRole.DISTRIBUTOR for s in storage.packages[0].suppliers)
     saved = storage.packages[0].offers
     assert len(saved) == 2, saved
     assert all(offer.normalization is not None for offer in saved), saved
     assert all(offer.classification.okpd2_code == "25.73" for offer in saved), saved
 
 
+class BatchStorage:
+    """Хранилище с порциями: запоминает размер каждой записанной порции."""
+
+    def __init__(self, withdrawn: int = 0) -> None:
+        self.offer_batches: list[int] = []
+        self.supplier_batches: list[int] = []
+        self.finished: list[UUID] = []
+        self._withdrawn = withdrawn
+
+    async def save_package(self, package: SupplierPackage) -> int:
+        raise AssertionError("при батчевом хранилище пакет целиком не сохраняется")
+
+    async def save_batch(self, package: SupplierPackage, observed_at: datetime) -> None:
+        if package.offers:
+            self.offer_batches.append(len(package.offers))
+        if package.suppliers:
+            self.supplier_batches.append(len(package.suppliers))
+
+    async def finish_snapshot(self, source_id: UUID, observed_at: datetime) -> int:
+        self.finished.append(source_id)
+        return self._withdrawn
+
+
+async def check_collected_package_written_in_write_sized_batches() -> None:
+    """Собранный пакет пишется порциями размера записи, а не порциями обхода.
+
+    Мелкая порция обхода нужна потоковому адаптеру: она ограничивает потерю при
+    обрыве. Для собранного пакета терять нечего, и деление по ней умножало бы
+    число INSERT и чтений first_seen на порядок.
+    """
+    storage = BatchStorage(withdrawn=3)
+    provider = FakeProvider("bulk", suppliers=7, offers=250)
+    result = await worker(
+        [provider], storage, FakeJournal(), batch_size=32, package_batch_size=100
+    ).run_once()
+
+    assert storage.offer_batches == [100, 100, 50], storage.offer_batches
+    assert storage.supplier_batches == [7], storage.supplier_batches
+    assert storage.finished == [provider.source.source_id], storage.finished
+    assert result.sources[0].offers_extracted == 250, result.sources[0]
+    assert result.sources[0].offers_withdrawn == 3, result.sources[0]
+
+    # Пустой обход ничего не снимает с продажи: это чаще сломанный разбор.
+    empty_storage = BatchStorage(withdrawn=5)
+    await worker(
+        [FakeProvider("empty", suppliers=0, offers=0)], empty_storage, FakeJournal()
+    ).run_once()
+    assert empty_storage.offer_batches == [] and empty_storage.finished == []
+
+
 async def main() -> None:
+    await check_collected_package_written_in_write_sized_batches()
     await check_enrichment_before_save()
     await check_concurrent_sources()
     await check_parallel_limit()

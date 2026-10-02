@@ -1,8 +1,10 @@
 # Контракт HTTP API
 
-Примеры `*.example.json` фиксируют форму ответов и запросов. Контрактные тесты
-backend (`backend/tests/controller/test_contracts.py`, `test_upload_api.py`,
-`test_error_codes.py`) прогоняют их через DTO, а фронтенд разбирает каждый пример
+Примеры `*.example.json` фиксируют форму ответов и запросов сервиса `api`: поиск
+по тексту (`/api/searches`) и профиль компании (`/api/suppliers/{id}`). Загрузки
+CSV (`/api/uploads`) обслуживает `search-api` из main, их форма задана
+`backend/src/controller/uploads/presentation.py`. Контрактные тесты backend
+(`backend/tests/controller/test_contracts.py`, `test_error_codes.py`) прогоняют их через DTO, а фронтенд разбирает каждый пример
 своими парсерами (`frontend/tests/entities/*`). `error-codes.json` — полный список
 кодов ошибок с HTTP-статусами; у каждого кода есть текст в словарях фронтенда
 `errors.json` (ru и en).
@@ -32,7 +34,6 @@ backend (`backend/tests/controller/test_contracts.py`, `test_upload_api.py`,
 
 ## Кэширование
 
-`GET /api/searches/{id}`, `GET /api/uploads/{id}` и
-`GET /api/uploads/{id}/summary` отдают слабый `ETag`; повтор с `If-None-Match`
+`GET /api/searches/{id}` отдаёт слабый `ETag`; повтор с `If-None-Match`
 даёт 304. Тег включает версию представления: при изменении формы ответа она
 повышается в контроллере (`VIEW_VERSION`, `DETAIL_VERSION`).

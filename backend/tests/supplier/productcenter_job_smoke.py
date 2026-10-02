@@ -15,14 +15,20 @@ from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepositor
 from src.adapter.repository.clickhouse.migrator import MIGRATION_DIR, Migrator
 from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
 from src.adapter.repository.clickhouse.package import ClickHousePackageRepository
+from src.adapter.repository.clickhouse.registry import ClickHouseMspRegistryRepository
 from src.adapter.repository.clickhouse.source import ClickHouseSourceRepository
 from src.adapter.repository.clickhouse.supplier import ClickHouseSupplierRepository
 from src.adapter.repository.clickhouse.versions import VersionSequencer
-from src.adapter.repository.reference import load_classifier_reference, load_normalizer_reference
+from src.adapter.repository.reference import (
+    load_classifier_reference,
+    load_normalizer_reference,
+    load_okved_roles,
+)
 from src.adapter.system.clock import SystemClock
 from src.models.enums import FetchStatus
 from src.service.classifier import OfferClassifier
 from src.service.normalizer import OfferNormalizer
+from src.service.registry import SupplierRegistryEnricher
 from src.service.supplier.worker import SupplierSyncWorker
 from tests.clickhouse.chdb_gateway import ChdbGateway
 from tests.supplier.productcenter_smoke import G1, G2, pages, provider
@@ -54,6 +60,9 @@ async def check() -> None:
                 categories=classifier_reference.categories,
                 name_key=normalizer.name_key,
             )
+            enricher = SupplierRegistryEnricher(
+                ClickHouseMspRegistryRepository(gateway), await load_okved_roles()
+            )
             data = pages()
 
             async def sync(snapshot: dict[str, bytes]):
@@ -63,6 +72,7 @@ async def check() -> None:
                     storage=storage,
                     journal=journal,
                     clock=SystemClock(),
+                    enricher=enricher,
                     normalizer=normalizer,
                     classifier=classifier,
                 )

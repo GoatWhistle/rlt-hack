@@ -3,7 +3,6 @@ from collections.abc import Awaitable, Callable
 import httpx
 
 from src.adapter.client.ml_service.retriever import MlServiceRetriever, no_correlation
-from src.adapter.file.notice_csv.reader import CsvNoticeReader
 from src.adapter.repository.clickhouse.history_search.retriever import ClickHouseHistoryRetriever
 from src.adapter.repository.clickhouse.offer_read.catalog import ClickHouseOfferCatalog
 from src.adapter.repository.clickhouse.offer_search.retriever import ClickHouseLexicalRetriever
@@ -13,7 +12,6 @@ from src.adapter.repository.clickhouse.protocols import SqlGateway
 from src.adapter.repository.clickhouse.search_archive.archive import ClickHouseSearchArchive
 from src.adapter.repository.clickhouse.supplier_read.directory import ClickHouseSupplierDirectory
 from src.adapter.repository.clickhouse.supplier_read.identity import ClickHouseSupplierIdentity
-from src.adapter.repository.clickhouse.upload_store.store import ClickHouseUploadStore
 from src.adapter.system.clock import SystemClock
 from src.adapter.system.ids import Uuid4Generator
 from src.adapter.text.analyzer.analyzer import RussianAnalyzer
@@ -21,10 +19,6 @@ from src.adapter.text.rule_interpreter.interpreter import RuleQueryInterpreter
 from src.application.config import AppConfig
 from src.application.deferred_gateway import Connect, DeferredGateway
 from src.service.health.service import HealthService
-from src.service.procurement_upload.processor import LotProcessor
-from src.service.procurement_upload.runner import LotRunner
-from src.service.procurement_upload.service import ProcurementUploadService
-from src.service.procurement_upload.settings import UploadSettings
 from src.service.supplier_profile.service import SupplierProfileService
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
 from src.service.supplier_search.assembly.highlights import HighlightComposer
@@ -60,7 +54,6 @@ class ApiContainer:
         self._correlation = correlation
         self._analyzer = RussianAnalyzer()
         self._ml_client: httpx.AsyncClient | None = None
-        self._uploads: ProcurementUploadService | None = None
         self._settings = SearchSettings(
             timeout_seconds=config.search.timeout_seconds,
             retrieval_depth_factor=config.search.retrieval_depth_factor,
@@ -106,19 +99,14 @@ class ApiContainer:
             settings=self._settings,
         )
 
-    async def procurement_uploads(self) -> ProcurementUploadService:
-        if self._uploads is None:
-            self._uploads = self._upload_service()
-        return self._uploads
-
     async def supplier_profiles(self) -> SupplierProfileService:
         return SupplierProfileService(
             directory=ClickHouseSupplierDirectory(self._gateway, self.database),
             offers=ClickHouseOfferCatalog(self._gateway, self.database),
         )
 
-    async def background(self) -> tuple[ProcurementUploadService, ...]:
-        return (await self.procurement_uploads(),)
+    async def background(self) -> tuple[()]:
+        return ()
 
     async def health(self) -> HealthService:
         return HealthService(probes=(ClickHouseProbe(self._control),))
@@ -143,30 +131,6 @@ class ApiContainer:
             self._ml_client = None
         if self._release is not None:
             await self._release()
-
-    def _upload_service(self) -> ProcurementUploadService:
-        upload = self._config.upload
-        settings = UploadSettings(
-            max_rows=upload.max_rows,
-            candidates_per_lot=upload.candidates_per_lot,
-            concurrency=upload.concurrency,
-            attempts=upload.attempts,
-            lot_timeout_seconds=upload.lot_timeout_seconds,
-            resume_interval_seconds=upload.resume_interval_seconds,
-            max_backlog=upload.max_backlog,
-        )
-        store = ClickHouseUploadStore(self._gateway, self.database)
-        background = ClickHouseUploadStore(self._background, self.database)
-        clock = SystemClock()
-        processor = LotProcessor(self.pipeline(self._background), clock, settings)
-        return ProcurementUploadService(
-            reader=CsvNoticeReader(),
-            store=store,
-            runner=LotRunner(processor, background, clock, settings),
-            clock=clock,
-            ids=Uuid4Generator(),
-            settings=settings,
-        )
 
     def _semantic(self, gateway: SqlGateway) -> MlServiceRetriever:
         ml = self._config.ml_service

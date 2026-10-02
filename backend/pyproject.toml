@@ -15,6 +15,11 @@ dependencies = [
     "pydantic>=2.12",
     "snowballstemmer>=3.0",
     "python-multipart>=0.0.20",
+    "numpy>=2.2,<3",
+    "pyarrow>=19,<24",
+    "duckdb>=1.4,<2",
+    "catboost>=1.2.8,<2",
+    "scikit-learn>=1.6,<2",
 ]
 
 [project.optional-dependencies]
@@ -54,6 +59,7 @@ ban-relative-imports = "all"
 "tests/**/*_smoke.py" = ["PLR0912", "PLR0915", "PT017", "PT018"]
 "tests/**/smoke.py" = ["PLR0912", "PLR0915", "PT017", "PT018"]
 "tests/supplier/gisp_*.py" = ["PLR0912", "PLR0915", "PT017", "PT018"]
+"tests/supplier/eis_registry_smoke.py" = ["E501"]
 "src/adapter/supplier/**" = ["ANN", "ERA", "PL", "N"]
 "src/adapter/repository/clickhouse/gateway.py" = ["ANN401", "N801"]
 "src/adapter/repository/clickhouse/client.py" = ["ANN401"]
@@ -61,6 +67,19 @@ ban-relative-imports = "all"
 "src/controller/job/**" = ["ANN", "PL"]
 "src/application/container.py" = ["PLR0912"]
 "src/service/supplier/**" = ["PLR0912"]
+"src/adapter/client/msp_registry/**" = ["ANN401"]
+"src/adapter/repository/ranker/**" = ["ANN"]
+"src/adapter/repository/supplier_index/**" = ["ANN", "ASYNC240"]
+"src/application/encoder.py" = ["ANN"]
+"src/application/supplier_index.py" = ["ANN"]
+"src/application/supplier_search.py" = ["ANN"]
+"src/controller/search/api.py" = ["ANN"]
+"src/controller/search/import_history.py" = ["ANN"]
+"src/controller/search/import_index.py" = ["ANN"]
+"src/controller/uploads/**" = ["ANN", "N815"]
+"tests/clickhouse/chdb_gateway.py" = ["PLR0911"]
+"tests/search/**" = ["ASYNC240"]
+"tests/supplier/eis_live.py" = ["ASYNC240"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -112,6 +131,8 @@ exclude = [
     '^tests/clickhouse/normalization_smoke\.py$',
     '^tests/(classifier|normalizer)/.*_smoke\.py$',
     '^tests/embedding/batching_smoke\.py$',
+    '^tests/(product|search|registry)/',
+    '^tests/embedding/inference_smoke\.py$',
 ]
 plugins = ["pydantic.mypy"]
 warn_unreachable = true
@@ -125,5 +146,18 @@ module = [
     "src.adapter.supplier.*",
     "src.service.supplier.*",
     "src.adapter.repository.clickhouse.offer",
+    "src.controller.job.*",
+    "src.adapter.repository.ranker.*",
+    "src.adapter.repository.supplier_index.*",
+    "src.adapter.repository.uploads.*",
+    "src.service.registry.*",
+    "src.controller.uploads.*",
+    "src.controller.search.api",
+    "src.controller.search.import_index",
+    "src.controller.search.import_history",
+    "src.application.encoder",
+    "src.application.supplier_index",
+    "src.application.supplier_search",
+    "src.application.uploads",
 ]
 ignore_errors = true

@@ -1,0 +1,73 @@
+{
+  "split": "test",
+  "model_sha256": "cc79a0a0a751af3e602d149b3766df7e5c30f4f57a7b114b3f54bbbecd4ce49f",
+  "selected": "softmax_winner",
+  "metadata": {
+    "split": "test",
+    "features": [
+      "dense_score",
+      "bm25_score",
+      "rrf_score",
+      "dense_rank",
+      "bm25_rank",
+      "customer_rank",
+      "token_coverage",
+      "supplier_participations",
+      "supplier_wins",
+      "supplier_win_rate",
+      "category_participations",
+      "category_wins",
+      "category_win_rate",
+      "customer_participations",
+      "customer_wins",
+      "customer_win_rate",
+      "profile_examples",
+      "profile_age",
+      "price_distance",
+      "missing_customer",
+      "missing_price",
+      "card_count"
+    ],
+    "queries": 1000,
+    "query_sample_sha256": "b0f530477236100f8aba0d1d7f388cb244ecc6e300c6dc92c842c5a615c3824a",
+    "customer_dropout": 0.0,
+    "seconds": 77.99783348897472
+  },
+  "baseline": {
+    "queries": 1000,
+    "winner_queries": 979,
+    "winner_hit_1": 0.20326864147088866,
+    "winner_hit_5": 0.3391215526046987,
+    "winner_hit_10": 0.4065372829417773,
+    "winner_hit_20": 0.4851889683350358,
+    "winner_recall_200": 0.7415730337078652,
+    "winner_mrr": 0.2747403769126809,
+    "bidder_hit_10": 0.48,
+    "participant_recall_10": 0.3820079096342254
+  },
+  "ranker": {
+    "queries": 1000,
+    "winner_queries": 979,
+    "winner_hit_1": 0.2553626149131767,
+    "winner_hit_5": 0.432073544433095,
+    "winner_hit_10": 0.5229826353421859,
+    "winner_hit_20": 0.59244126659857,
+    "winner_recall_200": 0.7415730337078652,
+    "winner_mrr": 0.3400223593474336,
+    "bidder_hit_10": 0.604,
+    "participant_recall_10": 0.4838396149172465
+  },
+  "winner_mrr_delta": 0.0652819824347527,
+  "winner_mrr_delta_cluster_ci95": [
+    0.04807786757251985,
+    0.0823569708979454
+  ],
+  "bootstrap_procedures": 979,
+  "prediction_seconds": 0.04969886410981417,
+  "milliseconds_per_query": 0.04969886410981417,
+  "accepted": true,
+  "limitations": [
+    "Participation labels are incomplete relevance labels.",
+    "Tree scores are not probabilities; timing excludes retrieval and encoding."
+  ]
+}

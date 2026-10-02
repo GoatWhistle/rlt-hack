@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next"
-import { useMatchFigure } from "@/entities/evidence/labels"
-import type { MatchBasis, Source } from "@/entities/evidence/model"
-import { BASIS_ORDER, MatchRow } from "@/entities/evidence/ui/match-row"
-import type { Company, Product } from "@/entities/recommendation/model"
+import { BASIS_ORDER, MatchRow as EvidenceMatchRow } from "@/entities/evidence/ui/match-row"
+import type { Company, MatchBasis, Product, Source } from "@/entities/recommendation/model"
 import { Caption } from "@/shared/ui/caption"
 import { Fold } from "@/shared/ui/fold"
 import { Stack } from "@/shared/ui/stack"
@@ -23,8 +21,8 @@ export function matchRows(company: Company, products: readonly Product[]): Match
   return [...found, ...missing.map((product) => ({ product }))]
 }
 
-export function ProductMatchRow({ row }: { readonly row: MatchRowData }) {
-  return <MatchRow name={row.product.name} basis={row.basis} source={row.source} />
+export function MatchRow({ row }: { readonly row: MatchRowData }) {
+  return <EvidenceMatchRow name={row.product.name} basis={row.basis} source={row.source} />
 }
 
 export type MatchBlockProps = {
@@ -34,16 +32,18 @@ export type MatchBlockProps = {
 
 export function MatchBlock({ company, products }: MatchBlockProps) {
   const { t } = useTranslation("lot")
-  const figure = useMatchFigure()(company.matches, products.length)
   return (
     <Fold
       title={t("evidence.matchesTitle")}
-      aside={figure.note ? `${figure.value} ${figure.note}` : figure.value}
+      aside={t("evidence.matchesAside", {
+        matched: company.matches.length,
+        total: products.length,
+      })}
     >
       <Stack as="ul">
         {matchRows(company, products).map((row) => (
           <li key={row.product.id}>
-            <ProductMatchRow row={row} />
+            <MatchRow row={row} />
           </li>
         ))}
       </Stack>

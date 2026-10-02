@@ -9,14 +9,12 @@ from src.controller.http.protocols import BackgroundTask, ServiceProvider
 from src.controller.http.settings import ApiSettings
 from src.controller.search.protocols import SupplierSearching
 from src.controller.supplier.protocols import SupplierProfiles
-from src.controller.upload.protocols import ProcurementUploads
 
 
 @dataclass(frozen=True, slots=True)
 class Services:
     supplier_search: SupplierSearching
     supplier_profiles: SupplierProfiles
-    procurement_uploads: ProcurementUploads
     health: ReadinessChecking
     background: tuple[BackgroundTask, ...] = ()
 
@@ -25,7 +23,6 @@ class Services:
         return cls(
             supplier_search=await provider.supplier_search(),
             supplier_profiles=await provider.supplier_profiles(),
-            procurement_uploads=await provider.procurement_uploads(),
             health=await provider.health(),
             background=await provider.background(),
         )

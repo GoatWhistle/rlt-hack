@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useCheckReasonText, useHighlightText } from "@/entities/evidence/labels"
 import { shortlistsOf } from "@/entities/shortlist/store"
 import { useUploadGateway } from "@/entities/upload/gateway-context"
 import type { LotSummary } from "@/entities/upload/model"
@@ -38,7 +37,6 @@ export function ExportDialog(props: ExportDialogProps) {
   const { t } = useTranslation("export")
   const gateway = useUploadGateway()
   const toast = useToast()
-  const labels = { checkReason: useCheckReasonText(), highlight: useHighlightText() }
   const [lotScope, setLotScope] = useState<LotScope>(() =>
     initialScope(currentLotId, selectedIds.length),
   )
@@ -94,7 +92,7 @@ export function ExportDialog(props: ExportDialogProps) {
       saveTextFile(names.products, productsCsv(results), CSV_TYPE)
       saveTextFile(
         names.suppliers,
-        suppliersCsv(results, labels, scope === "shortlist" ? shortlists : undefined),
+        suppliersCsv(results, scope === "shortlist" ? shortlists : undefined),
         CSV_TYPE,
       )
       toast.show({ tone: "success", message: t("done") })

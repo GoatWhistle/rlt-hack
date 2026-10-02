@@ -4,7 +4,7 @@ from typing import Protocol
 from uuid import UUID
 
 from src.models.coverage import CoverageReport
-from src.models.enrichment import EnrichmentResult, ReidentifyResult
+from src.models.enrichment import EnrichmentResult, RegistryImportResult, ReidentifyResult
 from src.models.journal import CrawlRun, SyncResult
 from src.models.source import Source
 
@@ -33,6 +33,11 @@ class OfferEnriching(Protocol):
 class OfferReidentifying(Protocol):
     async def run(self) -> ReidentifyResult:
         """Переводит сохранённые позиции на действующее правило ключа."""
+
+
+class RegistryImporting(Protocol):
+    async def run(self) -> RegistryImportResult:
+        """Загружает выгрузку реестра МСП и удаляет выбывшие компании."""
 
 
 class CoverageReading(Protocol):

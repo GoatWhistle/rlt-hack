@@ -34,8 +34,6 @@ const UPLOAD_ERRORS = [
 const FAMILIES: readonly Family[] = [
   ["evidence", "checkReason", CHECK_REASONS],
   ["evidence", "highlight", HIGHLIGHT_CODES],
-  ["lot", "companies.checkReason", CHECK_REASONS],
-  ["lot", "clarify.reason", CHECK_REASONS],
   ["lots", "status", LOT_STATUSES],
   ["lots", "filter", FILTERS],
   ["uploads", "list", RESULT_STATUSES],

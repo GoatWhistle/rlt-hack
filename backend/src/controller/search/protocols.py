@@ -3,6 +3,11 @@ from uuid import UUID
 
 from src.models.search import SearchQuery
 from src.models.search_result import SearchResult, SearchSummary
+from src.models.supplier_search import SupplierCandidate
+
+
+class SearchEngine(Protocol):
+    async def search(self, text: str, limit: int = 10) -> list[SupplierCandidate]: ...
 
 
 class SupplierSearching(Protocol):

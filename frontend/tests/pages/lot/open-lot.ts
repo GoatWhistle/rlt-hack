@@ -1,4 +1,3 @@
-import { screen } from "@testing-library/react"
 import {
   lotSummary,
   type PageOptions,
@@ -46,8 +45,4 @@ export async function openLot(
   const view = renderPage(options.path ?? "/uploads/u1/lots/10", gateway, options)
   await view.findByRole("heading", { level: 1 })
   return { ...view, gateway }
-}
-
-export function panel(name: string | RegExp) {
-  return screen.getByRole("article", { name })
 }

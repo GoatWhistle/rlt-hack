@@ -85,8 +85,10 @@ jobs:
       - run: python backend/tests/clickhouse/schema_smoke.py
       - run: python backend/tests/clickhouse/normalization_smoke.py
       - run: python backend/tests/supplier/pulscen_smoke.py
+      - run: python backend/tests/clickhouse/offer_batch_smoke.py
       - run: python backend/tests/supplier/job_smoke.py
       - run: python backend/tests/supplier/provider_smoke.py
+      - run: python backend/tests/supplier/batching_smoke.py
       - run: python backend/tests/supplier/worker_smoke.py
       - run: python backend/tests/supplier/productcenter_smoke.py
       - run: python backend/tests/supplier/productcenter_job_smoke.py
@@ -94,8 +96,23 @@ jobs:
       - run: python backend/tests/supplier/gisp_registry.py
       - run: python backend/tests/supplier/gisp_api.py
       - run: python backend/tests/supplier/moscow_suppliers_smoke.py
+      - run: python backend/tests/registry/registry_smoke.py
+      - run: python backend/tests/registry/registry_store_smoke.py
+      - run: python backend/tests/supplier/eis_registry_smoke.py
+      - run: python backend/tests/supplier/gisp_snapshot.py
+      - run: python backend/tests/supplier/supl_biz_smoke.py
+      - run: python backend/tests/supplier/supl_biz_balanced_smoke.py
+      - run: python backend/tests/product/moscow_smoke.py
+      - run: python backend/tests/product/worker_smoke.py
       - run: python backend/tests/embedding/smoke.py
+      - run: python backend/tests/embedding/inference_smoke.py
       - run: python backend/tests/embedding/batching_smoke.py
+      - run: python backend/tests/embedding/document_smoke.py
+      - run: python backend/tests/search/smoke.py
+      - run: python backend/tests/search/clickhouse_smoke.py
+      - run: python backend/tests/search/history_smoke.py
+      - run: python backend/tests/search/ranker_smoke.py
+      - run: python backend/tests/search/upload_refresh_smoke.py
 
   ml:
     runs-on: ubuntu-24.04

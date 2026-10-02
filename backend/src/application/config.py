@@ -8,6 +8,7 @@
 import math
 import os
 from dataclasses import dataclass, field, replace
+from datetime import date
 from pathlib import Path
 
 from src.adapter.repository.clickhouse.config import ClickHouseConfig
@@ -36,6 +37,11 @@ def _bool(name: str, default: bool) -> bool:
     if raw is None or not raw.strip():
         return default
     return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
+def _date(name: str) -> date | None:
+    raw = os.getenv(name)
+    return date.fromisoformat(raw.strip()) if raw and raw.strip() else None
 
 
 def _urls(name: str) -> tuple[str, ...]:
@@ -78,7 +84,6 @@ class MlServiceConfig:
 @dataclass(frozen=True, slots=True)
 class ApiStorageConfig:
     query_timeout: int = 15
-    background_pool_size: int = 2
     max_memory_usage: int = 0
     execution_margin_seconds: int = 2
 
@@ -98,34 +103,7 @@ def api_clickhouse(
 def _api_storage_config() -> ApiStorageConfig:
     return ApiStorageConfig(
         query_timeout=_int("CLICKHOUSE_API_QUERY_TIMEOUT", 15),
-        background_pool_size=_int("CLICKHOUSE_BACKGROUND_POOL_SIZE", 2),
         max_memory_usage=_int("CLICKHOUSE_API_MAX_MEMORY_USAGE", 0),
-    )
-
-
-@dataclass(frozen=True, slots=True)
-class UploadConfig:
-    max_bytes: int = 10 * 1024 * 1024
-    max_rows: int = 5000
-    candidates_per_lot: int = 20
-    concurrency: int = 2
-    attempts: int = 3
-    lot_timeout_seconds: float = 30.0
-    resume_interval_seconds: float = 60.0
-    max_backlog: int = 10000
-
-
-def _upload_config() -> UploadConfig:
-    max_rows = _int("UPLOAD_MAX_ROWS", 5000)
-    return UploadConfig(
-        max_bytes=_int("UPLOAD_MAX_BYTES", 10 * 1024 * 1024),
-        max_rows=max_rows,
-        candidates_per_lot=_int("UPLOAD_CANDIDATES", 20),
-        concurrency=_int("UPLOAD_CONCURRENCY", 2),
-        attempts=_int("UPLOAD_ATTEMPTS", 3),
-        lot_timeout_seconds=_float("UPLOAD_LOT_TIMEOUT_SECONDS", 30.0),
-        resume_interval_seconds=_float("UPLOAD_RESUME_INTERVAL_SECONDS", 60.0),
-        max_backlog=_int("UPLOAD_MAX_BACKLOG", max(10000, 2 * max_rows)),
     )
 
 
@@ -175,7 +153,10 @@ class AppConfig:
     parallel_sources: int = 4
     # Сколько запросов к одному источнику выполняет его адаптер одновременно.
     parallel_requests: int = 4
-    write_batch_size: int = 500
+    # Пачка записи в ClickHouse: ограничена числом частей таблицы, не памятью.
+    write_batch_size: int = 5000
+    # Порция обогащения, нормализации, классификации и записи за один шаг.
+    sync_batch_size: int = 32
     sync_interval_seconds: float = 3600.0
     # Сколько карточек берёт с источника один обход: каталоги публикуют тысячи.
     max_cards_per_source: int = 500
@@ -205,8 +186,22 @@ class AppConfig:
     api: ApiConfig = field(default_factory=ApiConfig)
     search: SearchConfig = field(default_factory=SearchConfig)
     ml_service: MlServiceConfig = field(default_factory=MlServiceConfig)
-    upload: UploadConfig = field(default_factory=UploadConfig)
     api_storage: ApiStorageConfig = field(default_factory=ApiStorageConfig)
+    # ZIP-выгрузка реестра МСП ФНС для команды registry-import.
+    msp_registry_path: Path | None = None
+    use_supl_biz_provider: bool = False
+    supl_biz_max_cards: int = 0
+    use_eis_registry_provider: bool = False
+    eis_period_start: date | None = None
+    eis_period_days: int = 30
+    eis_max_contracts: int = 0
+    eis_ca_bundle: str = ""
+    eis_verify_tls: bool = True
+    eis_proxy: str = ""
+    eis_request_interval: float = 1.0
+    use_moscow_products_provider: bool = False
+    moscow_products_page_size: int = 500
+    moscow_products_retry_attempts: int = 12
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -231,7 +226,8 @@ class AppConfig:
             request_timeout=_float("REQUEST_TIMEOUT", 30.0),
             parallel_sources=_int("SYNC_PARALLEL_SOURCES", 4),
             parallel_requests=_int("SYNC_PARALLEL_REQUESTS", 4),
-            write_batch_size=_int("SYNC_WRITE_BATCH", 500),
+            write_batch_size=_int("SYNC_WRITE_BATCH", 5000),
+            sync_batch_size=_int("SYNC_BATCH_SIZE", 32),
             max_cards_per_source=_int("SYNC_MAX_CARDS", 500),
             sync_interval_seconds=_float("SYNC_INTERVAL_SECONDS", 3600.0),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
@@ -259,6 +255,21 @@ class AppConfig:
             api=_api_config(),
             search=_search_config(),
             ml_service=_ml_service_config(),
-            upload=_upload_config(),
             api_storage=_api_storage_config(),
+            msp_registry_path=(
+                Path(value).expanduser() if (value := os.getenv("MSP_REGISTRY_PATH")) else None
+            ),
+            use_supl_biz_provider=_bool("SUPL_BIZ_WEB_PROVIDER", False),
+            supl_biz_max_cards=_int("SUPL_BIZ_MAX_CARDS", 0),
+            use_eis_registry_provider=_bool("EIS_REGISTRY_PROVIDER", False),
+            eis_period_start=_date("EIS_PERIOD_START"),
+            eis_period_days=_int("EIS_PERIOD_DAYS", 30),
+            eis_max_contracts=_int("EIS_MAX_CONTRACTS", 0),
+            eis_ca_bundle=os.getenv("EIS_CA_BUNDLE", ""),
+            eis_verify_tls=_bool("EIS_VERIFY_TLS", True),
+            eis_proxy=os.getenv("EIS_PROXY", ""),
+            eis_request_interval=_float("EIS_REQUEST_INTERVAL", 1.0),
+            use_moscow_products_provider=_bool("MOSCOW_PRODUCTS_PROVIDER", False),
+            moscow_products_page_size=_int("MOSCOW_PRODUCTS_PAGE_SIZE", 500),
+            moscow_products_retry_attempts=_int("MOSCOW_PRODUCTS_RETRY_ATTEMPTS", 12),
         )

@@ -23,8 +23,7 @@ export const SUPPLIER_COLUMNS = [
   "supplier_name",
   "role",
   "status",
-  "check_reasons",
-  "check_notes",
+  "check_reason",
   "matched_products",
   "products_total",
   "stock_confirmed",
@@ -64,7 +63,6 @@ export function productsCsv(results: readonly LotResult[]): string {
 
 export function suppliersCsv(
   results: readonly LotResult[],
-  labels: CsvLabels,
   shortlists?: LotShortlists,
 ): string {
   const rows = results.flatMap(({ lot, recommendation }) => {
@@ -82,16 +80,15 @@ export function suppliersCsv(
           company.name,
           company.role,
           company.status,
-          company.checkReasons.join(CODE_SEPARATOR),
-          company.checkReasons.map(labels.checkReason).join(NOTE_SEPARATOR),
+          company.checkReason ?? "",
           company.matches.length,
           total,
           basis("stock"),
           basis("catalog"),
           basis("inferred"),
-          company.similarPurchases,
-          company.wins,
-          company.highlights.map(labels.highlight).join(SUMMARY_SEPARATOR),
+          company.similarPurchases ?? "",
+          company.wins ?? "",
+          company.summary,
         ],
       ]
     })

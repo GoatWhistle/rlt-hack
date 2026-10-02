@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID
 
-from src.models.enums import VerificationStatus
+from src.models.enums import SupplierRole, VerificationStatus
 from src.models.inn import is_valid_inn
 
 
@@ -19,6 +19,9 @@ class Supplier:
     okved_codes: tuple[str, ...] = ()
     identity_status: VerificationStatus = VerificationStatus.UNVERIFIED
     identity_evidence_url: str = ""
+    # Роль компании на рынке и её основание: заполняет обогащение по реестру.
+    role: SupplierRole = SupplierRole.UNKNOWN
+    role_evidence: str = ""
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "contacts", MappingProxyType(dict(self.contacts)))

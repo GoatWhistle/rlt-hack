@@ -30,6 +30,7 @@ const NUMERIC_PARAMS = new Set([
   "inferred",
 ])
 const TEXT_PARAMS = new Set([
+  "category",
   "code",
   "columns",
   "date",

@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from dataclasses import dataclass, field
 from uuid import UUID
 
@@ -8,13 +7,7 @@ from src.models.health import ComponentHealth, Readiness
 from src.models.search import SearchQuery
 from src.models.search_result import SearchResult, SearchSummary
 from src.models.supplier_profile import SupplierProfile
-from src.models.upload import LotDetail, UploadDetail, UploadResults, UploadSummary
-from src.service.errors import (
-    LotNotFoundError,
-    SearchNotFoundError,
-    SupplierNotFoundError,
-    UploadNotFoundError,
-)
+from src.service.errors import SearchNotFoundError, SupplierNotFoundError
 from tests.fakes.domain import (
     make_candidate,
     make_evidence,
@@ -22,14 +15,6 @@ from tests.fakes.domain import (
     make_offer_evidence,
     make_result,
     make_supplier,
-)
-from tests.fakes.uploads import (
-    UPLOAD_ID,
-    make_detail,
-    make_lot_detail,
-    make_lot_result,
-    make_processed,
-    make_summary,
 )
 
 
@@ -85,60 +70,15 @@ class FakeSupplierProfiles:
 
 
 @dataclass
-class FakeProcurementUploads:
-    detail: UploadDetail = field(default_factory=lambda: make_detail(make_lot_result()))
-    lot_detail: LotDetail = field(default_factory=lambda: make_lot_detail(make_lot_result()))
-    error: Exception | None = None
-    received: list[tuple[str, bytes]] = field(default_factory=list)
-    selections: list[tuple[str, ...]] = field(default_factory=list)
+class FakeBackgroundTask:
     started: int = 0
     stopped: int = 0
-    summaries: int = 0
-    details: int = 0
 
     async def start(self) -> None:
         self.started += 1
 
     async def stop(self) -> None:
         self.stopped += 1
-
-    async def upload(self, file_name: str, content: bytes) -> UploadSummary:
-        self.received.append((file_name, content))
-        if self.error is not None:
-            raise self.error
-        return make_summary()
-
-    async def recent(self, limit: int) -> tuple[UploadSummary, ...]:
-        if self.error is not None:
-            raise self.error
-        return (self.detail.summary,)[:limit]
-
-    async def summary(self, upload_id: UUID) -> UploadSummary:
-        self._known(upload_id)
-        self.summaries += 1
-        return self.detail.summary
-
-    async def get(self, upload_id: UUID) -> UploadDetail:
-        self._known(upload_id)
-        self.details += 1
-        return self.detail
-
-    async def lot(self, upload_id: UUID, lot_id: str) -> LotDetail:
-        self._known(upload_id)
-        if lot_id != self.lot_detail.progress.lot.lot_id:
-            raise LotNotFoundError(upload_id, lot_id)
-        return self.lot_detail
-
-    async def results(self, upload_id: UUID, lot_ids: Sequence[str]) -> UploadResults:
-        self._known(upload_id)
-        self.selections.append(tuple(lot_ids))
-        return UploadResults(self.detail.summary, (make_processed(),))
-
-    def _known(self, upload_id: UUID) -> None:
-        if self.error is not None:
-            raise self.error
-        if upload_id != UPLOAD_ID:
-            raise UploadNotFoundError(upload_id)
 
 
 @dataclass
@@ -157,7 +97,7 @@ class FakeReadiness:
 class FakeServiceProvider:
     searching: FakeSupplierSearching = field(default_factory=FakeSupplierSearching)
     profiles: FakeSupplierProfiles = field(default_factory=FakeSupplierProfiles)
-    uploads: FakeProcurementUploads = field(default_factory=FakeProcurementUploads)
+    task: FakeBackgroundTask = field(default_factory=FakeBackgroundTask)
     readiness: FakeReadiness = field(default_factory=FakeReadiness)
     closed: int = 0
 
@@ -167,14 +107,11 @@ class FakeServiceProvider:
     async def supplier_profiles(self) -> FakeSupplierProfiles:
         return self.profiles
 
-    async def procurement_uploads(self) -> FakeProcurementUploads:
-        return self.uploads
-
     async def health(self) -> FakeReadiness:
         return self.readiness
 
     async def background(self) -> tuple[BackgroundTask, ...]:
-        return (self.uploads,)
+        return (self.task,)
 
     async def aclose(self) -> None:
         self.closed += 1

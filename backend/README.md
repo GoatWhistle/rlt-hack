@@ -41,9 +41,14 @@
   контрольной суммой (`inn.py`), итог сопоставления (`match.py`). Контекст
   сервиса импортирует только себя, `src.service.errors` и `src.models`; это
   проверяет `tests/architecture/test_placement.py`.
+- `src/service/registry/` — обогащение компаний по реестру МСП ФНС: роль по
+  ОКВЭД и заявленной продукции, загрузка выгрузки реестра. Интерфейсы реестра
+  и справочника ролей — в его `protocols.py`.
+- `src/adapter/client/msp_registry/` — чтение ZIP-выгрузки реестра МСП;
+  `src/adapter/repository/clickhouse/registry.py` — её хранение и поиск по ИНН.
 - `src/service/supplier/` — бизнес-логика: `SupplierSyncWorker` запускает
   адаптеры всех включённых источников конкурентно, прогоняет собранный пакет
-  через нормализатор и классификатор и сохраняет результат;
+  через обогащение, нормализатор и классификатор и сохраняет результат;
   `OfferEnrichmentService` пересчитывает производные значения у уже сохранённых
   позиций. Интерфейсы объявлены в `protocols.py`.
 - `src/controller/job/` — команда запуска джобы и её DTO аргументов.
@@ -151,6 +156,50 @@ class OfferClassifying(Protocol):
 `rubric_name`, `classification_method`, версии правил). На хеш содержимого
 предложения производные значения не влияют.
 
+### Роль компании по реестру МСП
+
+Сразу после обхода и до нормализации воркер вызывает `SupplierEnriching`:
+
+```python
+class SupplierEnriching(Protocol):
+    async def enrich(self, package: SupplierPackage) -> SupplierPackage: ...
+```
+
+Реализация `SupplierRegistryEnricher` ищет компании пакета по ИНН в таблице
+`msp_companies` и проставляет `role` и `role_evidence` у компании
+(`suppliers_current`). Правило:
+
+1. компания заявила в реестре собственную продукцию (`СвПрод`) — производитель;
+2. иначе роль по основному ОКВЭД из `reference/okved_roles.json`, выигрывает
+   самый длинный префикс: разделы A–C (01–32) — производитель, 46 —
+   дистрибьютор, 45 и 47 — перепродавец, 33, 45.2 и услуги — исполнитель
+   услуг;
+3. иначе роль остаётся `unknown`.
+
+Основание записывается текстом с кодом, названием ОКВЭД и датой сведений.
+Роль и ОКВЭД, которые дал сам источник, реестр не перезаписывает. Компании без
+ИНН и вне реестра (крупный бизнес в нём не состоит) проходят без изменений.
+Роль предложений (`offers.supplier_role`) обогащение не трогает: она
+относится к конкретному товару и задаётся адаптером.
+
+Реестр загружается отдельной командой из заранее скачанной ZIP-выгрузки
+открытых данных ФНС (`https://www.nalog.gov.ru/opendata/7707329152-rsmp/`,
+около 2 ГБ; сервер ФНС ограничивает скорость, поэтому скачивайте с
+продолжением, например `curl -C - -o var/msp/rmsp.zip <адрес выгрузки>`):
+
+```sh
+docker compose run --rm sync-job registry-import
+uv run --python 3.13 python main.py registry-import --path var/msp/rmsp.zip
+```
+
+На сервере реестр загружается вручную workflow «MSP registry import» — см.
+[deploy/README.md](../deploy/README.md#реестр-мсп-фнс).
+
+Новая выгрузка заменяет сведения компаний, а выбывшие из реестра удаляются
+только после успешной загрузки всех файлов. Пока реестр не загружен,
+обогащение ничего не меняет. Пересчёт ролей у уже сохранённых компаний
+происходит при следующем обходе их источника.
+
 ### Что читать: `offers_normalized`
 
 В таблице `offers` лежат и исходные поля источника, и производные — это нужно,
@@ -212,11 +261,13 @@ class OfferClassifying(Protocol):
 | `OptKatalogWebProvider` | `optkatalog_web` | компании и номенклатуру optkatalog.ru | `OPTKATALOG_WEB_PROVIDER` |
 | `AboutPartnerWebProvider` | `aboutpartner_web` | компании и товары aboutpartner.ru | `ABOUTPARTNER_WEB_PROVIDER` |
 | `TexZakazWebProvider` | `texzakaz_web` | производителей и их продукцию texzakaz.ru | `TEXZAKAZ_WEB_PROVIDER` |
-| `GispRegistryProvider` | `gisp_registry` | записи полного XLSX-экспорта ПП 719 ГИСП | `GISP_REGISTRY_PROVIDER` |
+| `GispRegistryProvider` | `gisp_registry` | организации и продукцию реестра ПП 719 ГИСП | `GISP_REGISTRY_PROVIDER` |
 | `ProductCenterWebProvider` | `productcenter_web` | производителей и товары productcenter.ru | `PRODUCTCENTER_WEB_PROVIDER` (выкл.) |
 | `MoscowSuppliersProvider` | `moscow_suppliers` | полный нормализованный экспорт поставщиков и оферт zakupki.mos.ru | `MOSCOW_SUPPLIERS_PROVIDER` (выкл.) |
+| `EisRegistryProvider` | `eis_registry` | поставщиков из реестра контрактов ЕИС zakupki.gov.ru | `EIS_REGISTRY_PROVIDER` (выкл.) |
 | `PulscenSnapshotProvider` | `pulscen_snapshot` | диагностический снимок страниц pulscen.ru из JSON-файла | `PULSCEN_SNAPSHOT_PATH` (пусто — выключен) |
 | `PulscenWebProvider` | `pulscen_web` | компании и товары с ценой pulscen.ru по рубрикам sitemap | `PULSCEN_WEB_PROVIDER` (выкл.), пауза `PULSCEN_DELAY_SECONDS` |
+| `SuplBizWebProvider` | `supl_biz_web` | товары и продавцов supl.biz: sitemap товаров и профилей, состояние страниц | `SUPL_BIZ_WEB_PROVIDER` (выкл.), `SUPL_BIZ_MAX_CARDS` |
 
 Адреса фидов и сайтов задаются списками `SUPPLIER_FEED_URLS` и
 `SUPPLIER_SITE_URLS` — на каждый адрес создаётся свой адаптер. Сколько карточек
@@ -234,6 +285,25 @@ class OfferClassifying(Protocol):
 | `texzakaz.ru` | `sitemap.xml`, раздел `/p/` | JSON-LD `Organization`: ИНН в `taxID`, продукция в `knowsAbout` |
 | `aboutpartner.ru` | `sitemap-producers.xml`, раздел `/producer/` | JSON-LD `Organization` и `ItemList` с `Product` |
 | `optkatalog.ru` | `sitemap.xml`, листья дерева `/postavschiki/` | заголовки блока описания и список `ty-product-feature` |
+
+Supl.biz читается иначе: `sitemap.xml` ведёт на постраничные
+`sitemap-proposals.xml?p=N` по 500 товаров и на `sitemap-users.xml` с профилями.
+Страница товара содержит JSON `preloadedState` с товаром, ценой и продавцом
+вместе с ИНН, страница профиля — реквизиты и контакты; поэтому собираются и
+продавцы без товаров, а данные профиля главнее данных со страницы товара.
+Sitemap проверяется строго: документ обязан быть `sitemapindex` или `urlset` с
+адресами supl.biz, а служебный ответ, пустой файл или недоступная часть
+завершают обход ошибкой. Тип позиции остаётся `unknown`: страница не отличает
+товар от услуги. Лимит `SUPL_BIZ_MAX_CARDS` диагностический: если страниц больше,
+обход завершается ошибкой, а неполный пакет не сохраняется.
+
+Для диагностики Supl.biz есть выборка поровну по 24 корневым категориям:
+`PYTHONPATH=. uv run --no-project --python 3.13 --with httpx python
+scripts/supl_biz_balanced_sample.py --per-category 60 --concurrency 3 --out <файл вне Git>`.
+Внутри категории товары берутся по кругу из подкатегорий (первая страница каждой,
+листание закрыто в `robots.txt`), товары с более чем тремя категориями отсекаются
+как спам. Результат пишется только в файл, в ClickHouse он не попадает и полным
+снимком источника не является.
 
 Предложения каталогов идут без цены: источники публикуют номенклатуру, а не
 прайс. Цены приходят из YML-фидов и разметки `Offer` на сайтах поставщиков.
@@ -262,6 +332,73 @@ ProductCenter дополнительно реализует `StreamingSupplierPr
 означает, что в этом обходе оно не встретилось. Перечислять увиденные
 идентификаторы в запросе нельзя — пакет каталога содержит их тысячи, а параметры
 запроса уходят в HTTP-форму ClickHouse с ограниченной длиной поля.
+
+## Порции обработки
+
+Обход, разбор и запись идут порциями у всех источников, но размеры порций
+разные, потому что разные и причины их ограничивать.
+
+Потоковый адаптер отдаёт порции сам по `batches(SYNC_BATCH_SIZE)` (32) и
+начинает запись ещё во время обхода. Порция здесь мелкая не ради памяти, а ради
+потерь: обход идёт медленно, с паузой не меньше секунды между запросами, и
+порция задаёт, как часто результат попадает в хранилище и сколько работы
+теряет обрыв. Поддерживает такую отдачу пока только `productcenter_web`.
+
+Остальные адаптеры собирают пакет целиком, после чего `package_batches` делит
+его порциями `SYNC_WRITE_BATCH` (5000) — размером записи, а не обхода. Собранный
+пакет уже лежит в памяти целиком, терять в нём нечего, а деление мелкими
+порциями умножало бы число INSERT и чтений `first_seen`: пакет на 100 000
+предложений дал бы 3 125 INSERT по 32 строки вместо 20 по 5000.
+
+Компании идут первыми и отдельно от предложений: обогащение работает только с
+компаниями, нормализация и классификация — только с предложениями, поэтому
+разделение не меняет результат ни одного шага, а компания записывается один раз
+вместо повтора в каждой порции своих предложений.
+
+Деление собранного пакета не делает обход потоковым: адаптер по-прежнему держит
+его в памяти целиком.
+
+Внутри порции запись в ClickHouse идёт пачками `SYNC_WRITE_BATCH` — один
+INSERT на пачку, поэтому порция размера записи даёт ровно один INSERT.
+
+Пачку записи ограничивает не память, а число частей таблицы: каждый INSERT
+создаёт часть, и слишком мелкие пачки упираются в `too many parts`. Замер на
+искусственных карточках реестра (описание около 1,4 КБ, восемь характеристик)
+даёт около 0,9 КиБ аллокаций Python на строку, то есть пачка 5000 держит под
+5 МиБ, а 20 000 — около 18 МиБ при лимите контейнера 2200 МиБ. Поэтому дефолт
+поднят с 500 до 5000; верхний предел — `max_query_size` в `first_seen_for`, где
+список идентификаторов делится по `ID_QUERY_LIMIT`.
+
+Настоящий потолок обхода — не пачка, а собранный пакет: по тому же замеру он
+занимает около 1 КиБ на предложение, то есть полный пакет ГИСП на 1 084 900
+позиций — порядка 1 ГиБ при лимите 2200 МиБ. Это и есть причина переводить
+адаптеры на потоковую отдачу.
+
+Снятие отсутствующих предложений с продажи выполняется один раз
+после успешного завершения всего обхода: порция этого не делает, иначе
+незаконченный обход снял бы с продажи ещё не прочитанные позиции. Пустой пакет
+ничего не снимает — это чаще сломанный разбор, чем исчезновение ассортимента.
+
+Эмбеддер работает отдельной джобой и тоже порциями: `EMBEDDING_BATCH_SIZE` (16)
+документов за запрос к энкодеру, неполная порция отправляется через
+`EMBEDDING_BATCH_WAIT_SECONDS` (5) секунд, векторы пишутся одним INSERT на
+порцию. После ошибки незаписанная порция остаётся в выборке и обрабатывается
+повторно.
+
+## Что попадает в вектор
+
+`document_text` собирает подписанный текст из названия, ядра названия, типа
+позиции, бренда, артикула, характеристик, единицы, раздела каталога, кода ОКПД2,
+рубрики, названия компании, её роли и её местоположения — региона вместе с
+адресом из контактов. Подписи нужны, чтобы модель отличала регион от бренда.
+Цена и наличие в текст не входят: они меняются часто и предмет не уточняют.
+
+Свежесть вектора считается по хешу всего этого набора, а не по `content_hash`
+предложения: иначе переезд компании или правка её названия не пересчитали бы
+вектор, в который они входят. Хеш считает SQL одним выражением `DOCUMENT_HASH`
+на чтении очереди и на поиске, поэтому он не расходится с набором полей,
+которые читает тот же запрос. `content_hash` предложения входит в него отдельным
+слагаемым: смена правил разбора тоже обязана пересчитать вектор.
 
 ## Конкурентность
 
@@ -518,6 +655,31 @@ curl -s -X POST http://localhost:8000/api/uploads/<uploadId>/results   -H 'Conte
 
 ## Команды
 
+Каталог продуктов СТЕ хранится отдельно от компаний и оферт. Экспериментальный
+обход запускается `MOSCOW_PRODUCTS_PROVIDER=true ... python main.py sync-products`
+после миграций `0009_moscow_products.sql` и
+`0010_moscow_product_detail_status.sql`. В Docker Compose доступны
+`MOSCOW_PRODUCTS_PROVIDER` (по умолчанию `false`) и
+`MOSCOW_PRODUCTS_PAGE_SIZE` (по умолчанию 500, проверено живым запросом) и
+`MOSCOW_PRODUCTS_RETRY_ATTEMPTS` (по умолчанию 12 попыток для временных сетевых
+сбоев и HTTP 429/5xx). Промежуточные строки
+помечаются `run_id` и становятся видимы в `moscow_products_current` только
+после двух проходов с одинаковым составом ID и сверки числа записей.
+Публикуются карточки второго прохода; изменение названий отражает
+`names_changed` в результате команды. Недоступные по HTTP 403/404 карточки
+остаются позициями списка со статусом `summary_only`; их число выводится как
+`summary_only`. Полный живой обход ещё не выполнен, поэтому адаптер выключен.
+Для накопления страниц без публикации доступна команда
+`MOSCOW_PRODUCTS_PROVIDER=true python main.py collect-products --pages 1`.
+Она печатает `run`; следующий запуск с `--run-id <UUID>` продолжает партию
+после сверки последнего сохранённого ID с индексом. При сдвиге границы команда
+завершается ошибкой до записи следующей страницы. `--pages` ограничивает число
+страниц за запуск. Эти строки не видны в `moscow_products_current`, пока
+полный каталог не пройдёт отдельную проверку.
+`python main.py probe-products` делает один диагностический запрос без ClickHouse
+и выводит только счётчик, первый ID, названия полей ответа и структуру первой
+доступной карточки.
+
 Через Docker Compose из корня репозитория:
 
 ```sh
@@ -540,6 +702,7 @@ uv run --python 3.13 python main.py normalize            # пересчитат�
 uv run --python 3.13 python main.py normalize --limit 100
 uv run --python 3.13 python main.py coverage             # отчёт о покрытии
 uv run --python 3.13 python main.py reidentify           # перевод на новое правило ключа
+uv run --python 3.13 python main.py registry-import      # загрузка реестра МСП
 ```
 
 `normalize` нужен, когда изменились правила или справочники: при обходе
@@ -551,13 +714,17 @@ uv run --python 3.13 python main.py reidentify           # перевод на �
 `CLICKHOUSE_PASSWORD`, `CLICKHOUSE_DATABASE`, `CLICKHOUSE_SECURE`,
 `CLICKHOUSE_MAX_THREADS`, `TASK_DATA_DIR`, `SUPPLIER_DATASET_PATH`, `SUPPLIER_DATASET_REGION`,
 `SUPPLIER_FEED_URLS`, `SUPPLIER_SITE_URLS`, флаги адаптеров из таблицы выше,
-`SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`,
-`SYNC_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `REFERENCE_DIR`,
+`SYNC_PARALLEL_SOURCES`, `SYNC_PARALLEL_REQUESTS`, `SYNC_WRITE_BATCH`, `SYNC_BATCH_SIZE`,
+`SYNC_MAX_CARDS`, `SUPL_BIZ_MAX_CARDS`, `SYNC_INTERVAL_SECONDS`, `REQUEST_TIMEOUT`, `REFERENCE_DIR`,
 `CLASSIFIER_ARCHIVE_CHANNEL`, `CLASSIFIER_ARCHIVE_LIMIT`, `LOG_LEVEL`,
+`MSP_REGISTRY_PATH` (ZIP-выгрузка реестра МСП; в Compose каталог
+`MSP_REGISTRY_DIR`, по умолчанию `./var/msp`, монтируется в `/data/msp`),
 `GISP_REGISTRY_PROVIDER`, `GISP_EXPORT_LOCATION`,
 `PRODUCTCENTER_WEB_PROVIDER`, `PRODUCTCENTER_MAX_CARDS`,
 `PRODUCTCENTER_PARALLEL_REQUESTS`, `PRODUCTCENTER_REQUEST_INTERVAL`,
-`PRODUCTCENTER_CONNECTION_RETRIES`, `PRODUCTCENTER_CACHE_DIR`.
+`PRODUCTCENTER_CONNECTION_RETRIES`, `PRODUCTCENTER_CACHE_DIR`,
+`EIS_REGISTRY_PROVIDER`, `EIS_PERIOD_START`, `EIS_PERIOD_DAYS`, `EIS_MAX_CONTRACTS`,
+`EIS_CA_BUNDLE`, `EIS_VERIFY_TLS`, `EIS_PROXY`, `EIS_REQUEST_INTERVAL`.
 
 Московский адаптер включается только после получения проверенного полного
 экспорта: `MOSCOW_SUPPLIERS_PROVIDER=true` и `MOSCOW_SUPPLIERS_EXPORT_URL`.
@@ -573,24 +740,57 @@ uv run --python 3.13 python main.py reidentify           # перевод на �
 расхождение контрольных чисел прерывают обход без сохранения пакета. СТЕ без
 оферты в поток не включается.
 
+ЕИС (`eis_registry`) выключен по умолчанию: разметка подтверждена архивными
+снимками 2021–2022 и ручной проверкой живых страниц 1 октября 2026 (только с
+российского IP: с зарубежного сайт не отвечает; нужен корневой сертификат НУЦ
+Минцифры в `EIS_CA_BUNDLE`), живой прогон адаптера 2 октября 2026 (30 контрактов за день) прошёл успешно, полный сбор не выполнялся.
+Адаптер читает HTML-выдачу `/epz/contract/search/results.html` окнами дат
+`publishDateFrom/To`. Сайт отдаёт не больше 100 страниц по 50 записей, поэтому
+выдача, упёршаяся в лимит, делится пополам по датам, а затем по цене
+(`contractPriceFrom/To`); неделимый срез прерывает обход. Для каждого контракта читаются
+три страницы карточки: `common-info` (поставщик с ИНН/КПП/адресом, цена, статус,
+даты), `payment-info-and-target-of-order` (позиции: ОКПД2/КТРУ, количество,
+единица, цена за единицу, сумма) и `process-info` (исполнено и оплачено по
+этапам). Пакет содержит только компании; `Offer` не создаются, контракты
+остаются в `provider.contracts` до расширения моделей. Сбой сети после повторов,
+не тот формат, расхождение числа записей с «Найдено» и лимит `EIS_MAX_CONTRACTS`
+завершают обход ошибкой без записи снимка. Снятая карточка (404) пропускается и
+считается в отчёте. Переменные: `EIS_REGISTRY_PROVIDER`,
+`EIS_PERIOD_START` (ГГГГ-ММ-ДД), `EIS_PERIOD_DAYS` (по умолчанию 30),
+`EIS_MAX_CONTRACTS` (0 — без лимита), `EIS_CA_BUNDLE` (путь к сертификату НУЦ
+Минцифры), `EIS_VERIFY_TLS`, `EIS_PROXY` (HTTP-прокси с российским выходом), `EIS_REQUEST_INTERVAL` (пауза между запросами, секунды; без неё сайт отвечает 429/403 и блокирует IP). Диагностический живой прогон без записи в БД:
+`python tests/supplier/eis_live.py --days 1 --max-contracts 30 --interval 2 \
+--proxy http://127.0.0.1:18080 --ca-bundle ru-bundle.pem --out report.json`.
+
 ГИСП выключен по умолчанию. С пустым `GISP_EXPORT_LOCATION` он обходит открытые
 JSON-страницы перечня производителей и реестра продукции через официальные
 `/pp719v2/pub/org/b/` и `/pp719v2/pub/prod/b/`. На момент проверки API
 сообщал 8 118 организаций и 1 084 900 записей продукции; ответ продукции
 ограничен 100 строками на страницу. Провайдер проверяет количество строк
 каждой страницы и повторно сверяет общий объём перед публикацией пакета.
-Вместо реестра продукции API можно задать полный XLSX-экспорт по HTTPS или
-`file:///...`; перечень организаций всё равно читается через API, включая
-организации без продукции. Если этот запрос закрыт проверкой доступа, весь
-обход завершается ошибкой.
-Для локального файла
-смонтируйте каталог вне Git в контейнер `sync-job` и задайте путь внутри
-контейнера. Пустая настройка или неполный/неизвестный формат завершает обход
-ошибкой без записи снимка. Начало официального XLSX и 22 000 реальных строк
-проверены, но полная передача XLSX с текущего адреса обрывается. Полный обход
-JSON-интерфейса остановился на HTML-проверке доступа вместо JSON. Провайдер
-завершает такой ответ ошибкой без записи снимка. До полного обхода провайдер
-не включайте.
+Прямой HTTP-клиент может получить HTML-проверку доступа. Для воспроизводимого
+полного сбора через браузер нужен установленный Google Chrome:
+
+```sh
+cd backend
+npm ci
+npm run gisp:export -- /tmp/gisp-snapshot
+SUPPLIER_DATASET_PROVIDER=false GISP_REGISTRY_PROVIDER=true \
+  GISP_EXPORT_LOCATION=file:///tmp/gisp-snapshot SYNC_WRITE_BATCH=5000 \
+  uv run --python 3.13 python main.py sync --parallel 1
+```
+
+Экспорт создаёт `organizations.jsonl`, `products.jsonl` и `manifest.json`
+вне Git. После обрыва он продолжает с контрольной точки, сверив число записей
+и первую страницу. Провайдер принимает каталог по `file:///...` только при
+совпадении числа строк и SHA-256 каждого файла с манифестом; неполный файл не
+передаётся в хранилище. Каталог можно смонтировать в контейнер `sync-job` и
+задать путь внутри контейнера. Полный живой сбор 1 октября 2026 года дал
+8 118 организаций, 1 084 900 записей продукции и пакет из 11 028 компаний и
+1 084 900 предложений. Прямая полная передача XLSX с текущего адреса обрывалась;
+полный XLSX по HTTPS или `file:///...` по-прежнему поддерживается, но для него
+отдельный перечень организаций читается через API.
+
 `PRODUCTCENTER_MAX_CARDS=0` означает полный обход. Положительный лимит
 останавливает обход ошибкой без сохранения неполного пакета и годится только
 для диагностики. ProductCenter выключен по умолчанию до полного живого прогона.
@@ -685,6 +885,11 @@ uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0
   python tests/supplier/productcenter_job_smoke.py
 uv run --no-project --python 3.13 --with httpx \
   python tests/supplier/moscow_suppliers_smoke.py
+uv run --no-project --python 3.13 --with lxml --with cssselect --with httpx \
+  python tests/supplier/eis_registry_smoke.py
+uv run --no-project --python 3.13 --with httpx \
+  python tests/product/moscow_smoke.py
+uv run --no-project --python 3.13 python tests/product/worker_smoke.py
 uv run --no-project --python 3.13 python tests/supplier/worker_smoke.py
 uv run --no-project --python 3.13 --with httpx --with openpyxl \
   python tests/supplier/gisp_registry.py
@@ -695,6 +900,16 @@ uv run --no-project --python 3.13 python tests/supplier/identity_smoke.py
 uv run --no-project --python 3.13 python tests/supplier/reidentify_smoke.py
 uv run --no-project --python 3.13 python tests/normalizer/normalizer_smoke.py
 uv run --no-project --python 3.13 python tests/classifier/classifier_smoke.py
+uv run --no-project --python 3.13 --with lxml python tests/registry/registry_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
+  python tests/registry/registry_store_smoke.py
+uv run --no-project --python 3.13 python tests/supplier/batching_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
+  python tests/clickhouse/offer_batch_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' \
+  python tests/embedding/document_smoke.py
+uv run --no-project --python 3.13 --with httpx python tests/supplier/supl_biz_smoke.py
+PYTHONPATH=. uv run --no-project --python 3.13 --with httpx python tests/supplier/supl_biz_balanced_smoke.py
 ```
 
 Проверки нормализатора и классификатора используют настоящие справочники из
@@ -707,8 +922,44 @@ uv run --no-project --python 3.13 --with 'ruff>=0.14' ruff check .
 uv run --no-project --python 3.13 --with 'ruff>=0.14' ruff format .
 ```
 
+## HTTP-поиск и импорт готового индекса
+
+`python -m uvicorn src.controller.search.api:app --host 0.0.0.0 --port 8080`
+запускает `/api/health`, `/api/suppliers/search` и `/api/uploads`.
+CSV содержит `lot_id,procedure_name,subject`; максимум 20 строк и 2 МБ.
+Результаты связаны с cookie сессии и сохраняются в `UPLOADS_DIR`.
+
+`python -m src.controller.search.import_index /data/index` применяет миграции,
+проверяет манифест и импортирует карточки/вектора в ClickHouse. Каталог должен
+содержать `cards.parquet`, `card_vectors.npy`, `report.json`, `manifest.json`.
+`SUPPLIER_INDEX_DIR` задаёт этот каталог для API, `SUPPLIER_INDEX_ID` — SHA-256
+массива векторов. При заданном ID косинусная близость считается в ClickHouse;
+BM25 и RRF объединяют результаты по ИНН. Незавершённый импорт не публикуется
+в реестре готовых индексов. Результаты не заменяются демонстрационными данными.
+Если каталог не содержит названия поставщика, поиск дополняет его названием
+из загруженного реестра МСП по точному ИНН. Это обогащение отображения;
+историческая оценка ранжировщика использует только свой временной снимок.
+
 ## Прокси парсеров
 
-Прокси задаётся только в окружении parser-worker через HTTP_PROXY/HTTPS_PROXY;
+Прокси задаётся только в окружении джобы парсинга (parser-worker или sync-job)
+через HTTP_PROXY/HTTPS_PROXY;
 внутренние сервисы исключаются через NO_PROXY. Поддерживается SOCKS5.
 Реквизиты хранятся в серверном env-файле вне Git.
+
+### Конфигурация энкодера
+
+Поиск и воркер используют общую фабрику `application/encoder.py`, без подмены
+исходников при развёртывании. `EMBEDDING_TRANSPORT=ollama` — значение по умолчанию;
+`inference` выбирает совместимый сервис 4B. Настройки передаются файлом
+`EMBEDDING_ENV_FILE` (по умолчанию игнорируемый Git `.env.embedding.local`).
+Для `inference` обязательны `EMBEDDING_INFERENCE_URL` и
+`EMBEDDING_INFERENCE_REVISION`; модель `EMBEDDING_INFERENCE_MODEL` по умолчанию
+`Qwen/Qwen3-Embedding-4B`, размерность строго 2560. Токен задаётся только в
+серверном окружении как `EMBEDDING_INFERENCE_TOKEN`. Не включайте реквизиты в Git.
+`EMBEDDING_INFERENCE_CACHE_KEY` применяется лишь при переносе существующего
+совместимого пространства векторов; при смене модели или обработки текста ключ
+необходимо обновить. Прокси парсера энкодер не наследует.
+
+Искусственная проверка обоих режимов и некорректных ответов:
+`python backend/tests/embedding/inference_smoke.py` из корня проекта.

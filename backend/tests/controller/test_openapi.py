@@ -19,13 +19,6 @@ def operations(schema: dict[str, Any]) -> list[tuple[str, str, dict[str, Any]]]:
     ]
 
 
-def test_upload_declares_its_multipart_file(schema: dict[str, Any]) -> None:
-    body = schema["paths"]["/api/uploads"]["post"]["requestBody"]
-    form = body["content"]["multipart/form-data"]["schema"]
-    assert form["required"] == ["file"]
-    assert form["properties"]["file"] == {"type": "string", "format": "binary"}
-
-
 def test_every_error_response_uses_the_api_error_body(schema: dict[str, Any]) -> None:
     for path, method, operation in operations(schema):
         for status, response in operation["responses"].items():
@@ -41,7 +34,6 @@ def test_names_are_short_and_stable(schema: dict[str, Any]) -> None:
     identifiers = [operation["operationId"] for _, _, operation in operations(schema)]
     assert len(identifiers) == len(set(identifiers))
     assert "create_search" in identifiers
-    assert "get_upload_summary" in identifiers
 
 
 def test_times_and_identifiers_have_formats(schema: dict[str, Any]) -> None:

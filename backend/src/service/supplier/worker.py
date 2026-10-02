@@ -2,11 +2,13 @@
 
 import asyncio
 import logging
+from collections.abc import AsyncIterator
 from uuid import uuid4
 
 from src.models.enums import FetchStatus
 from src.models.journal import CrawlRun, SourceSyncResult, SyncResult
 from src.models.package import SupplierPackage
+from src.service.supplier.batching import package_batches
 from src.service.supplier.protocols import (
     Clock,
     CrawlJournal,
@@ -15,6 +17,7 @@ from src.service.supplier.protocols import (
     ResumableSupplierProvider,
     StreamingSupplierProvider,
     StreamingSupplierStorage,
+    SupplierEnriching,
     SupplierProvider,
     SupplierStorage,
 )
@@ -29,8 +32,9 @@ class SupplierSyncWorker:
     а сбой одного источника не отменяет чужие результаты. Число одновременных
     обходов ограничено, чтобы не упираться в сеть и запись в хранилище.
 
-    Собранный пакет перед записью проходит нормализацию и классификацию: обе
-    вызываются через интерфейс, их реализации сервису неизвестны.
+    Собранный пакет перед записью проходит обогащение компаний, нормализацию и
+    классификацию: все три вызываются через интерфейс, их реализации сервису
+    неизвестны.
     """
 
     def __init__(
@@ -39,19 +43,25 @@ class SupplierSyncWorker:
         storage: SupplierStorage,
         journal: CrawlJournal,
         clock: Clock,
+        enricher: SupplierEnriching,
         normalizer: OfferNormalizing,
         classifier: OfferClassifying,
         interval_seconds: float = 3600.0,
         max_parallel_sources: int = 4,
+        batch_size: int = 32,
+        package_batch_size: int = 500,
     ) -> None:
         self._providers = providers
         self._storage = storage
         self._journal = journal
         self._clock = clock
+        self._enricher = enricher
         self._normalizer = normalizer
         self._classifier = classifier
         self._interval = interval_seconds
         self._max_parallel_sources = max(1, max_parallel_sources)
+        self._batch_size = max(1, batch_size)
+        self._package_batch_size = max(1, package_batch_size)
 
     async def run_once(self) -> SyncResult:
         logger.info("Обход источников: подключено адаптеров — %d", len(self._providers))
@@ -82,25 +92,26 @@ class SupplierSyncWorker:
         package = SupplierPackage(source=source)
         supplier_ids = set()
         offer_ids = set()
-        streaming = isinstance(provider, StreamingSupplierProvider) and isinstance(
-            self._storage, StreamingSupplierStorage
-        )
+        batched = isinstance(self._storage, StreamingSupplierStorage)
         try:
-            if streaming:
+            if batched:
                 observed_at = started_at
                 if isinstance(provider, ResumableSupplierProvider):
                     observed_at = await provider.resume(started_at)
-                async for batch in provider.batches(32):
+                async for batch in self._batches(provider):
                     package = await self._classifier.classify(
-                        await self._normalizer.normalize(batch)
+                        await self._normalizer.normalize(await self._enricher.enrich(batch))
                     )
                     await self._storage.save_batch(package, observed_at)
                     supplier_ids.update(item.supplier_id for item in package.suppliers)
                     offer_ids.update(item.offer_id for item in package.offers)
                     logger.info(
-                        "Источник %s: сохранён батч %d, всего предложений %d",
+                        "Источник %s: сохранён батч компаний %d и предложений %d,"
+                        " всего компаний %d и предложений %d",
                         source.provider_name,
+                        len(package.suppliers),
                         len(package.offers),
+                        len(supplier_ids),
                         len(offer_ids),
                     )
                 saved = (
@@ -114,6 +125,7 @@ class SupplierSyncWorker:
                     await provider.complete()
             else:
                 package = await provider.fetch()
+                package = await self._enricher.enrich(package)
                 package = await self._normalizer.normalize(package)
                 package = await self._classifier.classify(package)
                 withdrawn = await self._storage.save_package(package)
@@ -148,6 +160,24 @@ class SupplierSyncWorker:
             offers_withdrawn=withdrawn,
             error_message=error_message,
         )
+
+    async def _batches(self, provider: SupplierProvider) -> AsyncIterator[SupplierPackage]:
+        """Порции источника: потоковый адаптер отдаёт их сам, остальные делятся здесь.
+
+        Размеры порций разные, потому что разные и причины их ограничивать.
+        Потоковая порция мелкая: обход идёт медленно, с паузами между запросами,
+        и порция задаёт, как часто результат попадает в хранилище и как много
+        работы теряет обрыв. Собранный пакет уже лежит в памяти целиком, терять
+        в нём нечего, поэтому он делится крупными порциями размера записи: более
+        мелкое деление только умножает число INSERT и чтений first_seen.
+        """
+        if isinstance(provider, StreamingSupplierProvider):
+            async for package in provider.batches(self._batch_size):
+                yield package
+            return
+        package = await provider.fetch()
+        for batch in package_batches(package, self._package_batch_size):
+            yield batch
 
     async def _sync_guarded(
         self,

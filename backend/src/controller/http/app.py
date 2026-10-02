@@ -14,7 +14,6 @@ from src.controller.http.state import Services
 from src.controller.metrics.router import router as metrics_router
 from src.controller.search.router import router as search_router
 from src.controller.supplier.router import router as supplier_router
-from src.controller.upload.router import router as upload_router
 
 DOCS_URL = "/api/docs"
 OPENAPI_URL = "/api/openapi.json"
@@ -63,7 +62,7 @@ def create_app(provider: ServiceProvider, settings: ApiSettings) -> FastAPI:
     app.state.metrics = Metrics()
     install_error_handlers(app)
     app.add_middleware(RequestContextMiddleware, metrics=app.state.metrics)
-    routers = (search_router, supplier_router, upload_router, health_router, metrics_router)
+    routers = (search_router, supplier_router, health_router, metrics_router)
     for router in routers:
         app.include_router(router)
     return app

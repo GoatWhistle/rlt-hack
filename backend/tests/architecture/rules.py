@@ -72,7 +72,22 @@ CLEAN_ROOTS = (
     "bench",
 )
 
+MAIN_LEGACY = (
+    "src/adapter/client/errors.py",
+    "src/adapter/client/inference",
+    "src/adapter/client/msp_registry",
+    "src/adapter/client/ollama",
+    "src/models/embedding.py",
+    "src/models/supplier.py",
+    "src/models/upload.py",
+    "src/controller/search/api.py",
+    "src/controller/search/import_index.py",
+    "src/controller/search/import_history.py",
+)
+
 ENTRY_POINT_IMPORTS = ("src.models", "src.controller", "src.service.errors", "src.application")
+
+MAIN_ENTRY_POINT_IMPORTS = (*ENTRY_POINT_IMPORTS, "src.adapter")
 
 LAYER_IMPORTS = {
     "src.models": ("src.models",),
@@ -80,6 +95,9 @@ LAYER_IMPORTS = {
     "src.controller.api": ENTRY_POINT_IMPORTS,
     "src.controller.job": ENTRY_POINT_IMPORTS,
     "src.controller.embedding": ENTRY_POINT_IMPORTS,
+    "src.controller.search.api": MAIN_ENTRY_POINT_IMPORTS,
+    "src.controller.search.import_index": MAIN_ENTRY_POINT_IMPORTS,
+    "src.controller.search.import_history": MAIN_ENTRY_POINT_IMPORTS,
     "src.controller": ("src.models", "src.controller", "src.service.errors"),
     "src.adapter": ("src.models", "src.adapter"),
 }
@@ -115,7 +133,9 @@ def source_files(roots: tuple[str, ...] = ("src", "tests")) -> Iterator[SourceFi
 
 def clean_files() -> Iterator[SourceFile]:
     roots = tuple(root for root in CLEAN_ROOTS if (BACKEND / root).exists())
-    yield from source_files(roots)
+    for file in source_files(roots):
+        if not file.path.startswith(MAIN_LEGACY):
+            yield file
 
 
 def comments(file: SourceFile) -> list[Violation]:

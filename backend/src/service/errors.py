@@ -76,3 +76,11 @@ class LotNotFoundError(UploadError):
         super().__init__(f"{_not_found('lot', lot_id)} in upload {upload_id}")
         self.upload_id = upload_id
         self.lot_id = lot_id
+
+
+class RegistryNotConfiguredError(ServiceError):
+    """Путь к выгрузке реестра МСП не задан."""
+
+
+class EmptyRegistryDumpError(ServiceError):
+    """Выгрузка реестра МСП прочитана, но компаний в ней нет."""

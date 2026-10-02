@@ -1,0 +1,73 @@
+{
+  "split": "test",
+  "model_sha256": "cc79a0a0a751af3e602d149b3766df7e5c30f4f57a7b114b3f54bbbecd4ce49f",
+  "selected": "softmax_winner",
+  "metadata": {
+    "split": "test",
+    "features": [
+      "dense_score",
+      "bm25_score",
+      "rrf_score",
+      "dense_rank",
+      "bm25_rank",
+      "customer_rank",
+      "token_coverage",
+      "supplier_participations",
+      "supplier_wins",
+      "supplier_win_rate",
+      "category_participations",
+      "category_wins",
+      "category_win_rate",
+      "customer_participations",
+      "customer_wins",
+      "customer_win_rate",
+      "profile_examples",
+      "profile_age",
+      "price_distance",
+      "missing_customer",
+      "missing_price",
+      "card_count"
+    ],
+    "queries": 1000,
+    "query_sample_sha256": "b0f530477236100f8aba0d1d7f388cb244ecc6e300c6dc92c842c5a615c3824a",
+    "customer_dropout": 1.0,
+    "seconds": 78.68858045199886
+  },
+  "baseline": {
+    "queries": 1000,
+    "winner_queries": 979,
+    "winner_hit_1": 0.12461695607763024,
+    "winner_hit_5": 0.2696629213483146,
+    "winner_hit_10": 0.3452502553626149,
+    "winner_hit_20": 0.4371807967313585,
+    "winner_recall_200": 0.693564862104188,
+    "winner_mrr": 0.200740968017312,
+    "bidder_hit_10": 0.418,
+    "participant_recall_10": 0.33074752002383584
+  },
+  "ranker": {
+    "queries": 1000,
+    "winner_queries": 979,
+    "winner_hit_1": 0.16853932584269662,
+    "winner_hit_5": 0.34831460674157305,
+    "winner_hit_10": 0.4453524004085802,
+    "winner_hit_20": 0.5413687436159347,
+    "winner_recall_200": 0.693564862104188,
+    "winner_mrr": 0.2576756971033228,
+    "bidder_hit_10": 0.536,
+    "participant_recall_10": 0.42169616757511497
+  },
+  "winner_mrr_delta": 0.05693472908601077,
+  "winner_mrr_delta_cluster_ci95": [
+    0.043067214417185286,
+    0.070742591847694
+  ],
+  "bootstrap_procedures": 979,
+  "prediction_seconds": 0.04898177972063422,
+  "milliseconds_per_query": 0.04898177972063422,
+  "accepted": true,
+  "limitations": [
+    "Participation labels are incomplete relevance labels.",
+    "Tree scores are not probabilities; timing excludes retrieval and encoding."
+  ]
+}

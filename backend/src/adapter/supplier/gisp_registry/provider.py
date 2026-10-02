@@ -14,6 +14,7 @@ import httpx
 
 from src.adapter.supplier.errors import ContentFormatError, SourceUnavailableError
 from src.adapter.supplier.gisp_registry.api import parse_organizations, parse_products
+from src.adapter.supplier.gisp_registry.snapshot import parse_snapshot
 from src.adapter.supplier.gisp_registry.supplier import merge_supplier
 from src.adapter.supplier.gisp_registry.workbook import parse_workbook
 from src.models.package import SupplierPackage
@@ -60,8 +61,11 @@ class GispRegistryProvider:
         if parsed.scheme in ("https", "http"):
             content = await self._download()
         elif parsed.scheme == "file":
+            path = Path(parsed.path)
+            if await asyncio.to_thread(path.is_dir):
+                return await asyncio.to_thread(parse_snapshot, path, self._source)
             try:
-                content = await asyncio.to_thread(Path(parsed.path).read_bytes)
+                content = await asyncio.to_thread(path.read_bytes)
             except OSError as error:
                 raise SourceUnavailableError(str(error)) from error
         else:

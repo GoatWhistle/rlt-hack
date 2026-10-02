@@ -1,6 +1,5 @@
 import json
 from dataclasses import replace
-from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -9,11 +8,6 @@ import pytest
 from src.adapter.repository.clickhouse.search_archive.result_dto import (
     decode_result,
     encode_result,
-)
-from src.adapter.repository.clickhouse.upload_store.codec import (
-    decode_issues,
-    decode_lot_result,
-    encode_lot_result,
 )
 from src.adapter.repository.errors import CorruptRecordError
 from src.models.candidate import Highlight, ProductMatch
@@ -28,7 +22,6 @@ from src.models.enums import (
     PurchaseOutcome,
     WarningCode,
 )
-from src.models.lot_result import LotResult
 from src.models.purchase import PurchaseRecord, PurchaseSummary
 from src.models.query_item import Quantity, QueryItem
 from src.models.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
@@ -104,33 +97,3 @@ def test_payload_breaking_current_rules_is_corrupt() -> None:
     with pytest.raises(CorruptRecordError) as caught:
         decode_result(json.dumps(document))
     assert caught.value.reason == "InvalidCandidateLimitError"
-
-
-def test_lot_payloads_are_checked_the_same_way() -> None:
-    result = LotResult("L-1", datetime(2026, 10, 1, tzinfo=UTC))
-    document = json.loads(encode_lot_result(result))
-    assert decode_lot_result(json.dumps(document)) == result
-    document["payload_version"] = 99
-    with pytest.raises(CorruptRecordError):
-        decode_lot_result(json.dumps(document))
-    document["lot_id"] = ""
-    document["payload_version"] = 1
-    with pytest.raises(CorruptRecordError):
-        decode_lot_result(json.dumps(document))
-    with pytest.raises(CorruptRecordError):
-        decode_issues('[{"row": 0, "code": "badPrice", "value": ""}]')
-
-
-def test_lot_payload_keeps_the_pipeline_and_reads_version_one() -> None:
-    result = LotResult(
-        "L-1",
-        datetime(2026, 10, 1, tzinfo=UTC),
-        pipeline=rich_result().pipeline,
-        warnings=(SearchWarning(WarningCode.CHANNEL_FAILED, "history"),),
-    )
-    document = json.loads(encode_lot_result(result))
-    assert document["payload_version"] == 2
-    assert decode_lot_result(json.dumps(document)) == result
-    del document["pipeline"]
-    document["payload_version"] = 1
-    assert decode_lot_result(json.dumps(document)).pipeline is None

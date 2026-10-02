@@ -58,6 +58,7 @@ docker compose run --rm sync-job sync        # обход включённых �
 docker compose run --rm sync-job normalize   # пересчёт нормализации и классификации
 docker compose run --rm sync-job coverage    # отчёт о покрытии
 docker compose run --rm sync-job reidentify  # перевод позиций на новое правило ключа
+docker compose run --rm sync-job registry-import  # реестр МСП ФНС для ролей компаний
 ```
 
 Фронтенд будет доступен на `http://localhost:8080`, HTTP API — на
@@ -100,6 +101,10 @@ ProductCenter включается флагом `PRODUCTCENTER_WEB_PROVIDER=true
 соединения при временном отказе; настройки описаны в backend README.
 Для живой проверки без записи в ClickHouse используйте команду из
 [backend/README.md](backend/README.md); отчёт и кеш размещаются вне Git.
+
+Там же приведены команды полного браузерного экспорта ГИСП и его загрузки
+из локального снимка в ClickHouse. Для экспорта нужен Google Chrome и `npm ci`
+в `backend/`; файлы снимка хранятся вне Git.
 
 ## Применение миграций без Docker
 
@@ -151,6 +156,9 @@ uv run --no-project --python 3.13 python backend/tests/supplier/identity_smoke.p
 uv run --no-project --python 3.13 python backend/tests/supplier/reidentify_smoke.py
 uv run --no-project --python 3.13 python backend/tests/normalizer/normalizer_smoke.py
 uv run --no-project --python 3.13 python backend/tests/classifier/classifier_smoke.py
+uv run --no-project --python 3.13 --with lxml python backend/tests/registry/registry_smoke.py
+uv run --no-project --python 3.13 --with 'chdb==4.1.2' --with 'chdb-core==26.9.0' python backend/tests/registry/registry_store_smoke.py
+uv run --no-project --python 3.13 --with httpx --with openpyxl python backend/tests/supplier/gisp_snapshot.py
 ```
 
 Проверки используют временные каталоги, встроенный движок chDB и подготовленные
@@ -306,3 +314,78 @@ PYTHONPATH=src /root/rlt/.venv/bin/python -m rlt_ml.compare_cards \
 INSERT; после перезапуска незавершённая порция повторяется, подтверждённые
 карточки пропускаются. До завершения обхода сохраняется его исходная отметка
 времени. Не удаляйте этот том при обычном обновлении сервисов.
+
+### Архивные основания рекомендаций
+
+При `RLT_RUN_SEARCH=true` CD импортирует основания для текущего индекса перед запуском
+API. `RLT_HISTORY_DIR` (по умолчанию `/root/rlt/ready-v1`) содержит read-only
+`procurement.duckdb`; граница истории берётся из manifest индекса (2024-12-01 для validation,
+2025-06-01 для test).
+В ClickHouse сохраняются до пяти закупок на поставщика и категорию, точное число
+закупок и однозначных побед. Повторный запуск проверяет полноту и не дублирует данные.
+Ссылки в карточке открывают архивную запись в пределах сессии загрузки.
+Результат процедуры не трактуется как подтверждение исполнения или текущего наличия.
+
+Ранжировщик подключается автоматически, если рядом с индексом есть
+`ranker/runtime.json`, `ranker.cbm` и снимки статистики. Перед загрузкой проверяются
+хеши, список признаков и соответствие карточкам; без артефакта работает гибридный
+поиск. Артефакт экспортируется только после положительной оценки на закрытом test:
+
+```bash
+python -m rlt_ml.reranking.candidates --data /data/ready --vectors /data/vectors --out /data/candidates --split train --customer-dropout 0.5
+python -m rlt_ml.reranking.train --train /data/train-candidates --validation /data/validation-candidates --text-validation /data/validation-text-candidates --out /data/models
+python -m rlt_ml.reranking.evaluate --models /data/models --candidates /data/test-candidates --out /data/models/test-report.json
+python -m rlt_ml.reranking.export --models /data/models --vectors /data/test-vectors --data /data/ready --out /data/release-index
+```
+
+Команды выполняются на сервере в окружении `ml`. В Git входят только код и
+агрегированные результаты; данные, векторы и веса остаются вне репозитория.
+
+## Качество рекомендаций
+
+RANK-004: 4000 train-запросов, отдельный validation из 1000 запросов; только
+Qwen3-Embedding-4B, гибридный поиск top-200 и CatBoost на кандидатах поиска.
+Фактические товары целевого лота не используются как вход. Таблица — режим
+**только по тексту**, без ИНН заказчика и цены, как в тестовом CSV сайта.
+
+| Метрика validation | Гибридный поиск | Выбранный ранжировщик |
+| --- | ---: | ---: |
+| MRR исторического победителя | 0.2036 | 0.2577 |
+| Победитель на первом месте | 13.72% | 17.89% |
+| Известный участник в top-10 | 39.30% | 48.90% |
+| Recall участников в top-10 | 31.96% | 39.80% |
+
+Победитель отсутствующего retrieval-пула считается промахом. Участие в закупке —
+неполная разметка релевантности, а не доказательство исполнения или наличия товара.
+Шкала модели не выдаётся за вероятность победы. Выбор сделан на validation;
+[отчёт сравнения вариантов](ml/reports/ranker-v2-validation.json) содержит все три модели.
+
+### Независимый test
+
+1000 новых запросов, 979 с однозначным победителем; история до 2025-06-01.
+Модель и критерий принятия зафиксированы до расчёта метрик. Режим сайта —
+только текст, без заказчика и цены.
+
+| Метрика test | Гибридный поиск | Обученный ранжировщик |
+| --- | ---: | ---: |
+| MRR исторического победителя | 0.2007 | 0.2577 |
+| Победитель на первом месте | 12.46% | 16.85% |
+| Победитель в top-10 | 34.53% | 44.54% |
+| Известный участник в top-10 | 41.80% | 53.60% |
+| Recall участников в top-10 | 33.07% | 42.17% |
+
+MRR вырос на 28.36% относительно baseline. Парный кластерный bootstrap по
+процедурам (2000 повторов, seed=42): 95% интервал прироста MRR
+**[+0.0431; +0.0707]**. Победитель найден в исходном пуле в 69.36% случаев;
+остальные случаи включены в оценку как промахи. Это восстановление известных
+участников и победителей, не экспертная оценка пригодности или гарантии поставки.
+
+В дополнительном режиме с заказчиком и ценой MRR 0.2747 → 0.3400,
+известный участник в top-10 — 48.0% → 60.4%. Эти поля пока не используются
+рабочим текстовым поиском. На 20 test-запросах рабочий адаптер и offline
+оценка дали одинаковые top-10 и баллы (максимальная разница 0.0).
+
+[Основной test](ml/reports/ranker-v2-test.json),
+[режим с метаданными](ml/reports/ranker-v2-test-full.json),
+[проверка применения](ml/reports/ranker-v2-serving-test.json),
+[журнал экспериментов](ml/EXPERIMENTS.md).

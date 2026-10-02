@@ -10,7 +10,6 @@ VARIABLES = (
     "CLICKHOUSE_POOL_SIZE",
     "CLICKHOUSE_MAX_THREADS",
     "CLICKHOUSE_API_QUERY_TIMEOUT",
-    "CLICKHOUSE_BACKGROUND_POOL_SIZE",
     "CLICKHOUSE_API_MAX_MEMORY_USAGE",
 )
 
@@ -59,11 +58,6 @@ def test_api_client_memory_limit_is_optional() -> None:
 def test_api_storage_is_read_from_environment(clean_env: pytest.MonkeyPatch) -> None:
     assert AppConfig.from_env().api_storage == ApiStorageConfig()
     clean_env.setenv("CLICKHOUSE_API_QUERY_TIMEOUT", "20")
-    clean_env.setenv("CLICKHOUSE_BACKGROUND_POOL_SIZE", "1")
     clean_env.setenv("CLICKHOUSE_API_MAX_MEMORY_USAGE", "1000")
     storage = AppConfig.from_env().api_storage
-    assert (storage.query_timeout, storage.background_pool_size, storage.max_memory_usage) == (
-        20,
-        1,
-        1000,
-    )
+    assert (storage.query_timeout, storage.max_memory_usage) == (20, 1000)

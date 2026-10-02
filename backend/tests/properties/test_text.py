@@ -6,13 +6,12 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from src.adapter.file.notice_csv.reader import parse_notices
 from src.adapter.text.analyzer.analyzer import RussianAnalyzer
 from src.adapter.text.rule_interpreter.interpreter import MAX_ITEMS, RuleQueryInterpreter
 from src.controller.http.locale import parse_accept_language
 from src.controller.http.schema import rfc3339
 from src.models.enums import Locale
-from src.models.errors import EmptySearchTextError, NoticeFileError, SearchTextTooLongError
+from src.models.errors import EmptySearchTextError, SearchTextTooLongError
 from src.models.scoring import Score
 from src.models.search import SearchQuery, SearchText
 
@@ -63,14 +62,6 @@ def test_score_clamp_stays_within_unit_interval(value: float) -> None:
 @given(st.text(max_size=200))
 def test_accept_language_never_fails(header: str) -> None:
     assert parse_accept_language(header) in tuple(Locale)
-
-
-@given(st.binary(max_size=2000))
-def test_notice_reader_fails_only_with_file_errors(content: bytes) -> None:
-    try:
-        parse_notices(content, 50)
-    except NoticeFileError:
-        return
 
 
 @given(

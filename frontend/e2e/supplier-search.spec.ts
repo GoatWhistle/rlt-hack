@@ -48,7 +48,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
     .getByRole("article")
     .getByRole("button", { name: /choose candidate/i })
     .click()
-  await showView(page, /^candidates$/i)
+  await showView(page, /^companies$/i)
   await page
     .getByRole("region", { name: /candidates/i })
     .getByRole("button")
@@ -58,7 +58,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
     .getByRole("article")
     .getByRole("button", { name: /choose candidate/i })
     .click()
-  await showView(page, /^candidates$/i)
+  await showView(page, /^companies$/i)
   await page.getByRole("button", { name: /compare chosen \(2\)/i }).click()
   await expect(page.getByRole("dialog", { name: /compare/i }).getByRole("table")).toBeVisible()
   await expectAccessible(page)
@@ -76,7 +76,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
 
   await page.reload()
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
-  await showView(page, /^evidence$/i)
+  await showView(page, /^grounds$/i)
   await expect(page.getByRole("article")).toBeVisible()
   await page.getByRole("link", { name: /purchases · notices-sample\.csv/i }).click()
   await expect(page.getByRole("searchbox")).toHaveValue("test_paper")
@@ -107,7 +107,7 @@ test("keeps the decision in reach on a laptop screen", async ({ page }) => {
   await expect(choose).toBeInViewport()
 })
 
-test("keeps the review in the address and walks with the keyboard", async ({ page }) => {
+test("opens sources in a new tab and walks to the next purchase", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await uploadSample(page)
   await page.getByRole("table").getByRole("link").first().click()
@@ -121,17 +121,11 @@ test("keeps the review in the address and walks with the keyboard", async ({ pag
     .getByRole("button", { name: /West Trade/ })
     .click()
   await expect(page.getByRole("article", { name: "West Trade" })).toBeVisible()
-  await expect(page).toHaveURL(/company=west/)
-  await page.reload()
-  await expect(page.getByRole("article", { name: "West Trade" })).toBeVisible()
   const next = page.getByRole("link", { name: /next purchase/i })
   await next.focus()
   await page.keyboard.press("Enter")
   await expect(page).toHaveURL(/\/lots\/test_workwear/)
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("test_workwear")
-  await expect(next).toBeFocused()
-  await page.keyboard.press("BracketLeft")
-  await expect(page).toHaveURL(/\/lots\/test_paper/)
 })
 
 test("keeps every page within the screen width", async ({ page }) => {
