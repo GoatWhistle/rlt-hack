@@ -29,6 +29,7 @@ export function EvidencePanel({
   onProfile,
 }: EvidencePanelProps) {
   const { t } = useTranslation("lot")
+  const { t: candidate } = useTranslation("candidate")
   return (
     <EvidenceFrame
       label={company.name}
@@ -36,7 +37,7 @@ export function EvidencePanel({
       actions={
         <>
           <EvidenceAction
-            variant={chosen ? "secondary" : "strong"}
+            variant={chosen ? "secondary" : "primary"}
             icon={chosen ? <Icon name="check" /> : undefined}
             label={chosen ? t("evidence.chosen") : t("evidence.choose")}
             onClick={onChoose}
@@ -44,6 +45,7 @@ export function EvidencePanel({
           <EvidenceAction
             variant="secondary"
             label={t("evidence.profile")}
+            shortLabel={candidate("panel.profileShort")}
             onClick={onProfile}
           />
         </>
