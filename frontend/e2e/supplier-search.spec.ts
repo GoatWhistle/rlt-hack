@@ -59,7 +59,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
     .getByRole("article")
     .getByRole("button", { name: /choose candidate/i })
     .click()
-  await showView(page, /^companies$/i)
+  await showView(page, /^candidates$/i)
   await page
     .getByRole("region", { name: /candidates/i })
     .getByRole("button")
@@ -69,7 +69,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
     .getByRole("article")
     .getByRole("button", { name: /choose candidate/i })
     .click()
-  await showView(page, /^companies$/i)
+  await showView(page, /^candidates$/i)
   await page.getByRole("button", { name: /compare chosen \(2\)/i }).click()
   await expect(page.getByRole("dialog", { name: /compare/i }).getByRole("table")).toBeVisible()
   await expectAccessible(page)
