@@ -168,7 +168,7 @@ describe("the list of uploads", () => {
     expect(within(done).getByText(en("list.done", "uploads"))).toBeInTheDocument()
     expect(within(done).getByText("2 rows with errors were not processed")).toBeInTheDocument()
     const running = screen.getByRole("link", { name: /running\.csv/ })
-    expect(within(running).getByText("Processed 4 of 10")).toBeInTheDocument()
+    expect(within(running).getByText("Processing: 4 of 10")).toBeInTheDocument()
     expect(within(running).getByText(en("list.notStored", "uploads"))).toBeInTheDocument()
     expect(within(running).getByText("not processed: 1")).toBeInTheDocument()
     expect(within(done).queryByText(/not processed:/)).toBeNull()

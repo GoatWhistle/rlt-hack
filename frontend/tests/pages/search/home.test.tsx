@@ -3,6 +3,7 @@ import { en } from "@tests/support/dictionaries"
 import { contract, contractResult, renderSearch, stubSearch } from "@tests/support/search"
 import { describe, expect, it, vi } from "vitest"
 import { parseRecentSearches } from "@/entities/search/parse"
+import { isToday } from "@/pages/search/recent-list"
 import { ApiError } from "@/shared/api/api-error"
 
 function recentRegion() {
@@ -28,6 +29,35 @@ describe("the search page", () => {
     const link = await within(recentRegion()).findByRole("link", { name: /Крупа гречневая/ })
     expect(link).toHaveAttribute("href", "/search/1f0c3b5e-6a1d-4c2e-9f7a-2b8d4e6f1a90")
     expect(link).toHaveTextContent("2 items · 2 candidates · 1 recommended")
+  })
+
+  it("groups recent searches by day and marks the ones without candidates", async () => {
+    const [first] = parseRecentSearches(contract("search/recent.example.json"))
+    if (!first) throw new Error("the contract example has no searches")
+    const recent = vi.fn(async () => [
+      { ...first, searchId: "today", text: "Paper", createdAt: new Date().toISOString() },
+      { ...first, searchId: "empty", text: "Tractor", candidates: 0, recommended: 0 },
+    ])
+    renderSearch("/search", { gateway: stubSearch({ recent }) })
+    const region = recentRegion()
+    const today = await within(region).findByRole("heading", {
+      name: en("recent.today", "search"),
+    })
+    expect(within(today.parentElement as HTMLElement).getByRole("link")).toHaveTextContent(
+      "Paper",
+    )
+    const earlier = within(region).getByRole("heading", {
+      name: en("recent.earlier", "search"),
+    })
+    expect(within(earlier.parentElement as HTMLElement).getByRole("link")).toHaveTextContent(
+      en("recent.none", "search"),
+    )
+  })
+
+  it("tells today apart from other days", () => {
+    const now = new Date(2026, 9, 2, 12)
+    expect(isToday(new Date(2026, 9, 2, 1).toISOString(), now)).toBe(true)
+    expect(isToday(new Date(2026, 9, 1, 23).toISOString(), now)).toBe(false)
   })
 
   it("offers to retry when the recent searches fail to load", async () => {

@@ -26,7 +26,7 @@
     "notices_few": "{{count, number}} извещения",
     "notices_many": "{{count, number}} извещений",
     "notices_other": "{{count, number}} извещения",
-    "processing": "Обработано {{processed, number}} из {{total, number}}",
+    "processing": "Обработка: {{processed, number}} из {{total, number}}",
     "done": "Обработка завершена",
     "ready": "готово: {{count, number}}",
     "needsCheck": "требуют уточнения: {{count, number}}",

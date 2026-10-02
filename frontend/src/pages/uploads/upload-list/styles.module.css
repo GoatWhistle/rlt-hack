@@ -101,12 +101,6 @@
   white-space: nowrap;
 }
 
-.progressText {
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
-  font-variant-numeric: tabular-nums;
-}
-
 .results {
   min-width: 0;
 }

@@ -1,7 +1,49 @@
+.groups,
 .list {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.group + .group {
+  margin-block-start: var(--space-3);
+}
+
+.groupTitle {
+  padding: 0 var(--space-4) var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+}
+
+.facts {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.mix {
+  display: flex;
+  flex: none;
+  gap: var(--space-0-5);
+  width: var(--space-7);
+  height: var(--meter-height);
+}
+
+.recommended,
+.check {
+  flex-basis: 0;
+  border-radius: var(--radius-pill);
+}
+
+.recommended {
+  background: var(--meter-stock);
+}
+
+.check {
+  border: var(--line-width) dashed var(--meter-inferred-line);
+  background: var(--meter-inferred);
 }
 
 .list > li {

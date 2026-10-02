@@ -20,9 +20,9 @@ function UploadState({ upload }: { readonly upload: UploadSummary }) {
   const { t } = useTranslation("uploads")
   if (!isProcessing(upload)) return <DoneNote>{t("list.done")}</DoneNote>
   return (
-    <span className={styles.progressText}>
+    <DoneNote icon="clock">
       {t("list.processing", { processed: upload.processed, total: upload.total })}
-    </span>
+    </DoneNote>
   )
 }
 
