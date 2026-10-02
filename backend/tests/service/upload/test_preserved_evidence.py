@@ -62,6 +62,22 @@ class Search:
         ]
 
 
+async def create_upload(http: httpx.AsyncClient) -> str:
+    created = await http.post(
+        "/api/uploads",
+        files={
+            "file": ("notices.csv", b"lot_id;procedure_name\nlot;Paper A4\n", "text/csv"),
+            "items_file": (
+                "items.csv",
+                b"lot_id;product_name;okpd2_code\nlot;Paper A4;17.12.14.110\n",
+                "text/csv",
+            ),
+        },
+    )
+    assert created.status_code == 200
+    return str(created.json()["id"])
+
+
 @pytest.mark.parametrize("has_evidence", [False, True])
 async def test_post_reopen_and_evidence_keep_query_snapshot(has_evidence: bool) -> None:
     search = Search(has_evidence)
@@ -73,19 +89,7 @@ async def test_post_reopen_and_evidence_keep_query_snapshot(has_evidence: bool) 
         transport=httpx.ASGITransport(app=application),
         base_url="http://test",
     ) as http:
-        created = await http.post(
-            "/api/uploads",
-            files={
-                "file": ("notices.csv", b"lot_id;procedure_name\nlot;Paper A4\n", "text/csv"),
-                "items_file": (
-                    "items.csv",
-                    b"lot_id;product_name;okpd2_code\nlot;Paper A4;17.12.14.110\n",
-                    "text/csv",
-                ),
-            },
-        )
-        assert created.status_code == 200
-        upload_id = created.json()["id"]
+        upload_id = await create_upload(http)
         prefix = f"/api/uploads/{upload_id}/lots/lot"
         for _ in range(2):
             reopened = await http.get(prefix)
