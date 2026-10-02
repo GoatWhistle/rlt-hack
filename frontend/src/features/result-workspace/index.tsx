@@ -1,12 +1,14 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { matchOf, type SearchResult } from "@/entities/search/model"
+import { CoverageMatrix } from "@/entities/search/ui/coverage-matrix"
 import { useSearchShortlist } from "@/entities/shortlist/store"
 import { SupplierProfilePanel } from "@/entities/supplier/ui/profile-panel"
 import { searchDraftPath } from "@/shared/config/paths"
 import { useQueryState } from "@/shared/routing/use-query-state"
 import { ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
+import { TextButton } from "@/shared/ui/text-button"
 import {
   parseView,
   useWorkspaceView,
@@ -29,6 +31,7 @@ export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
   const { narrow, stackRef, prepareSwitch } = useWorkspaceView(view)
   const shortlist = useSearchShortlist(result.searchId)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [coverageOpen, setCoverageOpen] = useState(false)
 
   const focusItem = items.find((item) => item.id === params.item)
   const shown = focusItem
@@ -120,6 +123,12 @@ export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
           ),
         }}
       />
+      <TextButton aria-expanded={coverageOpen} onClick={() => setCoverageOpen(!coverageOpen)}>
+        {coverageOpen ? t("coverage.hide") : t("coverage.show")}
+      </TextButton>
+      {coverageOpen ? (
+        <CoverageMatrix candidates={candidates} items={items} onPick={select} />
+      ) : null}
       <SupplierProfilePanel
         open={profileOpen}
         supplierId={selected.id}

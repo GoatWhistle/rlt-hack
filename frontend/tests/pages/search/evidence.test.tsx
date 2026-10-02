@@ -178,3 +178,17 @@ describe("the inputs note", () => {
     ).toBeInTheDocument()
   })
 })
+
+describe("the coverage matrix", () => {
+  it("opens on request and leads from a cell to the grounds", async () => {
+    const view = await openContract()
+    await view.user.click(screen.getByRole("button", { name: "Show item coverage" }))
+    const matrix = screen.getByRole("region", { name: "Item coverage" })
+    expect(within(matrix).getAllByRole("row")).toHaveLength(3)
+    expect(screen.getByText(/never added to the confirmed count/)).toBeInTheDocument()
+    await view.user.click(
+      within(matrix).getAllByRole("button", { name: /Зерновой Двор/ })[0] as HTMLElement,
+    )
+    expect(screen.getByRole("article", { name: /Зерновой Двор/ })).toBeInTheDocument()
+  })
+})

@@ -138,5 +138,24 @@
       "customerInn": "customer INN",
       "startPrice": "start price"
     }
+  },
+  "coverage": {
+    "title": "Item coverage",
+    "company": "Company",
+    "summary": "confirmed {{confirmed, number}} of {{total, number}} · to clarify {{toClarify, number}} · no data {{missing, number}}",
+    "confirmed": "confirmed",
+    "open": "{{company}}, {{item}}: {{state}}. Open the evidence",
+    "legend": "Confirmed means an offer or a registry record that meets the requirements. Other states need clarification and are never added to the confirmed count.",
+    "conditions": "Quantity, delivery dates, delivery region and payment terms are not checked against sources — clarify them with the supplier.",
+    "state": {
+      "offer": "offer",
+      "registered": "registry",
+      "assumed": "assumption",
+      "history": "past experience only",
+      "conflict": "contradiction",
+      "insufficient": "no data"
+    },
+    "show": "Show item coverage",
+    "hide": "Hide item coverage"
   }
 }
