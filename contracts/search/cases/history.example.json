@@ -102,7 +102,11 @@
       "origins": [
         "history"
       ],
-      "novelty": "known"
+      "novelty": "known",
+      "roleBasis": "none",
+      "roleProduct": null,
+      "roleNote": null,
+      "roleConflict": false
     }
   ],
   "pipeline": {

@@ -40,6 +40,10 @@ def to_profile(profile: SupplierProfile) -> SupplierProfileDto:
         identity=supplier.identity_status,
         role=profile.role,
         role_source=source_dto(profile.role_evidence),
+        role_basis=profile.role_context.basis,
+        role_product=profile.role_context.product or None,
+        role_note=profile.role_context.note or None,
+        role_conflict=profile.role_context.conflict,
         contacts=contacts_dto(supplier),
         offers=[offer_dto(card) for card in profile.offers],
     )

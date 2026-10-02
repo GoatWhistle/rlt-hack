@@ -54,6 +54,7 @@ class CandidateRanker:
                 matches=draft.matches,
                 history=draft.history,
                 highlights=draft.highlights,
+                role_context=draft.role_context,
             )
             for position, (draft, verdict, score) in enumerate(scored[: max(limit, 0)], start=1)
         )

@@ -1,5 +1,5 @@
 import { COMPANY_ROLES } from "@/entities/evidence/model"
-import { parseContacts, parseSource } from "@/entities/evidence/parse"
+import { parseContacts, parseRoleContext, parseSource } from "@/entities/evidence/parse"
 import {
   type Fields,
   list,
@@ -47,6 +47,7 @@ export function parseSupplierProfile(value: unknown): SupplierProfile {
       region: text(fields, "region", "$"),
       identity: oneOf(IDENTITY_STATUSES, fields, "identity", "$"),
       role: oneOf(COMPANY_ROLES, fields, "role", "$"),
+      roleContext: parseRoleContext(fields, "$"),
       contacts: parseContacts(record(fields.contacts, "$.contacts"), "$.contacts") ?? {},
       offers: list(fields, "offers", "$", offer),
     },

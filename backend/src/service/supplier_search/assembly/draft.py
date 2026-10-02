@@ -6,6 +6,7 @@ from src.models.enums import CompanyRole
 from src.models.evidence import Evidence
 from src.models.offer_evidence import OfferEvidence
 from src.models.purchase import PurchaseSummary
+from src.models.role_context import RoleContext
 from src.models.scoring import ChannelRank, Score
 from src.models.supplier import Supplier
 
@@ -24,6 +25,7 @@ class CandidateDraft:
     history: PurchaseSummary = field(default_factory=PurchaseSummary.empty)
     highlights: tuple[Highlight, ...] = ()
     enrichment_failed: bool = False
+    role_context: RoleContext = field(default_factory=RoleContext)
 
     def __post_init__(self) -> None:
         if self.total_items < 1:

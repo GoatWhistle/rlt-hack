@@ -190,7 +190,11 @@
               "catalog",
               "history"
             ],
-            "novelty": "known"
+            "novelty": "known",
+            "roleBasis": "offer",
+            "roleProduct": "Крупа гречневая ядрица 1 сорт, 25 кг",
+            "roleNote": null,
+            "roleConflict": false
           },
           {
             "rank": 2,
@@ -251,7 +255,11 @@
             "origins": [
               "history"
             ],
-            "novelty": "unknown"
+            "novelty": "unknown",
+            "roleBasis": "none",
+            "roleProduct": null,
+            "roleNote": null,
+            "roleConflict": false
           }
         ],
         "pipeline": {
@@ -460,7 +468,11 @@
               "catalog",
               "history"
             ],
-            "novelty": "known"
+            "novelty": "known",
+            "roleBasis": "offer",
+            "roleProduct": "Крупа гречневая ядрица 1 сорт, 25 кг",
+            "roleNote": null,
+            "roleConflict": false
           },
           {
             "rank": 2,
@@ -521,7 +533,11 @@
             "origins": [
               "history"
             ],
-            "novelty": "unknown"
+            "novelty": "unknown",
+            "roleBasis": "none",
+            "roleProduct": null,
+            "roleNote": null,
+            "roleConflict": false
           }
         ],
         "pipeline": {

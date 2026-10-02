@@ -11,6 +11,7 @@ from src.models.enums import (
     MatchBasis,
     MatchStatus,
     RequirementStatus,
+    RoleBasis,
     SupplierRole,
     VerificationStatus,
 )
@@ -61,7 +62,12 @@ def test_role_comes_from_cards_with_a_confirmed_seller() -> None:
     distributor = card("distributor")
     withdrawn = card("old", SupplierRole.MANUFACTURER, Availability.UNAVAILABLE)
     assessed = assess_role((reseller, distributor, withdrawn))
-    assert assessed == RoleAssessment(CompanyRole.DISTRIBUTOR, distributor.role_evidence)
+    assert assessed == RoleAssessment(
+        CompanyRole.DISTRIBUTOR,
+        distributor.role_evidence,
+        RoleBasis.OFFER,
+        distributor.offer.name,
+    )
     assert assessed.confirmed
 
 
@@ -69,13 +75,13 @@ def test_role_of_unconfirmed_sellers_has_no_evidence() -> None:
     unverified = card("unverified", seller=VerificationStatus.UNVERIFIED)
     conflicted = card("conflicted", SupplierRole.MANUFACTURER, seller=VerificationStatus.CONFLICT)
     assessed = assess_role((unverified, conflicted))
-    assert assessed == RoleAssessment(CompanyRole.MANUFACTURER)
+    assert assessed == RoleAssessment(CompanyRole.MANUFACTURER, basis=RoleBasis.OFFER)
     assert not assessed.confirmed
 
 
 def test_role_without_any_evidence_or_cards_stays_unconfirmed() -> None:
     blank = card("blank", url="not a link")
-    assert assess_role((blank,)) == RoleAssessment(CompanyRole.DISTRIBUTOR)
+    assert assess_role((blank,)) == RoleAssessment(CompanyRole.DISTRIBUTOR, basis=RoleBasis.OFFER)
     assert assess_role(()) == RoleAssessment(CompanyRole.UNKNOWN)
     unknown = card("unknown", SupplierRole.UNKNOWN)
     assert assess_role((unknown,)) == RoleAssessment(CompanyRole.UNKNOWN)

@@ -19,6 +19,7 @@ from src.models.offer_snapshot import OfferSnapshot
 from src.models.purchase import PurchaseSummary
 from src.models.query_item import QueryItem
 from src.models.requirement import RequirementCheck
+from src.models.role_context import RoleContext
 from src.models.scoring import ScoreBreakdown
 from src.models.supplier import Supplier
 
@@ -76,6 +77,7 @@ class SupplierCandidate:
     history: PurchaseSummary = field(default_factory=PurchaseSummary.empty)
     highlights: tuple[Highlight, ...] = ()
     novelty: Novelty = Novelty.UNKNOWN
+    role_context: RoleContext = field(default_factory=RoleContext)
 
     def __post_init__(self) -> None:
         if self.rank < 1:

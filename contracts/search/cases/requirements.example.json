@@ -127,7 +127,11 @@
       "origins": [
         "catalog"
       ],
-      "novelty": "new"
+      "novelty": "new",
+      "roleBasis": "offer",
+      "roleProduct": "ООО «Офис Снаб»",
+      "roleNote": null,
+      "roleConflict": false
     },
     {
       "rank": 2,
@@ -218,7 +222,11 @@
       "origins": [
         "catalog"
       ],
-      "novelty": "new"
+      "novelty": "new",
+      "roleBasis": "offer",
+      "roleProduct": "ООО «Бумажный Двор»",
+      "roleNote": null,
+      "roleConflict": false
     },
     {
       "rank": 3,
@@ -310,7 +318,11 @@
       "origins": [
         "catalog"
       ],
-      "novelty": "new"
+      "novelty": "new",
+      "roleBasis": "offer",
+      "roleProduct": "ООО «Формат»",
+      "roleNote": null,
+      "roleConflict": false
     },
     {
       "rank": 4,
@@ -401,7 +413,11 @@
       "origins": [
         "catalog"
       ],
-      "novelty": "new"
+      "novelty": "new",
+      "roleBasis": "offer",
+      "roleProduct": "ООО «Архивная Бумага»",
+      "roleNote": null,
+      "roleConflict": false
     }
   ],
   "pipeline": {

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useOriginLabel, useRegionText, useRoleLabel } from "@/entities/evidence/labels"
 import { ContactList } from "@/entities/evidence/ui/contact-list"
+import { RoleBasisNote } from "@/entities/evidence/ui/role-basis"
 import { SourceLine } from "@/entities/evidence/ui/source-line"
 import type { Candidate } from "@/entities/search/model"
 import { useFormatters } from "@/shared/i18n/formatters"
@@ -39,10 +40,15 @@ export function CompanyBlock({ candidate, noveltySet }: CompanyBlockProps) {
     {
       key: "basis",
       term: t("evidence.roleBasis"),
-      value: candidate.roleSource ? (
-        <SourceLine source={candidate.roleSource} />
-      ) : (
-        <span className={styles.missing}>{t("evidence.noRoleBasis")}</span>
+      value: (
+        <>
+          {candidate.roleSource ? (
+            <SourceLine source={candidate.roleSource} />
+          ) : (
+            <span className={styles.missing}>{t("evidence.noRoleBasis")}</span>
+          )}
+          <RoleBasisNote context={candidate.roleContext} />
+        </>
       ),
     },
     ...(candidate.region

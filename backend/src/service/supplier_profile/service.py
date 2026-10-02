@@ -36,12 +36,13 @@ class SupplierProfileService:
         if supplier is None:
             raise SupplierNotFoundError(supplier_id)
         cards = offers.get(supplier_id, ())
-        role = assess_role(cards)
+        role = assess_role(cards, supplier)
         return SupplierProfile(
             supplier=supplier,
             role=role.role,
             offers=cards,
             role_evidence=role.evidence,
+            role_context=role.context,
         )
 
     async def purchase(self, supplier_id: UUID, lot_id: str) -> ArchivePurchase:

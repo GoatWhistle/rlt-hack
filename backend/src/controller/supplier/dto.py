@@ -3,7 +3,13 @@ from uuid import UUID
 
 from src.controller.http.schema import CamelModel
 from src.controller.search.dto import ContactsDto, SourceDto
-from src.models.enums import Availability, CompanyRole, PurchaseOutcome, VerificationStatus
+from src.models.enums import (
+    Availability,
+    CompanyRole,
+    PurchaseOutcome,
+    RoleBasis,
+    VerificationStatus,
+)
 
 
 class OfferDto(CamelModel):
@@ -25,6 +31,10 @@ class SupplierProfileDto(CamelModel):
     identity: VerificationStatus
     role: CompanyRole
     role_source: SourceDto | None
+    role_basis: RoleBasis
+    role_product: str | None
+    role_note: str | None
+    role_conflict: bool
     contacts: ContactsDto
     offers: list[OfferDto]
 

@@ -186,6 +186,10 @@ def candidate_dto(candidate: SupplierCandidate) -> CandidateDto:
         contacts=contacts_dto(supplier),
         origins=list(candidate.origins),
         novelty=candidate.novelty,
+        role_basis=candidate.role_context.basis,
+        role_product=candidate.role_context.product or None,
+        role_note=candidate.role_context.note or None,
+        role_conflict=candidate.role_context.conflict,
     )
 
 

@@ -5,6 +5,7 @@ import {
   parseHighlights,
   parseOffer,
   parseRequirement,
+  parseRoleContext,
   parseSource,
   parseWarnings,
 } from "@/entities/evidence/parse"
@@ -149,6 +150,7 @@ function candidate(value: unknown, path: string): Candidate {
       contacts: parseContacts(nested(fields, "contacts", path), `${path}.contacts`) ?? {},
       origins: origins(fields, path),
       novelty: optionalOneOf(NOVELTIES, fields, "novelty", path) ?? "unknown",
+      roleContext: parseRoleContext(fields, path),
     },
     { roleSource: parseSource(fields.roleSource, `${path}.roleSource`) },
   )

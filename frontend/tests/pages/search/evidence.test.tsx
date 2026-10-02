@@ -107,3 +107,33 @@ describe("offer evidence and requirements", () => {
     expect(within(stale).getByText(/Mar 1, 2025/)).toBeInTheDocument()
   })
 })
+
+describe("the role basis", () => {
+  it("ties a role from an offer card to that product", async () => {
+    await openContract()
+    const grounds = screen.getByRole("article")
+    expect(
+      within(grounds).getByText(/applies to that product, not the whole range/),
+    ).toBeInTheDocument()
+  })
+
+  it("separates an okved rule from a confirmation and shows a conflict", async () => {
+    await openVariant((payload) => ({
+      ...payload,
+      candidates: (payload.candidates as Record<string, unknown>[]).map((item, index) =>
+        index === 0
+          ? {
+              ...item,
+              roleBasis: "okved",
+              roleNote: "Основной ОКВЭД 46.38",
+              roleConflict: true,
+              roleProduct: null,
+            }
+          : item,
+      ),
+    }))
+    const grounds = screen.getByRole("article")
+    expect(within(grounds).getByText(/a rule, not a confirmation/)).toBeInTheDocument()
+    expect(within(grounds).getByText(/Sources disagree, check required/)).toBeInTheDocument()
+  })
+})

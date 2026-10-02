@@ -1,4 +1,4 @@
-import type { CompanyRole, Contacts, Source } from "@/entities/evidence/model"
+import type { CompanyRole, Contacts, RoleContext, Source } from "@/entities/evidence/model"
 
 export const IDENTITY_STATUSES = ["verified", "unverified", "conflict"] as const
 export type IdentityStatus = (typeof IDENTITY_STATUSES)[number]
@@ -25,6 +25,7 @@ export type SupplierProfile = {
   readonly identity: IdentityStatus
   readonly role: CompanyRole
   readonly roleSource?: Source
+  readonly roleContext: RoleContext
   readonly contacts: Contacts
   readonly offers: readonly Offer[]
 }

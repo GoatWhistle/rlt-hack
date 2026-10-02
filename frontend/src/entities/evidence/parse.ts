@@ -21,6 +21,8 @@ import {
   REQUIREMENT_STATUSES,
   type Requirement,
   type RequirementCheck,
+  ROLE_BASES,
+  type RoleContext,
   type SearchWarning,
   SOURCE_KINDS,
   SOURCE_TYPES,
@@ -132,6 +134,22 @@ export function parseOffer(value: unknown, path: string): OfferSnapshot | undefi
       unit: optionalText(fields, "unit", path),
       price: optionalText(fields, "price", path),
       currency: optionalText(fields, "currency", path),
+    },
+  )
+}
+
+export function parseRoleContext(fields: Fields, path: string): RoleContext {
+  const known: readonly string[] = ROLE_BASES
+  const raw = fields.roleBasis
+  return withOptional(
+    {
+      basis:
+        typeof raw === "string" && known.includes(raw) ? (raw as RoleContext["basis"]) : "none",
+      conflict: fields.roleConflict === true,
+    },
+    {
+      product: optionalText(fields, "roleProduct", path),
+      note: optionalText(fields, "roleNote", path),
     },
   )
 }

@@ -10,6 +10,7 @@ from src.service.supplier_search.policy.outcome import PolicyVerdict
 from src.service.supplier_search.policy.protocols import PolicyRule
 from src.service.supplier_search.policy.requirement_conflict import RequirementConflictRule
 from src.service.supplier_search.policy.role_confirmed import RoleConfirmedRule
+from src.service.supplier_search.policy.role_conflict import RoleConflictRule
 from src.service.supplier_search.policy.source_availability import SourceAvailabilityRule
 
 
@@ -24,6 +25,7 @@ class CandidatePolicy:
                 InnRequiredRule(),
                 IdentityConflictRule(),
                 RoleConfirmedRule(),
+                RoleConflictRule(),
                 CurrentOfferRule(),
                 CoverageRule(coverage_threshold),
                 RequirementConflictRule(),

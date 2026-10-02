@@ -57,7 +57,8 @@
     "noCurrentOffer": "No current offer: the products were found only in older records.",
     "rangeUnconfirmed": "The range is not confirmed for every item.",
     "sourceUnavailable": "One of the sources did not answer during the check.",
-    "requirementConflict": "The card contradicts a required parameter."
+    "requirementConflict": "The card contradicts a required parameter.",
+    "roleConflict": "Sources disagree about the company role."
   },
   "inn": "INN {{inn}}",
   "noInn": "INN unknown",
@@ -179,5 +180,13 @@
     "met": "{{text}} — confirmed",
     "conflict": "{{text}} — the card says {{found}}",
     "unknown": "{{text}} — not stated in the card"
+  },
+  "roleBasis": {
+    "offer": "The role is stated by the source in the offer card.",
+    "offerProduct": "The role is stated by the source in the card “{{product}}” and applies to that product, not the whole range.",
+    "registry": "Own products are declared in the FNS SME registry.",
+    "okved": "The role is inferred from the main OKVED code — a rule, not a confirmation of production.",
+    "none": "The role is not established.",
+    "conflict": "Sources disagree, check required: {{note}}"
   }
 }

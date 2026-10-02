@@ -84,6 +84,7 @@ class CheckReason(StrEnum):
     NO_CURRENT_OFFER = "noCurrentOffer"
     RANGE_UNCONFIRMED = "rangeUnconfirmed"
     REQUIREMENT_CONFLICT = "requirementConflict"
+    ROLE_CONFLICT = "roleConflict"
     SOURCE_UNAVAILABLE = "sourceUnavailable"
 
 
@@ -135,6 +136,13 @@ class WarningCode(StrEnum):
     ENRICHMENT_FAILED = "enrichmentFailed"
     ARCHIVE_FAILED = "archiveFailed"
     ITEMS_INFERRED = "itemsInferred"
+
+
+class RoleBasis(StrEnum):
+    OFFER = "offer"
+    REGISTRY = "registry"
+    OKVED = "okved"
+    NONE = "none"
 
 
 class RequirementStatus(StrEnum):

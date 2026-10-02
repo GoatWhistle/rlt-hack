@@ -155,7 +155,11 @@
       "origins": [
         "catalog"
       ],
-      "novelty": "new"
+      "novelty": "new",
+      "roleBasis": "offer",
+      "roleProduct": "Крупа гречневая ядрица 1 сорт, 25 кг",
+      "roleNote": null,
+      "roleConflict": false
     }
   ],
   "pipeline": {

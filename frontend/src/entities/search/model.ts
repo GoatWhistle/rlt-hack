@@ -11,6 +11,7 @@ import type {
   PurchaseOutcome,
   Requirement,
   RequirementCheck,
+  RoleContext,
   SearchWarning,
   Source,
 } from "@/entities/evidence/model"
@@ -133,6 +134,7 @@ export type Candidate = {
   readonly contacts: Contacts
   readonly origins: readonly CandidateOrigin[]
   readonly novelty: Novelty
+  readonly roleContext: RoleContext
 }
 
 export type Pipeline = {

@@ -51,6 +51,7 @@ export const CHECK_REASONS = [
   "noCurrentOffer",
   "rangeUnconfirmed",
   "requirementConflict",
+  "roleConflict",
   "sourceUnavailable",
 ] as const
 export type CheckReason = (typeof CHECK_REASONS)[number]
@@ -139,4 +140,14 @@ export type OfferSnapshot = {
   readonly price?: string
   readonly currency?: string
   readonly availability: Availability
+}
+
+export const ROLE_BASES = ["offer", "registry", "okved", "none"] as const
+export type RoleBasis = (typeof ROLE_BASES)[number]
+
+export type RoleContext = {
+  readonly basis: RoleBasis
+  readonly product?: string
+  readonly note?: string
+  readonly conflict: boolean
 }

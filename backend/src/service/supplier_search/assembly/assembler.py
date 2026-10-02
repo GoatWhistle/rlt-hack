@@ -30,7 +30,7 @@ class CandidateAssembler:
         history = enrichment.history_of(supplier.supplier_id)
         current = enrichment.current_of(supplier.supplier_id)
         matches = self._resolve_matches(fused, items, used, history.item_ids)
-        role = assess_role((*current, *used))
+        role = assess_role((*current, *used), supplier)
         return CandidateDraft(
             supplier=supplier,
             role=role.role,
@@ -44,6 +44,7 @@ class CandidateAssembler:
             history=history,
             highlights=self._highlights.compose(supplier, matches, used, history, len(items)),
             enrichment_failed=enrichment.degraded,
+            role_context=role.context,
         )
 
     def _used_cards(

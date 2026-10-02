@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useRegionText, useRoleLabel } from "@/entities/evidence/labels"
 import { ContactList } from "@/entities/evidence/ui/contact-list"
+import { RoleBasisNote } from "@/entities/evidence/ui/role-basis"
 import { SourceLine } from "@/entities/evidence/ui/source-line"
 import type { SupplierProfile } from "@/entities/supplier/model"
 import { useSupplierProfile } from "@/entities/supplier/queries"
@@ -30,7 +31,12 @@ function Profile({ profile }: { readonly profile: SupplierProfile }) {
     {
       key: "basis",
       term: t("roleBasis"),
-      value: profile.roleSource ? <SourceLine source={profile.roleSource} /> : t("noRoleBasis"),
+      value: (
+        <>
+          {profile.roleSource ? <SourceLine source={profile.roleSource} /> : t("noRoleBasis")}
+          <RoleBasisNote context={profile.roleContext} />
+        </>
+      ),
     },
   ]
   return (

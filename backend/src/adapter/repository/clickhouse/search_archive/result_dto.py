@@ -19,8 +19,16 @@ from src.adapter.repository.clickhouse.search_archive.query_dto import (
 )
 from src.adapter.repository.errors import CorruptRecordError
 from src.models.candidate import SupplierCandidate
-from src.models.enums import CandidateStatus, CheckReason, CompanyRole, Novelty, WarningCode
+from src.models.enums import (
+    CandidateStatus,
+    CheckReason,
+    CompanyRole,
+    Novelty,
+    RoleBasis,
+    WarningCode,
+)
 from src.models.errors import DomainError
+from src.models.role_context import RoleContext
 from src.models.search_result import PipelineInfo, SearchResult, SearchWarning
 
 PAYLOAD_VERSION = 2
@@ -39,6 +47,10 @@ class CandidateDto(FrozenDto):
     history: HistoryDto
     highlights: tuple[HighlightDto, ...]
     novelty: Novelty = Novelty.UNKNOWN
+    role_basis: RoleBasis = RoleBasis.NONE
+    role_product: str = ""
+    role_note: str = ""
+    role_conflict: bool = False
 
     @classmethod
     def from_domain(cls, candidate: SupplierCandidate) -> Self:
@@ -54,6 +66,10 @@ class CandidateDto(FrozenDto):
             history=HistoryDto.from_domain(candidate.history),
             highlights=tuple(HighlightDto.from_domain(item) for item in candidate.highlights),
             novelty=candidate.novelty,
+            role_basis=candidate.role_context.basis,
+            role_product=candidate.role_context.product,
+            role_note=candidate.role_context.note,
+            role_conflict=candidate.role_context.conflict,
         )
 
     def to_domain(self) -> SupplierCandidate:
@@ -70,6 +86,9 @@ class CandidateDto(FrozenDto):
             history=self.history.to_domain(),
             highlights=tuple(item.to_domain() for item in self.highlights),
             novelty=self.novelty,
+            role_context=RoleContext(
+                self.role_basis, self.role_product, self.role_note, self.role_conflict
+            ),
         )
 
 

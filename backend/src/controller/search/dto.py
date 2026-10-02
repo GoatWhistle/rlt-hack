@@ -20,6 +20,7 @@ from src.models.enums import (
     Novelty,
     PurchaseOutcome,
     RequirementStatus,
+    RoleBasis,
     SearchOrigin,
     SourceType,
     WarningCode,
@@ -180,6 +181,10 @@ class CandidateDto(CamelModel):
     contacts: ContactsDto
     origins: list[CandidateOrigin]
     novelty: Novelty
+    role_basis: RoleBasis
+    role_product: str | None
+    role_note: str | None
+    role_conflict: bool
 
 
 class PipelineDto(CamelModel):
