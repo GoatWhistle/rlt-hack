@@ -34,7 +34,7 @@ export function SearchExportDialog({ open, onClose, result, chosen }: SearchExpo
   const count = choice.scope === "shortlist" ? known.length : result.candidates.length
 
   function download() {
-    const name = searchFileName(result.searchId)
+    const name = searchFileName(result.query.text, result.createdAt)
     const kept = choice.scope === "shortlist" ? known : undefined
     saveTextFile(name, searchCsv(result, labels, kept), CSV_TYPE)
     toast.show({ tone: "success", message: t("search.done", { name }) })

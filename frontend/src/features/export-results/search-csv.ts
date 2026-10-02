@@ -1,4 +1,5 @@
 import type { SearchResult } from "@/entities/search/model"
+import { slugOf } from "@/shared/download/slug"
 import { CODE_SEPARATOR, type CsvLabels, NOTE_SEPARATOR, SUMMARY_SEPARATOR, toCsv } from "./csv"
 
 export const SEARCH_COLUMNS = [
@@ -63,6 +64,9 @@ export function searchCsv(
   return toCsv(SEARCH_COLUMNS, rows)
 }
 
-export function searchFileName(searchId: string): string {
-  return `search-${searchId.replace(/[^\w-]+/g, "-")}-suppliers.csv`
+export const FILE_PREFIX = "lotive"
+
+export function searchFileName(text: string, createdAt: string): string {
+  const day = createdAt.slice(0, 10)
+  return `${[FILE_PREFIX, slugOf(text) || "search", day].filter(Boolean).join("-")}.csv`
 }
