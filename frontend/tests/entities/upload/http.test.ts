@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { createHttpGateway, HTTP_MAX_NOTICES, UPLOADS_PATH } from "@/entities/upload/http"
+import { createHttpGateway, UPLOADS_PATH } from "@/entities/upload/http"
 import { parseUploadSummary } from "@/entities/upload/parse"
 import type { HttpClient } from "@/shared/api/http-client"
 import { PayloadFormatError } from "@/shared/api/payload"
@@ -38,8 +38,6 @@ describe("the http gateway", () => {
   it("lists, reads and creates uploads", async () => {
     const http = client({ uploads: [summary] })
     const gateway = createHttpGateway(http)
-    expect(gateway.maxNotices).toBe(HTTP_MAX_NOTICES)
-    expect(HTTP_MAX_NOTICES).toBe(20)
     expect(await gateway.list()).toEqual([{ ...summary, stored: true }])
     expect(http.get).toHaveBeenCalledWith(UPLOADS_PATH, expect.anything())
 

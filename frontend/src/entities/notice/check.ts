@@ -13,10 +13,6 @@ export const PREVIEW_ROWS = 5
 const LOT_ID = /^[0-9A-Za-z_-]+$/
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}/
 
-export type CheckOptions = {
-  readonly maxRows: number
-}
-
 type Cells = (column: NoticeColumn) => string
 
 function normalizeHeader(cell: string): string {
@@ -64,7 +60,7 @@ function readNotice(row: number, cell: Cells, seen: Set<string>): Notice | RowIs
   )
 }
 
-export function checkNotices(text: string, fileName: string, options: CheckOptions): FileCheck {
+export function checkNotices(text: string, fileName: string): FileCheck {
   const records = readCsv(text)
   const [head, ...data] = records
   if (!head) return { ok: false, fileName, problem: "empty", missing: [] }
@@ -72,9 +68,6 @@ export function checkNotices(text: string, fileName: string, options: CheckOptio
   const missing = REQUIRED_COLUMNS.filter((column) => !header.includes(column))
   if (missing.length > 0) return { ok: false, fileName, problem: "missingColumns", missing }
   if (data.length === 0) return { ok: false, fileName, problem: "empty", missing: [] }
-  if (data.length > options.maxRows) {
-    return { ok: false, fileName, problem: "tooManyRows", missing: [], limit: options.maxRows }
-  }
 
   const known = new Set<string>(KNOWN_COLUMNS)
   const notices: Notice[] = []

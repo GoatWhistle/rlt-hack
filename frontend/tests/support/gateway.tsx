@@ -58,7 +58,6 @@ export function uploadDetail(
 
 export function stubGateway(overrides: Partial<UploadGateway> = {}): UploadGateway {
   return {
-    maxNotices: 100,
     list: vi.fn(async () => []),
     get: vi.fn(async () => uploadDetail([])),
     create: vi.fn(async () => uploadSummary()),

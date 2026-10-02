@@ -4,7 +4,6 @@ import { useNavigate } from "react-router"
 import { checkNotices } from "@/entities/notice/check"
 import { decodeFile } from "@/entities/notice/decode"
 import type { CheckedFile, FileCheck } from "@/entities/notice/model"
-import { useUploadGateway } from "@/entities/upload/gateway-context"
 import { isProcessing, type UploadSummary } from "@/entities/upload/model"
 import { useCreateUpload } from "@/entities/upload/queries"
 import { uploadPath } from "@/shared/config/paths"
@@ -24,9 +23,9 @@ type Phase =
   | { readonly kind: "reading" }
   | { readonly kind: "checked"; readonly file: File; readonly check: FileCheck }
 
-export async function inspectFile(file: File, maxRows: number): Promise<FileCheck> {
+export async function inspectFile(file: File): Promise<FileCheck> {
   try {
-    return checkNotices(await decodeFile(file), file.name, { maxRows })
+    return checkNotices(await decodeFile(file), file.name)
   } catch {
     return { ok: false, fileName: file.name, problem: "unreadable", missing: [] }
   }
@@ -120,7 +119,6 @@ export type UploadDialogProps = {
 
 export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) {
   const { t } = useTranslation("uploads")
-  const gateway = useUploadGateway()
   const create = useCreateUpload(useFinish(open))
   const errorMessage = useErrorMessage()
   const [phase, setPhase] = useState<Phase>(
@@ -130,17 +128,17 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
   useEffect(() => {
     if (!initialFile) return
     let active = true
-    void inspectFile(initialFile, gateway.maxNotices).then((check) => {
+    void inspectFile(initialFile).then((check) => {
       if (active) setPhase({ kind: "checked", file: initialFile, check })
     })
     return () => {
       active = false
     }
-  }, [initialFile, gateway.maxNotices])
+  }, [initialFile])
 
   async function read(file: File) {
     setPhase({ kind: "reading" })
-    setPhase({ kind: "checked", file, check: await inspectFile(file, gateway.maxNotices) })
+    setPhase({ kind: "checked", file, check: await inspectFile(file) })
   }
 
   function start(file: File, check: FileCheck) {

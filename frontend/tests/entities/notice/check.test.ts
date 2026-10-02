@@ -50,7 +50,6 @@ describe("checkNotices", () => {
         "nope;103;1;Name;;;",
       ),
       "notices.csv",
-      { maxRows: 10 },
     )
     if (!check.ok) throw new Error("expected an accepted file")
     expect(check.total).toBe(7)
@@ -90,22 +89,25 @@ describe("checkNotices", () => {
     })
   })
 
-  it("rejects empty files, missing columns and files over the limit", () => {
-    expect(checkNotices("", "a.csv", { maxRows: 5 })).toMatchObject({ problem: "empty" })
-    expect(checkNotices(file(), "a.csv", { maxRows: 5 })).toMatchObject({ problem: "empty" })
-    expect(checkNotices("lot_id;price\n1;2", "a.csv", { maxRows: 5 })).toEqual({
+  it("rejects empty files and missing columns", () => {
+    expect(checkNotices("", "a.csv")).toMatchObject({ problem: "empty" })
+    expect(checkNotices(file(), "a.csv")).toMatchObject({ problem: "empty" })
+    expect(checkNotices("lot_id;price\n1;2", "a.csv")).toEqual({
       ok: false,
       fileName: "a.csv",
       problem: "missingColumns",
       missing: ["procedure_name"],
     })
-    expect(
-      checkNotices(file("2025-01-01;1;1;A;;;", "2025-01-01;2;1;B;;;"), "a.csv", { maxRows: 1 }),
-    ).toMatchObject({ problem: "tooManyRows", limit: 1 })
+  })
+
+  it("accepts more than twenty rows", () => {
+    const rows = Array.from({ length: 25 }, (_, index) => `2025-01-01;${index};1;Item;;;`)
+    const check = checkNotices(file(...rows), "many.csv")
+    expect(check.ok && check.total).toBe(25)
   })
 
   it("falls back to the subject when the name is empty", () => {
-    const check = checkNotices(file("2025-01-01;1;;;Subject only;;"), "a.csv", { maxRows: 5 })
+    const check = checkNotices(file("2025-01-01;1;;;Subject only;;"), "a.csv")
     expect(check.ok && check.notices[0]?.title).toBe("Subject only")
   })
 })
