@@ -15,7 +15,8 @@ WINS_HALF_SATURATION = 2.0
 
 
 def coverage_score(matches: Sequence[ProductMatch], total_items: int) -> Score:
-    return Score.ratio(len({match.item_id for match in matches}), total_items)
+    confirmed = {match.item_id for match in matches if match.basis != MatchBasis.INFERRED}
+    return Score.ratio(len(confirmed), total_items)
 
 
 def evidence_score(matches: Sequence[ProductMatch]) -> Score:

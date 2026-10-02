@@ -5,7 +5,7 @@ from src.models.catalog.supplier import Supplier
 from src.models.company.evidence import Evidence
 from src.models.company.offer_evidence import OfferEvidence
 from src.models.company.purchase import PurchaseSummary
-from src.models.enums import CompanyRole
+from src.models.enums import CompanyRole, MatchBasis
 from src.models.ranking.scoring import ChannelRank, Score
 from src.models.search.candidate import Highlight, ProductMatch
 
@@ -35,4 +35,4 @@ class CandidateDraft:
 
     @property
     def coverage(self) -> float:
-        return len(self.matches) / self.total_items
+        return sum(match.basis != MatchBasis.INFERRED for match in self.matches) / self.total_items

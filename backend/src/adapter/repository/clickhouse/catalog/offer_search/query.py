@@ -7,7 +7,7 @@ from src.models.search.search import SearchFilters
 
 SEARCH_COLUMN = "o.search_text"
 SELECT_CANDIDATES = (
-    "SELECT o.offer_id, o.supplier_id, o.search_terms, {columns} "
+    "SELECT o.offer_id, o.supplier_id, o.search_terms, o.name, {columns} "
     "FROM {db}.offers_current AS o {join}"
     "WHERE o.availability != 'unavailable' AND isNotNull(o.supplier_id) "
     "AND {matched} {conditions}"

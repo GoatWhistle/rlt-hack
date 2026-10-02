@@ -11,6 +11,7 @@ class ItemHit:
     relevance: float
     offer_ids: tuple[UUID, ...] = ()
     lot_ids: tuple[str, ...] = ()
+    inferred_offer_ids: tuple[UUID, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.item_id:

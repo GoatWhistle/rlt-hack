@@ -26,6 +26,7 @@ class OfferMatch:
     supplier_id: UUID
     length: int
     flags: tuple[bool, ...]
+    name: str
 
 
 class ClickHouseLexicalRetriever:
@@ -57,17 +58,27 @@ class ClickHouseLexicalRetriever:
         query = candidate_query(self._db, terms, request.query.filters, self._pool)
         rows = await self._gateway.select(query.statement, query.parameters)
         return [
-            OfferMatch(to_uuid(row[0]), to_uuid(row[1]), int(str(row[2])), flags_of(row[-1]))
+            OfferMatch(
+                to_uuid(row[0]), to_uuid(row[1]), int(str(row[2])), flags_of(row[-1]), str(row[3])
+            )
             for row in rows
         ]
 
     def _tally(self, items: Sequence[QueryItem], pools: Sequence[list[OfferMatch]]) -> HitTally:
         tally = HitTally(accumulate=False)
         for item, pool in zip(items, pools, strict=True):
+            query_terms = set(self._analyzer.analyze(item.name))
             scores = presence_relevance(
                 [offer.flags for offer in pool], [offer.length for offer in pool]
             )
             for offer, score in zip(pool, scores, strict=True):
-                if score > 0:
-                    tally.add_offer(offer.supplier_id, item.item_id, offer.offer_id, score)
+                title_terms = set(self._analyzer.analyze(offer.name))
+                if score > 0 and query_terms & title_terms:
+                    tally.add_offer(
+                        offer.supplier_id,
+                        item.item_id,
+                        offer.offer_id,
+                        score,
+                        inferred=query_terms != title_terms,
+                    )
         return tally

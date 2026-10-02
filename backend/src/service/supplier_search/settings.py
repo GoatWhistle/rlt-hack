@@ -20,7 +20,7 @@ class ScoreWeights:
 
 @dataclass(frozen=True, slots=True)
 class SearchSettings:
-    pipeline_version: str = "search-v1"
+    pipeline_version: str = "search-v2-evidence"
     timeout_seconds: float = 15.0
     archive_timeout_seconds: float = 5.0
     retrieval_depth_factor: int = 3

@@ -11,6 +11,7 @@ class _ItemTally:
     relevance: float = 0.0
     offers: dict[UUID, float] = field(default_factory=dict)
     lots: dict[str, float] = field(default_factory=dict)
+    inferred: set[UUID] = field(default_factory=set)
 
 
 def _top[K](scores: dict[K, float], size: int) -> tuple[K, ...]:
@@ -24,8 +25,20 @@ class HitTally:
         self._refs = refs_per_item
         self._suppliers: dict[UUID, dict[str, _ItemTally]] = {}
 
-    def add_offer(self, supplier_id: UUID, item_id: str, offer_id: UUID, score: float) -> None:
+    def add_offer(
+        self,
+        supplier_id: UUID,
+        item_id: str,
+        offer_id: UUID,
+        score: float,
+        *,
+        inferred: bool = False,
+    ) -> None:
         tally = self._entry(supplier_id, item_id, score)
+        if inferred and offer_id not in tally.offers:
+            tally.inferred.add(offer_id)
+        elif not inferred:
+            tally.inferred.discard(offer_id)
         tally.offers[offer_id] = max(score, tally.offers.get(offer_id, 0.0))
 
     def add_lot(self, supplier_id: UUID, item_id: str, lot_id: str, score: float) -> None:
@@ -63,6 +76,11 @@ class HitTally:
                 relevance=tally.relevance,
                 offer_ids=_top(tally.offers, self._refs),
                 lot_ids=_top(tally.lots, self._refs),
+                inferred_offer_ids=tuple(
+                    offer_id
+                    for offer_id in _top(tally.offers, self._refs)
+                    if offer_id in tally.inferred
+                ),
             )
             for item_id, tally in sorted(items.items())
         )

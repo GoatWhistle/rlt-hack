@@ -20,8 +20,14 @@ class _Accumulator:
         self.channels.append(ChannelRank(channel, hit.rank))
         for item in hit.items:
             refs = self.items.get(item.item_id, ItemRefs())
-            self.items[item.item_id] = refs.merge(
-                item.offer_ids, item.lot_ids, inferred=channel == RetrievalChannel.CATALOG_VECTOR
+            inferred = set(item.inferred_offer_ids)
+            if channel == RetrievalChannel.CATALOG_VECTOR:
+                inferred.update(item.offer_ids)
+            confirmed = tuple(offer_id for offer_id in item.offer_ids if offer_id not in inferred)
+            self.items[item.item_id] = refs.merge(confirmed, item.lot_ids).merge(
+                tuple(offer_id for offer_id in item.offer_ids if offer_id in inferred),
+                (),
+                inferred=True,
             )
 
 
