@@ -17,6 +17,7 @@ TABLES = (
     "searches",
 )
 SEED_SETTINGS = {"max_query_size": "10000000", "max_insert_threads": "4"}
+REFRESHED_VIEWS = ("lot_texts_refresh", "supplier_lots_refresh")
 
 
 def _statements(volume: Volume) -> list[tuple[str, Callable[[], str]]]:
@@ -51,4 +52,9 @@ async def seed(clickhouse: ClickHouseHttp, volume: Volume, reset: bool) -> dict[
         await clickhouse.execute(statement(), SEED_SETTINGS)
         await clickhouse.execute(f"OPTIMIZE TABLE {DB}.{table} FINAL")
         timings[table] = round(time.perf_counter() - started, 2)
+    for view in REFRESHED_VIEWS:
+        started = time.perf_counter()
+        await clickhouse.execute(f"SYSTEM REFRESH VIEW {DB}.{view}")
+        await clickhouse.execute(f"SYSTEM WAIT VIEW {DB}.{view}")
+        timings[view] = round(time.perf_counter() - started, 2)
     return timings
