@@ -56,9 +56,12 @@
   --z-menu: 300;
   --z-toast: 500;
   --layout-gutter: clamp(var(--space-4), 0.5rem + 2vw, var(--space-7));
+  --page-max: 120rem;
+  --page-frame: calc(var(--page-max) + 2 * var(--layout-gutter));
   --pane-products: clamp(15rem, 19vw, 24rem);
   --pane-companies: clamp(18rem, 23vw, 28rem);
   --pane-evidence-max: 54rem;
+  --pane-evidence: minmax(0, 1fr);
   --pane-offset: var(--space-4);
   --rail-width: 3.5rem;
   --rail-max-height: 36rem;
@@ -79,8 +82,8 @@
   --score-width: 4ch;
   --offer-image: 3.5rem;
   --offer-min: 18rem;
+  --offer-track: max(var(--offer-min), calc((100% - var(--space-3)) / 2));
   --offer-ribbon: 85%;
   --toast-lift: 0rem;
-  --separator-width: calc(var(--space-1) + 2 * var(--space-2));
   --dock-height: calc(var(--target-touch) + 2 * var(--space-2) + 2 * var(--line-width));
 }

@@ -7,6 +7,7 @@ import { searchPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { Button } from "@/shared/ui/button"
 import { CountBadge } from "@/shared/ui/count-badge"
+import { FactRow } from "@/shared/ui/fact-row"
 import { Icon } from "@/shared/ui/icon"
 import { TextButton } from "@/shared/ui/text-button"
 import { VisuallyHidden } from "@/shared/ui/visually-hidden"
@@ -87,10 +88,12 @@ function Selection({
   return (
     <span className={styles.selection}>
       <span aria-live="polite">
-        {candidate("selection.count", { count: chosen })}
-        {chosen < COMPARE_FROM ? (
-          <span className={styles.more}> · {candidate("selection.pickMore")}</span>
-        ) : null}
+        <FactRow>
+          <span>{candidate("selection.count", { count: chosen })}</span>
+          {chosen < COMPARE_FROM ? (
+            <span className={styles.more}>{candidate("selection.pickMore")}</span>
+          ) : null}
+        </FactRow>
       </span>
       <TextButton className={styles.clear} onClick={onClear}>
         {candidate("selection.clear")}

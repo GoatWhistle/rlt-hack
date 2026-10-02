@@ -1,11 +1,13 @@
 import { clsx } from "clsx"
 import { type RefObject, useEffect } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { Link } from "react-router"
 import { LotStatusTag } from "@/entities/upload/lot-status"
 import type { LotSummary } from "@/entities/upload/model"
 import { lotPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
+import { FactRow } from "@/shared/ui/fact-row"
+import { MetaChip, MetaChips } from "@/shared/ui/meta-chip"
 import { VisuallyHidden } from "@/shared/ui/visually-hidden"
 import styles from "./styles.module.css"
 
@@ -27,20 +29,32 @@ type LotRowProps = {
   readonly onToggle: () => void
 }
 
+function CompactFacts({ lot, amount }: { readonly lot: LotSummary; readonly amount?: string }) {
+  const { t } = useTranslation("lots")
+  const empty = lot.status === "queued" || lot.status === "failed"
+  const count = (key: "productCount" | "candidateCount", value: number) => (
+    <Trans t={t} i18nKey={`table.${key}`} count={value} components={{ b: <b /> }} />
+  )
+  return (
+    <MetaChips>
+      {amount ? (
+        <MetaChip>
+          <b>{amount}</b>
+        </MetaChip>
+      ) : (
+        <MetaChip tone="muted">{t("table.priceMissing")}</MetaChip>
+      )}
+      {empty ? null : <MetaChip>{count("productCount", lot.products)}</MetaChip>}
+      {empty ? null : <MetaChip>{count("candidateCount", lot.candidates)}</MetaChip>}
+    </MetaChips>
+  )
+}
+
 function LotRow({ lot, href, selected, onToggle }: LotRowProps) {
   const { t } = useTranslation("lots")
   const { price, number, date } = useFormatters()
   const empty = lot.status === "queued" || lot.status === "failed"
   const amount = lot.startPrice === undefined ? undefined : price(lot.startPrice)
-  const compact = [
-    amount ?? t("table.priceMissing"),
-    ...(empty
-      ? []
-      : [
-          t("table.productCount", { count: lot.products }),
-          t("table.candidateCount", { count: lot.candidates }),
-        ]),
-  ].join(" · ")
   return (
     <tr className={styles.row} data-selected={selected}>
       <td className={styles.check}>
@@ -59,15 +73,18 @@ function LotRow({ lot, href, selected, onToggle }: LotRowProps) {
           {lot.title}
         </Link>
         <span className={styles.meta}>
-          {t("table.lot")} <span className={styles.code}>{lot.id}</span>
-          {" · "}
-          {lot.customerInn ? (
-            <>
-              {t("table.customer")} <span className={styles.code}>{lot.customerInn}</span>
-            </>
-          ) : (
-            t("table.noCustomer")
-          )}
+          <FactRow>
+            <span>
+              {t("table.lot")} <span className={styles.code}>{lot.id}</span>
+            </span>
+            {lot.customerInn ? (
+              <span>
+                {t("table.customer")} <span className={styles.code}>{lot.customerInn}</span>
+              </span>
+            ) : (
+              <span>{t("table.noCustomer")}</span>
+            )}
+          </FactRow>
         </span>
       </td>
       <td className={clsx(styles.subject, styles.extra)}>
@@ -86,7 +103,9 @@ function LotRow({ lot, href, selected, onToggle }: LotRowProps) {
       <td className={clsx(styles.number, styles.wide)}>
         {empty ? t("table.pending") : number(lot.candidates)}
       </td>
-      <td className={styles.compact}>{compact}</td>
+      <td className={styles.compact}>
+        <CompactFacts lot={lot} amount={amount} />
+      </td>
     </tr>
   )
 }

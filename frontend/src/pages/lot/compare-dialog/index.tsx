@@ -8,6 +8,7 @@ import {
   CompareTable,
   MatchValue,
   MissingNames,
+  ValueLines,
 } from "@/features/compare-candidates"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { SegmentMeter } from "../segment-meter"
@@ -38,8 +39,8 @@ function useCriteria(products: readonly Product[]): CompareCriterion<Column>[] {
   }
   const contacts = (company: Company) => {
     const { site, email, phone } = company.contacts ?? {}
-    const given = [site, email, phone].filter(Boolean)
-    return given.length > 0 ? given.join(" · ") : t("compare.unknown")
+    const given = [site, email, phone].filter((value): value is string => Boolean(value))
+    return given.length > 0 ? <ValueLines lines={given} /> : t("compare.unknown")
   }
   return [
     {

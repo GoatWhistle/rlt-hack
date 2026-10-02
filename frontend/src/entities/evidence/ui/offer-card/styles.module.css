@@ -72,31 +72,9 @@
 }
 
 .facts {
-  display: flex;
-  flex-wrap: wrap;
-  margin-inline-start: calc(var(--separator-width) * -1);
-  clip-path: inset(0 0 0 var(--separator-width));
   color: var(--text-secondary);
   font-size: var(--text-xs);
   line-height: var(--leading-normal);
-}
-
-.fact,
-.relationText > * {
-  position: relative;
-  padding-inline-start: var(--separator-width);
-}
-
-.fact::before,
-.relationText > ::before {
-  position: absolute;
-  inset-inline-start: 0;
-  inline-size: var(--separator-width);
-  color: var(--text-muted);
-  font-family: var(--font-sans);
-  font-weight: var(--weight-regular);
-  text-align: center;
-  content: "·";
 }
 
 .code {
@@ -152,15 +130,11 @@
 }
 
 .relationText {
-  display: flex;
-  flex-wrap: wrap;
   min-width: 0;
-  margin-inline-start: calc(var(--separator-width) * -1);
-  clip-path: inset(0 0 0 var(--separator-width));
   overflow-wrap: anywhere;
 }
 
-.relationText > :last-child {
+.basis {
   font-weight: var(--weight-medium);
 }
 

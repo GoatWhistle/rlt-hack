@@ -1,9 +1,10 @@
 {
   "card": {
-    "similar_one": "{{count, number}} similar",
-    "similar_other": "{{count, number}} similar",
-    "wins_one": "{{count, number}} win",
-    "wins_other": "{{count, number}} wins",
+    "similar_one": "<b>{{count, number}}</b> similar",
+    "similar_other": "<b>{{count, number}}</b> similar",
+    "wins_one": "<b>{{count, number}}</b> win",
+    "wins_other": "<b>{{count, number}}</b> wins",
+    "noHistory": "No similar purchases",
     "rank": "rank {{index, number}}",
     "moreReasons": "+{{count, number}}",
     "chosen": "Chosen"
@@ -45,11 +46,9 @@
     "matchesHint": "Price lists and catalogs show the company sells the item. Confirm stock and delivery time with the company.",
     "clarifyTitle": "What to clarify with the company",
     "historyTitle": "Purchase history",
-    "historyAside_one": "{{count, number}} similar · wins: {{wins, number}}",
-    "historyAside_other": "{{count, number}} similar · wins: {{wins, number}}",
     "historyNote": "Past participation and wins do not guarantee a future delivery.",
     "noRecords": "No purchase examples with a source.",
-    "lot": "Lot {{id}} · {{title}}",
+    "lot": "Lot {{id}}: {{title}}",
     "recordItems": "Items: {{names}}",
     "companyTitle": "Company and contacts",
     "role": "Role",
@@ -97,7 +96,7 @@
     "clear": "Clear",
     "compareLabel_one": "Compare chosen: {{count, number}}",
     "compareLabel_other": "Compare chosen: {{count, number}}",
-    "pickMore": "pick one more to compare"
+    "pickMore": "Pick one more to compare"
   },
   "compare": {
     "title": "Compare candidates",

@@ -76,6 +76,17 @@
   gap: var(--space-2);
 }
 
+.lines {
+  display: grid;
+  gap: var(--space-0-5);
+}
+
+.detail {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+}
+
 .note {
   color: var(--warning-text);
   font-size: var(--text-2xs);

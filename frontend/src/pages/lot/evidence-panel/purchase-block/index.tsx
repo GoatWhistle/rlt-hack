@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next"
+import { HistoryChips } from "@/entities/evidence/ui/history-chips"
 import { PurchaseRow } from "@/entities/evidence/ui/purchase-row"
 import type { Company } from "@/entities/recommendation/model"
 import { Caption } from "@/shared/ui/caption"
@@ -13,12 +14,11 @@ export function PurchaseBlock({ company }: { readonly company: Company }) {
     <Fold
       title={t("evidence.purchasesTitle")}
       aside={
-        company.similarPurchases === null || company.wins === null
-          ? t("compare.unknown")
-          : t("evidence.purchasesSummary", {
-              count: company.similarPurchases,
-              wins: company.wins,
-            })
+        company.similarPurchases === null || company.wins === null ? (
+          t("compare.unknown")
+        ) : (
+          <HistoryChips similar={company.similarPurchases} wins={company.wins} />
+        )
       }
     >
       {company.purchases.length > 0 ? (

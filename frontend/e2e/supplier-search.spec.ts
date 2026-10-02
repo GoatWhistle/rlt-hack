@@ -89,7 +89,7 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
   await showView(page, /^grounds$/i)
   await expect(page.getByRole("article")).toBeVisible()
-  await page.getByRole("link", { name: /purchases · notices-sample\.csv/i }).click()
+  await page.getByRole("link", { name: /purchases from notices-sample\.csv/i }).click()
   await expect(page.getByRole("searchbox")).toHaveValue("test_paper")
 })
 

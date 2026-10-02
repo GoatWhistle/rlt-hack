@@ -1,12 +1,8 @@
 .columns {
   --column-list: var(--pane-products);
   --column-candidates: var(--pane-companies);
-  --column-evidence: var(--pane-evidence-max);
   display: grid;
-  grid-template-columns: var(--column-list) var(--column-candidates) minmax(
-      0,
-      var(--column-evidence)
-    );
+  grid-template-columns: var(--column-list) var(--column-candidates) var(--pane-evidence);
   align-items: start;
   gap: var(--space-4);
 }
@@ -37,12 +33,10 @@
 
   .columns[data-list="folded"] {
     --column-list: var(--rail-width);
-    --column-evidence: 1fr;
   }
 
   .columns[data-candidates="folded"] {
     --column-candidates: var(--rail-width);
-    --column-evidence: 1fr;
   }
 }
 

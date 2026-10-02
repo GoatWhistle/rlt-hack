@@ -26,7 +26,7 @@
     "evidence": "Основания"
   },
   "header": {
-    "back": "Закупки · {{file}}",
+    "back": "Закупки из {{file}}",
     "neighbours": "Соседние закупки",
     "prev": "Предыдущая закупка",
     "next": "Следующая закупка",
@@ -108,10 +108,6 @@
       "registry": "Реестр"
     },
     "purchasesTitle": "Опыт закупок",
-    "purchasesSummary_one": "{{count, number}} похожая · побед: {{wins, number}}",
-    "purchasesSummary_few": "{{count, number}} похожие · побед: {{wins, number}}",
-    "purchasesSummary_many": "{{count, number}} похожих · побед: {{wins, number}}",
-    "purchasesSummary_other": "{{count, number}} похожей · побед: {{wins, number}}",
     "outcome": {
       "winner": "Победитель",
       "participant": "Участник"
@@ -185,17 +181,9 @@
     "wins": "Побед в архиве",
     "category": "Категория ОКПД2",
     "reason": "Описание запроса сопоставлено с профилем поставщика. Ниже — конкретные закупки, на которых основан его опыт в этой категории.",
-    "customer": "Заказчик · ИНН {{inn}}",
+    "customer": "ИНН заказчика {{inn}}",
     "openSource": "Открыть архивную запись ↗",
-    "scope": "Источник — архив закупок. Победа подтверждает результат процедуры; наличие товара и условия новой поставки согласуются отдельно.",
-    "purchases_one": "{{count, number}} закупка",
-    "winsCount_one": "{{count, number}} победа",
-    "purchases_few": "{{count, number}} закупки",
-    "winsCount_few": "{{count, number}} победы",
-    "purchases_many": "{{count, number}} закупок",
-    "winsCount_many": "{{count, number}} побед",
-    "purchases_other": "{{count, number}} закупки",
-    "winsCount_other": "{{count, number}} победы"
+    "scope": "Источник — архив закупок. Победа подтверждает результат процедуры; наличие товара и условия новой поставки согласуются отдельно."
   },
   "ranking": {
     "title": "Что повысило позицию в подборке",
@@ -206,7 +194,7 @@
     "customer": "Опыт закупок у этого заказчика",
     "price": "Соответствие масштабу закупки",
     "categoryCount": "Закупок в этой категории: {{count, number}}",
-    "region": "Регистрация в регионе поставки · реестр МСП"
+    "region": "Регистрация в регионе поставки по реестру МСП"
   },
   "archive": {
     "back": "К рекомендации",

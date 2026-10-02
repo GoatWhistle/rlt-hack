@@ -5,6 +5,7 @@ import { UPLOADS_PATH } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { BackLink } from "@/shared/ui/back-link"
 import { Button } from "@/shared/ui/button"
+import { FactRow } from "@/shared/ui/fact-row"
 import { Icon } from "@/shared/ui/icon"
 import { PageTitle } from "@/shared/ui/page-title"
 import styles from "./styles.module.css"
@@ -27,12 +28,13 @@ export function LotsHeader({ upload, onExport, status }: LotsHeaderProps) {
             {upload.fileName}
           </PageTitle>
           <p className={styles.meta}>
-            <span className={styles.full}>
-              {t("uploaded", { date: dateTime(upload.createdAt) })}
-            </span>
-            <span className={styles.short}>{date(upload.createdAt)}</span>
-            {" · "}
-            {t("notices", { count: upload.total })}
+            <FactRow>
+              <span className={styles.full}>
+                {t("uploaded", { date: dateTime(upload.createdAt) })}
+              </span>
+              <span className={styles.short}>{date(upload.createdAt)}</span>
+              <span>{t("notices", { count: upload.total })}</span>
+            </FactRow>
           </p>
         </div>
         <Button

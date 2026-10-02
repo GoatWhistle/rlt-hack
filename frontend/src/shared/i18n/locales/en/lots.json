@@ -40,14 +40,14 @@
     "published": "Published",
     "lot": "Lot",
     "customer": "customer INN",
-    "noCustomer": "customer not given",
+    "noCustomer": "Customer not given",
     "noPrice": "not given",
     "pending": "—",
-    "priceMissing": "price not given",
-    "productCount_one": "{{count, number}} item",
-    "productCount_other": "{{count, number}} items",
-    "candidateCount_one": "{{count, number}} candidate",
-    "candidateCount_other": "{{count, number}} candidates"
+    "priceMissing": "Price not given",
+    "productCount_one": "<b>{{count, number}}</b> item",
+    "productCount_other": "<b>{{count, number}}</b> items",
+    "candidateCount_one": "<b>{{count, number}}</b> candidate",
+    "candidateCount_other": "<b>{{count, number}}</b> candidates"
   },
   "status": {
     "queued": "Queued",

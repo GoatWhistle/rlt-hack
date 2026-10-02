@@ -52,7 +52,7 @@ describe("the purchases of a file", () => {
     expect(screen.getByRole("link", { name: "Page 1" })).toHaveAttribute("aria-current", "page")
     expect(screen.queryByRole("link", { name: en("pages.prev", "lots") })).toBeNull()
     const row = within(table).getByRole("row", { name: /Milk for schools/ })
-    expect(within(row).getByText("₽1,000 · 5 items · 3 candidates")).toBeInTheDocument()
+    expect(row).toHaveTextContent("₽1,000 5 items 3 candidates")
     expect(readLastUpload()).toBe("u1")
   })
 
@@ -146,7 +146,7 @@ describe("the purchases of a file", () => {
     const queued = screen.getByRole("row", { name: /Purchase 2/ })
     expect(within(queued).getByText(en("status.queued", "lots"))).toBeInTheDocument()
     expect(within(queued).getByText(en("table.noPrice", "lots"))).toBeInTheDocument()
-    expect(within(queued).getByText(/customer not given/)).toBeInTheDocument()
+    expect(within(queued).getByText(/customer not given/i)).toBeInTheDocument()
     expect(within(queued).getByText(en("table.priceMissing", "lots"))).toBeInTheDocument()
     await user.click(screen.getByText("1 row was not processed because of errors"))
     expect(screen.getByText("Row 7")).toBeVisible()

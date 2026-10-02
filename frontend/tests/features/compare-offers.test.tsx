@@ -63,7 +63,7 @@ describe("comparing offers", () => {
     )
     const buckwheat = screen.getByRole("row", { name: /^Buckwheat/ })
     const cells = within(buckwheat).getAllByRole("cell")
-    expect(cells[0]).toHaveTextContent("₽84.50 per kg · In stock")
+    expect(cells[0]).toHaveTextContent("₽84.50 per kg In stock")
     expect(cells[0]).toHaveTextContent(en("compare.best", "candidate"))
     expect(cells[1]).not.toHaveTextContent(en("compare.best", "candidate"))
     expect(cells[2]).toHaveTextContent(en("basis.inferred", "evidence"))

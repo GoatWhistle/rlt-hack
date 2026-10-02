@@ -26,7 +26,7 @@
     "evidence": "Grounds"
   },
   "header": {
-    "back": "Purchases · {{file}}",
+    "back": "Purchases from {{file}}",
     "neighbours": "Neighbouring purchases",
     "prev": "Previous purchase",
     "next": "Next purchase",
@@ -104,8 +104,6 @@
       "registry": "Registry"
     },
     "purchasesTitle": "Purchase history",
-    "purchasesSummary_one": "{{count, number}} similar · wins: {{wins, number}}",
-    "purchasesSummary_other": "{{count, number}} similar · wins: {{wins, number}}",
     "outcome": {
       "winner": "Winner",
       "participant": "Participant"
@@ -175,13 +173,9 @@
     "wins": "Archive wins",
     "category": "OKPD2 category",
     "reason": "The request description matches the supplier profile. The records below document their procurement experience in this category.",
-    "customer": "Customer · INN {{inn}}",
+    "customer": "Customer INN {{inn}}",
     "openSource": "Open archive record ↗",
-    "scope": "Source: procurement archive. A win confirms the procedure outcome; stock and terms for a new delivery are agreed separately.",
-    "purchases_one": "{{count, number}} purchase",
-    "winsCount_one": "{{count, number}} win",
-    "purchases_other": "{{count, number}} purchases",
-    "winsCount_other": "{{count, number}} wins"
+    "scope": "Source: procurement archive. A win confirms the procedure outcome; stock and terms for a new delivery are agreed separately."
   },
   "ranking": {
     "title": "What raised this supplier in the ranking",
@@ -192,7 +186,7 @@
     "customer": "Procurement history with this customer",
     "price": "Fit with the procurement budget",
     "categoryCount": "Procurements in this category: {{count, number}}",
-    "region": "Registered in the delivery region · MSP registry"
+    "region": "Registered in the delivery region, per the MSP registry"
   },
   "archive": {
     "back": "Back to recommendation",

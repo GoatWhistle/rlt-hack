@@ -6,6 +6,7 @@ import { ApiError } from "@/shared/api/api-error"
 import { Button, ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
+import { FactRow } from "@/shared/ui/fact-row"
 import { LoadingState } from "@/shared/ui/loading-state"
 import { SegmentedControl } from "@/shared/ui/segmented-control"
 import { PageSkeleton } from "@/shared/ui/skeleton"
@@ -115,5 +116,18 @@ describe("small primitives", () => {
     const shape = status.querySelector("[aria-hidden='true']")
     expect(shape).not.toBeNull()
     expect(shape?.children[0]?.children[1]?.children).toHaveLength(3)
+  })
+})
+
+describe("FactRow", () => {
+  it("puts plain spaces between facts and skips empty ones", () => {
+    const { container } = render(
+      <FactRow>
+        <span>Supplier</span>
+        {null}
+        <span>INN 7700004972</span>
+      </FactRow>,
+    )
+    expect(container.textContent).toBe("Supplier INN 7700004972")
   })
 })

@@ -1,15 +1,17 @@
 import type { KeyboardEvent } from "react"
 import { useTranslation } from "react-i18next"
-import { useHistoryLine, useStatusText } from "@/entities/evidence/candidate-labels"
+import { useStatusText } from "@/entities/evidence/candidate-labels"
 import { useInnText, useRoleLabel } from "@/entities/evidence/labels"
 import { countMatches } from "@/entities/evidence/model"
 import { useOfferText } from "@/entities/evidence/offer-labels"
 import type { CandidateView, ItemView, MatchView } from "@/entities/evidence/view"
 import { segmentsOf } from "@/entities/evidence/view"
 import { useFormatters } from "@/shared/i18n/formatters"
+import { FactRow } from "@/shared/ui/fact-row"
 import { Icon } from "@/shared/ui/icon"
 import { PickCard } from "@/shared/ui/pick-card"
 import { Tag } from "@/shared/ui/tag"
+import { HistoryChips } from "../history-chips"
 import { BasisMarker } from "../match-row"
 import { SegmentMeter } from "../segment-meter"
 import { StatusTag } from "../status-tag"
@@ -42,19 +44,17 @@ export function CandidateCard({
   const roleLabel = useRoleLabel()
   const innText = useInnText()
   const statusText = useStatusText()
-  const historyLine = useHistoryLine()
-  const history = historyLine(candidate)
+  const history = candidate.similarPurchases > 0 || candidate.wins > 0
   return (
     <PickCard
       title={candidate.name}
       subtitle={
-        <>
-          {roleLabel(candidate.role)}
-          {" · "}
+        <FactRow>
+          <span>{roleLabel(candidate.role)}</span>
           <span className={candidate.inn ? styles.inn : undefined}>
             {innText(candidate.inn)}
           </span>
-        </>
+        </FactRow>
       }
       rank={candidate.rank}
       rankLabel={t("card.rank", { index: candidate.rank })}
@@ -81,7 +81,11 @@ export function CandidateCard({
             </span>
           ) : null}
         </span>
-        {history ? <span className={styles.history}>{history}</span> : null}
+        {history ? (
+          <span className={styles.history}>
+            <HistoryChips similar={candidate.similarPurchases} wins={candidate.wins} />
+          </span>
+        ) : null}
       </span>
     </PickCard>
   )
@@ -92,14 +96,23 @@ function FocusLine({ match }: { readonly match: MatchView }) {
   const { date } = useFormatters()
   const offerText = useOfferText()
   const checkedAt = match.source?.checkedAt
+  const offer =
+    match.offer?.price !== undefined && match.basis !== "inferred" ? match.offer : undefined
   return (
     <span className={styles.focus} data-basis={match.basis}>
       <BasisMarker basis={match.basis} />
       <span className={styles.focusText}>
-        {match.offer?.price !== undefined && match.basis !== "inferred"
-          ? offerText.short(match.offer)
-          : evidence(`basis.${match.basis}`)}
-        {checkedAt ? ` · ${date(checkedAt)}` : null}
+        <FactRow>
+          {offer ? (
+            <span className={styles.price}>{offerText.price(offer)}</span>
+          ) : (
+            <span>{evidence(`basis.${match.basis}`)}</span>
+          )}
+          {offer ? (
+            <span>{offerText.availability(offer.availability ?? "unknown")}</span>
+          ) : null}
+          {checkedAt ? <span className={styles.date}>{date(checkedAt)}</span> : null}
+        </FactRow>
       </span>
     </span>
   )

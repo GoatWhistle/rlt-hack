@@ -8,6 +8,7 @@ import { useFormatters } from "@/shared/i18n/formatters"
 import { Button } from "@/shared/ui/button"
 import { Caption } from "@/shared/ui/caption"
 import { DoneNote } from "@/shared/ui/done-note"
+import { FactRow } from "@/shared/ui/fact-row"
 import { FileName } from "@/shared/ui/file-name"
 import { Icon } from "@/shared/ui/icon"
 import { PageTitle } from "@/shared/ui/page-title"
@@ -42,9 +43,10 @@ function UploadRow({ upload }: { readonly upload: UploadSummary }) {
           ) : null}
         </span>
         <span className={clsx(styles.meta, styles.compact)}>
-          {t("list.date", { date: dateTime(upload.createdAt) })}
-          {" · "}
-          {notices}
+          <FactRow>
+            <span>{t("list.date", { date: dateTime(upload.createdAt) })}</span>
+            <span>{notices}</span>
+          </FactRow>
         </span>
         <span className={clsx(styles.date, styles.wide)}>{dateTime(upload.createdAt)}</span>
         <span className={clsx(styles.count, styles.wide)}>

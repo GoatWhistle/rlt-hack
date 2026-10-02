@@ -5,6 +5,7 @@ import { cssModules } from "./css-modules.ts"
 import { cssMonoWeight } from "./css-mono-weight.ts"
 import { cssTransitions } from "./css-transitions.ts"
 import { cyrillic } from "./cyrillic.ts"
+import { dotSeparators } from "./dot-separators.ts"
 import { fileLength } from "./file-length.ts"
 import { jsxText } from "./jsx-text.ts"
 import { noComments } from "./no-comments.ts"
@@ -16,6 +17,7 @@ export const RULES: readonly Rule[] = [
   fileLength,
   noComments,
   cyrillic,
+  dotSeparators,
   packageSize,
   packageSubject,
   cssLiterals,

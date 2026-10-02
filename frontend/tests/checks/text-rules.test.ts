@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { cyrillic } from "../../scripts/checks/cyrillic.ts"
+import { dotSeparators } from "../../scripts/checks/dot-separators.ts"
 import { FILE_LINE_LIMIT, fileLength } from "../../scripts/checks/file-length.ts"
 import { jsxText } from "../../scripts/checks/jsx-text.ts"
 import { noComments } from "../../scripts/checks/no-comments.ts"
@@ -75,6 +76,33 @@ describe("cyrillic", () => {
         file("src/shared/i18n/locales/ru/x.ts", 'const a = "Привет"'),
         file("tests/x.test.ts", 'expect("Привет")'),
         file("src/a.ts", "const a = 1"),
+      ]),
+    ).toEqual([])
+  })
+})
+
+describe("dot separators", () => {
+  it("rejects middle dots and bullets in code, styles and dictionaries", () => {
+    const found = dotSeparators.check([
+      file("src/pages/a/index.tsx", 'const a = parts.join(" · ")\n'),
+      file("src/pages/a/styles.module.css", '.a::before { content: "•"; }\n'),
+      file("src/shared/i18n/locales/ru/a.json", '{ "a": "x ∙ y" }\n'),
+    ])
+    expect(found.map((violation) => violation.path)).toEqual([
+      "src/pages/a/index.tsx",
+      "src/pages/a/styles.module.css",
+      "src/shared/i18n/locales/ru/a.json",
+    ])
+    expect(found[0]?.message).toMatch(/line 1/)
+  })
+
+  it("accepts spaced items and files outside the sources", () => {
+    expect(
+      dotSeparators.check([
+        file("src/pages/a/index.tsx", 'const a = list(parts)\nconst b = "a. b"\n'),
+        file("src/shared/i18n/locales/en/a.json", '{ "a": "{{price}}, {{stock}}" }\n'),
+        file("tests/a.test.ts", 'expect("a · b")\n'),
+        file("DESIGN.md", "a · b\n"),
       ]),
     ).toEqual([])
   })

@@ -40,7 +40,7 @@ describe("the candidates column", () => {
     expect(north).toHaveAttribute("aria-pressed", "true")
     expect(within(north).getByText("4/5")).toBeInTheDocument()
     expect(within(north).getByText("+1 assumption")).toBeInTheDocument()
-    expect(within(north).getByText("11 similar · 4 wins")).toBeInTheDocument()
+    expect(north).toHaveTextContent("11 similar 4 wins")
     expect(
       within(north).getByRole("img", {
         name: "Match 5 of 5: in a price list — 1, in the catalog — 3, assumed — 1",
@@ -207,7 +207,7 @@ describe("choosing, comparing and the profile", () => {
     )
     expect(within(profile).getAllByRole("link", { name: /^Registry card/ })).toHaveLength(2)
     expect(within(profile).getByRole("link", { name: /^Price list/ })).toBeInTheDocument()
-    expect(within(profile).getByText("11 similar · wins: 4")).toBeInTheDocument()
+    expect(profile).toHaveTextContent("11 similar 4 wins")
   })
 
   it("says when a profile has no contacts, role basis or sources", async () => {

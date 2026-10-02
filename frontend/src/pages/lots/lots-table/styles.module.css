@@ -86,7 +86,7 @@
 
 .lot {
   width: 100%;
-  min-width: 18rem;
+  min-width: clamp(12rem, 25vw, 18rem);
 }
 
 .link {

@@ -16,6 +16,8 @@
   min-height: var(--header-height);
   align-items: stretch;
   gap: var(--space-5);
+  max-width: var(--page-frame);
+  margin-inline: auto;
   padding-inline: var(--layout-gutter);
 }
 
@@ -52,6 +54,8 @@
 
 .main {
   width: 100%;
+  max-width: var(--page-frame);
+  margin-inline: auto;
   padding: var(--space-6) var(--layout-gutter) var(--space-8);
 }
 

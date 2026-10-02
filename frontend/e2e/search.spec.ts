@@ -176,7 +176,7 @@ test("shows the offers that cover the items and compares their prices", async ({
   await page.getByRole("button", { name: /compare chosen: 2/i }).click()
   const table = page.getByRole("dialog", { name: /compare/i }).getByRole("table")
   await expect(table.getByRole("row", { name: /^Крупа гречневая ядрица/ })).toContainText(
-    /84\.50 per кг · In stock/,
+    /84\.50 per кг\s*In stock/,
   )
   await expectAccessible(page)
 })

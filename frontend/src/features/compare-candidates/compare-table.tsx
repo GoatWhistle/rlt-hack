@@ -39,6 +39,26 @@ export function MissingNames({ names }: { readonly names: string }) {
   )
 }
 
+export function ValueLines({
+  lines,
+  detail,
+}: {
+  readonly lines: readonly string[]
+  readonly detail?: string
+}) {
+  return (
+    <span className={styles.lines}>
+      {lines.map((line, index) => (
+        <span key={line}>
+          {index > 0 ? " " : null}
+          {line}
+        </span>
+      ))}
+      {detail ? <span className={styles.detail}> {detail}</span> : null}
+    </span>
+  )
+}
+
 export function MatchValue({
   figure,
   note,

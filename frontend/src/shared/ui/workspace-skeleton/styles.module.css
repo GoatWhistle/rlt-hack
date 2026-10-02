@@ -32,7 +32,7 @@
 
 .columns {
   display: grid;
-  grid-template-columns: var(--pane-products) var(--pane-companies) minmax(0, 1fr);
+  grid-template-columns: var(--pane-products) var(--pane-companies) var(--pane-evidence);
   gap: var(--space-4);
 }
 

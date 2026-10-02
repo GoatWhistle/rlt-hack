@@ -3,9 +3,11 @@ import { type KeyboardEvent, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useInnText, useMatchFigure } from "@/entities/evidence/labels"
 import { targetIndex, useRevealSelected } from "@/entities/evidence/ui/candidate-list"
+import { HistoryChips } from "@/entities/evidence/ui/history-chips"
 import type { Company, Product } from "@/entities/recommendation/model"
 import { COMPARE_FROM } from "@/features/compare-candidates"
 import { Caption } from "@/shared/ui/caption"
+import { FactRow } from "@/shared/ui/fact-row"
 import { FilterNote } from "@/shared/ui/filter-note"
 import { Icon } from "@/shared/ui/icon"
 import { PickCard } from "@/shared/ui/pick-card"
@@ -44,15 +46,10 @@ function CompanyFacts({
   readonly products: readonly Product[]
 }) {
   const { t } = useTranslation("lot")
-  const { t: card } = useTranslation("candidate")
   const figureOf = useMatchFigure()
   if (company.history) {
     return company.similarPurchases !== null ? (
-      <span>
-        {t("grounds.purchases", { count: company.similarPurchases })}
-        {" · "}
-        {t("grounds.winsCount", { count: company.wins ?? 0 })}
-      </span>
+      <HistoryChips similar={company.similarPurchases} wins={company.wins ?? 0} />
     ) : (
       <span>{t("history.examples", { count: company.history.examples.length })}</span>
     )
@@ -67,12 +64,7 @@ function CompanyFacts({
           {figure.note ? <span className={styles.assumed}> {figure.note}</span> : null}
         </span>
       ) : null}
-      {similar > 0 ? (
-        <span>
-          {card("card.similar", { count: similar })}
-          {company.wins ? ` · ${card("card.wins", { count: company.wins })}` : null}
-        </span>
-      ) : null}
+      {similar > 0 ? <HistoryChips similar={similar} wins={company.wins ?? 0} /> : null}
     </>
   )
 }
@@ -128,13 +120,12 @@ export function CompanyList(props: CompanyListProps) {
               key={company.id}
               title={company.name}
               subtitle={
-                <>
-                  {company.role}
-                  {" · "}
+                <FactRow>
+                  <span>{company.role}</span>
                   <span className={company.inn ? styles.inn : undefined}>
                     {innText(company.inn)}
                   </span>
-                </>
+                </FactRow>
               }
               rank={ranks.get(company.id) ?? 0}
               rankLabel={rankText("card.rank", { index: ranks.get(company.id) ?? 0 })}

@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next"
+import { HistoryChips } from "@/entities/evidence/ui/history-chips"
 import { SourceLine } from "@/entities/evidence/ui/source-line"
 import type { Company, Product, Source } from "@/entities/recommendation/model"
 import { Caption } from "@/shared/ui/caption"
@@ -118,12 +119,11 @@ function Profile({ company, products }: ProfileProps) {
         <section className={styles.section}>
           <h3 className={styles.heading}>{t("profile.history")}</h3>
           <p>
-            {company.similarPurchases === null || company.wins === null
-              ? t("compare.unknown")
-              : t("evidence.purchasesSummary", {
-                  count: company.similarPurchases,
-                  wins: company.wins,
-                })}
+            {company.similarPurchases === null || company.wins === null ? (
+              t("compare.unknown")
+            ) : (
+              <HistoryChips similar={company.similarPurchases} wins={company.wins} />
+            )}
           </p>
           <Caption>{t("evidence.purchasesNote")}</Caption>
         </section>

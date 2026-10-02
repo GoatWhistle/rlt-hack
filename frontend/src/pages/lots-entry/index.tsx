@@ -7,6 +7,7 @@ import { useFormatters } from "@/shared/i18n/formatters"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { ButtonLink } from "@/shared/ui/button"
 import { ErrorState } from "@/shared/ui/error-state"
+import { FactRow } from "@/shared/ui/fact-row"
 import { FileName } from "@/shared/ui/file-name"
 import { PageTitle } from "@/shared/ui/page-title"
 import { RowChevron } from "@/shared/ui/row-chevron"
@@ -45,9 +46,10 @@ export function LotsEntryPage() {
               <span className={styles.file}>
                 <FileName name={upload.fileName} />
                 <span className={styles.meta}>
-                  {dateTime(upload.createdAt)}
-                  {" · "}
-                  {t("notices", { count: upload.total })}
+                  <FactRow>
+                    <span>{dateTime(upload.createdAt)}</span>
+                    <span>{t("notices", { count: upload.total })}</span>
+                  </FactRow>
                 </span>
               </span>
               <span className={styles.strip}>

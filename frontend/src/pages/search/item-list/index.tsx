@@ -24,20 +24,33 @@ function OriginTag({ item }: { readonly item: QueryItem }) {
   )
 }
 
-export function useCoverageText(): (
-  item: QueryItem,
-  candidates: readonly Candidate[],
-) => string {
+function Coverage({
+  item,
+  candidates,
+}: {
+  readonly item: QueryItem
+  readonly candidates: readonly Candidate[]
+}) {
   const { t: label } = useTranslation("candidate")
   const { t: evidence } = useTranslation("evidence")
-  return (item, candidates) => {
-    const found = candidates.flatMap((candidate) => matchOf(candidate, item.id) ?? [])
-    const { confirmed, assumed } = countMatches(found)
-    if (confirmed === 0 && assumed === 0) return label("items.none")
-    const parts = confirmed > 0 ? [label("items.covered", { count: confirmed })] : []
-    if (assumed > 0) parts.push(evidence("assumed", { count: assumed }))
-    return parts.join(" · ")
+  const found = candidates.flatMap((candidate) => matchOf(candidate, item.id) ?? [])
+  const { confirmed, assumed } = countMatches(found)
+  if (confirmed === 0 && assumed === 0) {
+    return <span className={styles.covered}>{label("items.none")}</span>
   }
+  return (
+    <>
+      {confirmed > 0 ? (
+        <span className={styles.covered}>{label("items.covered", { count: confirmed })}</span>
+      ) : null}
+      {assumed > 0 ? (
+        <span className={styles.assumed}>
+          {confirmed > 0 ? " " : null}
+          {evidence("assumed", { count: assumed })}
+        </span>
+      ) : null}
+    </>
+  )
 }
 
 export type ItemListProps = {
@@ -51,7 +64,6 @@ export type ItemListProps = {
 function ItemRows({ items, candidates, activeId, onFilter }: ItemListProps) {
   const { t } = useTranslation("search")
   const quantityOf = useQuantityText()
-  const coverageOf = useCoverageText()
   return (
     <ul className={styles.list}>
       {items.map((item) => {
@@ -72,9 +84,7 @@ function ItemRows({ items, candidates, activeId, onFilter }: ItemListProps) {
               {item.okpd2 ? (
                 <span className={styles.code}>{t("items.okpd2", { code: item.okpd2 })}</span>
               ) : null}
-              {onFilter ? (
-                <span className={styles.covered}>{coverageOf(item, candidates)}</span>
-              ) : null}
+              {onFilter ? <Coverage item={item} candidates={candidates} /> : null}
             </span>
             <OriginTag item={item} />
           </>

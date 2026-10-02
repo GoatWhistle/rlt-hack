@@ -1,6 +1,7 @@
 import { clsx } from "clsx"
 import type { ReactNode } from "react"
 import { Dot } from "@/shared/ui/dot"
+import { FactRow } from "@/shared/ui/fact-row"
 import styles from "./styles.module.css"
 
 export type HeroFigure = {
@@ -77,13 +78,10 @@ export function CandidateHero({
             {name}
           </h2>
           <p className={styles.meta}>
-            {role}
-            {code ? (
-              <>
-                {" · "}
-                <span className={styles.code}>{code}</span>
-              </>
-            ) : null}
+            <FactRow>
+              <span>{role}</span>
+              {code ? <span className={styles.code}>{code}</span> : null}
+            </FactRow>
           </p>
         </div>
         {figure ? (

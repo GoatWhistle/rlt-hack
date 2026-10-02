@@ -1,13 +1,14 @@
 {
   "card": {
-    "similar_one": "{{count, number}} похожая",
-    "similar_few": "{{count, number}} похожие",
-    "similar_many": "{{count, number}} похожих",
-    "similar_other": "{{count, number}} похожей",
-    "wins_one": "{{count, number}} победа",
-    "wins_few": "{{count, number}} победы",
-    "wins_many": "{{count, number}} побед",
-    "wins_other": "{{count, number}} победы",
+    "similar_one": "<b>{{count, number}}</b> похожая",
+    "similar_few": "<b>{{count, number}}</b> похожие",
+    "similar_many": "<b>{{count, number}}</b> похожих",
+    "similar_other": "<b>{{count, number}}</b> похожей",
+    "wins_one": "<b>{{count, number}}</b> победа",
+    "wins_few": "<b>{{count, number}}</b> победы",
+    "wins_many": "<b>{{count, number}}</b> побед",
+    "wins_other": "<b>{{count, number}}</b> победы",
+    "noHistory": "Похожих закупок нет",
     "rank": "место {{index, number}}",
     "moreReasons": "+{{count, number}}",
     "chosen": "Выбран"
@@ -53,13 +54,9 @@
     "matchesHint": "Прайс и каталог показывают, что компания продаёт товар. Наличие на складе и срок поставки уточняйте у неё.",
     "clarifyTitle": "Что уточнить у компании",
     "historyTitle": "Опыт закупок",
-    "historyAside_one": "{{count, number}} похожая · побед: {{wins, number}}",
-    "historyAside_few": "{{count, number}} похожие · побед: {{wins, number}}",
-    "historyAside_many": "{{count, number}} похожих · побед: {{wins, number}}",
-    "historyAside_other": "{{count, number}} похожей · побед: {{wins, number}}",
     "historyNote": "Прошлые участия и победы не гарантируют будущую поставку.",
     "noRecords": "Примеров закупок с источником нет.",
-    "lot": "Лот {{id}} · {{title}}",
+    "lot": "Лот {{id}}: {{title}}",
     "recordItems": "Позиции: {{names}}",
     "companyTitle": "Компания и контакты",
     "role": "Роль",
@@ -111,7 +108,7 @@
     "compareLabel_few": "Сравнить выбранных: {{count, number}}",
     "compareLabel_many": "Сравнить выбранных: {{count, number}}",
     "compareLabel_other": "Сравнить выбранных: {{count, number}}",
-    "pickMore": "выберите ещё одного, чтобы сравнить"
+    "pickMore": "Выберите ещё одного для сравнения"
   },
   "compare": {
     "title": "Сравнение кандидатов",

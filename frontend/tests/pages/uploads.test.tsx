@@ -163,7 +163,7 @@ describe("the list of uploads", () => {
     ).toBeInTheDocument()
     expect(screen.getByText(en("list.columns.results", "uploads"))).toBeInTheDocument()
     const done = screen.getByRole("link", { name: /done\.csv/ })
-    expect(within(done).getByText("3 notices")).toBeInTheDocument()
+    expect(done).toHaveTextContent("3 notices")
     expect(done).toHaveAttribute("href", "/uploads/a")
     expect(within(done).getByText(en("list.done", "uploads"))).toBeInTheDocument()
     expect(within(done).getByText("2 rows with errors were not processed")).toBeInTheDocument()

@@ -98,6 +98,11 @@
   white-space: nowrap;
 }
 
+.assumed {
+  color: var(--warning-text);
+  white-space: nowrap;
+}
+
 @media (hover: hover) and (pointer: fine) {
   button.item:not(.active):hover {
     background: var(--surface-raised);

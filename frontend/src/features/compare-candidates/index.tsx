@@ -17,6 +17,7 @@ import {
   CompareTable,
   MatchValue,
   MissingNames,
+  ValueLines,
 } from "./compare-table"
 import { useOfferCriteria } from "./offer-criteria"
 
@@ -28,6 +29,7 @@ export {
   CompareTable,
   MatchValue,
   MissingNames,
+  ValueLines,
 } from "./compare-table"
 
 export type CompareDialogProps = {
@@ -58,8 +60,8 @@ function useCriteria(
   }
   const contacts = (candidate: CandidateView) => {
     const { site, email, phone } = candidate.contacts ?? {}
-    const known = [site, email, phone].filter(Boolean)
-    return known.length > 0 ? known.join(" · ") : t("compare.unknown")
+    const known = [site, email, phone].filter((value): value is string => Boolean(value))
+    return known.length > 0 ? <ValueLines lines={known} /> : t("compare.unknown")
   }
   return [
     {

@@ -7,7 +7,7 @@
     "manufacturer": "Manufacturer",
     "distributor": "Distributor",
     "supplier": "Supplier",
-    "supplierDistributor": "Supplier · distributor",
+    "supplierDistributor": "Supplier and distributor",
     "serviceProvider": "Service provider",
     "unknown": "Role not determined"
   },
@@ -78,8 +78,7 @@
     "staleCheck": "checked {{date}}, may be outdated",
     "inferred": "No offer: the system infers this from similar purchases",
     "empty": "No current offers",
-    "emptyHint": "The company was found through past purchases. Ask the company about its range and prices directly.",
-    "short": "{{price}} · {{availability}}"
+    "emptyHint": "The company was found through past purchases. Ask the company about its range and prices directly."
   },
   "region": {
     "named": "{{name}} ({{code}})",

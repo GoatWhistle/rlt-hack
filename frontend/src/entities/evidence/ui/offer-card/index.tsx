@@ -9,6 +9,7 @@ import {
 } from "@/entities/evidence/model"
 import { useOfferText } from "@/entities/evidence/offer-labels"
 import { Dot } from "@/shared/ui/dot"
+import { FactRow } from "@/shared/ui/fact-row"
 import { Icon, type IconName } from "@/shared/ui/icon"
 import { Tag, type TagTone } from "@/shared/ui/tag"
 import { VisuallyHidden } from "@/shared/ui/visually-hidden"
@@ -74,20 +75,24 @@ function OfferFacts({ offer }: { readonly offer: OfferView }) {
     <>
       {facts.length > 0 ? (
         <p className={styles.facts}>
-          {facts.map((fact) => (
-            <span key={fact.key} className={clsx(styles.fact, fact.code && styles.code)}>
-              {fact.text}
-            </span>
-          ))}
+          <FactRow>
+            {facts.map((fact) => (
+              <span key={fact.key} className={fact.code ? styles.code : undefined}>
+                {fact.text}
+              </span>
+            ))}
+          </FactRow>
         </p>
       ) : null}
       {attributes.length > 0 ? (
         <p className={styles.facts}>
-          {attributes.map((entry) => (
-            <span key={entry.name} className={styles.fact}>
-              {t("offer.attribute", { name: entry.name, value: entry.value })}
-            </span>
-          ))}
+          <FactRow>
+            {attributes.map((entry) => (
+              <span key={entry.name}>
+                {t("offer.attribute", { name: entry.name, value: entry.value })}
+              </span>
+            ))}
+          </FactRow>
         </p>
       ) : null}
     </>
@@ -144,8 +149,12 @@ export function OfferCard({ offer, link, focused = false }: OfferCardProps) {
           <p className={styles.relation}>
             <BasisMarker basis={link.basis} />
             <span className={styles.relationText}>
-              <span>{t("offer.item", { name: link.itemName })}</span>
-              <span className={BASIS_TEXT[link.basis]}>{t(`basis.${link.basis}`)}</span>
+              <FactRow>
+                <span>{t("offer.item", { name: link.itemName })}</span>
+                <span className={clsx(styles.basis, BASIS_TEXT[link.basis])}>
+                  {t(`basis.${link.basis}`)}
+                </span>
+              </FactRow>
             </span>
           </p>
         ) : null}

@@ -23,7 +23,7 @@ describe("the purchase header", () => {
     expect(
       await screen.findByRole("navigation", { name: en("header.neighbours", "lot") }),
     ).toHaveTextContent("2 of 3")
-    expect(screen.getByRole("link", { name: /Purchases · notices\.csv/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Purchases from notices\.csv/ })).toHaveAttribute(
       "href",
       "/uploads/u1?status=ready",
     )
@@ -144,7 +144,9 @@ describe("in russian", () => {
   it("uses the right plural forms", async () => {
     await openLot(undefined, { locale: "ru" })
     expect(screen.getByText("5 позиций")).toBeInTheDocument()
-    expect(screen.getByText("11 похожих · 4 победы")).toBeInTheDocument()
+    expect(
+      screen.getByRole("region", { name: text("ru", "lot", "companies.title") }),
+    ).toHaveTextContent("11 похожих 4 победы")
     expect(screen.getByText(text("ru", "lot", "evidence.summaryTitle"))).toBeInTheDocument()
   })
 })

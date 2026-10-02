@@ -12,6 +12,7 @@ import { CollapsibleList } from "@/shared/ui/collapsible-list"
 import { Fold } from "@/shared/ui/fold"
 import { PanelBlock } from "@/shared/ui/panel-block"
 import { Stack } from "@/shared/ui/stack"
+import { HistoryChips } from "../history-chips"
 import { MatchRow } from "../match-row"
 import { type OfferEntry, OfferGrid } from "../offer-grid"
 import { PurchaseRow } from "../purchase-row"
@@ -88,10 +89,7 @@ export function HistoryBlock({ candidate, items }: BlockProps) {
   return (
     <Fold
       title={t("panel.historyTitle")}
-      aside={t("panel.historyAside", {
-        count: candidate.similarPurchases,
-        wins: candidate.wins,
-      })}
+      aside={<HistoryChips similar={candidate.similarPurchases} wins={candidate.wins} />}
     >
       {candidate.purchases.length > 0 ? (
         <CollapsibleList

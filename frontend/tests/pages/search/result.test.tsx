@@ -44,13 +44,13 @@ describe("a search result", () => {
     const items = region(en("items.title", "search"))
     const groats = within(items).getByRole("button", { name: /Крупа гречневая ядрица/ })
     expect(groats).toHaveTextContent("500 кг")
-    expect(groats).toHaveTextContent("1 candidate · +1 assumption")
+    expect(groats).toHaveTextContent("1 candidate +1 assumption")
     const candidates = region(en("candidates.title", "search"))
     const first = within(candidates).getByRole("button", { name: "ООО «Северный Провиант»" })
     expect(first).toHaveAttribute("aria-pressed", "true")
     expect(first).toHaveAccessibleDescription(/INN 7801234567/)
     expect(first).toHaveTextContent("2/2")
-    expect(first).toHaveTextContent("11 similar · 4 wins")
+    expect(first).toHaveTextContent("11 similar 4 wins")
     expect(within(first).queryByRole("meter")).toBeNull()
     expect(first).not.toHaveTextContent(/Covers/)
     const second = within(candidates).getByRole("button", { name: "АО «Зерновой Двор»" })
@@ -72,7 +72,7 @@ describe("a search result", () => {
     ).toHaveAttribute("href", "https://severny-proviant.example.org/price/grechka")
     expect(within(grounds).getAllByText(/^checked Sep 29, 2026/).length).toBeGreaterThan(0)
     expect(within(grounds).getByText(en("basis.catalog", "evidence"))).toBeInTheDocument()
-    expect(within(grounds).getByText("11 similar · wins: 4")).toBeInTheDocument()
+    expect(grounds).toHaveTextContent("11 similar 4 wins")
     expect(within(grounds).getByText(/Lot 32514850391-1/)).toBeInTheDocument()
     expect(within(grounds).getByText("Items: Крупа гречневая ядрица")).toBeInTheDocument()
     expect(within(grounds).getByRole("link", { name: "+7 812 000-00-00" })).toHaveAttribute(
@@ -111,7 +111,7 @@ describe("a search result", () => {
     expect(within(candidates).getByText("Who covers “Рис шлифованный”")).toBeVisible()
     expect(within(candidates).queryByRole("button", { name: /Зерновой Двор/ })).toBeNull()
     const north = within(candidates).getByRole("button", { name: /Северный Провиант/ })
-    expect(north).toHaveTextContent(`${en("basis.catalog", "evidence")} · Sep 28, 2026`)
+    expect(north).toHaveTextContent(`${en("basis.catalog", "evidence")} Sep 28, 2026`)
     await user.click(
       within(candidates).getByRole("button", { name: en("list.reset", "candidate") }),
     )

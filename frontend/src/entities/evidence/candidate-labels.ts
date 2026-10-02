@@ -33,16 +33,6 @@ export function useStatusText(): (candidate: CandidateView) => string {
   }
 }
 
-export function useHistoryLine(): (candidate: CandidateView) => string | undefined {
-  const { t } = useTranslation("candidate")
-  return ({ similarPurchases, wins }) => {
-    if (similarPurchases <= 0 && wins <= 0) return undefined
-    const parts = [t("card.similar", { count: similarPurchases })]
-    if (wins > 0) parts.push(t("card.wins", { count: wins }))
-    return parts.join(" · ")
-  }
-}
-
 function usePriceFact(): (candidate: CandidateView) => string | undefined {
   const { t } = useTranslation("candidate")
   const { t: evidence } = useTranslation("evidence")

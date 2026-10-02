@@ -28,6 +28,16 @@
   min-width: 0;
 }
 
+.price {
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.date {
+  font-weight: var(--weight-regular);
+  font-variant-numeric: tabular-nums;
+}
+
 .match {
   display: flex;
   align-items: center;
@@ -78,8 +88,6 @@
 }
 
 .history {
+  display: inline-flex;
   margin-inline-start: auto;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  white-space: nowrap;
 }

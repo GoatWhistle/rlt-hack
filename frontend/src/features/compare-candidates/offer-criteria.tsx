@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next"
 import type { OfferView } from "@/entities/evidence/model"
 import { useOfferText } from "@/entities/evidence/offer-labels"
 import { type CandidateView, type ItemView, matchFor } from "@/entities/evidence/view"
-import type { CompareCriterion } from "./compare-table"
+import { type CompareCriterion, ValueLines } from "./compare-table"
 
 type Holder = { readonly candidate: CandidateView }
 
@@ -40,7 +40,14 @@ export function useOfferCriteria<T extends Holder>(
         label: item.name,
         value: ({ candidate }: T) => {
           const match = matchFor(candidate, item.id)
-          if (match?.offer) return text.short(match.offer)
+          if (match?.offer) {
+            return (
+              <ValueLines
+                lines={[text.price(match.offer)]}
+                detail={text.availability(match.offer.availability ?? "unknown")}
+              />
+            )
+          }
           return match ? t(`basis.${match.basis}`) : t("notFound")
         },
         score:

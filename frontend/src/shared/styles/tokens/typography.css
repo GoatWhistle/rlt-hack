@@ -71,6 +71,7 @@
   --text-2xs: 0.75rem;
   --text-xs: 0.8125rem;
   --text-sm: 0.9375rem;
+  --text-root: clamp(100%, 100% + (100vw - 160rem) / 320, 125%);
   --text-md: 1rem;
   --text-lg: 1.0625rem;
   --text-xl: 1.1875rem;
