@@ -34,19 +34,21 @@ async def test_upload_keeps_the_summary_shape(search_client: httpx.AsyncClient) 
         (b"", 422, "invalid_file"),
         (b"title;subject\nx;y\n", 422, "missing_columns"),
         (b"lot_id;procedure_name\nL1;a\nL1;b\n", 422, "invalid_row"),
-        (
-            b"lot_id;procedure_name\n" + b"".join(b"L%d;x\n" % index for index in range(21)),
-            422,
-            "too_many_rows",
-        ),
     ],
-    ids=["binary", "wide", "empty", "columns", "row", "rows"],
+    ids=["binary", "wide", "empty", "columns", "row"],
 )
 async def test_rejected_files_answer_with_a_code(
     search_client: httpx.AsyncClient, engine: FakeEngine, content: bytes, status: int, code: str
 ) -> None:
     assert_error(await upload(search_client, content), status, code)
     assert engine.calls == 0
+
+
+async def test_upload_accepts_more_than_twenty_rows(search_client: httpx.AsyncClient) -> None:
+    content = b"lot_id;procedure_name\n" + b"".join(b"L%d;x\n" % index for index in range(21))
+    response = await upload(search_client, content)
+    assert response.status_code == 200, response.text
+    assert response.json()["total"] == 21
 
 
 async def test_invalid_row_message_names_the_line(search_client: httpx.AsyncClient) -> None:

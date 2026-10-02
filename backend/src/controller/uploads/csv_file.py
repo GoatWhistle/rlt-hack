@@ -7,13 +7,11 @@ from decimal import Decimal, InvalidOperation
 from src.models.errors import (
     InvalidNoticeRowError,
     MissingNoticeColumnsError,
-    TooManyNoticeRowsError,
     UnreadableNoticeFileError,
     UnsupportedNoticeFormatError,
 )
 from src.models.operations.upload import Notice
 
-MAX_ROWS = 20
 MAX_LINE_CHARS = 64 * 1024
 MAX_COLUMNS = 64
 MAX_TEXT_CHARS = 3999
@@ -115,7 +113,7 @@ def notice_of(record: Record, columns: dict[str, int], width: int, seen: set[str
     return Notice(lot_id, title, subject if subject != title else "", customer, price, region)
 
 
-def decode_notices(data: bytes, max_rows: int = MAX_ROWS) -> list[Notice]:
+def decode_notices(data: bytes) -> list[Notice]:
     rows = records(decode_text(data))
     head = next(rows, None)
     if head is None:
@@ -124,8 +122,6 @@ def decode_notices(data: bytes, max_rows: int = MAX_ROWS) -> list[Notice]:
     seen: set[str] = set()
     notices: list[Notice] = []
     for record in rows:
-        if len(notices) == max_rows:
-            raise TooManyNoticeRowsError(max_rows)
         notices.append(notice_of(record, columns, len(head[1]), seen))
     if not notices:
         raise UnreadableNoticeFileError("the file has no data rows")
@@ -133,12 +129,11 @@ def decode_notices(data: bytes, max_rows: int = MAX_ROWS) -> list[Notice]:
 
 
 class NoticeReader:
-    def __init__(self, parallel: int = PARALLEL_READS, max_rows: int = MAX_ROWS) -> None:
+    def __init__(self, parallel: int = PARALLEL_READS) -> None:
         if parallel < 1:
             raise ValueError(parallel)
         self._slots = asyncio.Semaphore(parallel)
-        self._max_rows = max_rows
 
     async def read(self, data: bytes) -> list[Notice]:
         async with self._slots:
-            return await asyncio.to_thread(decode_notices, data, self._max_rows)
+            return await asyncio.to_thread(decode_notices, data)

@@ -508,7 +508,6 @@ API получает пул такого размера, и каналы пои�
 | 415 | `unsupported_file_type` | не `.csv` или двоичное содержимое (XLSX, XLS, PDF) |
 | 422 | `invalid_file` | пустой файл, нет строк данных, неизвестная кодировка |
 | 422 | `missing_columns` | нет обязательных колонок `lot_id`, `procedure_name` |
-| 422 | `too_many_rows` | строк больше 20 (`search-api`) |
 | 422 | `invalid_row` | строка CSV в `search-api` не прошла проверку; номер строки в `message` |
 | 422 | `no_valid_lots` | ни одна строка не прошла проверку |
 | 404 | `upload_not_found` | нет загрузки с таким id |
@@ -616,13 +615,13 @@ curl -s http://localhost:8000/api/health/ready
 | `CLICKHOUSE_MAX_THREADS` | `4` | потоков ClickHouse на один запрос; `0` — значение сервера |
 | `CLICKHOUSE_API_QUERY_TIMEOUT` | `15` | таймаут ответа ClickHouse для API, секунды (не меньше бюджета + 4 с) |
 | `CLICKHOUSE_API_MAX_MEMORY_USAGE` | `0` | `max_memory_usage` запросов API в байтах; `0` — значение сервера |
-| `UPLOAD_MAX_BACKLOG` | `40` | `search-api`: сколько закупок одновременно во всех идущих загрузках; не меньше 20 |
+| `UPLOAD_MAX_BACKLOG` | `40` | `search-api`: бюджет позиций при одновременных загрузках; одиночный файл может быть больше |
 | `SEARCH_MAX_ACTIVE` | `4` | `search-api`: сколько `POST /api/suppliers/search` выполняется одновременно |
 
 ## Загрузка файла закупок
 
 `/api/uploads` обслуживает `search-api` из main (раздел «HTTP-поиск и импорт
-готового индекса»): CSV до 20 строк и 2 МБ обрабатывается синхронно в запросе,
+готового индекса»): CSV до 2 МБ обрабатывается синхронно в запросе,
 результаты связаны с cookie сессии. Сервис `api` загрузки не принимает. Что из
 прежней реализации ветки перенесено поверх main, а что нет, — в
 [`plans/paused-work.md`](../plans/paused-work.md).
@@ -952,7 +951,7 @@ uv run --no-project --python 3.13 --with 'ruff>=0.14' ruff format .
 
 `python -m uvicorn src.controller.search.api:app --host 0.0.0.0 --port 8080`
 запускает `/api/health`, `/api/suppliers/search` и `/api/uploads`.
-CSV содержит `lot_id,procedure_name,subject`; максимум 20 строк и 2 МБ.
+CSV содержит `lot_id,procedure_name,subject`; максимальный размер файла — 2 МБ.
 Результаты связаны с cookie сессии и сохраняются в `UPLOADS_DIR`.
 
 Ошибки `search-api` приходят тем же телом `{"code", "message", "requestId"}` и
@@ -963,14 +962,14 @@ OLE/XLS, PDF или `NUL` в начале — `415 unsupported_file_type`. Ра�
 потоком в пуле потоков, не больше двух файлов одновременно: строка длиннее
 64 КБ, шапка шире 64 колонок, пустой файл или неизвестная кодировка —
 `422 invalid_file`, нет `lot_id`/`procedure_name` — `422 missing_columns`,
-21-я строка — `422 too_many_rows` (чтение прерывается), неверная строка —
+неверная строка —
 `422 invalid_row` с номером строки. Сбой поиска при загрузке или в
 `/api/suppliers/search` — `503 search_unavailable`, недоступный ClickHouse на
 любом маршруте — `503 storage_unavailable`, обе с `Retry-After: 5`.
 
 Загрузка обрабатывается синхронно в запросе. `UPLOAD_MAX_BACKLOG` (по умолчанию
-40, не меньше 20) ограничивает число закупок во всех одновременно идущих
-загрузках: сверх него — `429 upload_queue_full` с `Retry-After: 60`.
+40) ограничивает суммарное число закупок при одновременных
+загрузках; одиночный файл допускает больше 40 строк: сверх него — `429 upload_queue_full` с `Retry-After: 60`.
 `SEARCH_MAX_ACTIVE` (по умолчанию 4) ограничивает одновременные
 `POST /api/suppliers/search`: сверх него — `503 search_busy`.
 
@@ -1011,7 +1010,7 @@ BM25 и RRF объединяют результаты по ИНН. Незаве�
 
 ## Ранжирование с метаданными и векторный каталог
 
-CSV для `/api/uploads` принимает 1–20 закупок: обязательны `lot_id` и
+CSV для `/api/uploads` принимает закупки в пределах 2 МБ: обязательны `lot_id` и
 `procedure_name`, дополнительно `subject`, `customer_inn`, `start_price`.
 НМЦК проверяется на конечность и неотрицательность, хранится десятичным числом.
 Старые загрузки без метаданных остаются совместимыми. `GET /api/uploads/{id}/summary`

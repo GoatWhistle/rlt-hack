@@ -14,7 +14,6 @@ from src.controller.uploads.csv_file import (
 from src.models.errors import (
     InvalidNoticeRowError,
     MissingNoticeColumnsError,
-    TooManyNoticeRowsError,
     UnreadableNoticeFileError,
     UnsupportedNoticeFormatError,
 )
@@ -83,10 +82,9 @@ def test_peak_memory_is_bounded() -> None:
     assert peak < PEAK_LIMIT
 
 
-def test_row_limit_stops_reading_early() -> None:
+def test_reads_more_than_twenty_rows() -> None:
     rows = "".join(f"L{index};paper\n" for index in range(50))
-    with pytest.raises(TooManyNoticeRowsError, match="3"):
-        decode_notices(f"lot_id;procedure_name\n{rows}".encode(), 3)
+    assert len(decode_notices(f"lot_id;procedure_name\n{rows}".encode())) == 50
 
 
 def test_missing_columns_are_named() -> None:
@@ -133,7 +131,7 @@ async def test_reader_bounds_parallel_parsing(monkeypatch: pytest.MonkeyPatch) -
     active = 0
     peak = 0
 
-    def slow(content: bytes, max_rows: int) -> list[Notice]:
+    def slow(content: bytes) -> list[Notice]:
         nonlocal active, peak
         active += 1
         peak = max(peak, active)
