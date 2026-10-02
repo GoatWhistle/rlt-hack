@@ -379,7 +379,7 @@
 
 - Backend: `models/analytics`, `service/analytics`, `adapter/repository/clickhouse/analytics`,
   `controller/analytics`; маршруты `overview`, `categories`, `quality`, `sources`,
-  `runs`, `records`; миграция 0016 (`analytics_snapshots`); команда
+  `runs`, `records`; миграция 0018 (`analytics_snapshots`); команда
   `analytics [--forever]`, сервис `analytics-worker`; переменные `ANALYTICS_*`
   описаны в `backend/README.md`.
 - Frontend: `/analytics`, `/analytics/categories[/:code]`, `/analytics/quality`,
@@ -394,7 +394,7 @@
 во frontend (правила, типы, Biome, покрытие не ниже порога).
 
 Проверено на живом стенде (docker compose, 1 086 004 позиций, 3 источника):
-миграция 0016 применилась; первый расчёт среза 3–5 с, повторное чтение из
+миграция 0018 применилась; первый расчёт среза 3–5 с, повторное чтение из
 кеша около 10 мс, записи по категории или проблеме 0,1–0,2 с; страницы обзора,
 качества и источников открываются в браузере. Найдена и исправлена ошибка:
 nginx отправлял `/api/analytics` в `search-api` (добавлен location в

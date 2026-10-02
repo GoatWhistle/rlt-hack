@@ -46,6 +46,12 @@ def page(next_page=None):
                 "name": "Кабель",
                 "url": "https://zakupki.mos.ru/offers/4",
                 "price": "100.50",
+                "article": "141741",
+                "delivery_regions": ["г Москва", "Белгородская область"],
+                "delivery_days_min": "1",
+                "delivery_days_max": "3",
+                "valid_from": "2026-09-10",
+                "valid_to": "2026-11-16",
             }
         ],
         "next": next_page,
@@ -76,9 +82,14 @@ async def run():
     assert len(first.suppliers) == len(first.offers) == 1
     assert first.offers[0].supplier_id == first.suppliers[0].supplier_id
     assert first.offers[0].attributes["sku_id"] == "sku-9"
+    assert first.offers[0].attributes["delivery_days_max"] == "3"
+    assert first.offers[0].article == "141741"
+    assert first.offers[0].attributes["delivery_regions"] == ("г Москва|Белгородская область")
     assert first.offers[0].offer_id == second.offers[0].offer_id
     assert first.offers[0].content_hash == second.offers[0].content_hash
     await expect_error(provider({**page(), "offers": []}), ContentFormatError)
+    bad_regions = {**page()["offers"][0], "delivery_regions": "г Москва"}
+    await expect_error(provider({**page(), "offers": [bad_regions]}), ContentFormatError)
     await expect_error(provider({**page(), "complete": False}), ContentFormatError)
     unknown_seller = {**page()["offers"][0], "supplier_id": "other"}
     await expect_error(provider({**page(), "offers": [unknown_seller]}), ContentFormatError)
@@ -99,6 +110,22 @@ async def run():
     assert len((await multi.fetch()).offers) == 2
     pages[URL + "?page=2"]["snapshot_id"] = "export-2"
     await expect_error(multi, ContentFormatError)
+    out_of_order = {
+        URL: {
+            **page("?page=2"),
+            "suppliers": [],
+        },
+        URL + "?page=2": {
+            **page(),
+            "offers": [],
+        },
+    }
+    unordered_transport = httpx.MockTransport(
+        lambda request: httpx.Response(200, json=out_of_order[str(request.url)])
+    )
+    unordered = MoscowSuppliersProvider(SOURCE, URL, transport=unordered_transport)
+    result = await unordered.fetch()
+    assert result.offers[0].supplier_id == result.suppliers[0].supplier_id
     print("moscow_suppliers_smoke: ok")
 
 

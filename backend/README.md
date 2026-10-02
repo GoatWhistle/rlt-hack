@@ -635,7 +635,7 @@ curl -s http://localhost:8000/api/health/ready
 `limit` и `offset`: это список позиций, объясняющих показатель.
 
 Все панели одной выдачи берутся из одного опубликованного среза
-(`analytics_snapshots`, миграция 0016). Ответ несёт `snapshotId`, `asOf`,
+(`analytics_snapshots`, миграция 0018). Ответ несёт `snapshotId`, `asOf`,
 `computedAt`, `definitionsVersion`, задержку и предупреждения. Доли возвращают
 числитель, знаменатель и неизвестные; при нулевой базе `share` равен `null`.
 Срез публикуется одной вставкой, идентификатор детерминирован областью и
@@ -750,8 +750,10 @@ uv run --python 3.13 python main.py registry-import      # загрузка ре
 `suppliers`, `offers` и `next` (URL следующей страницы или `null`). У компании
 обязательны `id`, `name`, `url`; допустимы `inn`, `region`, `website`. У оферты
 обязательны `id`, `supplier_id`, `sku_id`, `name`, `url`, `price`; допустимы
-`item_type`, `availability`, `currency`, `unit`. Поставщик должен встретиться
-до своей оферты. Повтор страницы/ID, сбой запроса, неверный формат и
+`item_type`, `availability`, `currency`, `unit`, `article`,
+`delivery_regions`, `delivery_days_min`, `delivery_days_max`, `valid_from`,
+`valid_to`. Поставщик может находиться на любой странице снимка.
+Повтор страницы/ID, сбой запроса, неверный формат и
 расхождение контрольных чисел прерывают обход без сохранения пакета. СТЕ без
 оферты в поток не включается.
 
