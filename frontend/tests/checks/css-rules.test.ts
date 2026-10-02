@@ -3,6 +3,7 @@ import { cssBreakpoints } from "../../scripts/checks/css-breakpoints.ts"
 import { cssDuplicates } from "../../scripts/checks/css-duplicates.ts"
 import { cssLiterals } from "../../scripts/checks/css-literals.ts"
 import { cssModules } from "../../scripts/checks/css-modules.ts"
+import { cssMonoWeight } from "../../scripts/checks/css-mono-weight.ts"
 import { classNames, cssBlocks } from "../../scripts/checks/css-syntax.ts"
 import { cssTransitions } from "../../scripts/checks/css-transitions.ts"
 import { file } from "./fixtures.ts"
@@ -192,5 +193,26 @@ describe("css transitions", () => {
         ),
       ]),
     ).toEqual([])
+  })
+})
+
+describe("css mono weight", () => {
+  it("rejects a monospace font heavier than the faces that exist", () => {
+    const sheet = file(
+      "src/a/styles.module.css",
+      ".a { font-family: var(--font-mono); font-weight: var(--weight-semibold); }\n.b { font-family: var(--font-mono); font-weight: 700; }",
+    )
+    expect(cssMonoWeight.check([sheet]).map((violation) => violation.message)).toEqual([
+      expect.stringContaining(".a on line 1"),
+      expect.stringContaining(".b on line 2"),
+    ])
+  })
+
+  it("accepts medium monospace and heavy text in other fonts", () => {
+    const sheet = file(
+      "src/a/styles.module.css",
+      ".a { font-family: var(--font-mono); font-weight: var(--weight-medium); }\n.b { font-weight: var(--weight-bold); }",
+    )
+    expect(cssMonoWeight.check([sheet])).toEqual([])
   })
 })

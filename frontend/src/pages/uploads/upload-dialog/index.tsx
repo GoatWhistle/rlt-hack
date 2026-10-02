@@ -45,8 +45,8 @@ function DialogActions({ check, pending, onOther, onStart }: DialogActionsProps)
         {t("dialog.otherFile")}
       </Button>
       {count > 0 ? (
-        <Button disabled={pending} onClick={onStart}>
-          {pending ? t("dialog.starting") : t("dialog.start", { count })}
+        <Button pending={pending} pendingLabel={t("dialog.starting")} onClick={onStart}>
+          {t("dialog.start", { count })}
         </Button>
       ) : null}
     </>
@@ -87,7 +87,10 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
 
   function start(file: File, check: FileCheck) {
     if (!check.ok) return
-    create.mutate({ file, check }, { onSuccess: (upload) => navigate(uploadPath(upload.id)) })
+    create.mutate(
+      { file, check },
+      { onSuccess: (upload) => navigate(uploadPath(upload.id), { viewTransition: true }) },
+    )
   }
 
   const checked = phase.kind === "checked" ? phase : null
@@ -118,7 +121,7 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
         steps={steps}
         current={create.isPending ? 2 : checked ? 1 : 0}
       />
-      <div className={styles.body}>
+      <div key={phase.kind} className={styles.body}>
         {phase.kind === "file" ? <Dropzone onSelect={(file) => void read(file)} /> : null}
         {phase.kind === "reading" ? <CheckSkeleton label={t("dialog.reading")} /> : null}
         {checked ? <CheckSummary check={checked.check} /> : null}

@@ -111,10 +111,12 @@ export function ExportDialog(props: ExportDialogProps) {
       onClose={onClose}
       footer={
         <Button
-          disabled={busy || ready.length === 0}
+          disabled={ready.length === 0}
+          pending={busy}
+          pendingLabel={t("submitting")}
           onClick={() => void download(choice.scope)}
         >
-          {busy ? t("submitting") : t("submit")}
+          {t("submit")}
         </Button>
       }
     >

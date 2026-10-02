@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useRegionText, useRoleLabel } from "@/entities/evidence/labels"
 import { ContactList } from "@/entities/evidence/ui/contact-list"
@@ -8,6 +9,7 @@ import { Dialog } from "@/shared/ui/dialog"
 import { ErrorState } from "@/shared/ui/error-state"
 import { type Fact, FactList } from "@/shared/ui/fact-list"
 import { LoadingState } from "@/shared/ui/loading-state"
+import { Reveal } from "@/shared/ui/reveal"
 import { SheetSection } from "@/shared/ui/sheet-section"
 import { Bone } from "@/shared/ui/skeleton"
 import { OfferList } from "../offer-list"
@@ -82,10 +84,15 @@ function ProfileSkeleton({ label }: { readonly label: string }) {
 function ProfileBody({ supplierId }: { readonly supplierId: string }) {
   const { t } = useTranslation("supplier")
   const profile = useSupplierProfile(supplierId)
+  const [late] = useState(profile.isPending)
   if (profile.isPending) return <ProfileSkeleton label={t("loading")} />
   if (profile.isError)
     return <ErrorState error={profile.error} onRetry={() => profile.refetch()} />
-  return <Profile profile={profile.data} />
+  return (
+    <Reveal active={late}>
+      <Profile profile={profile.data} />
+    </Reveal>
+  )
 }
 
 export type SupplierProfilePanelProps = {
@@ -103,7 +110,7 @@ export function SupplierProfilePanel({
 }: SupplierProfilePanelProps) {
   return (
     <Dialog open={open} size="side" title={name} onClose={onClose}>
-      <ProfileBody supplierId={supplierId} />
+      <ProfileBody key={supplierId} supplierId={supplierId} />
     </Dialog>
   )
 }

@@ -39,6 +39,14 @@
   gap: var(--space-3);
 }
 
+.view {
+  min-width: 0;
+}
+
+.view[data-direction] {
+  animation: var(--motion-slide-x-in);
+}
+
 .switcher {
   position: sticky;
   inset-block-start: 0;

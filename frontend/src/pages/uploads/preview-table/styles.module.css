@@ -10,7 +10,7 @@
   border-block-end: var(--line-width) solid var(--line-hairline);
   background: var(--surface-raised);
   font-family: var(--font-mono);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-medium);
   text-align: start;
   white-space: nowrap;
 }

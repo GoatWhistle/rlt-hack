@@ -5,9 +5,22 @@
   margin-block-start: var(--space-2);
 }
 
+.lead {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-3);
+}
+
 .text {
   color: var(--text-primary);
   font-weight: var(--weight-medium);
+  animation: var(--motion-swap);
+}
+
+.hint {
+  color: var(--text-secondary);
+  white-space: normal;
 }
 
 .toggle {

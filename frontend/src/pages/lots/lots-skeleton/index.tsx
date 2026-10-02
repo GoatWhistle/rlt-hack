@@ -10,11 +10,24 @@ export function LotsSkeleton() {
     <div className={styles.skeleton} role="status" aria-busy="true">
       <VisuallyHidden>{t("loading")}</VisuallyHidden>
       <div className={styles.blocks} aria-hidden="true">
-        <span className={styles.back} />
-        <span className={styles.title} />
-        <span className={styles.meta} />
-        <span className={styles.search} />
+        <div className={styles.header}>
+          <span className={styles.back} />
+          <div className={styles.top}>
+            <div className={styles.titles}>
+              <span className={styles.title} />
+              <span className={styles.meta} />
+            </div>
+            <span className={styles.action} />
+          </div>
+          <span className={styles.strip} />
+          <span className={styles.legend} />
+        </div>
+        <div className={styles.controls}>
+          <span className={styles.search} />
+          <span className={styles.segments} />
+        </div>
         <div className={styles.table}>
+          <div className={styles.head} />
           {ROWS.map((row) => (
             <div key={row} className={styles.row}>
               <span className={styles.box} />

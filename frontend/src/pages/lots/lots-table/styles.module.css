@@ -138,7 +138,7 @@
 }
 
 .status {
-  width: 11rem;
+  width: var(--col-status);
   white-space: nowrap;
 }
 

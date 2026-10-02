@@ -1,5 +1,5 @@
 import { clsx } from "clsx"
-import type { ReactElement, ReactNode, RefObject } from "react"
+import { type CSSProperties, type ReactElement, type ReactNode, type RefObject, useState } from "react"
 import { SegmentedControl } from "@/shared/ui/segmented-control"
 import styles from "./styles.module.css"
 import { WORKSPACE_VIEWS, type WorkspaceView } from "./use-workspace-view"
@@ -33,7 +33,13 @@ export function WorkspaceLayout({
   onShow,
   stackRef,
 }: WorkspaceLayoutProps) {
+  const [shown, setShown] = useState({ view, direction: 0 })
+  if (shown.view !== view) {
+    const step = WORKSPACE_VIEWS.indexOf(view) - WORKSPACE_VIEWS.indexOf(shown.view)
+    setShown({ view, direction: Math.sign(step) })
+  }
   if (narrow) {
+    const slide = { "--slide-direction": shown.direction } as CSSProperties
     return (
       <div className={styles.stacked} ref={stackRef}>
         <div className={styles.switcher}>
@@ -45,7 +51,14 @@ export function WorkspaceLayout({
             options={WORKSPACE_VIEWS.map((value) => ({ value, label: labels[value] }))}
           />
         </div>
-        {panes[view]}
+        <div
+          key={view}
+          className={styles.view}
+          data-direction={shown.direction === 0 ? undefined : shown.direction}
+          style={slide}
+        >
+          {panes[view]}
+        </div>
       </div>
     )
   }

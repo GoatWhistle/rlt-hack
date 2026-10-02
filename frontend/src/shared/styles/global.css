@@ -26,3 +26,23 @@ a {
 a:hover {
   color: var(--link-hover);
 }
+
+::view-transition-old(root) {
+  animation: var(--vt-old);
+}
+
+::view-transition-new(root) {
+  animation: var(--vt-new);
+}
+
+::view-transition-group(search-query) {
+  animation-duration: var(--vt-morph);
+  animation-timing-function: var(--ease-drawer);
+}
+
+::view-transition-old(search-query),
+::view-transition-new(search-query) {
+  height: 100%;
+  object-fit: none;
+  object-position: left top;
+}

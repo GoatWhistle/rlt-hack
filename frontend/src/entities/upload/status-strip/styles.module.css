@@ -8,6 +8,11 @@
   display: flex;
   gap: var(--space-0-5);
   height: var(--meter-height-lg);
+  contain: layout paint;
+}
+
+.bar[data-reveal] {
+  animation: var(--motion-reveal);
 }
 
 .segment {
@@ -15,8 +20,7 @@
   min-width: var(--space-1);
   border: var(--line-width) solid transparent;
   border-radius: var(--radius-pill);
-  transform-origin: left center;
-  animation: var(--motion-grow);
+  transition: var(--transition-segment);
 }
 
 .ready {
@@ -41,6 +45,10 @@
 
 .queued {
   background: var(--meter-empty);
+}
+
+.queued[data-live] {
+  animation: var(--motion-pulse);
 }
 
 .legend {

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { useUploads } from "@/entities/upload/queries"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { ErrorState } from "@/shared/ui/error-state"
+import { Reveal } from "@/shared/ui/reveal"
 import { PageSkeleton } from "@/shared/ui/skeleton"
 import { Intro } from "./intro"
 import styles from "./styles.module.css"
@@ -18,6 +19,7 @@ type DialogState = {
 export function UploadsPage() {
   const { t } = useTranslation()
   const uploads = useUploads()
+  const [late] = useState(uploads.isPending)
   useDocumentTitle([t("title.uploads")])
   const [dialog, setDialog] = useState<DialogState>({ open: false, file: null, session: 0 })
 
@@ -33,18 +35,20 @@ export function UploadsPage() {
   }
 
   return (
-    <div className={styles.page}>
-      {uploads.data.length === 0 ? (
-        <Intro onFile={openDialog} />
-      ) : (
-        <UploadList uploads={uploads.data} onUpload={() => openDialog(null)} />
-      )}
-      <UploadDialog
-        key={dialog.session}
-        open={dialog.open}
-        initialFile={dialog.file}
-        onClose={() => setDialog((current) => ({ ...current, open: false }))}
-      />
-    </div>
+    <Reveal active={late}>
+      <div className={styles.page}>
+        {uploads.data.length === 0 ? (
+          <Intro onFile={openDialog} />
+        ) : (
+          <UploadList uploads={uploads.data} onUpload={() => openDialog(null)} />
+        )}
+        <UploadDialog
+          key={dialog.session}
+          open={dialog.open}
+          initialFile={dialog.file}
+          onClose={() => setDialog((current) => ({ ...current, open: false }))}
+        />
+      </div>
+    </Reveal>
   )
 }

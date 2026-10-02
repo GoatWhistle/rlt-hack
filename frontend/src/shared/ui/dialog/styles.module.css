@@ -30,6 +30,7 @@
 
 .wide {
   width: min(var(--dialog-wide-width), calc(100vw - 2 * var(--space-4)));
+  margin-block: var(--dialog-offset) auto;
 }
 
 .side {

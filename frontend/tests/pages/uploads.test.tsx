@@ -57,7 +57,10 @@ describe("the first visit", () => {
     expect(
       within(dialog)
         .getAllByRole("button")
-        .map((button) => button.textContent),
+        .map(
+          (button) =>
+            button.querySelector('[aria-hidden="false"]')?.textContent ?? button.textContent,
+        ),
     ).toEqual([
       en("action.close"),
       en("dialog.otherFile", "uploads"),

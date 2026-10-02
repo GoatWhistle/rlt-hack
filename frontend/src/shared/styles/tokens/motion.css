@@ -26,7 +26,6 @@
   --motion-pop-in: pop-in var(--dur-base) var(--ease-out) both;
   --motion-slide-in: slide-in var(--dur-enter) var(--ease-out) both;
   --motion-slide-out: slide-out var(--dur-exit) var(--ease-out) both;
-  --motion-grow: grow-x var(--dur-enter) var(--ease-out) both;
   --motion-collapse: collapse var(--dur-exit) var(--ease-out) both;
   --dur-pulse: 900ms;
   --skeleton-dim: 0.5;
@@ -165,12 +164,6 @@
 
   to {
     transform: scaleX(var(--route-progress-max));
-  }
-}
-
-@keyframes grow-x {
-  from {
-    transform: scaleX(0);
   }
 }
 
