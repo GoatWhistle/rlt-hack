@@ -72,12 +72,12 @@ Main и ветка сделали загрузки CSV и экран закуп�
 
 ### Backend загрузок (теперь `search-api` main: `controller/uploads`, `service/upload`)
 
-- [ ] Потоковый разбор CSV с лимитами памяти, строк и ширины шапки, вынос разбора из событийного цикла (`plans/backend-audit-1.md`, P0 №1). В ветке — `adapter/file/notice_csv/`.
-- [ ] Очередь закупок с пределом (`429 upload_queue_full`), повторы и дообработка застрявших закупок (`plans/backend-audit-1.md` №4, №5). В ветке — `service/procurement_upload/runner.py`.
-- [ ] Предупреждения поиска и версия конвейера в результате закупки (`plans/backend-audit-3.md` №3).
-- [ ] Ответ 503 вместо 500 при недоступном ClickHouse на маршрутах загрузок (`plans/backend-audit-1.md` №6).
-- [ ] Лёгкая сводка загрузки, `ETag`/304 и редкий опрос детали (`plans/backend-audit-4.md` №5).
-- [ ] Коды ошибок загрузок в `contracts/error-codes.json`; сейчас загрузки main отвечают текстом `HTTPException`.
+- [x] Потоковый разбор CSV с лимитами памяти, строк и ширины шапки, вынос разбора из событийного цикла (`plans/backend-audit-1.md`, P0 №1). Перенесено в `controller/uploads/csv_file.py` и `received.py`: `Content-Length` до чтения, `max_files=1`, двоичные сигнатуры → 415, строка до 64 КБ, шапка до 64 колонок, чтение до 21-й строки, не больше двух разборов в пуле потоков. Лимиты main (2 МБ, 20 строк) и отказ всего файла при неверной строке сохранены; такая строка теперь даёт `invalid_row` с номером. Тесты: `tests/controller/uploads/test_csv_file.py`, `test_api.py`.
+- [x] Очередь закупок с пределом (`429 upload_queue_full`), повторы и дообработка застрявших закупок (`plans/backend-audit-1.md` №4, №5). Перенесён только предел: загрузка в main синхронная, поэтому `UPLOAD_MAX_BACKLOG` (40) ограничивает закупки во всех одновременно идущих загрузках; дополнительно `SEARCH_MAX_ACTIVE` (4) → `503 search_busy` для `/api/suppliers/search`. Повторы и дообработка неприменимы: незавершённая загрузка не сохраняется, запрос получает `503 search_unavailable`. Тесты: `tests/service/upload/test_worker.py`, `tests/controller/uploads/test_limits.py`.
+- [ ] Предупреждения поиска и версия конвейера в результате закупки (`plans/backend-audit-3.md` №3). Не перенесено: поиск main (`SupplierSearch`) не возвращает предупреждений — отказ индекса или энкодера роняет весь запрос, частичных отказов нет. Версия ранжирования хранится в `Upload.ranking_version` и пересчитывает результаты при смене, но в ответ не выдаётся. Нужны: результат поиска с `warnings` (например, отказ обогащения из `suppliers_current`/`offers_current`/истории не должен ронять поиск), хранение их в `LotRecommendation` и поле в `presentation.py` по контракту фронтенда.
+- [x] Ответ 503 вместо 500 при недоступном ClickHouse на маршрутах загрузок (`plans/backend-audit-1.md` №6). Шлюз индекса обёрнут `DeferredGateway`: `503 storage_unavailable` с `Retry-After: 5` на всех маршрутах `/api/uploads` и `/api/suppliers/search`. Тесты: `tests/application/test_supplier_index.py`, `tests/controller/uploads/test_storage.py`.
+- [ ] Лёгкая сводка загрузки, `ETag`/304 и редкий опрос детали (`plans/backend-audit-4.md` №5). Не перенесено: в main загрузка готова в ответе на `POST`, `processed == total`, поэтому фронтенд не опрашивает ни деталь, ни `/summary` (такого маршрута в main нет). `ETag` детали требует учитывать обогащение из ClickHouse, которое main перечитывает на каждый `GET`.
+- [x] Коды ошибок загрузок в `contracts/error-codes.json`; сейчас загрузки main отвечают текстом `HTTPException`. `search-api` подключает обработчики и `RequestContextMiddleware` из `controller/http`: тело `{code, message, requestId}`, `X-Request-Id`; новые коды `invalid_row` (422) и `search_busy` (503).
 
 ### Экран закупки (теперь из main, на общих компонентах ветки)
 

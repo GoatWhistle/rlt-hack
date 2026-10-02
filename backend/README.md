@@ -498,6 +498,7 @@ API получает пул такого размера, и каналы пои�
 | 422 | `invalid_file` | пустой файл, нет строк данных, неизвестная кодировка |
 | 422 | `missing_columns` | нет обязательных колонок `lot_id`, `procedure_name` |
 | 422 | `too_many_rows` | строк больше `UPLOAD_MAX_ROWS` |
+| 422 | `invalid_row` | строка CSV в `search-api` не прошла проверку; номер строки в `message` |
 | 422 | `no_valid_lots` | ни одна строка не прошла проверку |
 | 404 | `upload_not_found` | нет загрузки с таким id |
 | 404 | `lot_not_found` | в загрузке нет закупки с таким номером |
@@ -507,6 +508,7 @@ API получает пул такого размера, и каналы пои�
 | 405 | `method_not_allowed` | метод не поддерживается маршрутом |
 | 503 | `search_unavailable` | недоступны все каналы поиска; `Retry-After: 5` |
 | 503 | `storage_unavailable` | ClickHouse недоступен; заголовок `Retry-After: 5` |
+| 503 | `search_busy` | в `search-api` уже идёт `SEARCH_MAX_ACTIVE` поисков; `Retry-After: 5` |
 | 504 | `search_timeout` | превышен `SEARCH_TIMEOUT_SECONDS`; `Retry-After: 5` |
 | 500 | `internal_error` | прочие ошибки и нарушения инвариантов модели на сервере, без деталей наружу |
 
@@ -993,6 +995,25 @@ uv run --no-project --python 3.13 --with 'ruff>=0.14' ruff format .
 запускает `/api/health`, `/api/suppliers/search` и `/api/uploads`.
 CSV содержит `lot_id,procedure_name,subject`; максимум 20 строк и 2 МБ.
 Результаты связаны с cookie сессии и сохраняются в `UPLOADS_DIR`.
+
+Ошибки `search-api` приходят тем же телом `{"code", "message", "requestId"}` и
+с теми же кодами, что у `api` (таблица выше, `contracts/error-codes.json`);
+каждый ответ несёт `X-Request-Id`. Файл больше 2 МБ (по `Content-Length` ещё до
+чтения) — `413 file_too_large`, нет поля `file` — `400 missing_file`, ZIP/XLSX,
+OLE/XLS, PDF или `NUL` в начале — `415 unsupported_file_type`. Разбор идёт
+потоком в пуле потоков, не больше двух файлов одновременно: строка длиннее
+64 КБ, шапка шире 64 колонок, пустой файл или неизвестная кодировка —
+`422 invalid_file`, нет `lot_id`/`procedure_name` — `422 missing_columns`,
+21-я строка — `422 too_many_rows` (чтение прерывается), неверная строка —
+`422 invalid_row` с номером строки. Сбой поиска при загрузке или в
+`/api/suppliers/search` — `503 search_unavailable`, недоступный ClickHouse на
+любом маршруте — `503 storage_unavailable`, обе с `Retry-After: 5`.
+
+Загрузка обрабатывается синхронно в запросе. `UPLOAD_MAX_BACKLOG` (по умолчанию
+40, не меньше 20) ограничивает число закупок во всех одновременно идущих
+загрузках: сверх него — `429 upload_queue_full` с `Retry-After: 60`.
+`SEARCH_MAX_ACTIVE` (по умолчанию 4) ограничивает одновременные
+`POST /api/suppliers/search`: сверх него — `503 search_busy`.
 
 `python -m src.controller.search.import_index /data/index` применяет миграции,
 проверяет манифест и импортирует карточки/вектора в ClickHouse. Каталог должен
