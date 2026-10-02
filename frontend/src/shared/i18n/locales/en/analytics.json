@@ -136,7 +136,7 @@
     "noRuns": "No completed runs.",
     "noSources": "No sources are stored yet.",
     "errorHidden": "Error details are available to the operator.",
-    "extracted": "{{suppliers, number}} companies · {{offers, number}} offers",
+    "extracted": "{{suppliers, number}} companies, {{offers, number}} offers",
     "duration": "{{seconds, number}} s",
     "stateNote": "Disabled, never run and failed are different states; a source switched off in settings looks like never run here.",
     "columns": {

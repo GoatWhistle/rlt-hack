@@ -14,8 +14,8 @@ from src.controller.analytics.dto import (
     RunsDto,
 )
 from src.controller.analytics.protocols import CatalogAnalytics
-from src.controller.http.caching import uncached
-from src.controller.http.openapi import errors
+from src.controller.http.middleware.caching import uncached
+from src.controller.http.response.openapi import errors
 from src.controller.http.state import Services, services
 from src.models.analytics.filters import AnalyticsFilters
 from src.models.analytics.records import RecordProblem, RecordQuery

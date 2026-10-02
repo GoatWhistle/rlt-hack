@@ -32,7 +32,7 @@ export function BarList({ bars, total }: BarListProps) {
           </span>
           <span className={styles.value}>
             {number(bar.value)}
-            {total > 0 ? ` · ${percent(bar.value / total)}` : ""}
+            {total > 0 ? ` (${percent(bar.value / total)})` : ""}
           </span>
           <span className={styles.bar}>
             <ProgressBar

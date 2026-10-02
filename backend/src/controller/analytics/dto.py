@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from src.controller.http.schema import CamelModel, UtcDateTime
+from src.controller.http.response.schema import CamelModel, UtcDateTime
 from src.models.enums import FetchStatus, SourceType
 
 

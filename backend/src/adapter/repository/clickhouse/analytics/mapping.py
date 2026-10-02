@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
 
-from src.adapter.repository.clickhouse.rows import to_datetime, to_uuid
+from src.adapter.repository.clickhouse.engine.rows import to_datetime, to_uuid
 from src.models.analytics.measure import CountRow
 from src.models.analytics.slice import CategoryRow, ProblemRow, RunRow, SourceRow
 from src.models.enums import FetchStatus, SourceType

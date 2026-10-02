@@ -45,7 +45,7 @@ export function SourcesPage() {
               {success.value}
               {success.empty ? "" : ` (${success.basis})`}
               {report.partial > 0
-                ? ` · ${t("sources.runsPartial", { count: report.partial })}`
+                ? `, ${t("sources.runsPartial", { count: report.partial })}`
                 : ""}
             </span>
           }

@@ -2,9 +2,9 @@ import logging
 
 from pydantic import TypeAdapter, ValidationError
 
+from src.adapter.repository.clickhouse.engine.rows import to_datetime
+from src.adapter.repository.clickhouse.engine.versions import event_version
 from src.adapter.repository.clickhouse.protocols import SqlGateway
-from src.adapter.repository.clickhouse.rows import to_datetime
-from src.adapter.repository.clickhouse.versions import event_version
 from src.models.analytics.filters import DEFINITIONS_VERSION
 from src.models.analytics.slice import AnalyticsSlice
 

@@ -2,13 +2,13 @@ from datetime import datetime
 from typing import Any
 
 from src.adapter.repository.clickhouse.analytics import sql
-from src.adapter.repository.clickhouse.protocols import SqlGateway
-from src.adapter.repository.clickhouse.rows import (
+from src.adapter.repository.clickhouse.engine.rows import (
     to_datetime,
     to_decimal,
     to_optional_uuid,
     to_uuid,
 )
+from src.adapter.repository.clickhouse.protocols import SqlGateway
 from src.models.analytics.filters import AnalyticsFilters, FreshnessPolicy
 from src.models.analytics.records import RecordPage, RecordQuery, RecordRow
 

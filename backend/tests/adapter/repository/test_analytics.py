@@ -8,11 +8,12 @@ import pytest
 from src.adapter.repository.clickhouse.analytics.builder import ClickHouseSliceBuilder
 from src.adapter.repository.clickhouse.analytics.records import ClickHouseRecordReader
 from src.adapter.repository.clickhouse.analytics.store import ClickHouseSliceStore
-from src.adapter.repository.clickhouse.journal import ClickHouseJournalRepository
+from src.adapter.repository.clickhouse.catalog.journal import ClickHouseJournalRepository
 from src.models.analytics.filters import AnalyticsFilters, FreshnessPolicy
 from src.models.analytics.records import RecordProblem, RecordQuery
 from src.models.analytics.slice import AnalyticsSlice
-from src.models.classification import Classification
+from src.models.catalog.classification import Classification
+from src.models.catalog.offer import Offer
 from src.models.enums import (
     Availability,
     ClassificationMethod,
@@ -20,8 +21,7 @@ from src.models.enums import (
     SourceType,
     VerificationStatus,
 )
-from src.models.journal import CrawlRun
-from src.models.offer import Offer
+from src.models.operations.journal import CrawlRun
 from tests.adapter.repository.seed import Seeder
 from tests.clickhouse.chdb_gateway import ChdbGateway
 from tests.fakes.domain import CHECKED, make_offer, make_source, make_supplier, uid

@@ -108,7 +108,7 @@ describe("the sources report", () => {
     expect((await screen.findAllByText(t("sources.state.failed"))).length).toBeGreaterThan(0)
     expect(screen.getByText(t("sources.state.never_run"))).toBeInTheDocument()
     expect(screen.getByText("boom")).toBeInTheDocument()
-    expect(screen.getAllByText("2 companies · 4 offers").length).toBe(2)
+    expect(screen.getAllByText("2 companies, 4 offers").length).toBe(2)
     expect(screen.getByText(/1 partial/)).toBeInTheDocument()
   })
 
