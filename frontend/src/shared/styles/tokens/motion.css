@@ -2,11 +2,13 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-panel: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-fast: 130ms;
   --dur-base: 180ms;
   --dur-enter: 220ms;
   --dur-exit: 160ms;
   --dur-drawer: 280ms;
+  --dur-panel: 460ms;
   --motion-offset: 0.5rem;
   --motion-scale: 0.96;
   --press-scale: 0.97;
@@ -53,10 +55,10 @@
   --vt-morph: var(--dur-drawer);
   --vt-query-old: fade-out var(--dur-fast) var(--ease-out) both;
   --vt-query-new: fade-in var(--dur-base) var(--ease-out) var(--dur-fast) both;
-  --vt-panel-out: panel-out var(--dur-drawer) var(--ease-drawer) both;
-  --vt-fade-out: fade-out var(--dur-base) var(--ease-out) both;
-  --vt-fade-in: fade-in var(--dur-base) var(--ease-out) both;
-  --vt-panel-in: panel-in var(--dur-drawer) var(--ease-drawer) both;
+  --vt-panel-out: panel-out var(--dur-base) var(--ease-out) both;
+  --vt-fade-out: fade-out var(--dur-panel) var(--ease-panel) both;
+  --vt-fade-in: fade-in var(--dur-panel) var(--ease-panel) both;
+  --vt-panel-in: panel-in var(--dur-drawer) var(--ease-out) var(--dur-base) both;
   --motion-scroll-edge: scroll-edge linear both;
 }
 
@@ -207,6 +209,7 @@
     --dur-enter: 1ms;
     --dur-exit: 1ms;
     --dur-drawer: 1ms;
+    --dur-panel: 1ms;
     --dur-pulse: 1ms;
     --dur-route-progress: 1ms;
     --stagger-step: 0ms;

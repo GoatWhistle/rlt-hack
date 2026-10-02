@@ -48,7 +48,7 @@ function FieldBar(props: FieldBarProps) {
   const { compact, stage, counterId, length, pending } = props
   const { t } = useTranslation("search")
   return (
-    <div className={styles.bar}>
+    <div className={styles.bar} data-part="query-bar">
       {compact ? null : <StageLine stage={stage} />}
       {length >= COUNTER_FROM ? (
         <span
@@ -137,6 +137,7 @@ export function SearchBox({
           id={fieldId}
           ref={fieldRef}
           className={styles.input}
+          data-part="query-text"
           rows={compact ? 1 : 4}
           value={text}
           placeholder={t("box.placeholder")}

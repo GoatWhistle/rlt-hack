@@ -73,8 +73,7 @@ a:hover {
   animation: var(--vt-query-new);
 }
 
-:root[data-transition="panel"]::view-transition-old(root),
-:root[data-transition="panel"]::view-transition-old(search-query) {
+:root[data-transition="panel"]::view-transition-old(root) {
   animation: var(--vt-fade-out);
 }
 
@@ -82,14 +81,57 @@ a:hover {
   animation: var(--vt-fade-in);
 }
 
+:root[data-transition="panel"] [data-part="query-text"] {
+  view-transition-name: search-text;
+}
+
+:root[data-transition="panel"] [data-part="query-bar"] {
+  view-transition-name: search-bar;
+}
+
+:root[data-transition="panel"]::view-transition-old(search-query),
 :root[data-transition="panel"]::view-transition-new(search-query) {
+  width: 100%;
+  object-fit: fill;
   animation: none;
 }
 
+::view-transition-image-pair(search-text),
+::view-transition-image-pair(search-bar) {
+  overflow: clip;
+}
+
+::view-transition-old(search-text),
+::view-transition-new(search-text),
+::view-transition-old(search-bar),
+::view-transition-new(search-bar) {
+  height: 100%;
+  object-fit: none;
+  animation: none;
+}
+
+::view-transition-old(search-text),
+::view-transition-new(search-text) {
+  object-position: left top;
+}
+
+::view-transition-old(search-bar),
+::view-transition-new(search-bar) {
+  object-position: right top;
+}
+
+::view-transition-old(search-text),
+::view-transition-old(search-bar) {
+  opacity: 0;
+}
+
+:root[data-transition="panel"]::view-transition-group(search-query),
+::view-transition-group(search-text),
+::view-transition-group(search-bar),
 ::view-transition-group(recent-panel),
 ::view-transition-group(recent-reveal) {
-  animation-duration: var(--vt-morph);
-  animation-timing-function: var(--ease-drawer);
+  animation-duration: var(--dur-panel);
+  animation-timing-function: var(--ease-panel);
 }
 
 ::view-transition-old(recent-panel),
