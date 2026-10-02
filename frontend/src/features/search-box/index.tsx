@@ -1,8 +1,9 @@
 import { clsx } from "clsx"
 import { type FormEvent, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { DEFAULT_LIMIT, MAX_QUERY_LENGTH, type SearchResult } from "@/entities/search/model"
-import { useRunSearch } from "@/entities/search/queries"
+import { MAX_QUERY_LENGTH } from "@/entities/search/model"
+import type { UploadSummary } from "@/entities/upload/model"
+import { useCreateUpload } from "@/entities/upload/queries"
 import { FOCUS_SHORTCUT } from "@/shared/keyboard/use-focus-shortcut"
 import { Button } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
@@ -18,6 +19,7 @@ import { RegionPreference } from "./region-preference"
 import { SearchError } from "./search-error"
 import { StageLine, SweepBar } from "./stage-line"
 import styles from "./styles.module.css"
+import { textUpload } from "./text-upload"
 import { useAutoHeight } from "./use-auto-height"
 import { type SearchStage, useStage } from "./use-stage"
 
@@ -35,7 +37,7 @@ export type SearchBoxProps = {
   readonly autoFocus?: boolean
   readonly shortcut?: boolean
   readonly onStage?: (stage: SearchStage | null) => void
-  readonly onFound: (result: SearchResult) => void
+  readonly onFound: (result: UploadSummary) => void
 }
 
 type FieldBarProps = {
@@ -84,7 +86,7 @@ export function SearchBox({
   onFound,
 }: SearchBoxProps) {
   const { t } = useTranslation("search")
-  const search = useRunSearch()
+  const search = useCreateUpload()
   const [text, setText] = useState(initialText)
   const [region, setRegion] = useState(initialRegion)
   const [problem, setProblem] = useState<unknown>(null)
@@ -109,10 +111,7 @@ export function SearchBox({
     const found = problemOf(query)
     setProblem(found)
     if (found) return
-    search.mutate(
-      { text: query, limit: DEFAULT_LIMIT, ...(region ? { preferredRegion: region } : {}) },
-      { onSuccess: (result) => onFound(result) },
-    )
+    search.mutate(textUpload(query, region), { onSuccess: (result) => onFound(result) })
   }
 
   function change(next: string) {

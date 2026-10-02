@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react"
 import { en } from "@tests/support/dictionaries"
-import { contract, contractResult, renderSearch, stubSearch } from "@tests/support/search"
+import { contract, renderSearch, stubSearch } from "@tests/support/search"
 import { describe, expect, it, vi } from "vitest"
 import { parseRecentSearches } from "@/entities/search/parse"
 import { isToday } from "@/pages/search/recent-list"
@@ -76,17 +76,18 @@ describe("the search page", () => {
   })
 
   it("prefills a query from the address and opens the result after the search", async () => {
-    const gateway = stubSearch()
-    const { user, router } = renderSearch("/search?q=buckwheat%20500%20kg", { gateway })
+    const { user, router, uploads } = renderSearch("/search?q=buckwheat%20500%20kg")
     const field = screen.getByRole("textbox", { name: en("box.label", "search") })
     expect(field).toHaveValue("buckwheat 500 kg")
     await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
-    expect(gateway.search).toHaveBeenCalledWith(
-      expect.objectContaining({ text: "buckwheat 500 kg" }),
+    expect(uploads.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        check: expect.objectContaining({
+          notices: [expect.objectContaining({ title: "buckwheat 500 kg" })],
+        }),
+      }),
     )
-    await waitFor(() =>
-      expect(router.state.location.pathname).toBe(`/search/${contractResult().searchId}`),
-    )
+    await waitFor(() => expect(router.state.location.pathname).toBe("/uploads/u1/lots/query"))
   })
 
   it("hides recent searches upward, widens the field and remembers the choice", async () => {
