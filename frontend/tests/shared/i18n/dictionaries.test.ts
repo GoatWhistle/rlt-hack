@@ -34,6 +34,7 @@ const TEXT_PARAMS = new Set([
   "code",
   "columns",
   "date",
+  "fields",
   "file",
   "filter",
   "found",

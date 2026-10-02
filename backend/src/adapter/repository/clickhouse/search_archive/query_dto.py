@@ -12,6 +12,7 @@ from src.models.search import (
     SearchFilters,
     SearchQuery,
     SearchText,
+    UserPosition,
 )
 
 
@@ -73,6 +74,7 @@ class QueryDto(FrozenDto):
     customer_inn: str = ""
     start_price: Decimal | None = None
     origin: SearchOrigin = SearchOrigin.MANUAL
+    positions: tuple[tuple[str, Decimal | None, str, str], ...] = ()
 
     @classmethod
     def from_domain(cls, query: SearchQuery) -> Self:
@@ -85,6 +87,9 @@ class QueryDto(FrozenDto):
             customer_inn=query.context.customer_inn,
             start_price=query.context.start_price,
             origin=query.origin,
+            positions=tuple(
+                (item.name, item.quantity, item.unit, item.okpd2) for item in query.positions
+            ),
         )
 
     def to_domain(self) -> SearchQuery:
@@ -95,4 +100,5 @@ class QueryDto(FrozenDto):
             filters=SearchFilters(regions=self.regions, item_type=self.item_type),
             context=SearchContext(customer_inn=self.customer_inn, start_price=self.start_price),
             origin=self.origin,
+            positions=tuple(UserPosition(*item) for item in self.positions),
         )

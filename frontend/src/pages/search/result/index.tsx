@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router"
 import { useSearchResult } from "@/entities/search/queries"
+import { InputsNote } from "@/entities/search/ui/inputs-note"
 import { WarningNote } from "@/entities/search/ui/warning-note"
 import { SearchWorkspace } from "@/features/result-workspace"
 import { isApiError } from "@/shared/api/api-error"
@@ -36,6 +37,7 @@ export function SearchResultPage() {
   return (
     <div className={styles.page}>
       <ResultHeader result={data} />
+      <InputsNote result={data} />
       {data.warnings.length > 0 ? <WarningNote warnings={data.warnings} /> : null}
       <SearchWorkspace key={data.searchId} result={data} />
     </div>

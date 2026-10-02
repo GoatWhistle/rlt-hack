@@ -160,3 +160,21 @@ describe("incomplete company cards", () => {
     ).toBeInTheDocument()
   })
 })
+
+describe("the inputs note", () => {
+  it("says which fields shaped the result and which the model ignored", async () => {
+    await openVariant((payload) => ({
+      ...payload,
+      query: {
+        ...(payload.query as Record<string, unknown>),
+        context: { customerInn: "7807022750", startPrice: "100.00" },
+      },
+    }))
+    expect(screen.getByText(/Used for matching: description\./)).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        /not used by the current model \(text mode\): customer INN and start price/,
+      ),
+    ).toBeInTheDocument()
+  })
+})

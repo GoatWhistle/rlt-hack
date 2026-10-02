@@ -8,8 +8,9 @@ from src.adapter.text.rule_interpreter.okpd2 import extract_okpd2
 from src.adapter.text.rule_interpreter.quantity import canonical_unit, extract_quantity
 from src.adapter.text.rule_interpreter.splitter import split_positions
 from src.models.enums import ItemOrigin, ItemType
+from src.models.errors import InvalidSearchContextError
 from src.models.query_item import Quantity
-from src.models.search import SearchFilters, SearchQuery, SearchText
+from src.models.search import SearchFilters, SearchQuery, SearchText, UserPosition
 
 
 def query(text: str, item_type: ItemType | None = None) -> SearchQuery:
@@ -111,3 +112,30 @@ def test_okpd2_and_splitter_edge_cases() -> None:
     assert extract_okpd2("код 17.12 и 10.81.12")[0] == "17.12"
     assert split_positions("  ;  ") == []
     assert split_positions("гвозди 5 кг,") == ["гвозди 5 кг,"]
+
+
+async def test_explicit_positions_are_taken_as_given_by_the_user() -> None:
+    query = SearchQuery(
+        text=SearchText("Канцелярия для офиса"),
+        positions=(
+            UserPosition("Бумага А4 80 г/м2", Decimal("10"), "пачка"),
+            UserPosition("Ручка шариковая", okpd2="32.99.12"),
+        ),
+    )
+    items = await RuleQueryInterpreter(RussianAnalyzer()).interpret(query)
+    assert [(item.item_id, item.origin) for item in items] == [
+        ("i1", ItemOrigin.USER),
+        ("i2", ItemOrigin.USER),
+    ]
+    assert items[0].quantity == Quantity(Decimal("10"), "пачка")
+    assert [need.value for need in items[0].requirements] == ["A4", "80 г/м2"]
+    assert (items[1].okpd2, items[1].quantity) == ("32.99.12", None)
+
+
+def test_explicit_positions_are_validated() -> None:
+    with pytest.raises(InvalidSearchContextError):
+        UserPosition(" ")
+    with pytest.raises(InvalidSearchContextError):
+        UserPosition("Бумага", Decimal("0"))
+    with pytest.raises(InvalidSearchContextError):
+        SearchQuery(text=SearchText("x"), positions=(UserPosition("a"),) * 51)

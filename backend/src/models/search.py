@@ -86,6 +86,26 @@ class SearchContext:
 
 
 @dataclass(frozen=True, slots=True)
+class UserPosition:
+    name: str
+    quantity: Decimal | None = None
+    unit: str = ""
+    okpd2: str = ""
+
+    MAX_NAME: ClassVar[int] = 500
+
+    def __post_init__(self) -> None:
+        name = " ".join(self.name.split())
+        if not name or len(name) > self.MAX_NAME:
+            raise InvalidSearchContextError("position name must be 1-500 characters")
+        quantity = self.quantity
+        if quantity is not None and (not quantity.is_finite() or quantity <= 0):
+            raise InvalidSearchContextError("position quantity must be positive")
+        object.__setattr__(self, "name", name)
+        object.__setattr__(self, "unit", self.unit.strip())
+
+
+@dataclass(frozen=True, slots=True)
 class SearchQuery:
     text: SearchText
     limit: CandidateLimit = field(default_factory=CandidateLimit.default)
@@ -93,3 +113,10 @@ class SearchQuery:
     filters: SearchFilters = field(default_factory=SearchFilters)
     context: SearchContext = field(default_factory=SearchContext)
     origin: SearchOrigin = SearchOrigin.MANUAL
+    positions: tuple[UserPosition, ...] = ()
+
+    MAX_POSITIONS: ClassVar[int] = 50
+
+    def __post_init__(self) -> None:
+        if len(self.positions) > self.MAX_POSITIONS:
+            raise InvalidSearchContextError("too many explicit positions")

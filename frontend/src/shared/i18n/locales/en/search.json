@@ -128,5 +128,15 @@
     "inferred": "There is no direct source, the system inferred it — check before contacting.",
     "none": "The company has no records about this item.",
     "decision": "The decision stays with you: mark suitable candidates and download them as a CSV file."
+  },
+  "inputs": {
+    "used": "Used for matching: {{fields}}.",
+    "userItems": "Items were given explicitly.",
+    "ignored": "Provided but not used by the current model (text mode): {{fields}}.",
+    "field": {
+      "text": "description",
+      "customerInn": "customer INN",
+      "startPrice": "start price"
+    }
   }
 }

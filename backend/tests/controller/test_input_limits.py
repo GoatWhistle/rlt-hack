@@ -68,3 +68,20 @@ async def test_not_found_message_does_not_echo_input(
     assert response.status_code == 404
     assert response.json()["message"] == message
     assert LONG not in response.text
+
+
+async def test_explicit_items_reach_the_search_as_user_positions(
+    client: httpx.AsyncClient, provider: FakeServiceProvider
+) -> None:
+    body = {
+        "text": "Канцелярия",
+        "items": [{"name": "Бумага А4", "quantity": "10,5", "unit": "пачка"}],
+    }
+    response = await client.post("/api/searches", json=body)
+    assert response.status_code == 201
+    position = provider.searching.queries[-1].positions[0]
+    assert (position.name, str(position.quantity), position.unit) == ("Бумага А4", "10.5", "пачка")
+    bad = await client.post(
+        "/api/searches", json={"text": "x", "items": [{"name": "a", "quantity": "x"}]}
+    )
+    assert (bad.status_code, bad.json()["code"]) == (422, "invalid_request")

@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useParams } from "react-router"
+import type { SearchResult } from "@/entities/search/model"
+import { InputsNote } from "@/entities/search/ui/inputs-note"
 import { WarningNote } from "@/entities/search/ui/warning-note"
 import { filtered, pageForIndex, readQuery, writeQuery } from "@/entities/upload/list-query"
 import type { LotSummary } from "@/entities/upload/model"
@@ -24,6 +26,32 @@ function absence(status: LotSummary["status"]): Absence {
   if (status === "failed") return "failed"
   if (status === "noCandidates") return "notUnderstood"
   return "unavailable"
+}
+
+function LotResultView({
+  search,
+  status,
+}: {
+  readonly search?: SearchResult
+  readonly status: LotSummary["status"]
+}) {
+  const { t } = useTranslation("lot")
+  if (!search) {
+    return (
+      <EmptyState
+        headingLevel={2}
+        title={t(`${absence(status)}.title`)}
+        description={t(`${absence(status)}.text`)}
+      />
+    )
+  }
+  return (
+    <>
+      <InputsNote result={search} />
+      {search.warnings.length > 0 ? <WarningNote warnings={search.warnings} /> : null}
+      <SearchWorkspace result={search} />
+    </>
+  )
 }
 
 export function LotPage() {
@@ -85,16 +113,7 @@ export function LotPage() {
         neighbours={neighbours}
         onExport={() => setExporting((state) => ({ open: true, session: state.session + 1 }))}
       />
-      {search && search.warnings.length > 0 ? <WarningNote warnings={search.warnings} /> : null}
-      {search ? (
-        <SearchWorkspace key={current.id} result={search} />
-      ) : (
-        <EmptyState
-          headingLevel={2}
-          title={t(`${absence(current.status)}.title`)}
-          description={t(`${absence(current.status)}.text`)}
-        />
-      )}
+      <LotResultView key={current.id} search={search} status={current.status} />
       <ExportDialog
         key={exporting.session}
         open={exporting.open}

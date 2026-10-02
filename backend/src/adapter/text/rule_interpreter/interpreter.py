@@ -29,6 +29,8 @@ class RuleQueryInterpreter:
         self._max_items = max_items
 
     async def interpret(self, query: SearchQuery) -> tuple[QueryItem, ...]:
+        if query.positions:
+            return _explicit(query)
         text = query.text.value
         positions = [
             parsed
@@ -64,6 +66,24 @@ class RuleQueryInterpreter:
             quantity=quantity,
             requirements=extract_requirements(rest),
         )
+
+
+def _explicit(query: SearchQuery) -> tuple[QueryItem, ...]:
+    item_type = query.filters.item_type or ItemType.UNKNOWN
+    return tuple(
+        QueryItem(
+            item_id=f"i{number}",
+            name=position.name,
+            origin=ItemOrigin.USER,
+            okpd2=position.okpd2,
+            item_type=item_type,
+            quantity=None
+            if position.quantity is None
+            else Quantity(position.quantity, position.unit or "шт"),
+            requirements=extract_requirements(position.name),
+        )
+        for number, position in enumerate(query.positions, start=1)
+    )
 
 
 def _is_service_note(segment: str) -> bool:

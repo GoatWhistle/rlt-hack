@@ -4,6 +4,7 @@ from src.controller.search.dto import (
     ContextDto,
     FilterItemType,
     FiltersDto,
+    PositionDto,
     QueryDto,
     SearchRequestDto,
 )
@@ -15,6 +16,7 @@ from src.models.search import (
     SearchFilters,
     SearchQuery,
     SearchText,
+    UserPosition,
 )
 
 FILTER_ITEM_TYPES: dict[ItemType, FilterItemType] = {
@@ -44,7 +46,17 @@ def to_query(dto: SearchRequestDto, locale: Locale) -> SearchQuery:
             item_type=None if item_type is None else ItemType(item_type),
         ),
         context=to_context(dto.context),
+        positions=tuple(to_position(item) for item in dto.items),
     )
+
+
+def to_position(dto: PositionDto) -> UserPosition:
+    raw = (dto.quantity or "").replace(" ", "").replace(",", ".")
+    try:
+        quantity = Decimal(raw) if raw else None
+    except InvalidOperation as error:
+        raise InvalidSearchContextError("position quantity is not a number") from error
+    return UserPosition(dto.name, quantity, dto.unit or "", dto.okpd2 or "")
 
 
 def context_dto(context: SearchContext) -> ContextDto:

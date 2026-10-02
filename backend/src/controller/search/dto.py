@@ -48,9 +48,19 @@ class ContextDto(CamelModel):
     start_price: Annotated[str, StringConstraints(max_length=32)] | None = None
 
 
+class PositionDto(CamelModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    name: Annotated[str, StringConstraints(max_length=500)]
+    quantity: Annotated[str, StringConstraints(max_length=32)] | None = None
+    unit: Annotated[str, StringConstraints(max_length=32)] | None = None
+    okpd2: Annotated[str, StringConstraints(max_length=20)] | None = None
+
+
 class SearchRequestDto(CamelModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
+    items: list[PositionDto] = Field(default_factory=list, max_length=50)
     text: str
     limit: int | None = None
     filters: FiltersDto = Field(default_factory=FiltersDto)
