@@ -28,8 +28,7 @@
   --checkbox-size: 1.125rem;
   --dot-size: 0.4375rem;
   --header-height: 3.5rem;
-  --field-min-lines: 4;
-  --query-offset: clamp(var(--space-4), calc(14dvh - 4rem), 7rem);
+  --field-min-lines: 3;
   --field-max-lines: 8;
   --page-fill: calc(
     100dvh -
@@ -67,12 +66,7 @@
   --rail-width: 3.5rem;
   --rail-max-height: 36rem;
   --history-kind-size: 2.25rem;
-  --history-column-height: calc(
-    100dvh -
-    var(--header-height) -
-    var(--space-9) -
-    var(--space-9)
-  );
+  --history-min-height: 34rem;
   --z-skip-link: 600;
   --indicator-height: 2px;
   --skeleton-line: 0.75rem;

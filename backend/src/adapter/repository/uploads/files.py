@@ -69,6 +69,8 @@ class FileUploads:
                     )
                     for candidate in lot["candidates"]
                 ],
+                processed=lot.get("processed", True),
+                failed=lot.get("failed", False),
             )
             for lot in data["lots"]
         ]

@@ -27,7 +27,7 @@
   },
   "intake": {
     "attach": "Прикрепить файл",
-    "formats": "CSV, XLSX, PDF, DOCX — до {{limit, number}} МБ",
+    "formats": "Перетащите файл в поле или прикрепите: CSV, XLSX, PDF, DOCX до {{limit, number}} МБ",
     "remove": "Убрать",
     "removeLabel": "Убрать файл {{name}}",
     "replace": "Выбрать другой",
@@ -52,7 +52,8 @@
     "issues_few": "{{count, number}} строки с ошибками",
     "issues_many": "{{count, number}} строк с ошибками",
     "issues_other": "{{count, number}} строки с ошибками",
-    "details": "Подробнее"
+    "details": "Подробнее",
+    "attachShort": "Файл"
   },
   "items": {
     "title": "Потоварка — второй CSV (необязательно)",

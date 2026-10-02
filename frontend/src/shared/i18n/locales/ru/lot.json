@@ -38,7 +38,9 @@
     "noPrice": "Начальная цена не указана",
     "published": "Опубликовано {{date}}",
     "export": "Скачать результаты",
-    "exportShort": "Скачать"
+    "exportShort": "Скачать",
+    "backQueries": "История запросов",
+    "textQuery": "Поиск по описанию от {{date}}"
   },
   "chain": {
     "label": "Цепочка вывода",
@@ -170,11 +172,12 @@
     "examples_one": "{{count, number}} пример",
     "examples_few": "{{count, number}} примера",
     "examples_many": "{{count, number}} примеров",
-    "requestTitle": "Поиск по описанию",
-    "requestNote": "«{{title}}». Кандидаты подобраны по описанию закупки целиком. Отдельные товарные позиции пока не выделены.",
+    "requestTitle": "Запрос",
+    "requestNote": "Кандидаты подобраны по описанию целиком. Чтобы сузить поиск, назовите товар, количество или код ОКПД2.",
     "companySource": "Источник реквизитов",
     "openSource": "Карточка компании",
-    "examples_other": "{{count, number}} примеров"
+    "examples_other": "{{count, number}} примеров",
+    "requestEdit": "Изменить запрос"
   },
   "grounds": {
     "title": "На чём основана рекомендация",

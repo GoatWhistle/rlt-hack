@@ -1,7 +1,5 @@
 import { type RefObject, useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "@/shared/ui/button"
-import { Icon } from "@/shared/ui/icon"
 import { ACCEPTED_FILES, MAX_FILE_MB } from "./model"
 
 export type FilePicker = {
@@ -36,29 +34,6 @@ export function FileInput({ picker, onFile }: FileInputProps) {
         if (file) onFile(file)
       }}
     />
-  )
-}
-
-export type AttachButtonProps = {
-  readonly className?: string
-  readonly disabled?: boolean
-  readonly onClick: () => void
-}
-
-export function AttachButton({ className, disabled, onClick }: AttachButtonProps) {
-  const { t } = useTranslation("uploads")
-  return (
-    <Button
-      variant="secondary"
-      className={className}
-      aria-disabled={disabled || undefined}
-      onClick={() => {
-        if (!disabled) onClick()
-      }}
-    >
-      <Icon name="paperclip" />
-      {t("intake.attach")}
-    </Button>
   )
 }
 

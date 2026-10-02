@@ -28,15 +28,21 @@ async def main():
         service = UploadService(search, repository)
         owner = "a" * 32
         upload = await service.create(owner, "test.csv", [Notice("lot", "paper")])
+        assert not upload.lots[0].processed
+        await service.drain()
         assert upload.ranking_version == "first" and search.calls == 1
         await service.get(owner, upload.upload_id)
         assert search.calls == 1
         search.version = "second"
         results = await asyncio.gather(*(service.get(owner, upload.upload_id) for _ in range(5)))
+        assert all(item.ranking_version == "first" for item in results)
+        await service.drain()
         assert search.calls == 2
+        results = await asyncio.gather(*(service.get(owner, upload.upload_id) for _ in range(5)))
         assert all(item.ranking_version == "second" for item in results)
         assert all(item.lots[0].candidates[0].profile == "second" for item in results)
         assert results[0].created_at == upload.created_at
+        await service.drain()
         assert await service.get("b" * 32, upload.upload_id) is None
         assert search.calls == 2
         restored = await repository.get(owner, upload.upload_id)

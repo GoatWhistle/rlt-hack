@@ -1,0 +1,52 @@
+.attach {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: calc(var(--tool-size) + var(--space-1));
+  padding-inline: var(--space-2) var(--space-3);
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  transition: var(--transition-control);
+}
+
+.attach::after {
+  position: absolute;
+  inset: calc((var(--tool-size) + var(--space-1) - var(--target-touch)) / 2)
+    calc(-1 * var(--space-1));
+  content: "";
+}
+
+.attach:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.attach:active {
+  transform: scale(var(--press-scale));
+}
+
+.attach[data-attached] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.attach svg {
+  width: var(--icon-md);
+  height: var(--icon-md);
+}
+
+@media (max-width: 29.99rem) {
+  .text {
+    display: none;
+  }
+
+  .attach {
+    padding-inline: var(--space-2);
+  }
+}

@@ -76,7 +76,7 @@ async def create_upload(request: Request, response: Response):
     except (DomainError, UploadError, StorageUnavailableError):
         raise
     except Exception as error:
-        logger.warning("upload search failed", exc_info=error)
+        logger.warning("upload creation failed", exc_info=error)
         raise SearchUnavailableError(ENGINE) from error
     return summary(upload)
 

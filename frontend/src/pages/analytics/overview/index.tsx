@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next"
-import { Link } from "react-router"
 import { type Overview, SOURCE_TYPES } from "@/entities/analytics/model"
 import { useOverview } from "@/entities/analytics/queries"
 import { hasFilters, recordsHref } from "@/entities/analytics/scope"
 import { useFormatters } from "@/shared/i18n/formatters"
+import { ArrowLink } from "@/shared/ui/arrow-link"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
 import { PanelBlock } from "@/shared/ui/panel-block"
@@ -18,7 +18,6 @@ import { SnapshotBar } from "../snapshot-bar"
 import { SourcesTable } from "../sources-table"
 import { useScope } from "../use-scope"
 import { AttentionList } from "./attention"
-import styles from "./styles.module.css"
 import { TopCategories } from "./top-categories"
 
 type RatioMetricProps = {
@@ -39,13 +38,7 @@ function RatioMetric({ name, overview, href }: RatioMetricProps) {
       note={ratio.unknown}
       empty={ratio.empty}
       hint={t(`hints.${name}`, { offer: policy.offerDays, registry: policy.registryDays })}
-      action={
-        href ? (
-          <Link to={href} className={styles.link}>
-            {t("records.show")}
-          </Link>
-        ) : undefined
-      }
+      action={href ? <ArrowLink to={href}>{t("records.show")}</ArrowLink> : undefined}
     />
   )
 }
@@ -83,11 +76,7 @@ export function OverviewPage() {
             label={t("metrics.offers")}
             value={number(overview.offers)}
             hint={t("hints.offers")}
-            action={
-              <Link to={recordsHref(scope.filters)} className={styles.link}>
-                {t("records.show")}
-              </Link>
-            }
+            action={<ArrowLink to={recordsHref(scope.filters)}>{t("records.show")}</ArrowLink>}
           />
           <MetricCard
             label={t("metrics.companies")}
@@ -101,7 +90,7 @@ export function OverviewPage() {
           />
           <RatioMetric name="searchable" overview={overview} />
         </MetricGroup>
-        <PanelBlock title={t("composition.title")}>
+        <PanelBlock framed title={t("composition.title")}>
           <BarList
             total={overview.offers}
             bars={overview.composition.map((row) => {
@@ -124,10 +113,10 @@ export function OverviewPage() {
           total={overview.offers}
           filters={scope.filters}
         />
-        <PanelBlock title={t("sources.title")}>
+        <PanelBlock framed title={t("sources.title")}>
           <SourcesTable sources={overview.sources} filters={scope.filters} compact />
         </PanelBlock>
-        <PanelBlock title={t("sources.runsTitle")}>
+        <PanelBlock framed title={t("sources.runsTitle")}>
           <RunsTable runs={overview.runs} />
         </PanelBlock>
       </Stack>

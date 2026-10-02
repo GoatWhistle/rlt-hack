@@ -51,7 +51,7 @@ async def test_storage_outage_during_lot_search_is_503(
 ) -> None:
     engine.failure = StorageUnavailableError()
     uploaded = await search_client.post("/api/uploads", files={"file": ("a.csv", CSV)})
-    assert_error(uploaded, 503, "storage_unavailable")
+    assert uploaded.status_code == 200, uploaded.text
     searched = await search_client.post("/api/suppliers/search", json={"query": "paper"})
     assert_error(searched, 503, "storage_unavailable")
     assert searched.headers["Retry-After"] == "5"

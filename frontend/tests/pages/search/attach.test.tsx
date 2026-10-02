@@ -50,6 +50,9 @@ describe("attaching a file to the search", () => {
     await user.click(screen.getByRole("button", { name: en("intake.attach", "uploads") }))
     expect(click).toHaveBeenCalledTimes(1)
     await user.upload(picker(), file(CSV, "notices-for-october.csv", "text/csv"))
+    expect(
+      screen.getByRole("button", { name: en("intake.attach", "uploads") }),
+    ).toHaveAttribute("data-attached")
 
     expect(await screen.findByText("2 purchases in the file")).toBeInTheDocument()
     expect(screen.getByText("1 row with errors")).toBeInTheDocument()

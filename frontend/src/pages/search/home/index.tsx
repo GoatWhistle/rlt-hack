@@ -3,14 +3,10 @@ import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router"
 import { DEFAULT_REGION_CODE, isRegionCode } from "@/entities/evidence/regions"
 import type { UploadSummary } from "@/entities/upload/model"
+import { AttachButton } from "@/features/file-intake/attach-button"
 import { CheckDisclosure } from "@/features/file-intake/check-disclosure"
 import { FileChip } from "@/features/file-intake/file-chip"
-import {
-  AttachButton,
-  FileInput,
-  FormatsHint,
-  useFilePicker,
-} from "@/features/file-intake/file-picker"
+import { FileInput, FormatsHint, useFilePicker } from "@/features/file-intake/file-picker"
 import { ItemsAttachment } from "@/features/file-intake/items-attachment"
 import { sendable } from "@/features/file-intake/model"
 import { useFileIntake } from "@/features/file-intake/use-file-intake"
@@ -20,6 +16,7 @@ import { lotPath, SEARCH_TEXT_PARAM, uploadPath } from "@/shared/config/paths"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { PageTitle } from "@/shared/ui/page-title"
 import { LatestStrip } from "../latest-strip"
+import { SearchIdeas } from "../search-ideas"
 import styles from "./styles.module.css"
 
 function regionFrom(param: string | null): string {
@@ -51,7 +48,7 @@ function useAttachment(fieldId: string) {
     needsText: intake !== null && intake.status !== "reading" && upload === null,
     dropping,
     chip: <FileChip intake={intake} onRemove={remove} onReplace={picker.open} />,
-    tool: <AttachButton onClick={picker.open} />,
+    tool: <AttachButton attached={intake !== null} onClick={picker.open} />,
     hint: <FormatsHint />,
   }
   const items = notices ? <ItemsAttachment file={itemsFile} onChange={setItemsFile} /> : null
@@ -80,23 +77,28 @@ export function SearchPage() {
         <PageTitle id={titleId}>{t("home.title")}</PageTitle>
         <p className={styles.lead}>{t("home.lead")}</p>
       </div>
-      <div className={styles.query}>
-        <SearchBox
-          key={draft}
-          autoFocus
-          shortcut
-          inputId={fieldId}
-          initialText={draft}
-          initialRegion={regionFrom(region)}
-          attachment={attachment}
-          onFound={(result, lots) =>
-            navigate(foundPath(result, lots), { viewTransition: true })
-          }
-        />
-        {input}
-        <CheckDisclosure intake={intake} />
-        {items}
-        <LatestStrip />
+      <div className={styles.layout}>
+        <div className={styles.query}>
+          <SearchBox
+            key={draft}
+            autoFocus
+            shortcut
+            inputId={fieldId}
+            initialText={draft}
+            initialRegion={regionFrom(region)}
+            attachment={attachment}
+            onFound={(result, lots) =>
+              navigate(foundPath(result, lots), { viewTransition: true })
+            }
+          />
+          {input}
+          <CheckDisclosure intake={intake} />
+          {items}
+        </div>
+        <aside className={styles.side}>
+          <SearchIdeas />
+          <LatestStrip />
+        </aside>
       </div>
     </section>
   )

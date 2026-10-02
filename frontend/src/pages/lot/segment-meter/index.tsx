@@ -13,7 +13,7 @@ export type SegmentMeterProps = {
 }
 
 export function SegmentMeter({ company, products, size = "sm" }: SegmentMeterProps) {
-  if (products.length === 0) return null
+  if (products.length === 0 || company.matches.length === 0) return null
   return (
     <Meter
       size={size}

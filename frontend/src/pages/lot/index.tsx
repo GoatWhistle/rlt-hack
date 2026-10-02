@@ -10,7 +10,12 @@ import {
   readQuery,
   writeQuery,
 } from "@/entities/upload/list-query"
-import type { LotSummary } from "@/entities/upload/model"
+import {
+  isTextQuery,
+  type LotSummary,
+  TEXT_QUERY_LOT,
+  type UploadSummary,
+} from "@/entities/upload/model"
 import { useLot, useUpload } from "@/entities/upload/queries"
 import { CompareButton } from "@/features/compare-candidates"
 import { ExportDialog } from "@/features/export-results"
@@ -67,6 +72,16 @@ export function neighboursOf(
   return { prev: link(index - 1), next: link(index + 1), index: index + 1, total: list.length }
 }
 
+function lotTitle(lotId: string) {
+  return lotId === TEXT_QUERY_LOT
+    ? (["title.search"] as const)
+    : (["title.lot", { id: lotId }] as const)
+}
+
+function backPath(upload: UploadSummary, uploadId: string, search: string): string {
+  return isTextQuery(upload) ? historyPath("queries") : uploadPath(uploadId, search)
+}
+
 function useLotCompare(
   uploadId: string,
   lotId: string,
@@ -108,7 +123,7 @@ export function LotPage() {
   const [exporting, setExporting] = useState({ open: false, session: 0 })
   const compare = useLotCompare(uploadId, lotId, lot.data?.recommendation, switching)
   const [actionsRef, actionsInView] = useInView<HTMLDivElement>()
-  useDocumentTitle(common("title.lot", { id: lotId }))
+  useDocumentTitle(common(...lotTitle(lotId)))
 
   if (waiting || lot.isPending) return <WorkspaceSkeleton label={t("loading")} />
   if (lot.isError) {
@@ -134,7 +149,7 @@ export function LotPage() {
         <LotHeader
           upload={summary}
           lot={current}
-          backTo={uploadPath(uploadId, index < 0 ? writeQuery(query) : listSearch)}
+          backTo={backPath(summary, uploadId, index < 0 ? writeQuery(query) : listSearch)}
           neighbours={neighboursOf(list, index, uploadId, query)}
           chosen={compare.chosen.length}
           actionsRef={actionsRef}

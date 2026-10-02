@@ -1,4 +1,3 @@
-import { useId } from "react"
 import { useTranslation } from "react-i18next"
 import { Icon } from "@/shared/ui/icon"
 import styles from "./styles.module.css"
@@ -10,17 +9,13 @@ export type HistoryFilterProps = {
 
 export function HistoryFilter({ value, onChange }: HistoryFilterProps) {
   const { t } = useTranslation("history")
-  const id = useId()
   return (
     <div className={styles.filter}>
-      <label htmlFor={id} className={styles.label}>
-        {t("filter.label")}
-      </label>
       <span className={styles.field}>
         <Icon name="search" />
         <input
-          id={id}
           type="search"
+          aria-label={t("filter.label")}
           className={styles.input}
           value={value}
           placeholder={t("filter.placeholder")}

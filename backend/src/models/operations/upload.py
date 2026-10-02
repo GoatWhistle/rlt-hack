@@ -32,6 +32,8 @@ class Notice:
 class LotRecommendation:
     notice: Notice
     candidates: list[SupplierCandidate] = field(default_factory=list)
+    processed: bool = True
+    failed: bool = False
 
 
 @dataclass(frozen=True)

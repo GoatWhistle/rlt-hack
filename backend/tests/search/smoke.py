@@ -66,7 +66,8 @@ async def main():
             )
             assert response.status_code == 200, response.text
             identifier = response.json()["id"]
-            assert response.json()["processed"] == 1
+            assert response.json()["processed"] == 0
+            await app.state.uploads.drain()
             assert len((await client.get("/api/uploads")).json()["uploads"]) == 1
             response = await client.get(f"/api/uploads/{identifier}/lots/test_1")
             candidate = response.json()["recommendation"]["companies"][0]

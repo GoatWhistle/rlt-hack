@@ -81,7 +81,17 @@
   },
   "latest": {
     "label": "Recent searches and files",
-    "title": "Recent:",
+    "title": "Recent",
     "all": "All history"
+  },
+  "ideas": {
+    "title": "Try",
+    "items": {
+      "paper": "Office paper A4, 500 packs",
+      "laptops": "Laptops for a school, 30 units",
+      "gloves": "Medical nitrile gloves",
+      "roof": "School building roof repair",
+      "cartridges": "Laser printer cartridges"
+    }
   }
 }

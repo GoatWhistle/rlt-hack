@@ -22,8 +22,11 @@ export type LotsTableProps = {
   readonly pageToggle: RefObject<HTMLInputElement | null>
 }
 
+type Columns = { readonly subject: boolean; readonly published: boolean }
+
 type LotRowProps = {
   readonly lot: LotSummary
+  readonly columns: Columns
   readonly href: string
   readonly selected: boolean
   readonly onToggle: () => void
@@ -50,7 +53,7 @@ function CompactFacts({ lot, amount }: { readonly lot: LotSummary; readonly amou
   )
 }
 
-function LotRow({ lot, href, selected, onToggle }: LotRowProps) {
+function LotRow({ lot, columns, href, selected, onToggle }: LotRowProps) {
   const { t } = useTranslation("lots")
   const { price, number, date } = useFormatters()
   const empty = lot.status === "queued" || lot.status === "failed"
@@ -87,15 +90,19 @@ function LotRow({ lot, href, selected, onToggle }: LotRowProps) {
           </FactRow>
         </span>
       </td>
-      <td className={clsx(styles.subject, styles.extra)}>
-        {lot.subject ?? <span className={styles.none}>{t("table.pending")}</span>}
-      </td>
+      {columns.subject ? (
+        <td className={clsx(styles.subject, styles.extra)}>
+          {lot.subject || <span className={styles.none}>{t("table.pending")}</span>}
+        </td>
+      ) : null}
       <td className={styles.status}>
         <LotStatusTag status={lot.status} />
       </td>
-      <td className={clsx(styles.number, styles.extra)}>
-        {lot.publishDate ? date(lot.publishDate) : t("table.pending")}
-      </td>
+      {columns.published ? (
+        <td className={clsx(styles.number, styles.extra)}>
+          {lot.publishDate ? date(lot.publishDate) : t("table.pending")}
+        </td>
+      ) : null}
       <td className={clsx(styles.number, styles.wide)}>{amount ?? t("table.noPrice")}</td>
       <td className={clsx(styles.number, styles.wide)}>
         {empty ? t("table.pending") : number(lot.products)}
@@ -116,6 +123,10 @@ export function LotsTable(props: LotsTableProps) {
   const pageIds = lots.map((lot) => lot.id)
   const chosen = pageIds.filter((id) => selected.has(id)).length
   const all = props.pageToggle
+  const columns = {
+    subject: lots.some((lot) => Boolean(lot.subject)),
+    published: lots.some((lot) => Boolean(lot.publishDate)),
+  }
 
   useEffect(() => {
     if (all.current) all.current.indeterminate = chosen > 0 && chosen < pageIds.length
@@ -141,13 +152,17 @@ export function LotsTable(props: LotsTableProps) {
             </label>
           </th>
           <th scope="col">{t("table.title")}</th>
-          <th scope="col" className={styles.extra}>
-            {t("table.subject")}
-          </th>
+          {columns.subject ? (
+            <th scope="col" className={styles.extra}>
+              {t("table.subject")}
+            </th>
+          ) : null}
           <th scope="col">{t("table.status")}</th>
-          <th scope="col" className={clsx(styles.number, styles.extra)}>
-            {t("table.published")}
-          </th>
+          {columns.published ? (
+            <th scope="col" className={clsx(styles.number, styles.extra)}>
+              {t("table.published")}
+            </th>
+          ) : null}
           <th scope="col" className={styles.number}>
             {t("table.price")}
           </th>
@@ -164,6 +179,7 @@ export function LotsTable(props: LotsTableProps) {
           <LotRow
             key={lot.id}
             lot={lot}
+            columns={columns}
             href={lotPath(uploadId, lot.id, linkSearch)}
             selected={selected.has(lot.id)}
             onToggle={() => onToggle(lot.id)}

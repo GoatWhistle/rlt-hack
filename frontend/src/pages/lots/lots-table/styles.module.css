@@ -54,7 +54,7 @@
 }
 
 .check {
-  width: var(--target-touch);
+  width: 1%;
 }
 
 .head .check,

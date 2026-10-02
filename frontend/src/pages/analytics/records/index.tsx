@@ -9,6 +9,7 @@ import {
 } from "@/entities/analytics/scope"
 import { ANALYTICS_PATH, ANALYTICS_RECORDS_PATH } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
+import { BackLink } from "@/shared/ui/back-link"
 import { DataCell, type DataColumn, DataTable } from "@/shared/ui/data-table"
 import { EmptyState } from "@/shared/ui/empty-state"
 import { ErrorState } from "@/shared/ui/error-state"
@@ -64,9 +65,7 @@ export function RecordsPage() {
         {what.length > 0 ? (
           <p className={styles.note}>{t("records.filteredBy", { what: what.join(", ") })}</p>
         ) : null}
-        <Link to={`${ANALYTICS_PATH}${scope.search}`} className={styles.link}>
-          {t("records.back")}
-        </Link>
+        <BackLink to={`${ANALYTICS_PATH}${scope.search}`}>{t("records.back")}</BackLink>
       </header>
       {page.changedAfter > 0 ? (
         <p className={styles.warning} role="status">

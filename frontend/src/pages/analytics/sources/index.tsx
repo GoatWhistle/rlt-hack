@@ -39,6 +39,7 @@ export function SourcesPage() {
           onRefresh={scope.refresh}
         />
         <PanelBlock
+          framed
           title={t("sources.title")}
           aside={
             <span>
@@ -54,7 +55,7 @@ export function SourcesPage() {
           <SourcesTable sources={report.items} filters={scope.filters} />
           <p className={styles.note}>{t("sources.stateNote")}</p>
         </PanelBlock>
-        <PanelBlock title={t("sources.runsTitle")} aside={number(report.runs.length)}>
+        <PanelBlock framed title={t("sources.runsTitle")} aside={number(report.runs.length)}>
           {report.runs.length === 0 ? (
             <p className={styles.note}>{t("sources.noRuns")}</p>
           ) : (

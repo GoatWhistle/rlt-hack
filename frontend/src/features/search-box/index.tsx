@@ -1,5 +1,5 @@
 import { clsx } from "clsx"
-import { type FormEvent, type ReactNode, useId, useRef, useState } from "react"
+import { type FormEvent, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { DEFAULT_REGION_CODE } from "@/entities/evidence/regions"
 import { FOCUS_SHORTCUT } from "@/shared/keyboard/use-focus-shortcut"
@@ -47,24 +47,6 @@ function useFieldCopy(attachment: Attachment | undefined) {
   return attachment?.upload != null
     ? { label: t("box.noteLabel"), placeholder: t("box.notePlaceholder") }
     : { label: t("box.label"), placeholder: t("box.placeholder") }
-}
-
-type AttachmentActionsProps = {
-  readonly attachment: Attachment | undefined
-  readonly submit: ReactNode
-}
-
-function AttachmentActions({ attachment, submit }: AttachmentActionsProps) {
-  if (!attachment) return null
-  return (
-    <>
-      <div className={styles.actions}>
-        {attachment.tool}
-        {submit}
-      </div>
-      <p className={styles.hint}>{attachment.hint}</p>
-    </>
-  )
 }
 
 function AttachmentChip({ attachment }: { readonly attachment: Attachment | undefined }) {
@@ -118,7 +100,7 @@ export function SearchBox({
 
   return (
     <form
-      className={clsx(styles.box, compact && styles.compact, attachment && styles.attachable)}
+      className={clsx(styles.box, compact && styles.compact)}
       noValidate
       aria-busy={search.pending}
       onSubmit={(event: FormEvent) => {
@@ -152,23 +134,25 @@ export function SearchBox({
         <AttachmentChip attachment={attachment} />
         <FieldBar
           region={
-            <RegionPreference
-              className={styles.region}
-              collapse={compact}
-              value={region}
-              onChange={setRegion}
-              disabled={search.pending}
-            />
+            <span className={styles.tools}>
+              {attachment?.tool}
+              <RegionPreference
+                collapse={compact}
+                value={region}
+                onChange={setRegion}
+                disabled={search.pending}
+              />
+            </span>
           }
           compact={compact}
           stage={stage}
           counterId={counterId}
           length={text.length}
-          submit={attachment ? null : submitButton}
+          submit={submitButton}
         />
         {search.pending ? <SweepBar /> : null}
       </div>
-      <AttachmentActions attachment={attachment} submit={submitButton} />
+      {attachment ? <p className={styles.hint}>{attachment.hint}</p> : null}
       <div className={styles.status}>
         <SearchError id={errorId} error={error} onRetry={submit} />
       </div>

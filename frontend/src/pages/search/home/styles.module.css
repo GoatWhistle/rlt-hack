@@ -1,14 +1,16 @@
 .page {
   display: grid;
-  align-content: start;
-  gap: var(--space-5);
+  align-content: center;
+  gap: var(--space-6);
   min-width: 0;
-  padding-block-end: var(--space-6);
+  min-height: var(--page-fill);
+  padding-block-end: var(--space-8);
 }
 
 .intro {
   display: grid;
   gap: var(--space-2);
+  animation: var(--motion-slide-in);
 }
 
 .lead {
@@ -16,12 +18,27 @@
   color: var(--text-secondary);
   font-size: var(--text-lg);
   line-height: var(--leading-relaxed);
-  text-wrap: balance;
+  text-wrap: pretty;
+}
+
+.layout {
+  display: grid;
+  gap: var(--space-7);
+  min-width: 0;
 }
 
 .query {
   display: grid;
+  align-content: start;
   gap: var(--space-4);
   min-width: 0;
-  padding-block-start: var(--query-offset);
+}
+
+.side {
+  display: grid;
+  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: var(--space-6) var(--space-8);
+  min-width: 0;
+  animation: var(--motion-slide-in-late);
 }

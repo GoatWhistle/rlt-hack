@@ -37,7 +37,7 @@ export function Hero({ company, products, pager }: HeroProps) {
       code={t("evidence.inn", { inn: company.inn })}
       check={company.status === "check"}
       figure={
-        products.length > 0
+        products.length > 0 && company.matches.length > 0
           ? { ...figureOf(company.matches, products.length), label: t("compare.match") }
           : undefined
       }

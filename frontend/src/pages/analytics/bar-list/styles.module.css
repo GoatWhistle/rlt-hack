@@ -18,10 +18,6 @@
   overflow-wrap: anywhere;
 }
 
-.link {
-  color: var(--link);
-}
-
 .value {
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;

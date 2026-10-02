@@ -17,6 +17,14 @@ def profile_summary(profile: str) -> str:
     return text if len(text) <= 650 else text[:650].rsplit(" ", 1)[0] + "…"
 
 
+def lot_status(lot: LotRecommendation) -> str:
+    if not lot.processed:
+        return "queued"
+    if lot.failed:
+        return "failed"
+    return "ready" if lot.candidates else "noCandidates"
+
+
 def lot_summary(lot: LotRecommendation) -> dict:
     return {
         "id": lot.notice.lot_id,
@@ -25,26 +33,28 @@ def lot_summary(lot: LotRecommendation) -> dict:
         "customerInn": lot.notice.customer_inn or None,
         "deliveryRegion": lot.notice.delivery_region or None,
         "startPrice": float(lot.notice.start_price) if lot.notice.start_price is not None else None,
-        "status": "ready" if lot.candidates else "noCandidates",
+        "status": lot_status(lot),
         "products": len(lot.notice.positions),
         "candidates": len(lot.candidates),
     }
 
 
 def summary(upload: Upload) -> dict:
-    found = sum(bool(lot.candidates) for lot in upload.lots)
+    processed = [lot for lot in upload.lots if lot.processed]
+    failed = sum(lot.failed for lot in processed)
+    found = sum(bool(lot.candidates) and not lot.failed for lot in processed)
     return {
         "id": upload.upload_id,
         "fileName": upload.filename,
         "title": upload.lots[0].notice.title if upload.lots else "",
         "createdAt": upload.created_at,
         "total": len(upload.lots),
-        "processed": len(upload.lots),
+        "processed": len(processed),
         "counts": {
             "ready": found,
             "needsCheck": 0,
-            "noCandidates": len(upload.lots) - found,
-            "failed": 0,
+            "noCandidates": len(processed) - found - failed,
+            "failed": failed,
         },
         "rejected": 0,
         "stored": True,

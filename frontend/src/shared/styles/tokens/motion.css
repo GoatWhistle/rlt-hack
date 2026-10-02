@@ -51,6 +51,7 @@
   --dur-sweep: 1200ms;
   --motion-sweep: sweep var(--dur-sweep) linear infinite;
   --motion-slide-x-in: slide-x-in var(--dur-enter) var(--ease-out) both;
+  --motion-slide-in-late: slide-in var(--dur-drawer) var(--ease-out) var(--stagger-offset) both;
   --stagger-step: 40ms;
   --reveal-index: 0;
   --stagger-offset: 60ms;

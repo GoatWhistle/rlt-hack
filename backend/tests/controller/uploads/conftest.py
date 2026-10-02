@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import AsyncIterator
 from pathlib import Path
 
@@ -16,9 +17,12 @@ class FakeEngine:
     def __init__(self) -> None:
         self.failure: Exception | None = None
         self.calls = 0
+        self.gate = asyncio.Event()
+        self.gate.set()
 
     async def search(self, text: str, limit: int = 10) -> list[SupplierCandidate]:
         self.calls += 1
+        await self.gate.wait()
         if self.failure is not None:
             raise self.failure
         return [SupplierCandidate("1111111111", "paper", "office paper", 1.0, 0.9)]
@@ -30,8 +34,10 @@ def engine() -> FakeEngine:
 
 
 @pytest.fixture
-def service(engine: FakeEngine, tmp_path: Path) -> UploadService:
-    return UploadService(engine, FileUploads(tmp_path))
+async def service(engine: FakeEngine, tmp_path: Path) -> AsyncIterator[UploadService]:
+    uploads = UploadService(engine, FileUploads(tmp_path), retry_delays=())
+    yield uploads
+    await uploads.drain()
 
 
 @pytest.fixture

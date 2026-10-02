@@ -23,7 +23,7 @@
   },
   "intake": {
     "attach": "Attach file",
-    "formats": "CSV, XLSX, PDF, DOCX — up to {{limit, number}} MB",
+    "formats": "Drop a file onto the field or attach one: CSV, XLSX, PDF, DOCX up to {{limit, number}} MB",
     "remove": "Remove",
     "removeLabel": "Remove file {{name}}",
     "replace": "Choose another",
@@ -44,7 +44,8 @@
     "lots_other": "{{count, number}} purchases in the file",
     "issues_one": "{{count, number}} row with errors",
     "issues_other": "{{count, number}} rows with errors",
-    "details": "Details"
+    "details": "Details",
+    "attachShort": "File"
   },
   "items": {
     "title": "Items — second CSV (optional)",

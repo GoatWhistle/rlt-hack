@@ -84,14 +84,14 @@ export function QualityPage() {
           />
         </MetricGroup>
         <div className={styles.pair}>
-          <PanelBlock title={t("quality.ageTitle")}>
+          <PanelBlock framed title={t("quality.ageTitle")}>
             <BarList
               total={report.offers}
               bars={bars(AGE_KEYS, report.age, (key) => t(`quality.age.${key as "d1"}`))}
             />
             <p className={styles.note}>{t("quality.ageNote")}</p>
           </PanelBlock>
-          <PanelBlock title={t("quality.availabilityTitle")}>
+          <PanelBlock framed title={t("quality.availabilityTitle")}>
             <BarList
               total={report.offers}
               bars={bars(AVAILABILITY_KEYS, report.availability, (key) =>
@@ -100,7 +100,7 @@ export function QualityPage() {
             />
           </PanelBlock>
         </div>
-        <PanelBlock title={t("quality.matrixTitle")}>
+        <PanelBlock framed title={t("quality.matrixTitle")}>
           <DataTable label={t("quality.matrixTitle")} columns={columns}>
             {report.problems.map((row) => (
               <tr key={row.sourceId}>

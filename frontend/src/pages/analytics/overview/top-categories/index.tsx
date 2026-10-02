@@ -24,7 +24,7 @@ export function TopCategories({ categories, total, filters }: TopCategoriesProps
       : recordsHref(filters, { problem: "no_category" }),
   }))
   return (
-    <PanelBlock title={t("categories.top")}>
+    <PanelBlock framed title={t("categories.top")}>
       <BarList bars={bars} total={total} />
     </PanelBlock>
   )

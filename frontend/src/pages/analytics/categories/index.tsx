@@ -109,7 +109,7 @@ export function CategoriesPage() {
           ))}
         </DataTable>
         <p className={styles.note}>{t("categories.companiesNote")}</p>
-        <PanelBlock title={t("categories.origins")}>
+        <PanelBlock framed title={t("categories.origins")}>
           <BarList bars={origins} total={report.offers} />
         </PanelBlock>
       </Stack>

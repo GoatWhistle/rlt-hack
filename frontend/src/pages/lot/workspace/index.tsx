@@ -106,11 +106,14 @@ export function Workspace({ uploadId, lotId, recommendation, dockAction }: Works
         narrow={narrow}
         legend={t("views.legend")}
         labels={{
-          list: t("views.products"),
+          list: products.length > 0 ? t("views.products") : t("history.requestTitle"),
           candidates: t("views.companies"),
           evidence: t("views.evidence"),
         }}
-        counts={{ list: products.length, candidates: shown.length }}
+        counts={{
+          list: products.length > 0 ? products.length : undefined,
+          candidates: shown.length,
+        }}
         panes={{
           list: productPane,
           candidates: (

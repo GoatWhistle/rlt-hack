@@ -6,11 +6,13 @@
 
 .head {
   display: grid;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 .intro {
   max-width: var(--measure-prose);
   color: var(--text-secondary);
-  font-size: var(--text-sm);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  text-wrap: balance;
 }

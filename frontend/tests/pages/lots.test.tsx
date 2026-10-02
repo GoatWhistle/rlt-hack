@@ -10,6 +10,7 @@ function manyLots() {
   return Array.from({ length: PAGE_SIZE + 5 }, (_, index) =>
     lotSummary(String(100 + index), {
       title: index === 0 ? "Milk for schools" : `Purchase ${100 + index}`,
+      subject: index === 0 ? "Dairy products" : undefined,
       status: index % 3 === 0 ? "needsCheck" : "ready",
     }),
   )
@@ -156,7 +157,8 @@ describe("the purchases of a file", () => {
     await screen.findByRole("table")
     const failed = screen.getByRole("row", { name: /Purchase 2/ })
     expect(within(failed).getByText(en("status.failed", "lots"))).toBeInTheDocument()
-    expect(within(failed).getAllByText(en("table.pending", "lots"))).toHaveLength(3)
+    expect(within(failed).getAllByText(en("table.pending", "lots"))).toHaveLength(2)
+    expect(screen.queryByRole("columnheader", { name: "Subject" })).toBeNull()
     await view.user.click(screen.getByRole("radio", { name: /Not processed/ }))
     expect(view.router.state.location.search).toBe("?status=failed")
     expect(screen.getAllByRole("row")).toHaveLength(2)

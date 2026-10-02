@@ -23,3 +23,16 @@
   color: var(--text-secondary);
   font-size: var(--text-xs);
 }
+
+.framed {
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-5);
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-xl);
+  background: var(--surface-base);
+}
+
+.framed .title {
+  font-size: var(--text-md);
+}

@@ -87,7 +87,12 @@
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
 }
 
-.region {
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
   margin-inline-end: auto;
 }
 
@@ -98,32 +103,10 @@
   white-space: nowrap;
 }
 
-.attachable {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    "label"
-    "field"
-    "hint"
-    "actions"
-    "status";
-}
-
-.attachable > .label {
-  grid-area: label;
-}
-
-.attachable > .field {
-  grid-area: field;
-}
-
 .hint {
-  grid-area: hint;
+  padding-inline: var(--space-1);
   color: var(--text-muted);
   font-size: var(--text-xs);
-}
-
-.status {
-  grid-area: status;
 }
 
 .status:empty {
@@ -137,17 +120,6 @@
 
 .chip:empty {
   display: none;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  grid-area: actions;
-  gap: var(--space-2);
-}
-
-.actions > * {
-  flex: 1 1 auto;
 }
 
 .drop {
@@ -217,27 +189,5 @@
 @media (max-width: 29.99rem) {
   .box:not(.compact) .bar .submit {
     flex: 1 1 100%;
-  }
-}
-
-@media (min-width: 48rem) {
-  .attachable {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "label ."
-      "field actions"
-      "hint ."
-      "status status";
-    column-gap: var(--space-4);
-  }
-
-  .actions {
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-self: start;
-  }
-
-  .actions > * {
-    flex: none;
   }
 }

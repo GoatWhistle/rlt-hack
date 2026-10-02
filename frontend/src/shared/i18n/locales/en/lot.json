@@ -38,7 +38,9 @@
     "noPrice": "Start price not given",
     "published": "Published {{date}}",
     "export": "Download results",
-    "exportShort": "Download"
+    "exportShort": "Download",
+    "backQueries": "Query history",
+    "textQuery": "Description search of {{date}}"
   },
   "chain": {
     "label": "Reasoning chain",
@@ -163,10 +165,11 @@
     "catalog": "Published company products",
     "examples_one": "{{count, number}} example",
     "examples_other": "{{count, number}} examples",
-    "requestTitle": "Search by description",
-    "requestNote": "“{{title}}”. Candidates match the procurement description as a whole. Individual product items have not yet been extracted.",
+    "requestTitle": "Query",
+    "requestNote": "Candidates are matched to the whole description. To narrow the search, name the product, quantity or OKPD2 code.",
     "companySource": "Company details source",
-    "openSource": "Company page"
+    "openSource": "Company page",
+    "requestEdit": "Edit query"
   },
   "grounds": {
     "title": "Grounds for this recommendation",

@@ -1,7 +1,16 @@
-import { screen, within } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { screen, waitFor, within } from "@testing-library/react"
+import { en } from "@tests/support/dictionaries"
+import {
+  lotSummary,
+  renderPage,
+  stubGateway,
+  uploadDetail,
+  uploadSummary,
+} from "@tests/support/gateway"
+import { describe, expect, it, vi } from "vitest"
 import type { Company } from "@/entities/recommendation/model"
 import { parseRecommendation } from "@/entities/recommendation/parse"
+import { searchDraftPath } from "@/shared/config/paths"
 import { recommendationFixture } from "../../entities/recommendation/fixture"
 import { lotDetail, openLot } from "./open-lot"
 
@@ -33,7 +42,12 @@ describe("historical supplier data", () => {
   })
   it("shows actual examples and catalog without unsupported confirmation warnings", async () => {
     const { user } = await openLot(lotDetail({ recommendation }))
-    expect(screen.getByRole("heading", { name: "Search by description" })).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: en("history.requestTitle", "lot") }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("link", { name: en("history.requestEdit", "lot") }),
+    ).toHaveAttribute("href", searchDraftPath(recommendation.requestTitle))
     const panel = screen.getByRole("article", { name: company.name })
     expect(within(panel).getByText("Why this supplier was found")).toBeInTheDocument()
     expect(within(panel).getByText(/Latest procurement.*2024-11-30/)).toBeInTheDocument()
@@ -103,5 +117,27 @@ describe("grounded procurement recommendations", () => {
     )
     expect(within(panel).getByRole("link", { name: /^A4 paper/ })).toBeInTheDocument()
     expect(within(panel).queryByText("Key thing to clarify.")).not.toBeInTheDocument()
+  })
+})
+
+describe("a text query result", () => {
+  it("leads back to the query history and drops the lone pager and lot facts", async () => {
+    const upload = uploadSummary({ fileName: "search.csv", title: "paper clip", total: 1 })
+    const lot = lotSummary("query", { title: "paper clip" })
+    const gateway = stubGateway({
+      get: vi.fn(async () => uploadDetail([lot], upload)),
+      lot: vi.fn(async () => lotDetail({ upload, lot, recommendation })),
+    })
+    renderPage("/uploads/u1/lots/query", gateway)
+    await screen.findByRole("heading", { level: 1, name: "paper clip" })
+    expect(screen.getByRole("link", { name: en("header.backQueries", "lot") })).toHaveAttribute(
+      "href",
+      "/history?tab=queries",
+    )
+    expect(
+      screen.queryByRole("navigation", { name: en("header.neighbours", "lot") }),
+    ).toBeNull()
+    expect(screen.queryByText(/^Lot query$/)).toBeNull()
+    await waitFor(() => expect(document.title).toBe("lotive | Search"))
   })
 })

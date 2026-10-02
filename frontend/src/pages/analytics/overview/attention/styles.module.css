@@ -15,11 +15,6 @@
   font-size: var(--text-sm);
 }
 
-.link {
-  color: var(--link);
-  font-size: var(--text-xs);
-}
-
 .none {
   color: var(--text-secondary);
   font-size: var(--text-sm);

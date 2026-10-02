@@ -1,7 +1,8 @@
 import { clsx } from "clsx"
 import { useTranslation } from "react-i18next"
 import type { Product, ProductOrigin } from "@/entities/recommendation/model"
-import { EmptyState } from "@/shared/ui/empty-state"
+import { searchDraftPath } from "@/shared/config/paths"
+import { ButtonLink } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
 import { ResultSection } from "@/shared/ui/result-section"
 import { Tag } from "@/shared/ui/tag"
@@ -78,11 +79,16 @@ export function ProductList({ products, requestTitle, filterId, onFilter }: Prod
   const { t } = useTranslation("lot")
   if (products.length === 0) {
     return (
-      <EmptyState
-        headingLevel={2}
-        title={t("history.requestTitle")}
-        description={t("history.requestNote", { title: requestTitle ?? "" })}
-      />
+      <ResultSection framed title={t("history.requestTitle")}>
+        <div className={styles.request}>
+          <p className={styles.query}>{requestTitle}</p>
+          <p className={styles.hint}>{t("history.requestNote")}</p>
+          <ButtonLink variant="secondary" to={searchDraftPath(requestTitle ?? "")}>
+            <Icon name="search" size="sm" />
+            {t("history.requestEdit")}
+          </ButtonLink>
+        </div>
+      </ResultSection>
     )
   }
   return (

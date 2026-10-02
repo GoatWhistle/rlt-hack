@@ -1,7 +1,12 @@
+from pathlib import Path
+
 import httpx
 import pytest
 
+from src.adapter.repository.uploads.files import FileUploads
+from src.controller.search.api import app
 from src.controller.uploads.received import MAX_BYTES
+from src.service.upload.worker import UploadService
 from tests.controller.uploads.conftest import CSV, FakeEngine, assert_error
 
 Files = dict[str, tuple[str, bytes, str]]
@@ -15,16 +20,43 @@ async def upload(client: httpx.AsyncClient, content: bytes = CSV) -> httpx.Respo
     return await client.post("/api/uploads", files=csv_file(content))
 
 
-async def test_upload_keeps_the_summary_shape(search_client: httpx.AsyncClient) -> None:
+async def test_upload_keeps_the_summary_shape(
+    search_client: httpx.AsyncClient, service: UploadService
+) -> None:
     response = await upload(search_client)
     assert response.status_code == 200, response.text
     body = response.json()
     assert body["fileName"] == "notices.csv"
     assert isinstance(body["title"], str)
-    assert (body["total"], body["processed"], body["counts"]["ready"]) == (1, 1, 1)
+    assert (body["total"], body["processed"], body["counts"]["ready"]) == (1, 0, 0)
     assert "rlt_session" in response.cookies
+    await service.drain()
+    summary = (await search_client.get(f"/api/uploads/{body['id']}/summary")).json()
+    assert (summary["total"], summary["processed"], summary["counts"]["ready"]) == (1, 1, 1)
     lot = await search_client.get(f"/api/uploads/{body['id']}/lots/L1")
+    assert lot.json()["lot"]["status"] == "ready"
     assert lot.json()["recommendation"]["companies"][0]["inn"] == "1111111111"
+
+
+async def test_queued_lot_has_a_status_and_no_companies(
+    search_client: httpx.AsyncClient, engine: FakeEngine, service: UploadService
+) -> None:
+    engine.gate.clear()
+    body = (await upload(search_client)).json()
+    detail = (await search_client.get(f"/api/uploads/{body['id']}")).json()
+    assert [lot["status"] for lot in detail["lots"]] == ["queued"]
+    lot = (await search_client.get(f"/api/uploads/{body['id']}/lots/L1")).json()
+    assert lot["lot"]["status"] == "queued"
+    assert lot["recommendation"]["companies"] == []
+    assert lot["upload"]["processed"] == 0
+    results = await search_client.post(
+        f"/api/uploads/{body['id']}/results", json={"lotIds": ["L1"]}
+    )
+    assert results.json()["results"][0]["lot"]["status"] == "queued"
+    engine.gate.set()
+    await service.drain()
+    lot = (await search_client.get(f"/api/uploads/{body['id']}/lots/L1")).json()
+    assert lot["lot"]["status"] == "ready"
 
 
 @pytest.mark.parametrize(
@@ -92,10 +124,27 @@ async def test_invalid_body_is_invalid_request(search_client: httpx.AsyncClient)
     assert_error(response, 422, "invalid_request")
 
 
-async def test_search_failure_during_upload_is_unavailable(
-    search_client: httpx.AsyncClient, engine: FakeEngine
+async def test_search_failure_during_upload_marks_lots_failed(
+    search_client: httpx.AsyncClient, engine: FakeEngine, service: UploadService
 ) -> None:
     engine.failure = RuntimeError("encoder is down")
+    response = await upload(search_client)
+    assert response.status_code == 200, response.text
+    await service.drain()
+    summary = (await search_client.get(f"/api/uploads/{response.json()['id']}/summary")).json()
+    assert summary["processed"] == 1
+    assert summary["counts"] == {"ready": 0, "needsCheck": 0, "noCandidates": 0, "failed": 1}
+    lot = (await search_client.get(f"/api/uploads/{response.json()['id']}/lots/L1")).json()
+    assert lot["lot"]["status"] == "failed"
+    assert lot["recommendation"]["companies"] == []
+
+
+async def test_failure_while_saving_the_upload_is_unavailable(
+    search_client: httpx.AsyncClient, engine: FakeEngine, tmp_path: Path
+) -> None:
+    blocker = tmp_path / "blocker"
+    blocker.write_text("not a directory")
+    app.state.uploads = UploadService(engine, FileUploads(blocker))
     response = await upload(search_client)
     assert_error(response, 503, "search_unavailable")
     assert response.headers["Retry-After"] == "5"

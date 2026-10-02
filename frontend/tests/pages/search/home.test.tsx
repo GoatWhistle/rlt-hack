@@ -23,7 +23,7 @@ describe("the search page", () => {
     expect(screen.getByText(/CSV, XLSX, PDF, DOCX/)).toBeInTheDocument()
   })
 
-  it("links the three latest searches and files and the whole history", async () => {
+  it("links the latest searches and files and the whole history", async () => {
     const list = vi.fn(async () => [
       uploadSummary({ id: "old", fileName: "old.csv", createdAt: "2026-09-01T10:00:00Z" }),
       uploadSummary({
@@ -51,21 +51,21 @@ describe("the search page", () => {
       "/uploads/text/lots/query",
       "/uploads/file",
       "/uploads/plain/lots/query",
+      "/uploads/old",
       "/history",
     ])
     expect(links[0]).toHaveTextContent("Buckwheat 500 kg")
     expect(links[1]).toHaveTextContent("notices.csv")
     expect(links[2]).toHaveTextContent("search.csv")
-    expect(links[3]).toHaveTextContent(en("latest.all", "search"))
+    expect(links[4]).toHaveTextContent(en("latest.all", "search"))
     expect(nav).toHaveTextContent(en("latest.title", "search"))
   })
 
   it("keeps only the newest uploads for the strip", () => {
     const at = (id: string, day: number) =>
       uploadSummary({ id, createdAt: `2026-10-0${day}T10:00:00Z` })
-    expect(latestOf([at("a", 1), at("b", 4), at("c", 2), at("d", 3)]).map((u) => u.id)).toEqual(
-      ["b", "d", "c"],
-    )
+    const all = [1, 4, 2, 3, 6, 5].map((day) => at(`d${day}`, day))
+    expect(latestOf(all).map((u) => u.id)).toEqual(["d6", "d5", "d4", "d3", "d2"])
   })
 
   it("opens one purchase directly and a file with several on its upload page", () => {
@@ -101,6 +101,16 @@ describe("the search page", () => {
     renderSearch("/search?region=")
     expect(await trigger()).toHaveAccessibleName(
       `Delivery region: ${en("box.anyRegion", "search")}`,
+    )
+  })
+
+  it("offers example queries that fill the description", async () => {
+    const { user } = renderSearch("/search")
+    const ideas = screen.getByRole("region", { name: en("ideas.title", "search") })
+    const paper = en("ideas.items.paper", "search")
+    await user.click(within(ideas).getByRole("link", { name: paper }))
+    expect(await screen.findByRole("textbox", { name: en("box.label", "search") })).toHaveValue(
+      paper,
     )
   })
 })

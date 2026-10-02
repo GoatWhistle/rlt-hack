@@ -1,6 +1,6 @@
-import { Link } from "react-router"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { ProgressBar } from "@/shared/ui/progress-bar"
+import { QuietLink } from "@/shared/ui/quiet-link"
 import styles from "./styles.module.css"
 
 export type Bar = {
@@ -22,13 +22,7 @@ export function BarList({ bars, total }: BarListProps) {
       {bars.map((bar) => (
         <li key={bar.key} className={styles.item}>
           <span className={styles.label}>
-            {bar.href ? (
-              <Link to={bar.href} className={styles.link}>
-                {bar.label}
-              </Link>
-            ) : (
-              bar.label
-            )}
+            {bar.href ? <QuietLink to={bar.href}>{bar.label}</QuietLink> : bar.label}
           </span>
           <span className={styles.value}>
             {number(bar.value)}

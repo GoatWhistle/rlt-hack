@@ -50,5 +50,5 @@ class InferenceEmbedder:
             ):
                 raise ValueError("invalid vector")
             return vectors
-        except (httpx.HTTPError, KeyError, TypeError, ValueError, OverflowError):
-            raise EmbeddingClientError("не удалось получить корректные векторы 4B") from None
+        except (httpx.HTTPError, KeyError, TypeError, ValueError, OverflowError) as error:
+            raise EmbeddingClientError("не удалось получить корректные векторы 4B") from error

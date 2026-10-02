@@ -90,6 +90,7 @@ async def test_post_reopen_and_evidence_keep_query_snapshot(has_evidence: bool) 
         base_url="http://test",
     ) as http:
         upload_id = await create_upload(http)
+        await application.state.uploads.drain()
         prefix = f"/api/uploads/{upload_id}/lots/lot"
         for _ in range(2):
             reopened = await http.get(prefix)

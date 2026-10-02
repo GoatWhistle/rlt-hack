@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next"
-import { Link } from "react-router"
 import type { AnalyticsFilters, Attention, SourceSummary } from "@/entities/analytics/model"
 import { recordsHref, writeFilters } from "@/entities/analytics/scope"
 import { ANALYTICS_SOURCES_PATH } from "@/shared/config/paths"
+import { ArrowLink } from "@/shared/ui/arrow-link"
 import { PanelBlock } from "@/shared/ui/panel-block"
 import styles from "./styles.module.css"
 
@@ -31,7 +31,7 @@ export function AttentionList({ items, sources, filters }: AttentionListProps) {
   const { t } = useTranslation("analytics")
   const names = new Map(sources.map((source) => [source.sourceId, source.name]))
   return (
-    <PanelBlock title={t("attention.title")}>
+    <PanelBlock framed title={t("attention.title")}>
       {items.length === 0 ? (
         <p className={styles.none}>{t("attention.none")}</p>
       ) : (
@@ -45,9 +45,7 @@ export function AttentionList({ items, sources, filters }: AttentionListProps) {
                   total: item.total,
                 })}
               </span>
-              <Link to={attentionHref(item, filters)} className={styles.link}>
-                {t("attention.details")}
-              </Link>
+              <ArrowLink to={attentionHref(item, filters)}>{t("attention.details")}</ArrowLink>
             </li>
           ))}
         </ul>

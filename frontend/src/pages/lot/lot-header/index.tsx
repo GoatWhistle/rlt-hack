@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import type { LotSummary, UploadSummary } from "@/entities/upload/model"
+import { isTextQuery, type LotSummary, type UploadSummary } from "@/entities/upload/model"
 import { CompareButton } from "@/features/compare-candidates"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { BackLink } from "@/shared/ui/back-link"
@@ -33,19 +33,26 @@ export function LotHeader(props: LotHeaderProps) {
   const { t } = useTranslation("lot")
   const { date, money } = useFormatters()
   useNeighbourKeys(neighbours?.prev, neighbours?.next)
-  const facts = [
-    lot.customerInn ? t("header.customer", { inn: lot.customerInn }) : t("header.noCustomer"),
-    lot.startPrice === undefined
-      ? t("header.noPrice")
-      : t("header.price", { price: money(lot.startPrice) }),
-    ...(lot.publishDate ? [t("header.published", { date: date(lot.publishDate) })] : []),
-  ]
+  const textQuery = isTextQuery(upload)
+  const facts = textQuery
+    ? [t("header.textQuery", { date: date(upload.createdAt) })]
+    : [
+        lot.customerInn
+          ? t("header.customer", { inn: lot.customerInn })
+          : t("header.noCustomer"),
+        lot.startPrice === undefined
+          ? t("header.noPrice")
+          : t("header.price", { price: money(lot.startPrice) }),
+        ...(lot.publishDate ? [t("header.published", { date: date(lot.publishDate) })] : []),
+      ]
   return (
     <header className={styles.header}>
       <div className={styles.back}>
-        <BackLink to={backTo}>{t("header.back", { file: upload.fileName })}</BackLink>
+        <BackLink to={backTo}>
+          {textQuery ? t("header.backQueries") : t("header.back", { file: upload.fileName })}
+        </BackLink>
       </div>
-      {neighbours ? (
+      {neighbours && neighbours.total > 1 ? (
         <nav className={styles.neighbours} aria-label={t("header.neighbours")}>
           <IconLink
             to={neighbours.prev}
@@ -68,7 +75,9 @@ export function LotHeader(props: LotHeaderProps) {
         {lot.title}
       </PageTitle>
       <p className={styles.meta}>
-        <span className={styles.code}>{t("header.lot", { id: lot.id })}</span>
+        {textQuery ? null : (
+          <span className={styles.code}>{t("header.lot", { id: lot.id })}</span>
+        )}
         {facts.map((fact) => (
           <span key={fact} className={styles.fact}>
             {fact}
