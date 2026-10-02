@@ -54,7 +54,11 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .page[data-recent="open"] .query {
+  .query {
     padding-inline-start: calc(var(--space-8) - var(--layout-gutter));
+  }
+
+  .page[data-recent="closed"] .query {
+    padding-inline-end: calc(var(--space-8) - var(--layout-gutter));
   }
 }
