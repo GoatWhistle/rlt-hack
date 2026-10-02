@@ -179,6 +179,25 @@ describe("the list of uploads", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument())
   })
 
+  it("announces a file that finished processing while the list was open", async () => {
+    const running = uploadSummary({ id: "b", fileName: "running.csv", total: 4, processed: 1 })
+    const done = uploadSummary({
+      id: "b",
+      fileName: "running.csv",
+      total: 4,
+      processed: 4,
+      counts: { ready: 3, needsCheck: 1, noCandidates: 0, failed: 0 },
+    })
+    const list = vi.fn().mockResolvedValueOnce([running]).mockResolvedValue([done])
+    renderPage("/uploads", stubGateway({ list }))
+    const notes = await screen.findAllByText(
+      "running.csv is processed: 3 ready, 1 need clarifying",
+      {},
+      { timeout: 6000 },
+    )
+    expect(notes.length).toBeGreaterThan(0)
+  })
+
   it("shows a skeleton of the page while the list loads", async () => {
     renderPage("/uploads", stubGateway({ list: vi.fn(() => new Promise<never>(() => {})) }))
     const status = await screen.findByRole("status")

@@ -39,7 +39,8 @@
       "notices": "Notices",
       "status": "Processing",
       "results": "Results"
-    }
+    },
+    "finished": "{{file}} is processed: {{ready, number}} ready, {{check, number}} need clarifying"
   },
   "dialog": {
     "title": "New upload",

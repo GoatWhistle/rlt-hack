@@ -9,6 +9,7 @@ import { Intro } from "./intro"
 import styles from "./styles.module.css"
 import { UploadDialog } from "./upload-dialog"
 import { UploadList } from "./upload-list"
+import { useFinishToast } from "./use-finish-toast"
 
 type DialogState = {
   readonly open: boolean
@@ -21,6 +22,7 @@ export function UploadsPage() {
   const uploads = useUploads()
   const [late] = useState(uploads.isPending)
   useDocumentTitle([t("title.uploads")])
+  useFinishToast(uploads.data)
   const [dialog, setDialog] = useState<DialogState>({ open: false, file: null, session: 0 })
 
   function openDialog(file: File | null) {
