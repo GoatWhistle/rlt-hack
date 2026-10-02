@@ -65,6 +65,12 @@ def test_api_healthcheck_uses_readiness() -> None:
     assert "/api/health/live" not in api
 
 
+def test_production_frontend_replaces_port_bindings() -> None:
+    production = read(REPOSITORY / "deploy" / "compose.production.yml")
+    frontend = production.split("\n  frontend:\n", 1)[1].split("\n  clickhouse:", 1)[0]
+    assert "ports: !override" in frontend
+
+
 def test_release_smoke_requires_a_successful_search() -> None:
     smoke = read(REPOSITORY / "deploy" / "smoke.sh")
     for check in ("$api/health/ready", "'.candidates | length'", "grep -qx 201", "/summary"):
