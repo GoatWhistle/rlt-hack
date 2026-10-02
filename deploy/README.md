@@ -195,3 +195,17 @@ Workflow по SSH вызывает `deploy/import-registry.sh` текущего 
 `run-workers.sh` запускает векторизацию без контейнера локального энкодера.
 Рабочая модель определяется серверным файлом `EMBEDDING_ENV_FILE`; кеши
 локальных энкодеров не требуются.
+
+### Qwen4B на V100
+
+Локальный FP16 runtime: `ml/serving/qwen4b/api.py`, PyTorch 2.6 CUDA 12.4,
+Transformers 4.51.3. Требуются рабочие `nvidia-smi` и `python3-venv`.
+Подготовка закреплённой ревизии: `sudo bash deploy/prepare-qwen4b.sh <HF-SHA>`.
+В `/etc/rlt-hack/qwen4b.env` задайте `QWEN4B_MODEL_DIR`, `QWEN4B_MAX_TOKENS=4096`,
+`QWEN4B_BATCH_SIZE=8`. Unit `deploy/qwen4b.service` слушает только Docker gateway
+172.18.0.1:11436; при другой подсети измените адрес unit. Веса вне Git;
+`HF_HUB_OFFLINE=1`, запросы сверх лимита отклоняются без обрезания.
+Перед сменой `EMBEDDING_INFERENCE_URL` выполните
+`ml/serving/qwen4b/check_compatibility.py --local-url http://172.18.0.1:11436 --report <server-json>`
+в окружении действующего энкодера. Проверка численная, не метрика качества.
+Не смешивайте векторы другой модели или несовместимой ревизии под старым ключом.

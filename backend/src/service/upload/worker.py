@@ -9,6 +9,7 @@ from src.models.search.supplier_search import SupplierCandidate
 from src.service.errors import UploadQueueFullError
 from src.service.upload.evidence import relevant_evidence
 from src.service.upload.protocols import (
+    BatchNoticeSearchEngine,
     CandidateEnrichment,
     NoticeSearchEngine,
     SearchEngine,
@@ -41,10 +42,7 @@ class UploadService:
             raise UploadQueueFullError(self._max_backlog)
         self._backlog += len(notices)
         try:
-            lots = []
-            for notice in notices:
-                candidates = await self._recommend(notice)
-                lots.append(LotRecommendation(notice, candidates))
+            lots = await self._recommend_notices(notices)
         finally:
             self._backlog -= len(notices)
         upload = Upload(
@@ -60,11 +58,7 @@ class UploadService:
             async with self._refresh_lock:
                 upload = await self._repository.get(owner, upload_id)
                 if upload is not None and upload.ranking_version != version:
-                    lots = []
-                    for lot in upload.lots:
-                        lots.append(
-                            LotRecommendation(lot.notice, await self._recommend(lot.notice))
-                        )
+                    lots = await self._recommend_notices([lot.notice for lot in upload.lots])
                     upload = replace(upload, lots=lots, ranking_version=version)
                     await self._repository.save(upload)
         if upload is None or not isinstance(self._search, CandidateEnrichment):
@@ -84,6 +78,15 @@ class UploadService:
                 for lot in upload.lots
             ],
         )
+
+    async def _recommend_notices(self, notices: list[Notice]) -> list[LotRecommendation]:
+        if isinstance(self._search, BatchNoticeSearchEngine):
+            recommendations = await self._search.search_notices(notices, 10)
+            return [
+                LotRecommendation(notice, await relevant_evidence(notice.query_text, candidates))
+                for notice, candidates in zip(notices, recommendations, strict=True)
+            ]
+        return [LotRecommendation(notice, await self._recommend(notice)) for notice in notices]
 
     async def _recommend(self, notice: Notice) -> list[SupplierCandidate]:
         if isinstance(self._search, NoticeSearchEngine):

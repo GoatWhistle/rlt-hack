@@ -10,6 +10,10 @@ import pyarrow.parquet as pq
 from catboost import CatBoostRanker, Pool
 
 from src.adapter.repository.ranker.features import FEATURES, feature_row
+from src.adapter.repository.supplier_index.category_priority import (
+    requested_categories,
+    supplier_category_coverage,
+)
 from src.models.search.search_context import SearchContext
 
 
@@ -94,7 +98,30 @@ class CandidateRanker:
         scores = dict(scores)
         for rank, inn in enumerate(customer_order, 1):
             scores[inn] = scores.get(inn, 0) + 0.5 / (60 + rank)
-        selected = sorted(scores, key=lambda inn: (-scores[inn], inn))[:200]
+        categories = requested_categories(context)
+        coverage = supplier_category_coverage(cards, categories)
+        best_positions = {}
+        for inn in scores:
+            options = self.positions[inn]
+            matching = [index for index in options if cards[index]["category"] in categories]
+            candidates = matching or options
+            best_positions[inn] = (
+                max(candidates, key=lambda index: (dense[index], lexical[index], -index))
+                if matching or inn not in dense_order
+                else dense_order[inn]
+            )
+        selected = sorted(
+            scores,
+            key=lambda inn: (
+                -coverage.get(inn, 0),
+                -scores[inn],
+                -dense[best_positions[inn]] if categories else 0.0,
+                -lexical[best_positions[inn]] if categories else 0.0,
+                inn,
+            ),
+        )[:200]
+        if not selected:
+            return [], {}, {}, {}
         ranks = [
             {inn: rank for rank, inn in enumerate(order, 1)}
             for order in (dense_order, lexical_order, customer_order)
@@ -102,9 +129,7 @@ class CandidateRanker:
         rows, positions = [], {}
         for inn in selected:
             options = self.positions[inn]
-            position = dense_order.get(inn)
-            if position is None:
-                position = options[int(np.argmax(dense[options]))]
+            position = best_positions[inn]
             positions[inn] = position
             card = cards[position]
             raw = [
@@ -135,7 +160,7 @@ class CandidateRanker:
         if not np.isfinite(predicted).all():
             raise ValueError("Invalid ranker scores")
         model_scores = dict(zip(selected, predicted.tolist(), strict=True))
-        ordered = sorted(selected, key=lambda inn: (-model_scores[inn], inn))
+        ordered = sorted(selected, key=lambda inn: (-coverage.get(inn, 0), -model_scores[inn], inn))
         top = ordered[:100]
         lookup = {inn: row for inn, row in zip(selected, rows, strict=True)}
         shap = self.model.get_feature_importance(

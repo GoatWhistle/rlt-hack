@@ -7,3 +7,4 @@ class SearchContext:
     customer_inn: str = ""
     start_price: Decimal | None = None
     delivery_region: str = ""
+    okpd2_codes: tuple[str, ...] = ()

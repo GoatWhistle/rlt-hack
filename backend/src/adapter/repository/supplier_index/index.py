@@ -10,6 +10,10 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 from src.adapter.repository.reference.loader import read_json
 from src.adapter.repository.reference.okpd2 import FileOkpd2Reference
+from src.adapter.repository.supplier_index.category_priority import (
+    requested_categories,
+    supplier_category_coverage,
+)
 from src.adapter.repository.supplier_index.protocols import CandidateRanking
 from src.models.search.search_context import SearchContext
 from src.models.search.supplier_search import SupplierCandidate
@@ -129,7 +133,26 @@ class FileSupplierIndex:
             for rank, (inn, position) in enumerate(ranking.items(), 1):
                 scores[inn] = scores.get(inn, 0) + 1 / (60 + rank)
                 positions.setdefault(inn, position)
-        selected = sorted(scores, key=lambda inn: (-scores[inn], inn))[:limit]
+        categories = requested_categories(context)
+        coverage = supplier_category_coverage(self.cards, categories)
+        for position in np.argsort(-dense, kind="stable"):
+            card = self.cards[position]
+            inn = card["supplier_inn"]
+            if card["category"] in categories:
+                scores.setdefault(inn, 0.0)
+                if self.cards[positions.get(inn, int(position))]["category"] not in categories:
+                    positions[inn] = int(position)
+                positions.setdefault(inn, int(position))
+        selected = sorted(
+            scores,
+            key=lambda inn: (
+                -coverage.get(inn, 0),
+                -scores[inn],
+                -dense[positions[inn]] if categories else 0.0,
+                -lexical[positions[inn]] if categories else 0.0,
+                inn,
+            ),
+        )[:limit]
         reasons: dict[str, list[str]] = {}
         if self.ranker is not None:
             selected, positions, scores, reasons = self.ranker.rank(
@@ -145,6 +168,7 @@ class FileSupplierIndex:
                     score=scores[inn],
                     similarity=float(dense[positions[inn]]),
                     ranking_reasons=reasons.get(inn, []),
+                    matched_category_count=coverage.get(inn, 0),
                 )
             )
             for inn in selected

@@ -30,3 +30,10 @@ class SearchVersion(Protocol):
 @runtime_checkable
 class NoticeSearchEngine(Protocol):
     async def search_notice(self, notice: Notice, limit: int = 10) -> list[SupplierCandidate]: ...
+
+
+@runtime_checkable
+class BatchNoticeSearchEngine(Protocol):
+    async def search_notices(
+        self, notices: list[Notice], limit: int = 10
+    ) -> list[list[SupplierCandidate]]: ...
