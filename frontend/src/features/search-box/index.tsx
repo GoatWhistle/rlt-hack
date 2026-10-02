@@ -137,7 +137,7 @@ export function SearchBox({
           id={fieldId}
           ref={fieldRef}
           className={styles.input}
-          rows={compact ? 1 : 2}
+          rows={compact ? 1 : 4}
           value={text}
           placeholder={t("box.placeholder")}
           aria-label={compact ? t("box.label") : undefined}

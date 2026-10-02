@@ -68,13 +68,17 @@ export function SearchPage() {
             onOpen={() => toggle(true)}
           />
         </div>
-        <SearchBox
-          key={draft}
-          autoFocus
-          shortcut
-          initialText={draft}
-          onFound={(result) => navigate(searchPath(result.searchId), { viewTransition: true })}
-        />
+        <div className={styles.query}>
+          <SearchBox
+            key={draft}
+            autoFocus
+            shortcut
+            initialText={draft}
+            onFound={(result) =>
+              navigate(searchPath(result.searchId), { viewTransition: true })
+            }
+          />
+        </div>
       </section>
       <div id={panelId} className={styles.recent}>
         <RecentList

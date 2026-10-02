@@ -28,6 +28,8 @@
   --checkbox-size: 1.125rem;
   --dot-size: 0.4375rem;
   --header-height: 3.5rem;
+  --field-min-lines: 4;
+  --query-lift: 22dvh;
   --field-max-lines: 8;
   --page-fill: calc(
     100dvh -

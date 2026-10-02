@@ -1,15 +1,20 @@
 .page {
   display: grid;
-  align-content: center;
-  align-items: center;
+  align-items: start;
   gap: var(--space-7);
-  min-height: var(--page-fill);
 }
 
 .search {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: var(--space-5);
   min-width: 0;
+  min-height: var(--page-fill);
+}
+
+.query {
+  align-self: center;
+  padding-block-end: var(--query-lift);
 }
 
 .head {

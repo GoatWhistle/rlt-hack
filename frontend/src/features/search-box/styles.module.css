@@ -34,7 +34,13 @@
 .input {
   display: block;
   width: 100%;
-  min-height: calc(var(--text-lg) * var(--leading-relaxed) * 2 + 2 * var(--space-4));
+  min-height: calc(
+    var(--text-lg) *
+    var(--leading-relaxed) *
+    var(--field-min-lines) +
+    var(--space-4) +
+    var(--space-2)
+  );
   max-height: calc(
     var(--text-lg) *
     var(--leading-relaxed) *
