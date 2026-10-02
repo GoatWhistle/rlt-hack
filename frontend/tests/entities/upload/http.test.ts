@@ -34,7 +34,7 @@ describe("the http gateway", () => {
     const http = client({ uploads: [summary] })
     const gateway = createHttpGateway(http)
     expect(gateway.maxNotices).toBe(HTTP_MAX_NOTICES)
-    expect(HTTP_MAX_NOTICES).toBe(5000)
+    expect(HTTP_MAX_NOTICES).toBe(20)
     expect(await gateway.list()).toEqual([{ ...summary, stored: true }])
     expect(http.get).toHaveBeenCalledWith(UPLOADS_PATH, expect.anything())
 
