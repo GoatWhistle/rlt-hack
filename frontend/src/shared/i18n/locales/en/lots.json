@@ -34,7 +34,7 @@
     "title": "Purchase",
     "subject": "Subject",
     "price": "Start price",
-    "products": "Products",
+    "products": "Items",
     "candidates": "Candidates",
     "status": "Status",
     "published": "Published",
@@ -44,8 +44,8 @@
     "noPrice": "not given",
     "pending": "—",
     "priceMissing": "price not given",
-    "productCount_one": "{{count, number}} product",
-    "productCount_other": "{{count, number}} products",
+    "productCount_one": "{{count, number}} item",
+    "productCount_other": "{{count, number}} items",
     "candidateCount_one": "{{count, number}} candidate",
     "candidateCount_other": "{{count, number}} candidates"
   },
@@ -77,7 +77,8 @@
     "text": "Search covers the whole file: purchase name, customer INN and lot number. Check the spelling or shorten the query.",
     "filtered": "Only purchases with the status “{{filter}}” are shown. Search covers the whole file: purchase name, customer INN and lot number.",
     "allStatuses": "Search in all statuses",
-    "reset": "Reset search and filters"
+    "reset": "Reset search and filters",
+    "searchSuppliers": "Find suppliers for “{{query}}”"
   },
   "missing": {
     "title": "Upload not found",

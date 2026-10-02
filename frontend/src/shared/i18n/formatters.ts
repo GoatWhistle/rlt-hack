@@ -26,12 +26,17 @@ function build(locale: Locale): Formatters {
   const prices = new Intl.NumberFormat(tag, {
     style: "currency",
     currency: "RUB",
+    currencyDisplay: "narrowSymbol",
     trailingZeroDisplay: "stripIfInteger",
   })
   const currencyFormat = (currency: string) => {
     const known = currencies.get(currency)
     if (known) return known
-    const created = new Intl.NumberFormat(tag, { style: "currency", currency })
+    const created = new Intl.NumberFormat(tag, {
+      style: "currency",
+      currency,
+      currencyDisplay: "narrowSymbol",
+    })
     currencies.set(currency, created)
     return created
   }

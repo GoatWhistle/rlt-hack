@@ -50,7 +50,7 @@ describe("an offer card", () => {
     expect(name).toHaveAttribute("href", "https://north.example.org/price")
     expect(name).toHaveAttribute("target", "_blank")
     expect(name).toHaveAttribute("rel", "noopener noreferrer")
-    expect(within(article).getByText("RUB 84.50 per kg")).toBeVisible()
+    expect(within(article).getByText("₽84.50 per kg")).toBeVisible()
     expect(
       within(article).getByText(en("offer.availability.available", "evidence")),
     ).toBeVisible()

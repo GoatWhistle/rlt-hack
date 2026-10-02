@@ -125,7 +125,7 @@ describe("the grounds panel", () => {
     ).toBeInTheDocument()
     expect(within(grounds).getByText(en("evidence.noConfirmations", "lot"))).toBeInTheDocument()
     expect(
-      within(grounds).getByText("No records for 4 products: Rice, Sugar, Salt, Oil"),
+      within(grounds).getByText("No records for 4 items: Rice, Sugar, Salt, Oil"),
     ).toBeInTheDocument()
     await user.click(within(grounds).getByText(en("evidence.purchasesTitle", "lot")))
     expect(within(grounds).getByText(en("evidence.noPurchases", "lot"))).toBeVisible()

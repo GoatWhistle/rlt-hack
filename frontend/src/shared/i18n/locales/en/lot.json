@@ -16,7 +16,8 @@
   },
   "noCandidates": {
     "title": "No candidates found",
-    "text": "No suitable companies in the available records. Check the purchase contents: the products may have been identified imprecisely."
+    "text": "No suitable companies in the available records. Check the purchase contents: the items may have been identified imprecisely.",
+    "search": "Find suppliers by the purchase description"
   },
   "views": {
     "legend": "Review section",
@@ -42,7 +43,7 @@
   "chain": {
     "label": "Reasoning chain",
     "request": "Request",
-    "products": "Products",
+    "products": "Items",
     "companies": "Companies",
     "evidence": "Grounds"
   },
@@ -87,7 +88,7 @@
     "summaryTitle": "Why we recommend it",
     "checkTitle": "Why it needs checking",
     "mainClarify": "Key thing to clarify.",
-    "matchesTitle": "Match for every product",
+    "matchesTitle": "Match by item",
     "matchesHint": "Price lists and catalogs show the company sells the item. Confirm stock and delivery time with the company.",
     "basis": {
       "stock": "In a price list",
@@ -116,8 +117,8 @@
     "noClarify": "Nothing significant to clarify.",
     "confirmations": "Key confirmations",
     "noConfirmations": "No confirming sources: the match rests on assumptions.",
-    "unmatched_one": "No records for {{count, number}} product: {{names}}",
-    "unmatched_other": "No records for {{count, number}} products: {{names}}",
+    "unmatched_one": "No records for {{count, number}} item: {{names}}",
+    "unmatched_other": "No records for {{count, number}} items: {{names}}",
     "matchesAside": "{{matched, number}} of {{total, number}}",
     "clarifyAside": "{{count, number}}",
     "choose": "Choose candidate",

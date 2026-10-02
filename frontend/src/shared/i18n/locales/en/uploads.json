@@ -1,7 +1,7 @@
 {
   "intro": {
     "title": "Find suppliers for your purchases",
-    "text": "Upload a CSV with procurement notices. For every purchase the system identifies the products, finds companies and shows what each conclusion rests on. The decision stays with you.",
+    "text": "Upload a CSV with procurement notices. For every purchase the system identifies the items, finds companies and shows what each conclusion rests on. The decision stays with you.",
     "format": "Expected format",
     "formatText": "CSV in UTF-8 or Windows-1251, separated by “;” or “,”. One row is one lot; the first row holds the column names.",
     "required": "Required columns",
