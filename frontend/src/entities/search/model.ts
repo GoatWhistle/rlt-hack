@@ -135,6 +135,17 @@ export type Candidate = {
   readonly origins: readonly CandidateOrigin[]
   readonly novelty: Novelty
   readonly roleContext: RoleContext
+  readonly nameSource: NameSource
+}
+
+export const NAME_SOURCES = ["source", "registry", "missing"] as const
+export type NameSource = (typeof NAME_SOURCES)[number]
+
+export function leadOffer(candidate: Candidate): string | undefined {
+  const evidenced = candidate.matches.find(
+    (match) => match.offer && !match.checks.some((check) => check.status === "conflict"),
+  )
+  return evidenced?.offer?.name
 }
 
 export type Pipeline = {

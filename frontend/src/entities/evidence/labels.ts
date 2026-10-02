@@ -45,6 +45,14 @@ export function useCheckReasonText(): (reason: CheckReason) => string {
   return (reason) => t(`checkReason.${reason}`)
 }
 
+export function useCompanyName(): (company: {
+  readonly name: string
+  readonly inn: string
+}) => string {
+  const { t } = useTranslation("evidence")
+  return ({ name, inn }) => name.trim() || (inn ? t("unnamed", { inn }) : t("unnamedNoInn"))
+}
+
 export function useInnText(): (inn: string) => string {
   const { t } = useTranslation("evidence")
   return (inn) => (inn ? t("inn", { inn }) : t("noInn"))

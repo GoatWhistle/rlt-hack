@@ -26,7 +26,13 @@ export function CompanyBlock({ candidate, noveltySet }: CompanyBlockProps) {
     known: t("evidence.noveltyKnown", { set }),
     unknown: t("evidence.noveltyUnknown"),
   }[candidate.novelty]
+  const nameNote = {
+    source: undefined,
+    registry: t("evidence.nameRegistry"),
+    missing: t("evidence.nameMissing"),
+  }[candidate.nameSource]
   const facts: Fact[] = [
+    ...(nameNote ? [{ key: "name", term: t("evidence.nameTitle"), value: nameNote }] : []),
     { key: "novelty", term: t("evidence.novelty"), value: novelty },
     {
       key: "origins",

@@ -33,6 +33,7 @@ import {
   ITEM_ORIGINS,
   ITEM_TYPES,
   MATCH_BASES,
+  NAME_SOURCES,
   NOVELTIES,
   PURCHASE_OUTCOMES,
   type PurchaseHistory,
@@ -151,6 +152,9 @@ function candidate(value: unknown, path: string): Candidate {
       origins: origins(fields, path),
       novelty: optionalOneOf(NOVELTIES, fields, "novelty", path) ?? "unknown",
       roleContext: parseRoleContext(fields, path),
+      nameSource:
+        optionalOneOf(NAME_SOURCES, fields, "nameSource", path) ??
+        (text(fields, "name", path).trim() ? "source" : "missing"),
     },
     { roleSource: parseSource(fields.roleSource, `${path}.roleSource`) },
   )

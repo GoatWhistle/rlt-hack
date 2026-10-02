@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import {
   useCheckReasonText,
+  useCompanyName,
   useHighlightText,
   useInnText,
   useMatchFigure,
@@ -11,7 +12,7 @@ import { CandidateHero, type HeroReason } from "@/entities/evidence/ui/candidate
 import { EvidenceAction, EvidenceFrame } from "@/entities/evidence/ui/evidence-frame"
 import { SegmentMeter } from "@/entities/evidence/ui/segment-meter"
 import { StatusTag } from "@/entities/evidence/ui/status-tag"
-import type { Candidate, QueryItem } from "@/entities/search/model"
+import { type Candidate, leadOffer, type QueryItem } from "@/entities/search/model"
 import { Icon } from "@/shared/ui/icon"
 import { candidateSegments } from "../labels"
 import { CompanyBlock } from "./company-block"
@@ -41,10 +42,11 @@ function useReason(): (candidate: Candidate) => HeroReason {
       }
     }
     const highlights = candidate.highlights.map(highlightText)
+    const offer = leadOffer(candidate)
+    const parts = offer ? [t("evidence.leadOffer", { name: offer }), ...highlights] : highlights
     return {
       title: t("evidence.summaryTitle"),
-      text:
-        highlights.length > 0 ? highlights.join(SUMMARY_SEPARATOR) : t("evidence.noHighlights"),
+      text: parts.length > 0 ? parts.join(SUMMARY_SEPARATOR) : t("evidence.noHighlights"),
     }
   }
 }
@@ -63,9 +65,11 @@ export function CandidatePanel({
   const innText = useInnText()
   const figureOf = useMatchFigure()
   const reasonOf = useReason()
+  const nameOf = useCompanyName()
+  const name = nameOf(candidate)
   return (
     <EvidenceFrame
-      label={candidate.name}
+      label={name}
       actions={
         <>
           <EvidenceAction
@@ -84,7 +88,7 @@ export function CandidatePanel({
       }
     >
       <CandidateHero
-        name={candidate.name}
+        name={name}
         role={roleLabel(candidate.role)}
         code={innText(candidate.inn)}
         check={candidate.status === "check"}

@@ -188,5 +188,7 @@
     "okved": "The role is inferred from the main OKVED code — a rule, not a confirmation of production.",
     "none": "The role is not established.",
     "conflict": "Sources disagree, check required: {{note}}"
-  }
+  },
+  "unnamed": "Company with INN {{inn}}",
+  "unnamedNoInn": "Company without a name or INN"
 }

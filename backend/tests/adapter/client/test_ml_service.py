@@ -8,6 +8,7 @@ import httpx
 import pytest
 
 from src.adapter.client.errors import MlProtocolError, MlServiceError, MlServiceUnavailableError
+from src.adapter.client.ml_service.dto import RecommendationRequestDto
 from src.adapter.client.ml_service.retriever import MlServiceRetriever, no_correlation, utc_now
 from src.models.enums import ItemOrigin
 from src.models.query_item import QueryItem, SearchRequest
@@ -219,3 +220,12 @@ async def test_request_id_header_is_forwarded() -> None:
     await retriever(handler).retrieve(make_request(), 5)
     assert seen == ["trace-0001", None]
     assert no_correlation() is None
+
+
+def test_model_request_carries_no_current_card_data() -> None:
+    from_domain = RecommendationRequestDto.from_domain(make_request(), 10, uid("req"), MOMENT)
+    wire = json.loads(from_domain.model_dump_json(by_alias=True))
+    assert set(wire) == {"schemaVersion", "requestId", "asOf", "notice", "items", "options"}
+    forbidden = {"supplierInn", "name", "website", "contacts", "offers", "role"}
+    assert not forbidden & set(wire["notice"])
+    assert all(not forbidden & set(item) - {"name"} for item in wire["items"])

@@ -123,7 +123,7 @@ export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
       <SupplierProfilePanel
         open={profileOpen}
         supplierId={selected.id}
-        name={selected.name}
+        name={selected.name || selected.inn}
         onClose={() => setProfileOpen(false)}
       />
     </>

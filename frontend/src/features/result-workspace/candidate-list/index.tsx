@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
+  useCompanyName,
   useHighlightText,
   useInnText,
   useRoleLabel,
@@ -49,10 +50,11 @@ function CandidateCard({
   const statusLabel = useStatusLabel()
   const highlightText = useHighlightText()
   const innText = useInnText()
+  const nameOf = useCompanyName()
   const highlights = candidate.highlights.slice(0, CARD_HIGHLIGHTS).map(highlightText)
   return (
     <PickCard
-      title={candidate.name}
+      title={nameOf(candidate)}
       subtitle={
         <>
           {roleLabel(candidate.role)}

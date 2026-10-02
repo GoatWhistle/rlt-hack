@@ -105,7 +105,11 @@
     "noveltyKnown": "The INN is present in the source supplier archive (set {{set}}).",
     "noveltyUnknown": "Novelty cannot be established: no verifiable INN or the archive set is not loaded.",
     "foundBy": "Found through",
-    "noOrigin": "No channel recorded"
+    "noOrigin": "No channel recorded",
+    "leadOffer": "Product: “{{name}}”",
+    "nameTitle": "Name",
+    "nameRegistry": "Taken from the FNS SME registry by the exact INN.",
+    "nameMissing": "No name was found in the sources or the registry; the INN is shown."
   },
   "empty": {
     "title": "No suppliers found",

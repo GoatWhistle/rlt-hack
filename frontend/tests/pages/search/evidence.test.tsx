@@ -137,3 +137,26 @@ describe("the role basis", () => {
     expect(within(grounds).getByText(/Sources disagree, check required/)).toBeInTheDocument()
   })
 })
+
+describe("incomplete company cards", () => {
+  it("shows a clear identifier and the reason when the name is missing", async () => {
+    await openVariant((payload) => ({
+      ...payload,
+      candidates: (payload.candidates as Record<string, unknown>[]).map((item, index) =>
+        index === 0 ? { ...item, name: "", nameSource: "missing" } : item,
+      ),
+    }))
+    const grounds = screen.getByRole("article")
+    expect(within(grounds).getAllByText("Company with INN 7801234567").length).toBeGreaterThan(
+      0,
+    )
+    expect(within(grounds).getByText(/No name was found in the sources/)).toBeInTheDocument()
+  })
+
+  it("names the matching product on the first screen", async () => {
+    await openContract()
+    expect(
+      within(screen.getByRole("article")).getByText(/Product: “Крупа гречневая ядрица/),
+    ).toBeInTheDocument()
+  })
+})
