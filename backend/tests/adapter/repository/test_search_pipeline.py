@@ -95,4 +95,4 @@ async def test_text_query_finds_explains_and_archives_suppliers(gateway: ChdbGat
     assert [match.basis for match in gamma.matches] == [MatchBasis.INFERRED]
     assert result.warnings == ()
     assert await service.get(result.search_id) == result
-    assert (await service.recent(5))[0].search_id == result.search_id
+    assert (await service.recent(5)).searches[0].search_id == result.search_id

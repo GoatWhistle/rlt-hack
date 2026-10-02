@@ -87,6 +87,16 @@ describe("the http gateway", () => {
     )
   })
 
+  it("exports all 38 lots in bounded batches", async () => {
+    const http = client({ results: [] })
+    const ids = Array.from({ length: 38 }, (_, index) => String(index))
+    await createHttpGateway(http).results("u", ids)
+    expect(vi.mocked(http.post).mock.calls.map((call) => call[1]?.body)).toEqual([
+      { lotIds: ids.slice(0, 20) },
+      { lotIds: ids.slice(20) },
+    ])
+  })
+
   it("reads a lot with or without a recommendation and exports results", async () => {
     const http = client({ upload: summary, lot, recommendation: recommendationFixture })
     const detail = await createHttpGateway(http).lot("u 1", "10/a")

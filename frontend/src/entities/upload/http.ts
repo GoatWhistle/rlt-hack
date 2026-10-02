@@ -1,5 +1,6 @@
 import type { HttpClient } from "@/shared/api/http-client"
 import type { UploadGateway } from "./gateway"
+import type { LotResult } from "./model"
 import {
   parseLotDetail,
   parseLotResults,
@@ -32,10 +33,16 @@ export function createHttpGateway(client: HttpClient): UploadGateway {
       client.get(`${uploadPath(uploadId)}/lots/${encodeURIComponent(lotId)}`, {
         parse: parseLotDetail,
       }),
-    results: (uploadId, lotIds) =>
-      client.post(`${uploadPath(uploadId)}/results`, {
-        body: { lotIds },
-        parse: parseLotResults,
-      }),
+    results: async (uploadId, lotIds) => {
+      const results: LotResult[] = []
+      for (let offset = 0; offset < lotIds.length; offset += 20) {
+        const batch = await client.post(`${uploadPath(uploadId)}/results`, {
+          body: { lotIds: lotIds.slice(offset, offset + 20) },
+          parse: parseLotResults,
+        })
+        results.push(...batch)
+      }
+      return results
+    },
   }
 }
