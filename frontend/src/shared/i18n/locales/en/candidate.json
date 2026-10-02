@@ -60,7 +60,9 @@
     "choose": "Choose candidate",
     "chosen": "Remove from chosen",
     "profile": "Company profile",
-    "profileShort": "Profile"
+    "profileShort": "Profile",
+    "chooseShort": "Choose",
+    "chosenShort": "Chosen"
   },
   "clarify": {
     "reason": {

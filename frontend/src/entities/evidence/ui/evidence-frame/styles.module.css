@@ -27,6 +27,7 @@
 
 .extra {
   display: flex;
+  flex: none;
   margin-inline-start: auto;
 }
 

@@ -81,9 +81,16 @@
   line-height: var(--leading-normal);
 }
 
+.fact,
+.relationText > * {
+  position: relative;
+  padding-inline-start: var(--separator-width);
+}
+
 .fact::before,
 .relationText > ::before {
-  display: inline-block;
+  position: absolute;
+  inset-inline-start: 0;
   inline-size: var(--separator-width);
   color: var(--text-muted);
   font-family: var(--font-sans);

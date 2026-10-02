@@ -85,6 +85,7 @@ export function CandidatePanel({
             variant={chosen ? "secondary" : "primary"}
             icon={chosen ? <Icon name="check" /> : null}
             label={chosen ? t("panel.chosen") : t("panel.choose")}
+            shortLabel={chosen ? t("panel.chosenShort") : t("panel.chooseShort")}
             onClick={onChoose}
           />
           <EvidenceAction

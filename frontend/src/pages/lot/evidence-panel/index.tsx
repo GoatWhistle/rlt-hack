@@ -44,6 +44,9 @@ export function EvidencePanel({
             variant={chosen ? "secondary" : "primary"}
             icon={chosen ? <Icon name="check" /> : undefined}
             label={chosen ? t("evidence.chosen") : t("evidence.choose")}
+            shortLabel={
+              chosen ? candidate("panel.chosenShort") : candidate("panel.chooseShort")
+            }
             onClick={onChoose}
           />
           <EvidenceAction

@@ -173,7 +173,8 @@ describe("choosing, comparing and the profile", () => {
     expect(within(dialog).getByText(en("compare.note", "lot"))).toBeInTheDocument()
     await user.click(within(dialog).getByRole("button", { name: en("action.close") }))
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
-    expect(screen.getAllByText(en("companies.chosen", "lot"))).toHaveLength(2)
+    const list = screen.getByRole("region", { name: en("companies.title", "lot") })
+    expect(within(list).getAllByText(en("companies.chosen", "lot"))).toHaveLength(2)
   })
 
   it("opens the company profile with requisites, contacts and sources", async () => {

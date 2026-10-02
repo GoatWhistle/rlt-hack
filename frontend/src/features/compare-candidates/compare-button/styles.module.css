@@ -8,15 +8,9 @@
 
 .compact {
   position: relative;
-  white-space: nowrap;
+  padding-inline: var(--space-3);
 }
 
-@media (max-width: 63.99rem) {
-  .compact {
-    padding-inline: var(--space-3);
-  }
-
-  .compactLabel {
-    display: none;
-  }
+.compactLabel {
+  display: none;
 }

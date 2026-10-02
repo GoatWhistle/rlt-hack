@@ -70,7 +70,9 @@
     "choose": "Выбрать кандидата",
     "chosen": "Убрать из выбранных",
     "profile": "Профиль компании",
-    "profileShort": "Профиль"
+    "profileShort": "Профиль",
+    "chooseShort": "Выбрать",
+    "chosenShort": "Выбран"
   },
   "clarify": {
     "reason": {

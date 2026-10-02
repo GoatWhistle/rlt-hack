@@ -25,7 +25,10 @@ export type OfferGridProps = {
 function useRevealFocus(focusKey: string | undefined) {
   const listRef = useRef<HTMLUListElement>(null)
   useEffect(() => {
-    if (focusKey) revealInPane(listRef.current?.querySelector<HTMLElement>("[aria-current]"))
+    if (!focusKey) return
+    revealInPane(listRef.current?.querySelector<HTMLElement>("[aria-current]"), {
+      window: true,
+    })
   }, [focusKey])
   return listRef
 }

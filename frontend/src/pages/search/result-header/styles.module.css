@@ -101,3 +101,9 @@
     display: none;
   }
 }
+
+@media (max-width: 29.99rem) {
+  .meta > time {
+    display: none;
+  }
+}
