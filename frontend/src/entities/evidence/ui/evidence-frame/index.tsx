@@ -6,10 +6,17 @@ export type EvidenceFrameProps = {
   readonly label: string
   readonly swapKey: string
   readonly actions: ReactNode
+  readonly extra?: ReactNode
   readonly children: ReactNode
 }
 
-export function EvidenceFrame({ label, swapKey, actions, children }: EvidenceFrameProps) {
+export function EvidenceFrame({
+  label,
+  swapKey,
+  actions,
+  extra,
+  children,
+}: EvidenceFrameProps) {
   return (
     <article className={styles.panel} aria-label={label}>
       <div key={swapKey} className={styles.content}>
@@ -17,6 +24,7 @@ export function EvidenceFrame({ label, swapKey, actions, children }: EvidenceFra
       </div>
       <div className={styles.actions} data-dock="">
         {actions}
+        {extra ? <span className={styles.extra}>{extra}</span> : null}
       </div>
     </article>
   )

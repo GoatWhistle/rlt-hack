@@ -17,6 +17,7 @@ export type ResultHeaderProps = {
   readonly inputId: string
   readonly chosen: number
   readonly stage: SearchStage | null
+  readonly actionsRef?: (node: HTMLDivElement | null) => void
   readonly onStage: (stage: SearchStage | null) => void
   readonly onExport: () => void
   readonly onCompare: () => void
@@ -24,7 +25,8 @@ export type ResultHeaderProps = {
 }
 
 export function ResultHeader(props: ResultHeaderProps) {
-  const { result, inputId, chosen, stage, onStage, onExport, onCompare, onClear } = props
+  const { result, inputId, chosen, stage, actionsRef, onStage, onExport, onCompare, onClear } =
+    props
   const { t } = useTranslation("search")
   const { dateTime } = useFormatters()
   const navigate = useNavigate()
@@ -52,7 +54,7 @@ export function ResultHeader(props: ResultHeaderProps) {
         />
       </div>
       {result.candidates.length > 0 ? (
-        <div className={styles.actions}>
+        <div ref={actionsRef} className={styles.actions}>
           <CompareButton
             count={chosen}
             className={styles.action}

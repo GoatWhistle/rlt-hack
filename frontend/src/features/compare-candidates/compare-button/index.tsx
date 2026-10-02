@@ -14,6 +14,7 @@ export type CompareButtonProps = {
   readonly count: number
   readonly className?: string
   readonly labelClassName?: string
+  readonly compact?: boolean
   readonly onCompare: () => void
 }
 
@@ -21,6 +22,7 @@ export function CompareButton({
   count,
   className,
   labelClassName,
+  compact = false,
   onCompare,
 }: CompareButtonProps) {
   const { t } = useTranslation("candidate")
@@ -34,7 +36,7 @@ export function CompareButton({
     <>
       <Button
         variant="secondary"
-        className={clsx(styles.button, className)}
+        className={clsx(styles.button, compact && styles.compact, className)}
         data-state={state}
         inert={count === 0}
         aria-label={t("selection.compareLabel", { count: shown })}
@@ -47,7 +49,9 @@ export function CompareButton({
         }}
       >
         <Icon name="compare" />
-        <span className={labelClassName}>{t("selection.compare")}</span>
+        <span className={clsx(labelClassName, compact && styles.compactLabel)}>
+          {t("selection.compare")}
+        </span>
         <CountBadge value={shown} corner />
       </Button>
       {ready ? null : <VisuallyHidden id={hintId}>{t("selection.compareHint")}</VisuallyHidden>}

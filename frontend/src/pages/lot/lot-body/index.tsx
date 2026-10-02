@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import type { LotDetail } from "@/entities/upload/model"
 import { EmptyState } from "@/shared/ui/empty-state"
@@ -28,9 +29,10 @@ export type LotBodyProps = {
   readonly uploadId: string
   readonly detail: LotDetail
   readonly switching: boolean
+  readonly dockAction?: ReactNode
 }
 
-export function LotBody({ uploadId, detail, switching }: LotBodyProps) {
+export function LotBody({ uploadId, detail, switching, dockAction }: LotBodyProps) {
   const { t } = useTranslation("lot")
   const { lot, recommendation } = detail
   return (
@@ -46,6 +48,7 @@ export function LotBody({ uploadId, detail, switching }: LotBodyProps) {
           uploadId={uploadId}
           lotId={lot.id}
           recommendation={recommendation}
+          dockAction={dockAction}
         />
       ) : (
         <PendingState failed={lot.status === "failed"} />

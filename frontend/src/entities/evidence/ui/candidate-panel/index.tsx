@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import {
   useClarifyItems,
@@ -34,6 +35,7 @@ export type CandidatePanelProps = {
   readonly chosen: boolean
   readonly pager?: CandidatePagerProps
   readonly focusItemId?: string
+  readonly extraAction?: ReactNode
   readonly onChoose: () => void
   readonly onProfile: () => void
 }
@@ -61,6 +63,7 @@ export function CandidatePanel({
   chosen,
   pager,
   focusItemId,
+  extraAction,
   onChoose,
   onProfile,
 }: CandidatePanelProps) {
@@ -75,6 +78,7 @@ export function CandidatePanel({
     <EvidenceFrame
       label={candidate.name}
       swapKey={candidate.id}
+      extra={extraAction}
       actions={
         <>
           <EvidenceAction

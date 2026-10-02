@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { type ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { CandidateList } from "@/entities/evidence/ui/candidate-list"
 import { CandidatePanel, offerEntries } from "@/entities/evidence/ui/candidate-panel"
@@ -34,6 +34,7 @@ export type SearchWorkspaceProps = {
   readonly result: SearchResult
   readonly chosen: readonly string[]
   readonly reveal: boolean
+  readonly dockAction?: ReactNode
   readonly onToggle: (id: string) => void
   readonly onEditQuery: () => void
 }
@@ -42,6 +43,7 @@ export function SearchWorkspace({
   result,
   chosen,
   reveal,
+  dockAction,
   onToggle,
   onEditQuery,
 }: SearchWorkspaceProps) {
@@ -168,6 +170,7 @@ export function SearchWorkspace({
               items={items}
               chosen={chosen.includes(selected.id)}
               focusItemId={focusItem?.id}
+              extraAction={dockAction}
               pager={
                 narrow && position >= 0
                   ? {

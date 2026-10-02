@@ -3,9 +3,10 @@ import { WarningNote } from "@/entities/evidence/ui/warning-note"
 import type { SearchResult } from "@/entities/search/model"
 import { candidateView, itemViews } from "@/entities/search/view"
 import { useSearchShortlist } from "@/entities/shortlist/store"
-import { CompareDialog } from "@/features/compare-candidates"
+import { CompareButton, CompareDialog } from "@/features/compare-candidates"
 import { SearchExportDialog } from "@/features/export-results"
 import type { SearchStage } from "@/features/search-box"
+import { useInView } from "@/shared/media/use-in-view"
 import { ResultHeader } from "../result-header"
 import { firstShow } from "../reveal"
 import { SearchWorkspace } from "../search-workspace"
@@ -18,6 +19,7 @@ export function ResultView({ result }: { readonly result: SearchResult }) {
   const [exporting, setExporting] = useState(false)
   const [comparing, setComparing] = useState(false)
   const [stage, setStage] = useState<SearchStage | null>(null)
+  const [actionsRef, actionsInView] = useInView<HTMLDivElement>()
   const known = shortlist.ids.filter((id) => result.candidates.some((item) => item.id === id))
   const chosen = result.candidates
     .filter((item) => known.includes(item.id))
@@ -30,6 +32,7 @@ export function ResultView({ result }: { readonly result: SearchResult }) {
         inputId={inputId}
         chosen={known.length}
         stage={stage}
+        actionsRef={actionsRef}
         onStage={setStage}
         onExport={() => setExporting(true)}
         onCompare={() => setComparing(true)}
@@ -43,6 +46,15 @@ export function ResultView({ result }: { readonly result: SearchResult }) {
           result={result}
           chosen={known}
           reveal={reveal}
+          dockAction={
+            actionsInView ? null : (
+              <CompareButton
+                compact
+                count={known.length}
+                onCompare={() => setComparing(true)}
+              />
+            )
+          }
           onToggle={shortlist.toggle}
           onEditQuery={() => document.getElementById(inputId)?.focus()}
         />

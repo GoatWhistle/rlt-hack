@@ -12,11 +12,13 @@ import {
 } from "@/entities/upload/list-query"
 import type { LotSummary } from "@/entities/upload/model"
 import { useLot, useUpload } from "@/entities/upload/queries"
+import { CompareButton } from "@/features/compare-candidates"
 import { ExportDialog } from "@/features/export-results"
 import { RecentPlaces } from "@/features/recent-places"
 import { isApiError } from "@/shared/api/api-error"
 import { lotPath, UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
 import { useLocale } from "@/shared/i18n/locale-provider"
+import { useInView } from "@/shared/media/use-in-view"
 import { useDocumentTitle } from "@/shared/routing/use-document-title"
 import { ButtonLink } from "@/shared/ui/button"
 import { EmptyState } from "@/shared/ui/empty-state"
@@ -105,6 +107,7 @@ export function LotPage() {
   const { locale } = useLocale()
   const [exporting, setExporting] = useState({ open: false, session: 0 })
   const compare = useLotCompare(uploadId, lotId, lot.data?.recommendation, switching)
+  const [actionsRef, actionsInView] = useInView<HTMLDivElement>()
   useDocumentTitle([common("title.lot", { id: lotId }), lot.data?.upload.fileName])
 
   if (waiting || lot.isPending) return <WorkspaceSkeleton label={t("loading")} />
@@ -134,10 +137,24 @@ export function LotPage() {
           backTo={uploadPath(uploadId, index < 0 ? writeQuery(query) : listSearch)}
           neighbours={neighboursOf(list, index, uploadId, query)}
           chosen={compare.chosen.length}
+          actionsRef={actionsRef}
           onCompare={() => compare.setOpen(true)}
           onExport={() => setExporting((state) => ({ open: true, session: state.session + 1 }))}
         />
-        <LotBody uploadId={uploadId} detail={lot.data} switching={switching} />
+        <LotBody
+          uploadId={uploadId}
+          detail={lot.data}
+          switching={switching}
+          dockAction={
+            actionsInView ? null : (
+              <CompareButton
+                compact
+                count={compare.chosen.length}
+                onCompare={() => compare.setOpen(true)}
+              />
+            )
+          }
+        />
         <ExportDialog
           key={exporting.session}
           open={exporting.open}

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import type { CandidatePagerProps } from "@/entities/evidence/ui/candidate-pager"
 import { EvidenceAction, EvidenceFrame } from "@/entities/evidence/ui/evidence-frame"
@@ -16,6 +17,7 @@ export type EvidencePanelProps = {
   readonly products: readonly Product[]
   readonly chosen: boolean
   readonly pager?: CandidatePagerProps
+  readonly extraAction?: ReactNode
   readonly onChoose: () => void
   readonly onProfile: () => void
 }
@@ -25,6 +27,7 @@ export function EvidencePanel({
   products,
   chosen,
   pager,
+  extraAction,
   onChoose,
   onProfile,
 }: EvidencePanelProps) {
@@ -33,6 +36,7 @@ export function EvidencePanel({
   return (
     <EvidenceFrame
       label={company.name}
+      extra={extraAction}
       swapKey={company.id}
       actions={
         <>

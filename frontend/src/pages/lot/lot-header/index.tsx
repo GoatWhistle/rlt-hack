@@ -23,12 +23,13 @@ export type LotHeaderProps = {
   readonly backTo: string
   readonly neighbours?: Neighbours
   readonly chosen: number
+  readonly actionsRef?: (node: HTMLDivElement | null) => void
   readonly onExport: () => void
   readonly onCompare: () => void
 }
 
 export function LotHeader(props: LotHeaderProps) {
-  const { upload, lot, backTo, neighbours, chosen, onExport, onCompare } = props
+  const { upload, lot, backTo, neighbours, chosen, actionsRef, onExport, onCompare } = props
   const { t } = useTranslation("lot")
   const { date, money } = useFormatters()
   useNeighbourKeys(neighbours?.prev, neighbours?.next)
@@ -74,7 +75,7 @@ export function LotHeader(props: LotHeaderProps) {
           </span>
         ))}
       </p>
-      <div className={styles.actions}>
+      <div ref={actionsRef} className={styles.actions}>
         <CompareButton count={chosen} onCompare={onCompare} />
         <Button variant="secondary" aria-label={t("header.export")} onClick={onExport}>
           <Icon name="download" />

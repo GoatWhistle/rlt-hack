@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { type ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Recommendation } from "@/entities/recommendation/model"
 import { useShortlist } from "@/entities/shortlist/store"
@@ -28,9 +28,10 @@ export type WorkspaceProps = {
   readonly uploadId: string
   readonly lotId: string
   readonly recommendation: Recommendation
+  readonly dockAction?: ReactNode
 }
 
-export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
+export function Workspace({ uploadId, lotId, recommendation, dockAction }: WorkspaceProps) {
   const { t } = useTranslation("lot")
   const { products, companies } = recommendation
   const [params, update] = useQueryState(LOT_PARAMS)
@@ -131,6 +132,7 @@ export function Workspace({ uploadId, lotId, recommendation }: WorkspaceProps) {
               company={selected}
               products={products}
               chosen={shortlist.ids.includes(selected.id)}
+              extraAction={dockAction}
               pager={
                 narrow && position >= 0
                   ? {

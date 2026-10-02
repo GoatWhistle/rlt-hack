@@ -25,6 +25,11 @@
   white-space: nowrap;
 }
 
+.extra {
+  display: flex;
+  margin-inline-start: auto;
+}
+
 .icon {
   display: inline-flex;
   animation: var(--motion-pop-in);
