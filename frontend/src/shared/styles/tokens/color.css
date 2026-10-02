@@ -29,6 +29,7 @@
   --palette-green-soft: #e7f6ec;
   --palette-red-text: #a3261c;
   --palette-red-soft: #fdecea;
+  --palette-red-vivid: #d92d20;
   --palette-indigo-hover: #e6e8ff;
   --palette-scrim: rgb(27 29 41 / 0.32);
 
@@ -78,6 +79,7 @@
 
   --danger-text: var(--palette-red-text);
   --danger-soft: var(--palette-red-soft);
+  --counter-over: var(--palette-red-vivid);
 
   --meter-stock: var(--palette-indigo);
   --meter-catalog: var(--palette-indigo-mid);

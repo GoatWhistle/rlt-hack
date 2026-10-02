@@ -85,8 +85,9 @@
 }
 
 .over {
-  color: var(--warning-text);
+  color: var(--counter-over);
   font-weight: var(--weight-semibold);
+  animation: var(--motion-pop-in);
 }
 
 .compact {

@@ -8,7 +8,7 @@
     "label": "Describe what you need",
     "placeholder": "For example: buckwheat groats 500 kg; polished rice 200 kg",
     "submit": "Find",
-    "counter": "{{count, number}} of {{limit, number}} characters",
+    "counter": "{{count, number}} / {{limit, number}}",
     "stage": {
       "parse": "Reading the request…",
       "companies": "Looking for companies…",

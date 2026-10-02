@@ -51,9 +51,9 @@ describe("the search box", () => {
 
   it("counts characters near the limit and refuses a text that is too long", async () => {
     const { user, field, gateway } = renderBox(stubSearch(), "a".repeat(COUNTER_FROM - 1))
-    expect(screen.queryByText(/characters/)).toBeNull()
+    expect(screen.queryByText(/ \/ /)).toBeNull()
     fireEvent.change(field, { target: { value: "a".repeat(MAX_QUERY_LENGTH + 1) } })
-    expect(screen.getByText("4,001 of 4,000 characters")).toBeInTheDocument()
+    expect(screen.getByText("4,001 / 4,000")).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: en("box.submit", "search") }))
     expect(screen.getByRole("alert")).toHaveTextContent(en("query_too_long", "errors"))
     expect(gateway.search).not.toHaveBeenCalled()

@@ -8,7 +8,7 @@
     "label": "Опишите, что нужно",
     "placeholder": "Например: крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
     "submit": "Найти",
-    "counter": "{{count, number}} из {{limit, number}} символов",
+    "counter": "{{count, number}} / {{limit, number}}",
     "stage": {
       "parse": "Разбираем запрос…",
       "companies": "Ищем компании…",
