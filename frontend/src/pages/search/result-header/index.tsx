@@ -30,12 +30,6 @@ export function ResultHeader(props: ResultHeaderProps) {
   const { t } = useTranslation("search")
   const { dateTime } = useFormatters()
   const navigate = useNavigate()
-  const recommended = result.candidates.filter((item) => item.status === "recommended").length
-  const facts = [
-    t("items.count", { count: result.items.length }),
-    t("recent.candidates", { count: result.candidates.length }),
-    ...(recommended > 0 ? [t("recent.recommended", { count: recommended })] : []),
-  ]
   return (
     <header className={styles.header}>
       <h1 className={styles.heading}>
@@ -74,11 +68,6 @@ export function ResultHeader(props: ResultHeaderProps) {
       ) : null}
       <p className={styles.meta}>
         <StageLine stage={stage} />
-        {stage ? null : (
-          <span key="facts" className={styles.facts}>
-            {facts.join(" · ")}
-          </span>
-        )}
         {chosen > 0 ? <Selection chosen={chosen} onClear={onClear} /> : null}
         <time dateTime={result.createdAt}>{dateTime(result.createdAt)}</time>
       </p>

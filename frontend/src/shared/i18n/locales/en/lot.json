@@ -74,7 +74,6 @@
       "check": "Needs checking",
       "historical": "Procurement history"
     },
-    "order": "by relevance",
     "filtered": "Candidates with “{{name}}”",
     "resetFilter": "Reset",
     "noMatch": "No candidate has records for this item.",

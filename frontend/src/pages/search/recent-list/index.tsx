@@ -37,22 +37,13 @@ function Mix({ search }: { readonly search: SearchSummary }) {
 }
 
 function RecentRow({ search }: { readonly search: SearchSummary }) {
-  const { t } = useTranslation("search")
   const { dateTime } = useFormatters()
-  const facts = [
-    t("recent.items", { count: search.items }),
-    search.candidates === 0
-      ? t("recent.none")
-      : t("recent.candidates", { count: search.candidates }),
-    ...(search.recommended > 0 ? [t("recent.recommended", { count: search.recommended })] : []),
-  ]
   return (
     <Link to={searchPath(search.searchId)} className={styles.row}>
       <span className={styles.text}>{search.text}</span>
       <span className={styles.meta}>
         <span className={styles.facts}>
           <Mix search={search} />
-          {facts.join(" · ")}
         </span>
         <time dateTime={search.createdAt}>{dateTime(search.createdAt)}</time>
       </span>

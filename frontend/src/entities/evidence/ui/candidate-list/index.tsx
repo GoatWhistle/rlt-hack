@@ -33,7 +33,7 @@ export type CandidateFilter = {
 
 export type CandidateListProps = {
   readonly title: string
-  readonly aside: string
+  readonly aside?: string
   readonly candidates: readonly CandidateView[]
   readonly items: readonly ItemView[]
   readonly selectedId: string

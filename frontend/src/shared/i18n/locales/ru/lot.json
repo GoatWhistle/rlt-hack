@@ -77,7 +77,6 @@
       "check": "Требует проверки",
       "historical": "Из истории закупок"
     },
-    "order": "по релевантности",
     "purchases_other": "{{count, number}} закупки",
     "filtered": "Кандидаты с позицией «{{name}}»",
     "resetFilter": "Сбросить",

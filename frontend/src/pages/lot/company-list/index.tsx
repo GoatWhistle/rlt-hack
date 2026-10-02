@@ -112,7 +112,7 @@ export function CompanyList(props: CompanyListProps) {
   }
 
   return (
-    <ResultSection title={t("companies.title")} aside={t("companies.order")}>
+    <ResultSection title={t("companies.title")}>
       {filter ? (
         <FilterNote
           text={t("companies.filtered", { name: filter.name })}

@@ -28,10 +28,10 @@ describe("the search page", () => {
     renderSearch("/search", { gateway: stubSearch({ recent }) })
     const link = await within(recentRegion()).findByRole("link", { name: /Крупа гречневая/ })
     expect(link).toHaveAttribute("href", "/search/1f0c3b5e-6a1d-4c2e-9f7a-2b8d4e6f1a90")
-    expect(link).toHaveTextContent("2 items · 2 candidates · 1 recommended")
+    expect(link).not.toHaveTextContent(/candidates/)
   })
 
-  it("groups recent searches by day and marks the ones without candidates", async () => {
+  it("groups recent searches by day", async () => {
     const [first] = parseRecentSearches(contract("search/recent.example.json"))
     if (!first) throw new Error("the contract example has no searches")
     const recent = vi.fn(async () => [
@@ -50,7 +50,7 @@ describe("the search page", () => {
       name: en("recent.earlier", "search"),
     })
     expect(within(earlier.parentElement as HTMLElement).getByRole("link")).toHaveTextContent(
-      en("recent.none", "search"),
+      "Tractor",
     )
   })
 

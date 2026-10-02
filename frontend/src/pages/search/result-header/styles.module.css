@@ -45,12 +45,6 @@
   font-size: var(--text-xs);
 }
 
-.facts {
-  flex: 1 1 auto;
-  min-width: 0;
-  animation: var(--motion-swap);
-}
-
 .selection {
   display: inline-flex;
   flex-wrap: wrap;

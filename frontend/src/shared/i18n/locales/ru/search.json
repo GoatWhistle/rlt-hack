@@ -18,20 +18,7 @@
   },
   "recent": {
     "title": "Недавние поиски",
-    "items_one": "{{count, number}} позиция",
-    "items_few": "{{count, number}} позиции",
-    "items_many": "{{count, number}} позиций",
-    "items_other": "{{count, number}} позиции",
-    "candidates_one": "{{count, number}} кандидат",
-    "candidates_few": "{{count, number}} кандидата",
-    "candidates_many": "{{count, number}} кандидатов",
-    "candidates_other": "{{count, number}} кандидата",
-    "recommended_one": "рекомендуем: {{count, number}}",
-    "recommended_few": "рекомендуем: {{count, number}}",
-    "recommended_many": "рекомендуем: {{count, number}}",
-    "recommended_other": "рекомендуем: {{count, number}}",
     "retry": "Повторить",
-    "none": "нет кандидатов",
     "today": "Сегодня",
     "earlier": "Ранее",
     "collapse": "Свернуть"
@@ -66,7 +53,6 @@
   },
   "candidates": {
     "title": "Кандидаты",
-    "order": "по релевантности",
     "filtered": "Кто закрывает «{{name}}»",
     "noMatch": "Ни у одного кандидата нет сведений об этой позиции.",
     "facets": {

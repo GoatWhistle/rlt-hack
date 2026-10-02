@@ -131,7 +131,6 @@ export function SearchWorkspace({
           candidates: (
             <CandidateList
               title={t("candidates.title")}
-              aside={t("candidates.order")}
               candidates={shown}
               items={items}
               selectedId={selected.id}

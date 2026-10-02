@@ -18,14 +18,7 @@
   },
   "recent": {
     "title": "Recent searches",
-    "items_one": "{{count, number}} item",
-    "items_other": "{{count, number}} items",
-    "candidates_one": "{{count, number}} candidate",
-    "candidates_other": "{{count, number}} candidates",
-    "recommended_one": "{{count, number}} recommended",
-    "recommended_other": "{{count, number}} recommended",
     "retry": "Try again",
-    "none": "no candidates",
     "today": "Today",
     "earlier": "Earlier",
     "collapse": "Hide"
@@ -58,7 +51,6 @@
   },
   "candidates": {
     "title": "Candidates",
-    "order": "by relevance",
     "filtered": "Who covers “{{name}}”",
     "noMatch": "No candidate has records for this item.",
     "facets": {
