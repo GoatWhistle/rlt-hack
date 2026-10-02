@@ -68,16 +68,38 @@ test "$(curl --fail --silent --show-error "http://127.0.0.1:8081$location" | jq 
   = "$search_id"
 supplier_id=$(jq -r '.candidates[0].id' <<<"$created")
 curl --fail --silent --show-error "$api/suppliers/$supplier_id" > /dev/null
-printf 'lot_id;procedure_name\n1001;Поставка бумаги офисной\n1002;Поставка бумаги А4\n' \
+printf 'lot_id;procedure_name;customer_inn\n1001;Поставка бумаги офисной;7801234564\n1002;Поставка бумаги А4;\n' \
   > "$scratch/notices.csv"
-upload_id=$(curl --fail --silent --show-error --form "file=@$scratch/notices.csv;type=text/csv" \
-  "$api/uploads" | jq -r .id)
+jar="$scratch/session.cookies"
+created_upload=$(curl --fail --silent --show-error --cookie-jar "$jar" --cookie "$jar" \
+  --form "file=@$scratch/notices.csv;type=text/csv" "$api/uploads")
+upload_id=$(jq -r .id <<<"$created_upload")
+test "$(jq '.total == 2 and .rejected == 0 and (.counts | has("failed"))' <<<"$created_upload")" = true
 for _ in $(seq 60); do
-  progress=$(curl --fail --silent --show-error "$api/uploads/$upload_id/summary")
+  progress=$(curl --fail --silent --show-error --cookie "$jar" "$api/uploads/$upload_id/summary")
   if [[ $(jq '.processed == .total' <<<"$progress") == true ]]; then break; fi
   sleep 1
 done
 test "$(jq '.processed == .total and .counts.failed == 0' <<<"$progress")" = true
+test "$(jq '.counts.ready + .counts.needsCheck + .counts.noCandidates' <<<"$progress")" = 2
+detail=$(curl --fail --silent --show-error --cookie "$jar" "$api/uploads/$upload_id")
+test "$(jq '[.lots[].searchId | select(. != null)] | length' <<<"$detail")" -ge 1
+lot=$(curl --fail --silent --show-error --cookie "$jar" "$api/uploads/$upload_id/lots/1001")
+test "$(jq '.search.candidates | length' <<<"$lot")" -ge 1
+test "$(jq -r '.search.query.origin' <<<"$lot")" = upload
+test "$(jq -r '.search.query.context.customerInn' <<<"$lot")" = 7801234564
+test "$(jq -r '.search.searchId == .lot.searchId' <<<"$lot")" = true
+lot_search=$(jq -r .lot.searchId <<<"$lot")
+test "$(curl --fail --silent --show-error "$api/searches/$lot_search" | jq -r .searchId)" \
+  = "$lot_search"
+exported=$(curl --fail --silent --show-error --cookie "$jar" --request POST \
+  --header 'Content-Type: application/json' --data '{"lotIds":["1001","1002"]}' \
+  "$api/uploads/$upload_id/results")
+test "$(jq '.results | length' <<<"$exported")" = 2
+foreign=$(curl --silent --output /dev/null --write-out '%{http_code}' "$api/uploads/$upload_id")
+test "$foreign" = 404
+recent=$(curl --fail --silent --show-error "$api/searches")
+test "$(jq --arg id "$lot_search" '[.searches[].searchId] | index($id) == null' <<<"$recent")" = true
 test "$(curl --silent --output /dev/null --write-out '%{http_code}' "$api/metrics")" = 404
 curl --fail --silent --show-error http://127.0.0.1:8081/ > "$scratch/index.html"
 grep -q 'type="module"' "$scratch/index.html"

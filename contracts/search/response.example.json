@@ -5,9 +5,16 @@
     "locale": "ru",
     "limit": 20,
     "filters": {
-      "regions": ["78"],
+      "regions": [
+        "78"
+      ],
       "itemType": "goods"
-    }
+    },
+    "context": {
+      "customerInn": null,
+      "startPrice": null
+    },
+    "origin": "manual"
   },
   "items": [
     {
@@ -16,7 +23,10 @@
       "okpd2": "",
       "itemType": "goods",
       "origin": "text",
-      "quantity": { "value": "500", "unit": "кг" }
+      "quantity": {
+        "value": "500",
+        "unit": "кг"
+      }
     },
     {
       "id": "i2",
@@ -24,7 +34,10 @@
       "okpd2": "",
       "itemType": "goods",
       "origin": "text",
-      "quantity": { "value": "200", "unit": "кг" }
+      "quantity": {
+        "value": "200",
+        "unit": "кг"
+      }
     }
   ],
   "candidates": [
@@ -75,14 +88,32 @@
             "lotId": "32514850391-1",
             "title": "Поставка круп для школьного питания",
             "outcome": "winner",
-            "itemIds": ["i1"]
+            "itemIds": [
+              "i1"
+            ]
           }
         ]
       },
       "highlights": [
-        { "code": "coversItems", "params": { "matched": 2, "total": 2 } },
-        { "code": "inStock", "params": { "count": 1 } },
-        { "code": "pastWins", "params": { "count": 4 } }
+        {
+          "code": "coversItems",
+          "params": {
+            "matched": 2,
+            "total": 2
+          }
+        },
+        {
+          "code": "inStock",
+          "params": {
+            "count": 1
+          }
+        },
+        {
+          "code": "pastWins",
+          "params": {
+            "count": 4
+          }
+        }
       ],
       "score": {
         "total": 0.82,
@@ -90,7 +121,12 @@
         "coverage": 1.0,
         "evidence": 0.8,
         "history": 0.4,
-        "channels": [{ "channel": "lexical", "rank": 1 }]
+        "channels": [
+          {
+            "channel": "lexical",
+            "rank": 1
+          }
+        ]
       },
       "contacts": {
         "site": "https://severny-proviant.example.org",
@@ -107,27 +143,63 @@
       "role": "unknown",
       "roleSource": null,
       "status": "check",
-      "checkReasons": ["innMissing", "roleUnconfirmed", "noCurrentOffer", "rangeUnconfirmed"],
-      "matches": [
-        { "itemId": "i1", "basis": "inferred", "offerId": null, "source": null }
+      "checkReasons": [
+        "innMissing",
+        "roleUnconfirmed",
+        "noCurrentOffer",
+        "rangeUnconfirmed"
       ],
-      "history": { "similarPurchases": 3, "wins": 0, "records": [] },
-      "highlights": [{ "code": "similarPurchases", "params": { "count": 3 } }],
+      "matches": [
+        {
+          "itemId": "i1",
+          "basis": "inferred",
+          "offerId": null,
+          "source": null
+        }
+      ],
+      "history": {
+        "similarPurchases": 3,
+        "wins": 0,
+        "records": []
+      },
+      "highlights": [
+        {
+          "code": "similarPurchases",
+          "params": {
+            "count": 3
+          }
+        }
+      ],
       "score": {
         "total": 0.31,
         "fusion": 0.45,
         "coverage": 0.5,
         "evidence": 0.0,
         "history": 0.2,
-        "channels": [{ "channel": "history", "rank": 1 }]
+        "channels": [
+          {
+            "channel": "history",
+            "rank": 1
+          }
+        ]
       },
-      "contacts": { "site": "", "email": "", "phone": "" }
+      "contacts": {
+        "site": "",
+        "email": "",
+        "phone": ""
+      }
     }
   ],
   "pipeline": {
     "version": "search-v1",
-    "channels": ["lexical", "history"],
-    "asOf": "2026-10-01T12:00:00Z"
+    "channels": [
+      "lexical",
+      "history"
+    ],
+    "asOf": "2026-10-01T12:00:00Z",
+    "inputs": [
+      "text"
+    ]
   },
   "warnings": [],
   "createdAt": "2026-10-01T12:00:00Z"

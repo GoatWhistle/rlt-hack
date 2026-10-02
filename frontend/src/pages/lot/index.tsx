@@ -1,9 +1,12 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useParams } from "react-router"
+import { WarningNote } from "@/entities/search/ui/warning-note"
 import { filtered, pageForIndex, readQuery, writeQuery } from "@/entities/upload/list-query"
+import type { LotSummary } from "@/entities/upload/model"
 import { useLot, useUpload } from "@/entities/upload/queries"
 import { ExportDialog } from "@/features/export-results"
+import { SearchWorkspace } from "@/features/result-workspace"
 import { isApiError } from "@/shared/api/api-error"
 import { lotPath, UPLOADS_PATH, uploadPath } from "@/shared/config/paths"
 import { useLocale } from "@/shared/i18n/locale-provider"
@@ -13,7 +16,15 @@ import { ErrorState } from "@/shared/ui/error-state"
 import { LoadingState } from "@/shared/ui/loading-state"
 import { LotHeader, type Neighbours } from "./lot-header"
 import styles from "./styles.module.css"
-import { Workspace } from "./workspace"
+
+type Absence = "queued" | "failed" | "notUnderstood" | "unavailable"
+
+function absence(status: LotSummary["status"]): Absence {
+  if (status === "queued") return "queued"
+  if (status === "failed") return "failed"
+  if (status === "noCandidates") return "notUnderstood"
+  return "unavailable"
+}
 
 export function LotPage() {
   const { t } = useTranslation("lot")
@@ -50,7 +61,7 @@ export function LotPage() {
     return <ErrorState error={lot.error} headingLevel={1} onRetry={() => lot.refetch()} />
   }
 
-  const { upload: summary, lot: current, recommendation } = lot.data
+  const { upload: summary, lot: current, search } = lot.data
   const list = upload.data ? filtered(upload.data.lots, query, locale) : []
   const index = list.findIndex((item) => item.id === current.id)
   const listSearch = writeQuery({ ...query, page: pageForIndex(index) })
@@ -74,15 +85,15 @@ export function LotPage() {
         neighbours={neighbours}
         onExport={() => setExporting((state) => ({ open: true, session: state.session + 1 }))}
       />
-      {recommendation ? (
-        <Workspace
-          key={current.id}
-          uploadId={uploadId}
-          lotId={current.id}
-          recommendation={recommendation}
-        />
+      {search && search.warnings.length > 0 ? <WarningNote warnings={search.warnings} /> : null}
+      {search ? (
+        <SearchWorkspace key={current.id} result={search} />
       ) : (
-        <EmptyState headingLevel={2} title={t("queued.title")} description={t("queued.text")} />
+        <EmptyState
+          headingLevel={2}
+          title={t(`${absence(current.status)}.title`)}
+          description={t(`${absence(current.status)}.text`)}
+        />
       )}
       <ExportDialog
         key={exporting.session}

@@ -20,6 +20,7 @@ class PipelineInfo:
     version: str
     channels: tuple[str, ...]
     as_of: datetime
+    inputs: tuple[str, ...] = ("text",)
 
 
 @dataclass(frozen=True, slots=True)

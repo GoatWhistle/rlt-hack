@@ -23,8 +23,8 @@ from src.models.enums import CandidateStatus, CheckReason, CompanyRole, WarningC
 from src.models.errors import DomainError
 from src.models.search_result import PipelineInfo, SearchResult, SearchWarning
 
-PAYLOAD_VERSION = 1
-READABLE_VERSIONS = frozenset({1})
+PAYLOAD_VERSION = 2
+READABLE_VERSIONS = frozenset({1, 2})
 
 
 class CandidateDto(FrozenDto):
@@ -79,17 +79,23 @@ class PipelineDto(FrozenDto):
     version: str
     channels: tuple[str, ...]
     as_of: datetime
+    inputs: tuple[str, ...] = ("text",)
 
     @classmethod
     def from_domain(cls, pipeline: PipelineInfo) -> Self:
-        return cls(version=pipeline.version, channels=pipeline.channels, as_of=pipeline.as_of)
+        return cls(
+            version=pipeline.version,
+            channels=pipeline.channels,
+            as_of=pipeline.as_of,
+            inputs=pipeline.inputs,
+        )
 
     @classmethod
     def maybe(cls, pipeline: PipelineInfo | None) -> Self | None:
         return None if pipeline is None else cls.from_domain(pipeline)
 
     def to_domain(self) -> PipelineInfo:
-        return PipelineInfo(self.version, self.channels, self.as_of)
+        return PipelineInfo(self.version, self.channels, self.as_of, self.inputs)
 
 
 class SearchResultDto(FrozenDto):

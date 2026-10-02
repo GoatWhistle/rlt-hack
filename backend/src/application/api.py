@@ -2,23 +2,34 @@ from collections.abc import Awaitable, Callable
 
 import httpx
 
+from src.adapter.client.ml_service.probe import MlServiceProbe
 from src.adapter.client.ml_service.retriever import MlServiceRetriever, no_correlation
+from src.adapter.file.notice_csv.reader import CsvNoticeReader
+from src.adapter.repository.clickhouse.archive_evidence.combined import CombinedPurchaseHistory
+from src.adapter.repository.clickhouse.archive_evidence.history import ClickHouseArchiveEvidence
+from src.adapter.repository.clickhouse.archive_evidence.purchases import ClickHouseArchivePurchases
 from src.adapter.repository.clickhouse.history_search.retriever import ClickHouseHistoryRetriever
 from src.adapter.repository.clickhouse.offer_read.catalog import ClickHouseOfferCatalog
 from src.adapter.repository.clickhouse.offer_search.retriever import ClickHouseLexicalRetriever
 from src.adapter.repository.clickhouse.participation.history import ClickHousePurchaseHistory
-from src.adapter.repository.clickhouse.probe.probe import ClickHouseProbe
+from src.adapter.repository.clickhouse.probe.probe import ClickHouseProbe, DatasetProbe
 from src.adapter.repository.clickhouse.protocols import SqlGateway
 from src.adapter.repository.clickhouse.search_archive.archive import ClickHouseSearchArchive
 from src.adapter.repository.clickhouse.supplier_read.directory import ClickHouseSupplierDirectory
 from src.adapter.repository.clickhouse.supplier_read.identity import ClickHouseSupplierIdentity
+from src.adapter.repository.clickhouse.upload_store.store import ClickHouseUploadStore
 from src.adapter.system.clock import SystemClock
 from src.adapter.system.ids import Uuid4Generator
 from src.adapter.text.analyzer.analyzer import RussianAnalyzer
 from src.adapter.text.rule_interpreter.interpreter import RuleQueryInterpreter
 from src.application.config import AppConfig
 from src.application.deferred_gateway import Connect, DeferredGateway
+from src.service.health.protocols import DependencyProbe
 from src.service.health.service import HealthService
+from src.service.procurement_upload.processor import LotProcessor
+from src.service.procurement_upload.runner import LotRunner
+from src.service.procurement_upload.service import ProcurementUploadService
+from src.service.procurement_upload.settings import UploadSettings
 from src.service.supplier_profile.service import SupplierProfileService
 from src.service.supplier_search.assembly.assembler import CandidateAssembler
 from src.service.supplier_search.assembly.highlights import HighlightComposer
@@ -54,6 +65,7 @@ class ApiContainer:
         self._correlation = correlation
         self._analyzer = RussianAnalyzer()
         self._ml_client: httpx.AsyncClient | None = None
+        self._uploads: ProcurementUploadService | None = None
         self._settings = SearchSettings(
             timeout_seconds=config.search.timeout_seconds,
             retrieval_depth_factor=config.search.retrieval_depth_factor,
@@ -75,7 +87,10 @@ class ApiContainer:
             retrievers=self.retrievers(sql),
             directory=ClickHouseSupplierDirectory(sql, self.database),
             offers=ClickHouseOfferCatalog(sql, self.database),
-            history=ClickHousePurchaseHistory(sql, self._analyzer, self.database),
+            history=CombinedPurchaseHistory(
+                ClickHousePurchaseHistory(sql, self._analyzer, self.database),
+                ClickHouseArchiveEvidence(sql, self._analyzer, self.database),
+            ),
             fusion=ReciprocalRankFusion(settings.rrf_k),
             assembler=CandidateAssembler(MatchResolver(), HighlightComposer()),
             policy=CandidatePolicy.standard(settings.coverage_threshold),
@@ -99,17 +114,30 @@ class ApiContainer:
             settings=self._settings,
         )
 
+    async def procurement_uploads(self) -> ProcurementUploadService:
+        if self._uploads is None:
+            self._uploads = self._upload_service()
+        return self._uploads
+
     async def supplier_profiles(self) -> SupplierProfileService:
         return SupplierProfileService(
             directory=ClickHouseSupplierDirectory(self._gateway, self.database),
             offers=ClickHouseOfferCatalog(self._gateway, self.database),
+            purchases=ClickHouseArchivePurchases(self._gateway, self.database),
         )
 
-    async def background(self) -> tuple[()]:
-        return ()
+    async def background(self) -> tuple[ProcurementUploadService, ...]:
+        return (await self.procurement_uploads(),)
 
     async def health(self) -> HealthService:
-        return HealthService(probes=(ClickHouseProbe(self._control),))
+        probes: list[DependencyProbe] = [
+            ClickHouseProbe(self._control),
+            DatasetProbe.catalog(self._control, self.database),
+            DatasetProbe.history(self._control, self.database),
+        ]
+        if self._config.ml_service.enabled:
+            probes.append(MlServiceProbe(self._ml()))
+        return HealthService(probes=probes)
 
     def retrievers(self, gateway: SqlGateway | None = None) -> tuple[CandidateRetriever, ...]:
         search = self._config.search
@@ -132,14 +160,49 @@ class ApiContainer:
         if self._release is not None:
             await self._release()
 
-    def _semantic(self, gateway: SqlGateway) -> MlServiceRetriever:
+    def _upload_service(self) -> ProcurementUploadService:
+        upload = self._config.upload
+        settings = UploadSettings(
+            max_rows=upload.max_rows,
+            candidates_per_lot=upload.candidates_per_lot,
+            concurrency=upload.concurrency,
+            attempts=upload.attempts,
+            lot_timeout_seconds=upload.lot_timeout_seconds,
+            resume_interval_seconds=upload.resume_interval_seconds,
+            max_backlog=upload.max_backlog,
+        )
+        store = ClickHouseUploadStore(self._gateway, self.database)
+        background = ClickHouseUploadStore(self._background, self.database)
+        clock = SystemClock()
+        searching = SupplierSearchService(
+            pipeline=self.pipeline(self._background),
+            archive=ClickHouseSearchArchive(self._background, self.database),
+            ids=Uuid4Generator(),
+            settings=self._settings,
+        )
+        processor = LotProcessor(searching, clock, settings)
+        return ProcurementUploadService(
+            reader=CsvNoticeReader(),
+            store=store,
+            searches=ClickHouseSearchArchive(self._gateway, self.database),
+            runner=LotRunner(processor, background, clock, settings),
+            clock=clock,
+            ids=Uuid4Generator(),
+            settings=settings,
+        )
+
+    def _ml(self) -> httpx.AsyncClient:
         ml = self._config.ml_service
         if self._ml_client is None:
             self._ml_client = httpx.AsyncClient(
                 base_url=ml.base_url, timeout=ml.timeout_seconds, trust_env=False
             )
+        return self._ml_client
+
+    def _semantic(self, gateway: SqlGateway) -> MlServiceRetriever:
+        ml = self._config.ml_service
         return MlServiceRetriever(
-            self._ml_client,
+            self._ml(),
             ClickHouseSupplierIdentity(gateway, self.database),
             timeout_seconds=ml.timeout_seconds,
             correlation=self._correlation or no_correlation,

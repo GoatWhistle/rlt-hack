@@ -15,6 +15,7 @@ from src.models.enums import (
     Locale,
     MatchBasis,
     PurchaseOutcome,
+    SearchOrigin,
     WarningCode,
 )
 
@@ -32,12 +33,20 @@ class FiltersDto(CamelModel):
     item_type: FilterItemType | None = None
 
 
+class ContextDto(CamelModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    customer_inn: Annotated[str, StringConstraints(max_length=12)] | None = None
+    start_price: Annotated[str, StringConstraints(max_length=32)] | None = None
+
+
 class SearchRequestDto(CamelModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
     text: str
     limit: int | None = None
     filters: FiltersDto = Field(default_factory=FiltersDto)
+    context: ContextDto = Field(default_factory=ContextDto)
 
 
 class QueryDto(CamelModel):
@@ -45,6 +54,8 @@ class QueryDto(CamelModel):
     locale: Locale
     limit: int
     filters: FiltersDto
+    context: ContextDto
+    origin: SearchOrigin
 
 
 class QuantityDto(CamelModel):
@@ -134,6 +145,7 @@ class PipelineDto(CamelModel):
     version: str
     channels: list[str]
     as_of: UtcDateTime
+    inputs: list[str]
 
 
 class WarningDto(CamelModel):

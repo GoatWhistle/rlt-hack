@@ -3,9 +3,15 @@ from typing import Self
 
 from pydantic import BaseModel, ConfigDict
 
-from src.models.enums import ItemOrigin, ItemType, Locale
+from src.models.enums import ItemOrigin, ItemType, Locale, SearchOrigin
 from src.models.query_item import Quantity, QueryItem
-from src.models.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
+from src.models.search import (
+    CandidateLimit,
+    SearchContext,
+    SearchFilters,
+    SearchQuery,
+    SearchText,
+)
 
 
 class FrozenDto(BaseModel):
@@ -60,6 +66,9 @@ class QueryDto(FrozenDto):
     locale: Locale
     regions: tuple[str, ...]
     item_type: ItemType | None
+    customer_inn: str = ""
+    start_price: Decimal | None = None
+    origin: SearchOrigin = SearchOrigin.MANUAL
 
     @classmethod
     def from_domain(cls, query: SearchQuery) -> Self:
@@ -69,6 +78,9 @@ class QueryDto(FrozenDto):
             locale=query.locale,
             regions=query.filters.regions,
             item_type=query.filters.item_type,
+            customer_inn=query.context.customer_inn,
+            start_price=query.context.start_price,
+            origin=query.origin,
         )
 
     def to_domain(self) -> SearchQuery:
@@ -77,4 +89,6 @@ class QueryDto(FrozenDto):
             limit=CandidateLimit(self.limit),
             locale=self.locale,
             filters=SearchFilters(regions=self.regions, item_type=self.item_type),
+            context=SearchContext(customer_inn=self.customer_inn, start_price=self.start_price),
+            origin=self.origin,
         )

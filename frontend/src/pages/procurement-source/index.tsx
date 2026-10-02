@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
-import { useParams } from "react-router"
-import { usePurchaseSource } from "@/entities/recommendation/purchase-source"
-import { lotPath } from "@/shared/config/paths"
+import { useParams, useSearchParams } from "react-router"
+import { usePurchaseSource } from "@/entities/supplier/purchase-source"
+import { BACK_PARAM, SEARCH_PATH, safeBackPath } from "@/shared/config/paths"
 import { useFormatters } from "@/shared/i18n/formatters"
 import { BackLink } from "@/shared/ui/back-link"
 import { Caption } from "@/shared/ui/caption"
@@ -14,9 +14,11 @@ import styles from "./styles.module.css"
 export function ProcurementSourcePage() {
   const { t } = useTranslation("lot")
   const { date } = useFormatters()
-  const { uploadId = "", lotId = "", inn = "", purchaseId = "" } = useParams()
-  const query = usePurchaseSource(uploadId, lotId, inn, purchaseId)
-  const back = <BackLink to={lotPath(uploadId, lotId)}>{t("archive.back")}</BackLink>
+  const { supplierId = "", lotId = "" } = useParams()
+  const [params] = useSearchParams()
+  const query = usePurchaseSource(supplierId, lotId)
+  const backTo = safeBackPath(params.get(BACK_PARAM), SEARCH_PATH)
+  const back = <BackLink to={backTo}>{t("archive.back")}</BackLink>
   if (query.isPending) return <LoadingState label={t("archive.loading")} />
   if (query.isError)
     return (

@@ -1,5 +1,6 @@
 import json
 from dataclasses import replace
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -8,6 +9,11 @@ import pytest
 from src.adapter.repository.clickhouse.search_archive.result_dto import (
     decode_result,
     encode_result,
+)
+from src.adapter.repository.clickhouse.upload_store.codec import (
+    decode_issues,
+    decode_lot_result,
+    encode_lot_result,
 )
 from src.adapter.repository.errors import CorruptRecordError
 from src.models.candidate import Highlight, ProductMatch
@@ -20,11 +26,19 @@ from src.models.enums import (
     Locale,
     MatchBasis,
     PurchaseOutcome,
+    SearchOrigin,
     WarningCode,
 )
+from src.models.lot_result import LotResult
 from src.models.purchase import PurchaseRecord, PurchaseSummary
 from src.models.query_item import Quantity, QueryItem
-from src.models.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
+from src.models.search import (
+    CandidateLimit,
+    SearchContext,
+    SearchFilters,
+    SearchQuery,
+    SearchText,
+)
 from src.models.search_result import SearchResult, SearchWarning
 from tests.fakes.domain import make_candidate, make_result, make_supplier
 
@@ -67,7 +81,7 @@ def test_codec_round_trip_is_lossless() -> None:
     assert decode_result(payload) == result
     assert decode_result(encode_result(decode_result(payload))) == result
     document = json.loads(payload)
-    assert document["payload_version"] == 1
+    assert document["payload_version"] == 2
     assert document["items"][0]["quantity"] == {"value": "1.5", "unit": "т"}
 
 
@@ -97,3 +111,35 @@ def test_payload_breaking_current_rules_is_corrupt() -> None:
     with pytest.raises(CorruptRecordError) as caught:
         decode_result(json.dumps(document))
     assert caught.value.reason == "InvalidCandidateLimitError"
+
+
+def test_v2_keeps_context_and_origin_and_v1_reads_defaults() -> None:
+    query = replace(
+        rich_result().query,
+        context=SearchContext(customer_inn="7807022750", start_price=Decimal("10.50")),
+        origin=SearchOrigin.UPLOAD,
+    )
+    pipeline = replace(rich_result().pipeline, inputs=("text", "customerInn"))
+    result = replace(rich_result(), query=query, pipeline=pipeline)
+    assert decode_result(encode_result(result)) == result
+    legacy = json.loads((FIXTURES / "search_payload_v1.json").read_text(encoding="utf-8"))
+    decoded = decode_result(json.dumps(legacy))
+    assert decoded.query.context.is_empty
+    assert decoded.query.origin == SearchOrigin.MANUAL
+    assert decoded.pipeline.inputs == ("text",)
+
+
+def test_lot_payloads_are_checked_the_same_way() -> None:
+    result = LotResult.of_search("L-1", datetime(2026, 10, 1, tzinfo=UTC), rich_result())
+    document = json.loads(encode_lot_result(result))
+    assert document["payload_version"] == 3
+    assert decode_lot_result(json.dumps(document)) == result
+    document["payload_version"] = 99
+    with pytest.raises(CorruptRecordError):
+        decode_lot_result(json.dumps(document))
+    document["payload_version"] = 3
+    document["search_id"] = None
+    with pytest.raises(CorruptRecordError):
+        decode_lot_result(json.dumps(document))
+    with pytest.raises(CorruptRecordError):
+        decode_issues('[{"row": 0, "code": "badPrice", "value": ""}]')

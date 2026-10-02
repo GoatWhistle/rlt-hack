@@ -1,35 +1,23 @@
+import { readFileSync } from "node:fs"
 import AxeBuilder from "@axe-core/playwright"
 import { expect, test } from "@playwright/test"
 import { chooseLanguage } from "./language"
 
+const source = JSON.parse(readFileSync("../contracts/supplier/purchase.example.json", "utf8"))
+
 test("opens a readable procurement source with accessible facts", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" })
-  await page.route("**/api/uploads/u1/lots/paper/evidence/1111111111/archive-1", (route) =>
-    route.fulfill({
-      json: {
-        provenance: "procurement_archive",
-        title: "Office paper procurement",
-        lot_id: "archive-1",
-        supplier_inn: "1111111111",
-        customer_inn: "2222222222",
-        category: "17.12",
-        source_system: "Archive",
-        product_names: ["A4 paper"],
-        is_winner: true,
-        publish_date: "2024-11-06",
-      },
-    }),
+  await page.route("**/api/suppliers/c1/purchases/4012345", (route) =>
+    route.fulfill({ json: source }),
   )
-  await page.goto("/uploads/u1/lots/paper/evidence/1111111111/archive-1")
+  await page.goto(`/suppliers/c1/purchases/4012345?back=${encodeURIComponent("/search/s1")}`)
   await chooseLanguage(page, /^english$/i)
-  await expect(
-    page.getByRole("heading", { level: 1, name: "Office paper procurement" }),
-  ).toBeVisible()
-  await expect(page.getByText("A4 paper")).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: source.title })).toBeVisible()
+  await expect(page.getByText("Рис шлифованный")).toBeVisible()
   await expect(page.getByText("Winner", { exact: true })).toBeVisible()
   await expect(page.getByRole("link", { name: "Back to recommendation" })).toHaveAttribute(
     "href",
-    "/uploads/u1/lots/paper",
+    "/search/s1",
   )
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
     true,

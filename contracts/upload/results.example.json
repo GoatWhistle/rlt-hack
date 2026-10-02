@@ -1,0 +1,444 @@
+{
+  "results": [
+    {
+      "lot": {
+        "id": "4257576",
+        "title": "Поставка крупы гречневой ядрицы",
+        "subject": "Крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
+        "customerInn": "7807022750",
+        "publishDate": "2024-01-18",
+        "startPrice": 2835.54,
+        "status": "needsCheck",
+        "products": 2,
+        "candidates": 2,
+        "searchId": "e6ae342f-a141-57ef-b666-c2e951c35591"
+      },
+      "search": {
+        "searchId": "e6ae342f-a141-57ef-b666-c2e951c35591",
+        "query": {
+          "text": "Крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
+          "locale": "ru",
+          "limit": 20,
+          "filters": {
+            "regions": [
+              "78"
+            ],
+            "itemType": "goods"
+          },
+          "context": {
+            "customerInn": "7807022750",
+            "startPrice": "2835.54"
+          },
+          "origin": "upload"
+        },
+        "items": [
+          {
+            "id": "i1",
+            "name": "Крупа гречневая ядрица",
+            "okpd2": "",
+            "itemType": "goods",
+            "origin": "text",
+            "quantity": {
+              "value": "500",
+              "unit": "кг"
+            }
+          },
+          {
+            "id": "i2",
+            "name": "Рис шлифованный",
+            "okpd2": "",
+            "itemType": "goods",
+            "origin": "text",
+            "quantity": {
+              "value": "200",
+              "unit": "кг"
+            }
+          }
+        ],
+        "candidates": [
+          {
+            "rank": 1,
+            "id": "6c1e2f3a-4b5c-4d6e-8f70-81a2b3c4d5e6",
+            "name": "ООО «Северный Провиант»",
+            "inn": "7801234567",
+            "region": "78",
+            "role": "supplierDistributor",
+            "roleSource": {
+              "kind": "catalog",
+              "title": "Каталог поставщиков",
+              "url": "https://catalog.example.org/companies/severny-proviant",
+              "checkedAt": "2026-09-28T10:00:00Z"
+            },
+            "status": "recommended",
+            "checkReasons": [],
+            "matches": [
+              {
+                "itemId": "i1",
+                "basis": "stock",
+                "offerId": "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d",
+                "source": {
+                  "kind": "price",
+                  "title": "Прайс-лист компании",
+                  "url": "https://severny-proviant.example.org/price/grechka",
+                  "checkedAt": "2026-09-29T08:00:00Z"
+                }
+              },
+              {
+                "itemId": "i2",
+                "basis": "catalog",
+                "offerId": "8b7c6d5e-4f3a-4b2c-8d1e-0f9a8b7c6d5e",
+                "source": {
+                  "kind": "catalog",
+                  "title": "Каталог поставщиков",
+                  "url": "https://catalog.example.org/products/ris-shlifovanny",
+                  "checkedAt": "2026-09-28T10:00:00Z"
+                }
+              }
+            ],
+            "history": {
+              "similarPurchases": 11,
+              "wins": 4,
+              "records": [
+                {
+                  "lotId": "32514850391-1",
+                  "title": "Поставка круп для школьного питания",
+                  "outcome": "winner",
+                  "itemIds": [
+                    "i1"
+                  ]
+                }
+              ]
+            },
+            "highlights": [
+              {
+                "code": "coversItems",
+                "params": {
+                  "matched": 2,
+                  "total": 2
+                }
+              },
+              {
+                "code": "inStock",
+                "params": {
+                  "count": 1
+                }
+              },
+              {
+                "code": "pastWins",
+                "params": {
+                  "count": 4
+                }
+              }
+            ],
+            "score": {
+              "total": 0.82,
+              "fusion": 0.9,
+              "coverage": 1.0,
+              "evidence": 0.8,
+              "history": 0.4,
+              "channels": [
+                {
+                  "channel": "lexical",
+                  "rank": 1
+                }
+              ]
+            },
+            "contacts": {
+              "site": "https://severny-proviant.example.org",
+              "email": "sales@severny-proviant.example.org",
+              "phone": "+7 812 000-00-00"
+            }
+          },
+          {
+            "rank": 2,
+            "id": "7d2f3a4b-5c6d-4e7f-9081-92b3c4d5e6f7",
+            "name": "АО «Зерновой Двор»",
+            "inn": "",
+            "region": "",
+            "role": "unknown",
+            "roleSource": null,
+            "status": "check",
+            "checkReasons": [
+              "innMissing",
+              "roleUnconfirmed",
+              "noCurrentOffer",
+              "rangeUnconfirmed"
+            ],
+            "matches": [
+              {
+                "itemId": "i1",
+                "basis": "inferred",
+                "offerId": null,
+                "source": null
+              }
+            ],
+            "history": {
+              "similarPurchases": 3,
+              "wins": 0,
+              "records": []
+            },
+            "highlights": [
+              {
+                "code": "similarPurchases",
+                "params": {
+                  "count": 3
+                }
+              }
+            ],
+            "score": {
+              "total": 0.31,
+              "fusion": 0.45,
+              "coverage": 0.5,
+              "evidence": 0.0,
+              "history": 0.2,
+              "channels": [
+                {
+                  "channel": "history",
+                  "rank": 1
+                }
+              ]
+            },
+            "contacts": {
+              "site": "",
+              "email": "",
+              "phone": ""
+            }
+          }
+        ],
+        "pipeline": {
+          "version": "search-v1",
+          "channels": [
+            "lexical",
+            "history"
+          ],
+          "asOf": "2026-10-01T12:00:00Z",
+          "inputs": [
+            "text"
+          ]
+        },
+        "warnings": [],
+        "createdAt": "2026-10-01T12:00:00Z"
+      }
+    },
+    {
+      "lot": {
+        "id": "4633163",
+        "title": "Оказание услуг связи",
+        "subject": null,
+        "customerInn": null,
+        "publishDate": null,
+        "startPrice": null,
+        "status": "noCandidates",
+        "products": 1,
+        "candidates": 0,
+        "searchId": "50251896-812b-5d44-934f-b6c3e3e691a0"
+      },
+      "search": {
+        "searchId": "50251896-812b-5d44-934f-b6c3e3e691a0",
+        "query": {
+          "text": "Крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
+          "locale": "ru",
+          "limit": 20,
+          "filters": {
+            "regions": [
+              "78"
+            ],
+            "itemType": "goods"
+          },
+          "context": {
+            "customerInn": "7807022750",
+            "startPrice": "2835.54"
+          },
+          "origin": "upload"
+        },
+        "items": [
+          {
+            "id": "i1",
+            "name": "Крупа гречневая ядрица",
+            "okpd2": "",
+            "itemType": "goods",
+            "origin": "text",
+            "quantity": {
+              "value": "500",
+              "unit": "кг"
+            }
+          },
+          {
+            "id": "i2",
+            "name": "Рис шлифованный",
+            "okpd2": "",
+            "itemType": "goods",
+            "origin": "text",
+            "quantity": {
+              "value": "200",
+              "unit": "кг"
+            }
+          }
+        ],
+        "candidates": [
+          {
+            "rank": 1,
+            "id": "6c1e2f3a-4b5c-4d6e-8f70-81a2b3c4d5e6",
+            "name": "ООО «Северный Провиант»",
+            "inn": "7801234567",
+            "region": "78",
+            "role": "supplierDistributor",
+            "roleSource": {
+              "kind": "catalog",
+              "title": "Каталог поставщиков",
+              "url": "https://catalog.example.org/companies/severny-proviant",
+              "checkedAt": "2026-09-28T10:00:00Z"
+            },
+            "status": "recommended",
+            "checkReasons": [],
+            "matches": [
+              {
+                "itemId": "i1",
+                "basis": "stock",
+                "offerId": "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d",
+                "source": {
+                  "kind": "price",
+                  "title": "Прайс-лист компании",
+                  "url": "https://severny-proviant.example.org/price/grechka",
+                  "checkedAt": "2026-09-29T08:00:00Z"
+                }
+              },
+              {
+                "itemId": "i2",
+                "basis": "catalog",
+                "offerId": "8b7c6d5e-4f3a-4b2c-8d1e-0f9a8b7c6d5e",
+                "source": {
+                  "kind": "catalog",
+                  "title": "Каталог поставщиков",
+                  "url": "https://catalog.example.org/products/ris-shlifovanny",
+                  "checkedAt": "2026-09-28T10:00:00Z"
+                }
+              }
+            ],
+            "history": {
+              "similarPurchases": 11,
+              "wins": 4,
+              "records": [
+                {
+                  "lotId": "32514850391-1",
+                  "title": "Поставка круп для школьного питания",
+                  "outcome": "winner",
+                  "itemIds": [
+                    "i1"
+                  ]
+                }
+              ]
+            },
+            "highlights": [
+              {
+                "code": "coversItems",
+                "params": {
+                  "matched": 2,
+                  "total": 2
+                }
+              },
+              {
+                "code": "inStock",
+                "params": {
+                  "count": 1
+                }
+              },
+              {
+                "code": "pastWins",
+                "params": {
+                  "count": 4
+                }
+              }
+            ],
+            "score": {
+              "total": 0.82,
+              "fusion": 0.9,
+              "coverage": 1.0,
+              "evidence": 0.8,
+              "history": 0.4,
+              "channels": [
+                {
+                  "channel": "lexical",
+                  "rank": 1
+                }
+              ]
+            },
+            "contacts": {
+              "site": "https://severny-proviant.example.org",
+              "email": "sales@severny-proviant.example.org",
+              "phone": "+7 812 000-00-00"
+            }
+          },
+          {
+            "rank": 2,
+            "id": "7d2f3a4b-5c6d-4e7f-9081-92b3c4d5e6f7",
+            "name": "АО «Зерновой Двор»",
+            "inn": "",
+            "region": "",
+            "role": "unknown",
+            "roleSource": null,
+            "status": "check",
+            "checkReasons": [
+              "innMissing",
+              "roleUnconfirmed",
+              "noCurrentOffer",
+              "rangeUnconfirmed"
+            ],
+            "matches": [
+              {
+                "itemId": "i1",
+                "basis": "inferred",
+                "offerId": null,
+                "source": null
+              }
+            ],
+            "history": {
+              "similarPurchases": 3,
+              "wins": 0,
+              "records": []
+            },
+            "highlights": [
+              {
+                "code": "similarPurchases",
+                "params": {
+                  "count": 3
+                }
+              }
+            ],
+            "score": {
+              "total": 0.31,
+              "fusion": 0.45,
+              "coverage": 0.5,
+              "evidence": 0.0,
+              "history": 0.2,
+              "channels": [
+                {
+                  "channel": "history",
+                  "rank": 1
+                }
+              ]
+            },
+            "contacts": {
+              "site": "",
+              "email": "",
+              "phone": ""
+            }
+          }
+        ],
+        "pipeline": {
+          "version": "search-v1",
+          "channels": [
+            "lexical",
+            "history"
+          ],
+          "asOf": "2026-10-01T12:00:00Z",
+          "inputs": [
+            "text"
+          ]
+        },
+        "warnings": [],
+        "createdAt": "2026-10-01T12:00:00Z"
+      }
+    }
+  ]
+}

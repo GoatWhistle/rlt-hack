@@ -76,12 +76,16 @@ class RecommendationRequestDto(WireDto):
         cls, request: SearchRequest, limit: int, request_id: UUID, as_of: datetime
     ) -> Self:
         regions = request.query.filters.regions
+        context = request.query.context
+        price = context.start_price
         return cls(
             request_id=request_id,
             as_of=as_of,
             notice=NoticeDto(
                 procedure_name=request.query.text.value,
                 region=regions[0] if regions else "",
+                customer_inn=context.customer_inn or None,
+                start_price=None if price is None else format(price, "f"),
             ),
             items=tuple(ItemDto.from_domain(item) for item in request.items),
             options=OptionsDto(candidate_limit=min(max(limit, 1), MAX_CANDIDATE_LIMIT)),

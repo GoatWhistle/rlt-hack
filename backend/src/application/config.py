@@ -84,6 +84,7 @@ class MlServiceConfig:
 @dataclass(frozen=True, slots=True)
 class ApiStorageConfig:
     query_timeout: int = 15
+    background_pool_size: int = 2
     max_memory_usage: int = 0
     execution_margin_seconds: int = 2
 
@@ -103,7 +104,34 @@ def api_clickhouse(
 def _api_storage_config() -> ApiStorageConfig:
     return ApiStorageConfig(
         query_timeout=_int("CLICKHOUSE_API_QUERY_TIMEOUT", 15),
+        background_pool_size=_int("CLICKHOUSE_BACKGROUND_POOL_SIZE", 2),
         max_memory_usage=_int("CLICKHOUSE_API_MAX_MEMORY_USAGE", 0),
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class UploadConfig:
+    max_bytes: int = 2 * 1024 * 1024
+    max_rows: int = 500
+    candidates_per_lot: int = 20
+    concurrency: int = 2
+    attempts: int = 3
+    lot_timeout_seconds: float = 30.0
+    resume_interval_seconds: float = 60.0
+    max_backlog: int = 2000
+
+
+def _upload_config() -> UploadConfig:
+    max_rows = _int("UPLOAD_MAX_ROWS", 500)
+    return UploadConfig(
+        max_bytes=_int("UPLOAD_MAX_BYTES", 2 * 1024 * 1024),
+        max_rows=max_rows,
+        candidates_per_lot=_int("UPLOAD_CANDIDATES", 20),
+        concurrency=_int("UPLOAD_CONCURRENCY", 2),
+        attempts=_int("UPLOAD_ATTEMPTS", 3),
+        lot_timeout_seconds=_float("UPLOAD_LOT_TIMEOUT_SECONDS", 30.0),
+        resume_interval_seconds=_float("UPLOAD_RESUME_INTERVAL_SECONDS", 60.0),
+        max_backlog=_int("UPLOAD_MAX_BACKLOG", max(2000, 4 * max_rows)),
     )
 
 
@@ -186,6 +214,7 @@ class AppConfig:
     api: ApiConfig = field(default_factory=ApiConfig)
     search: SearchConfig = field(default_factory=SearchConfig)
     ml_service: MlServiceConfig = field(default_factory=MlServiceConfig)
+    upload: UploadConfig = field(default_factory=UploadConfig)
     api_storage: ApiStorageConfig = field(default_factory=ApiStorageConfig)
     # ZIP-выгрузка реестра МСП ФНС для команды registry-import.
     msp_registry_path: Path | None = None
@@ -255,6 +284,7 @@ class AppConfig:
             api=_api_config(),
             search=_search_config(),
             ml_service=_ml_service_config(),
+            upload=_upload_config(),
             api_storage=_api_storage_config(),
             msp_registry_path=(
                 Path(value).expanduser() if (value := os.getenv("MSP_REGISTRY_PATH")) else None

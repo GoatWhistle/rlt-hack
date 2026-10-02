@@ -1,12 +1,15 @@
 from dataclasses import dataclass, field
+from decimal import Decimal
 from typing import ClassVar, Self
 
-from src.models.enums import ItemType, Locale
+from src.models.enums import ItemType, Locale, SearchOrigin
 from src.models.errors import (
     EmptySearchTextError,
     InvalidCandidateLimitError,
+    InvalidSearchContextError,
     SearchTextTooLongError,
 )
+from src.models.inn import is_valid_inn
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,8 +59,37 @@ class SearchFilters:
 
 
 @dataclass(frozen=True, slots=True)
+class SearchContext:
+    customer_inn: str = ""
+    start_price: Decimal | None = None
+
+    def __post_init__(self) -> None:
+        inn = self.customer_inn.strip()
+        if inn and not is_valid_inn(inn):
+            raise InvalidSearchContextError("customer inn fails the checksum")
+        price = self.start_price
+        if price is not None and (not price.is_finite() or price < 0):
+            raise InvalidSearchContextError("start price must be a non-negative number")
+        object.__setattr__(self, "customer_inn", inn)
+
+    @property
+    def fields(self) -> tuple[str, ...]:
+        present = (
+            ("customerInn", bool(self.customer_inn)),
+            ("startPrice", self.start_price is not None),
+        )
+        return tuple(name for name, given in present if given)
+
+    @property
+    def is_empty(self) -> bool:
+        return not self.fields
+
+
+@dataclass(frozen=True, slots=True)
 class SearchQuery:
     text: SearchText
     limit: CandidateLimit = field(default_factory=CandidateLimit.default)
     locale: Locale = Locale.RU
     filters: SearchFilters = field(default_factory=SearchFilters)
+    context: SearchContext = field(default_factory=SearchContext)
+    origin: SearchOrigin = SearchOrigin.MANUAL

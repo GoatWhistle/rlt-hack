@@ -34,6 +34,7 @@ from src.models.errors import (
 )
 from src.service.errors import (
     LotNotFoundError,
+    PurchaseNotFoundError,
     SearchNotFoundError,
     SearchTimeoutError,
     SearchUnavailableError,
@@ -94,6 +95,7 @@ KNOWN_ERRORS: tuple[tuple[type[Exception], ErrorKind], ...] = (
     (UninterpretableQueryError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "query_not_understood")),
     (SearchNotFoundError, ErrorKind(HTTPStatus.NOT_FOUND, "search_not_found")),
     (SupplierNotFoundError, ErrorKind(HTTPStatus.NOT_FOUND, "supplier_not_found")),
+    (PurchaseNotFoundError, ErrorKind(HTTPStatus.NOT_FOUND, "purchase_not_found")),
     (
         SearchUnavailableError,
         ErrorKind(HTTPStatus.SERVICE_UNAVAILABLE, "search_unavailable", RETRY_AFTER_SECONDS),

@@ -1,5 +1,15 @@
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
 import type { Page } from "@playwright/test"
-import { recommendationFixture } from "../tests/entities/recommendation/fixture"
+
+type Payload = Record<string, unknown>
+
+const search = JSON.parse(
+  readFileSync(
+    resolve(process.cwd(), "..", "contracts", "search/response.example.json"),
+    "utf8",
+  ),
+) as Payload
 
 export async function installApiFixture(page: Page) {
   let uploaded = false
@@ -17,8 +27,9 @@ export async function installApiFixture(page: Page) {
     publishDate: null,
     startPrice: null,
     status: "ready",
-    products: recommendationFixture.products.length,
-    candidates: recommendationFixture.companies.length,
+    products: (search.items as Payload[]).length,
+    candidates: (search.candidates as Payload[]).length,
+    searchId: `search-${id}`,
   }))
   const summary = {
     id: "test-upload",
@@ -31,11 +42,10 @@ export async function installApiFixture(page: Page) {
   }
   const result = (lot: (typeof lots)[number]) => ({
     lot,
-    recommendation: {
-      ...recommendationFixture,
-      fileName: summary.fileName,
-      requestTitle: lot.title,
-      lotLabel: lot.id,
+    search: {
+      ...search,
+      searchId: lot.searchId,
+      query: { ...(search.query as Payload), text: lot.title, origin: "upload" },
     },
   })
   await page.route(

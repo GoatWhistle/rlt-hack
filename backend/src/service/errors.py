@@ -55,6 +55,12 @@ class SupplierNotFoundError(ServiceError):
         self.supplier_id = supplier_id
 
 
+class PurchaseNotFoundError(ServiceError):
+    def __init__(self, lot_id: object = None) -> None:
+        super().__init__("archive purchase not found")
+        self.lot_id = lot_id
+
+
 class UploadError(ServiceError):
     pass
 
@@ -75,6 +81,12 @@ class LotNotFoundError(UploadError):
     def __init__(self, upload_id: object, lot_id: str | None = None) -> None:
         super().__init__(f"{_not_found('lot', lot_id)} in upload {upload_id}")
         self.upload_id = upload_id
+        self.lot_id = lot_id
+
+
+class LotNotArchivedError(UploadError):
+    def __init__(self, lot_id: str) -> None:
+        super().__init__(f"the search of lot {lot_id} was not archived")
         self.lot_id = lot_id
 
 

@@ -1,0 +1,13 @@
+{
+  "provenance": "procurementArchive",
+  "supplierInn": "7801234567",
+  "lotId": "4012345",
+  "title": "Поставка крупы гречневой для школьного питания",
+  "publishedAt": "2024-11-06",
+  "outcome": "winner",
+  "category": "10.61",
+  "customerInn": "7807022750",
+  "sourceSystem": "ЕИС",
+  "products": ["Крупа гречневая ядрица", "Рис шлифованный"],
+  "snapshot": "78a94e50f0cb570fef0c06c5a7a04cc71aacdb3b23b8ebb75a5e226ab563adf3"
+}

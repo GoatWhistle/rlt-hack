@@ -13,8 +13,6 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
-from chdb.session import Session
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.adapter.repository.clickhouse.migrator import Migrator
@@ -32,7 +30,7 @@ from src.models.package import SupplierPackage
 from src.models.source import Source
 from src.models.supplier import Supplier
 from src.service.supplier.batching import package_batches
-from tests.clickhouse.chdb_gateway import ChdbGateway
+from tests.clickhouse.chdb_gateway import ChdbGateway, open_session
 
 FIRST = datetime(2026, 10, 1, 12, tzinfo=UTC)
 LATER = FIRST + timedelta(days=1)
@@ -78,7 +76,7 @@ async def check() -> None:
     assert count * UUID_IN_QUERY > 256 * 1024, "Пачка должна превышать предел запроса"
     assert count > ID_QUERY_LIMIT, "Пачка должна делиться на части"
     with tempfile.TemporaryDirectory(prefix="rlt-offer-batch-") as directory:
-        session = Session(str(Path(directory) / "db"))
+        session = open_session(str(Path(directory) / "db"))
         try:
             gateway = ChdbGateway(session)
             await Migrator(gateway).apply_pending()

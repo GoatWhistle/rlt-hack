@@ -1,28 +1,104 @@
 {
   "codes": [
-    { "code": "empty_query", "status": 422 },
-    { "code": "query_too_long", "status": 422 },
-    { "code": "invalid_limit", "status": 422 },
-    { "code": "invalid_request", "status": 422 },
-    { "code": "query_not_understood", "status": 422 },
-    { "code": "search_not_found", "status": 404 },
-    { "code": "supplier_not_found", "status": 404 },
-    { "code": "missing_file", "status": 400 },
-    { "code": "file_too_large", "status": 413 },
-    { "code": "unsupported_file_type", "status": 415 },
-    { "code": "invalid_file", "status": 422 },
-    { "code": "missing_columns", "status": 422 },
-    { "code": "too_many_rows", "status": 422 },
-    { "code": "no_valid_lots", "status": 422 },
-    { "code": "upload_not_found", "status": 404 },
-    { "code": "lot_not_found", "status": 404 },
-    { "code": "upload_queue_full", "status": 429 },
-    { "code": "rate_limited", "status": 429 },
-    { "code": "not_found", "status": 404 },
-    { "code": "method_not_allowed", "status": 405 },
-    { "code": "search_unavailable", "status": 503 },
-    { "code": "storage_unavailable", "status": 503 },
-    { "code": "search_timeout", "status": 504 },
-    { "code": "internal_error", "status": 500 }
+    {
+      "code": "empty_query",
+      "status": 422
+    },
+    {
+      "code": "query_too_long",
+      "status": 422
+    },
+    {
+      "code": "invalid_limit",
+      "status": 422
+    },
+    {
+      "code": "invalid_request",
+      "status": 422
+    },
+    {
+      "code": "query_not_understood",
+      "status": 422
+    },
+    {
+      "code": "search_not_found",
+      "status": 404
+    },
+    {
+      "code": "supplier_not_found",
+      "status": 404
+    },
+    {
+      "code": "purchase_not_found",
+      "status": 404
+    },
+    {
+      "code": "missing_file",
+      "status": 400
+    },
+    {
+      "code": "file_too_large",
+      "status": 413
+    },
+    {
+      "code": "unsupported_file_type",
+      "status": 415
+    },
+    {
+      "code": "invalid_file",
+      "status": 422
+    },
+    {
+      "code": "missing_columns",
+      "status": 422
+    },
+    {
+      "code": "too_many_rows",
+      "status": 422
+    },
+    {
+      "code": "no_valid_lots",
+      "status": 422
+    },
+    {
+      "code": "upload_not_found",
+      "status": 404
+    },
+    {
+      "code": "lot_not_found",
+      "status": 404
+    },
+    {
+      "code": "upload_queue_full",
+      "status": 429
+    },
+    {
+      "code": "rate_limited",
+      "status": 429
+    },
+    {
+      "code": "not_found",
+      "status": 404
+    },
+    {
+      "code": "method_not_allowed",
+      "status": 405
+    },
+    {
+      "code": "search_unavailable",
+      "status": 503
+    },
+    {
+      "code": "storage_unavailable",
+      "status": 503
+    },
+    {
+      "code": "search_timeout",
+      "status": 504
+    },
+    {
+      "code": "internal_error",
+      "status": 500
+    }
   ]
 }

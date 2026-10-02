@@ -36,6 +36,10 @@ class SearchPipeline:
         if not items:
             raise UninterpretableQueryError
         outcome = await self._matcher.match(SearchRequest(query=query, items=items))
+        context_used = any(
+            channel in self._settings.context_channels for channel in outcome.channels
+        )
+        context = query.context.fields if context_used else ()
         return MatchReport(
             items=items,
             candidates=outcome.candidates,
@@ -43,6 +47,7 @@ class SearchPipeline:
                 version=self._settings.pipeline_version,
                 channels=outcome.channels,
                 as_of=started_at,
+                inputs=("text", *context),
             ),
             warnings=(*item_warnings(items), *outcome.warnings),
         )

@@ -1,5 +1,5 @@
 import type { RowIssue } from "@/entities/notice/model"
-import type { Recommendation } from "@/entities/recommendation/model"
+import type { SearchResult } from "@/entities/search/model"
 
 export const LOT_STATUSES = ["queued", "ready", "needsCheck", "noCandidates", "failed"] as const
 export type LotStatus = (typeof LOT_STATUSES)[number]
@@ -17,6 +17,7 @@ export type LotSummary = {
   readonly status: LotStatus
   readonly products: number
   readonly candidates: number
+  readonly searchId?: string
 }
 
 export type UploadSummary = {
@@ -37,7 +38,7 @@ export type UploadDetail = UploadSummary & {
 
 export type LotResult = {
   readonly lot: LotSummary
-  readonly recommendation?: Recommendation
+  readonly search?: SearchResult
 }
 
 export type LotDetail = LotResult & {
@@ -46,11 +47,4 @@ export type LotDetail = LotResult & {
 
 export function isProcessing(upload: UploadSummary): boolean {
   return upload.processed < upload.total
-}
-
-export function statusOf(recommendation: Recommendation): ResultStatus {
-  if (recommendation.companies.length === 0) return "noCandidates"
-  const assumed = recommendation.products.some((product) => product.origin === "inferred")
-  const leaderToCheck = recommendation.companies[0]?.status === "check"
-  return assumed || leaderToCheck ? "needsCheck" : "ready"
 }

@@ -17,7 +17,7 @@ async function expectAccessible(page: Page) {
 }
 
 async function showView(page: Page, name: RegExp) {
-  const views = page.getByRole("group", { name: /review section/i })
+  const views = page.getByRole("group", { name: /result section/i })
   if (await views.isVisible()) await views.getByRole("radio", { name }).check()
 }
 
@@ -34,6 +34,11 @@ async function uploadSample(page: Page) {
   await expect(page.getByText(/processing finished/i)).toBeVisible({ timeout: 20_000 })
 }
 
+async function openFirstLot(page: Page) {
+  await page.getByRole("table").getByRole("link").first().click()
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
+}
+
 test("goes from a csv file to a reviewed purchase and two result files", async ({ page }) => {
   await uploadSample(page)
   await expectAccessible(page)
@@ -41,32 +46,20 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
   await expect(page.getByRole("table").getByRole("link")).toHaveCount(1)
   await page.getByRole("table").getByRole("link").click()
   await expect(page).toHaveURL(/\/lots\/test_paper\?q=test_paper$/)
-  await expect(page.getByRole("article")).toBeVisible()
+  await showView(page, /^candidates$/i)
+  await page
+    .getByRole("region", { name: /^candidates/i })
+    .getByRole("button", { name: /Зерновой Двор/ })
+    .click()
+  const grounds = page.getByRole("article", { name: /Зерновой Двор/ })
+  await expect(grounds).toBeVisible()
   await expectAccessible(page)
-
-  await page
-    .getByRole("article")
-    .getByRole("button", { name: /choose candidate/i })
-    .click()
-  await showView(page, /^companies$/i)
-  await page
-    .getByRole("region", { name: /candidates/i })
-    .getByRole("button")
-    .nth(1)
-    .click()
-  await page
-    .getByRole("article")
-    .getByRole("button", { name: /choose candidate/i })
-    .click()
-  await showView(page, /^companies$/i)
-  await page.getByRole("button", { name: /compare chosen \(2\)/i }).click()
-  await expect(page.getByRole("dialog", { name: /compare/i }).getByRole("table")).toBeVisible()
-  await expectAccessible(page)
-  await page.keyboard.press("Escape")
+  await grounds.getByRole("button", { name: /choose candidate/i }).click()
+  await expect(grounds.getByRole("button", { name: /remove from chosen/i })).toBeVisible()
 
   await page.getByRole("button", { name: /download results/i }).click()
   const exportDialog = page.getByRole("dialog", { name: /download results/i })
-  await exportDialog.getByRole("radio", { name: /only the ones you chose \(2\)/i }).check()
+  await exportDialog.getByRole("radio", { name: /only the ones you chose \(1\)/i }).check()
   const downloads: string[] = []
   page.on("download", (download) => downloads.push(download.suggestedFilename()))
   await exportDialog.getByRole("button", { name: /download 2 csv/i }).click()
@@ -76,51 +69,26 @@ test("goes from a csv file to a reviewed purchase and two result files", async (
 
   await page.reload()
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
-  await showView(page, /^grounds$/i)
-  await expect(page.getByRole("article")).toBeVisible()
+  await showView(page, /^evidence$/i)
+  await expect(page.getByRole("article", { name: /Зерновой Двор/ })).toBeVisible()
   await page.getByRole("link", { name: /purchases · notices-sample\.csv/i }).click()
   await expect(page.getByRole("searchbox")).toHaveValue("test_paper")
 })
 
-test("shows the choice, its reason, a source and the main caveat on a laptop screen", async ({
-  page,
-}) => {
+test("shows the leading candidate with its evidence on a laptop screen", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await uploadSample(page)
-  await page.getByRole("table").getByRole("link").first().click()
+  await openFirstLot(page)
   const grounds = page.getByRole("article")
   await expect(page.getByRole("button", { pressed: true })).toBeInViewport()
-  await expect(grounds.getByRole("heading", { name: /why we recommend it/i })).toBeInViewport()
-  await expect(grounds.getByText(/key thing to clarify/i)).toBeInViewport()
-  await expect(grounds.getByRole("link").first()).toBeInViewport()
+  await expect(grounds.getByRole("heading", { name: /match for every item/i })).toBeInViewport()
+  await expect(grounds.getByRole("button", { name: /choose candidate/i })).toBeInViewport()
 })
 
-test("keeps the decision in reach on a laptop screen", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 })
-  await uploadSample(page)
-  await page.getByRole("table").getByRole("link").first().click()
-  const choose = page.getByRole("article").getByRole("button", { name: /choose candidate/i })
-  await expect(choose).toBeInViewport()
-  await page.mouse.move(1000, 500)
-  await page.mouse.wheel(0, 400)
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-  await expect(choose).toBeInViewport()
-})
-
-test("opens sources in a new tab and walks to the next purchase", async ({ page }) => {
+test("walks to the next purchase from the header", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await uploadSample(page)
-  await page.getByRole("table").getByRole("link").first().click()
-  const source = page
-    .getByRole("article")
-    .getByRole("link", { name: /new tab/i })
-    .first()
-  await expect(source).toHaveAttribute("target", "_blank")
-  await page
-    .getByRole("region", { name: /candidates/i })
-    .getByRole("button", { name: /West Trade/ })
-    .click()
-  await expect(page.getByRole("article", { name: "West Trade" })).toBeVisible()
+  await openFirstLot(page)
   const next = page.getByRole("link", { name: /next purchase/i })
   await next.focus()
   await page.keyboard.press("Enter")
@@ -136,24 +104,21 @@ test("keeps every page within the screen width", async ({ page }) => {
       width,
     )
   }
-  await page.getByRole("table").getByRole("link").first().click()
-  await expect(page.getByRole("article")).toBeVisible()
+  await openFirstLot(page)
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
     390,
   )
 })
 
-test("moves through companies with the keyboard", async ({ page }) => {
+test("moves through candidates with the keyboard", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await uploadSample(page)
-  await page.getByRole("table").getByRole("link").first().click()
+  await openFirstLot(page)
   const second = page
-    .getByRole("region", { name: /candidates/i })
-    .getByRole("button")
-    .nth(1)
-  const name = (await second.textContent()) ?? ""
+    .getByRole("region", { name: /^candidates/i })
+    .getByRole("button", { name: /Зерновой Двор/ })
   await second.focus()
   await page.keyboard.press("Enter")
   await expect(page.getByRole("button", { pressed: true })).toBeFocused()
-  await expect(page.getByRole("article")).toContainText(name.slice(0, 12))
+  await expect(page.getByRole("article", { name: /Зерновой Двор/ })).toBeVisible()
 })

@@ -10,6 +10,18 @@
     "title": "This purchase is still processing",
     "text": "The result will appear here automatically. Finished purchases from this file can already be opened from the list."
   },
+  "failed": {
+    "title": "The lot could not be processed",
+    "text": "The search for this lot failed after several attempts. Other lots of the file are not affected; upload the file again to recompute it."
+  },
+  "notUnderstood": {
+    "title": "No items could be extracted",
+    "text": "No goods or services could be extracted from the lot title and subject. Refine the description in the file or search manually."
+  },
+  "unavailable": {
+    "title": "The saved result is unavailable",
+    "text": "The lot was processed, but its result is missing from the search archive. Upload the file again to recompute it."
+  },
   "noCandidates": {
     "title": "No candidates found",
     "text": "No suitable companies in the available records. Check the purchase contents: the products may have been identified imprecisely."

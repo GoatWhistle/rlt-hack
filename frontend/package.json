@@ -18,7 +18,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
-    "verify": "npm run rules && npm run typecheck && npm run lint && npm run test:coverage"
+    "verify": "npm run rules && npm run typecheck && npm run lint && npm run test:coverage",
+    "e2e:live": "playwright test --config playwright.live.config.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "5.104.0",

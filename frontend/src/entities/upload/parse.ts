@@ -1,5 +1,5 @@
 import { ISSUE_CODES, type RowIssue } from "@/entities/notice/model"
-import { parseRecommendation } from "@/entities/recommendation/parse"
+import { parseSearchResult } from "@/entities/search/parse"
 import {
   count,
   list,
@@ -42,6 +42,7 @@ function lot(value: unknown, path: string): LotSummary {
       customerInn: optionalText(fields, "customerInn", path),
       publishDate: optionalText(fields, "publishDate", path),
       startPrice: optionalAmount(fields, "startPrice", path),
+      searchId: optionalText(fields, "searchId", path),
     },
   )
 }
@@ -81,11 +82,11 @@ export function parseUploadDetail(value: unknown): UploadDetail {
 
 function lotResult(value: unknown, path: string): LotResult {
   const fields = record(value, path)
-  const recommendation =
-    fields.recommendation === undefined || fields.recommendation === null
+  const search =
+    fields.search === undefined || fields.search === null
       ? undefined
-      : parseRecommendation(fields.recommendation)
-  return { lot: lot(fields.lot, `${path}.lot`), ...(recommendation ? { recommendation } : {}) }
+      : parseSearchResult(fields.search, `${path}.search`)
+  return { lot: lot(fields.lot, `${path}.lot`), ...(search ? { search } : {}) }
 }
 
 export function parseLotDetail(value: unknown): LotDetail {

@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from src.controller.http.error_body import ApiErrorDto
 from src.controller.search.dto import RecentSearchesDto, SearchRequestDto, SearchResponseDto
 from src.controller.search.mapper import to_query
-from src.controller.supplier.dto import SupplierProfileDto
+from src.controller.supplier.dto import ArchivePurchaseDto, SupplierProfileDto
 from src.models.candidate import Highlight
 from src.models.enums import HighlightCode, ItemType, Locale, PurchaseOutcome
 from src.models.purchase import PurchaseRecord, PurchaseSummary
@@ -58,6 +58,7 @@ def rich_result() -> SearchResult:
         ("search/recent.example.json", RecentSearchesDto),
         ("search/error.example.json", ApiErrorDto),
         ("supplier/profile.example.json", SupplierProfileDto),
+        ("supplier/purchase.example.json", ArchivePurchaseDto),
     ],
 )
 def test_examples_round_trip_through_dto(name: str, model: type[BaseModel]) -> None:

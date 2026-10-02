@@ -2,7 +2,8 @@ from uuid import UUID
 
 from src.controller.http.schema import plain_decimal
 from src.controller.search.mapper import contacts_dto, source_dto
-from src.controller.supplier.dto import OfferDto, SupplierProfileDto
+from src.controller.supplier.dto import ArchivePurchaseDto, OfferDto, SupplierProfileDto
+from src.models.archive_purchase import ArchivePurchase
 from src.models.offer_evidence import OfferEvidence
 from src.models.supplier_profile import SupplierProfile
 from src.service.errors import SupplierNotFoundError
@@ -41,4 +42,19 @@ def to_profile(profile: SupplierProfile) -> SupplierProfileDto:
         role_source=source_dto(profile.role_evidence),
         contacts=contacts_dto(supplier),
         offers=[offer_dto(card) for card in profile.offers],
+    )
+
+
+def to_purchase(purchase: ArchivePurchase) -> ArchivePurchaseDto:
+    return ArchivePurchaseDto(
+        supplier_inn=purchase.supplier_inn,
+        lot_id=purchase.lot_id,
+        title=purchase.title,
+        published_at=purchase.published.isoformat(),
+        outcome=purchase.outcome,
+        category=purchase.category,
+        customer_inn=purchase.customer_inn or None,
+        source_system=purchase.source_system,
+        products=list(purchase.products),
+        snapshot=purchase.snapshot,
     )

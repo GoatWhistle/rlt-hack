@@ -28,6 +28,7 @@ class SearchSettings:
     coverage_threshold: float = 0.5
     offers_per_supplier: int = 20
     history_records: int = 5
+    context_channels: tuple[str, ...] = ()
     weights: ScoreWeights = field(default_factory=ScoreWeights)
 
     def __post_init__(self) -> None:

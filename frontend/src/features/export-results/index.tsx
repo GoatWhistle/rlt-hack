@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { shortlistsOf } from "@/entities/shortlist/store"
+import { useCheckReasonText, useHighlightText } from "@/entities/evidence/labels"
+import { searchShortlistOf } from "@/entities/shortlist/store"
 import { useUploadGateway } from "@/entities/upload/gateway-context"
 import type { LotSummary } from "@/entities/upload/model"
 import { saveTextFile } from "@/shared/download/save-text-file"
@@ -67,8 +68,11 @@ export function ExportDialog(props: ExportDialogProps) {
   const inScope = lots.filter((lot) => ids.has(lot.id))
   const ready = inScope.filter((lot) => lot.status !== "queued" && lot.status !== "failed")
   const pending = inScope.filter((lot) => lot.status === "queued").length
-  const shortlists = shortlistsOf(uploadId)
-  const chosen = ready.reduce((sum, lot) => sum + (shortlists[lot.id]?.length ?? 0), 0)
+  const labels = { checkReason: useCheckReasonText(), highlight: useHighlightText() }
+  const chosen = ready.reduce(
+    (sum, lot) => sum + (lot.searchId ? searchShortlistOf(lot.searchId).length : 0),
+    0,
+  )
   const choice = useCandidateChoice(chosen, t("noShortlist"))
 
   if (open !== wasOpen) {
@@ -92,7 +96,7 @@ export function ExportDialog(props: ExportDialogProps) {
       saveTextFile(names.products, productsCsv(results), CSV_TYPE)
       saveTextFile(
         names.suppliers,
-        suppliersCsv(results, scope === "shortlist" ? shortlists : undefined),
+        suppliersCsv(results, labels, scope === "shortlist" ? searchShortlistOf : undefined),
         CSV_TYPE,
       )
       toast.show({ tone: "success", message: t("done") })

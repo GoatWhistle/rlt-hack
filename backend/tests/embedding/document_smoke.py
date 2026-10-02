@@ -12,8 +12,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
-from chdb.session import Session
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.adapter.repository.clickhouse.embedding import ClickHouseEmbeddingRepository
@@ -28,7 +26,7 @@ from src.models.normalization import Normalization
 from src.models.offer import Offer
 from src.models.supplier import Supplier
 from src.service.embedding.worker import document_text
-from tests.clickhouse.chdb_gateway import ChdbGateway
+from tests.clickhouse.chdb_gateway import ChdbGateway, open_session
 
 MODEL = "test:4b"
 
@@ -88,7 +86,7 @@ def test_text() -> None:
 
 async def check_freshness() -> None:
     with tempfile.TemporaryDirectory(prefix="rlt-embedding-doc-") as directory:
-        session = Session(str(Path(directory) / "db"))
+        session = open_session(str(Path(directory) / "db"))
         try:
             gateway = ChdbGateway(session)
             await Migrator(gateway).apply_pending()

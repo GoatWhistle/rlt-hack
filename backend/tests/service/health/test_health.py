@@ -15,6 +15,10 @@ class FlakyProbe:
     def name(self) -> str:
         return "clickhouse"
 
+    @property
+    def required(self) -> bool:
+        return True
+
     async def check(self) -> None:
         if self.error is not None:
             raise self.error

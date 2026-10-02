@@ -149,15 +149,11 @@ module = [
     "src.controller.job.*",
     "src.adapter.repository.ranker.*",
     "src.adapter.repository.supplier_index.*",
-    "src.adapter.repository.uploads.*",
     "src.service.registry.*",
-    "src.controller.uploads.*",
-    "src.controller.search.api",
     "src.controller.search.import_index",
     "src.controller.search.import_history",
     "src.application.encoder",
     "src.application.supplier_index",
     "src.application.supplier_search",
-    "src.application.uploads",
 ]
 ignore_errors = true

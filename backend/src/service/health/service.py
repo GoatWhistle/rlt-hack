@@ -24,9 +24,9 @@ class HealthService:
             await asyncio.wait_for(probe.check(), self._timeout)
         except Exception as error:
             self._report(probe.name, error)
-            return ComponentHealth(name=probe.name, state=ComponentState.DOWN)
+            return ComponentHealth(probe.name, ComponentState.DOWN, probe.required)
         self._failures.pop(probe.name, None)
-        return ComponentHealth(name=probe.name, state=ComponentState.UP)
+        return ComponentHealth(probe.name, ComponentState.UP, probe.required)
 
     def _report(self, name: str, error: Exception) -> None:
         kind = type(error).__name__

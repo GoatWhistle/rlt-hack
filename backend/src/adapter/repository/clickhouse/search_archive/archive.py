@@ -20,6 +20,7 @@ SEARCH_COLUMNS = (
     "candidates",
     "recommended",
     "items",
+    "origin",
     "created_at",
     "version",
     "is_deleted",
@@ -29,7 +30,8 @@ SELECT_PAYLOAD = (
 )
 SELECT_RECENT = (
     "SELECT search_id, text, locale, items, candidates, recommended, created_at "
-    "FROM {db}.searches_current ORDER BY created_at DESC, search_id LIMIT {{limit:UInt32}}"
+    "FROM {db}.searches_current WHERE origin = 'manual' "
+    "ORDER BY created_at DESC, search_id LIMIT {{limit:UInt32}}"
 )
 
 
@@ -52,6 +54,7 @@ class ClickHouseSearchArchive:
                     summary.candidates,
                     summary.recommended,
                     summary.items,
+                    str(result.query.origin),
                     result.created_at,
                     event_version(result.created_at),
                     0,

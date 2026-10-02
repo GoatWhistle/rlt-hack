@@ -9,6 +9,17 @@ export function lotPath(uploadId: string, lotId: string, search = ""): string {
   return `${uploadPath(uploadId)}/lots/${encodeURIComponent(lotId)}${search}`
 }
 
+export const BACK_PARAM = "back"
+
+export function archivePurchasePath(supplierId: string, lotId: string, back = ""): string {
+  const path = `/suppliers/${encodeURIComponent(supplierId)}/purchases/${encodeURIComponent(lotId)}`
+  return back ? `${path}?${new URLSearchParams({ [BACK_PARAM]: back }).toString()}` : path
+}
+
+export function safeBackPath(raw: string | null, fallback: string): string {
+  return raw?.startsWith("/") && !raw.startsWith("//") ? raw : fallback
+}
+
 export const SEARCH_PATH = "/search"
 export const SEARCH_TEXT_PARAM = "q"
 

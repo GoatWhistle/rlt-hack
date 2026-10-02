@@ -1,8 +1,8 @@
+import { contract } from "@tests/support/search"
 import { describe, expect, it, vi } from "vitest"
 import { createHttpGateway, HTTP_MAX_NOTICES, UPLOADS_PATH } from "@/entities/upload/http"
 import type { HttpClient } from "@/shared/api/http-client"
 import { PayloadFormatError } from "@/shared/api/payload"
-import { recommendationFixture } from "../recommendation/fixture"
 
 const summary = {
   id: "u 1",
@@ -34,7 +34,7 @@ describe("the http gateway", () => {
     const http = client({ uploads: [summary] })
     const gateway = createHttpGateway(http)
     expect(gateway.maxNotices).toBe(HTTP_MAX_NOTICES)
-    expect(HTTP_MAX_NOTICES).toBe(5000)
+    expect(HTTP_MAX_NOTICES).toBe(500)
     expect(await gateway.list()).toEqual([{ ...summary, stored: true }])
     expect(http.get).toHaveBeenCalledWith(UPLOADS_PATH, expect.anything())
 
@@ -80,16 +80,20 @@ describe("the http gateway", () => {
     expect(options?.body instanceof FormData && options.body.get("file")).toBeInstanceOf(File)
   })
 
-  it("reads a lot with or without a recommendation and exports results", async () => {
-    const http = client({ upload: summary, lot, recommendation: recommendationFixture })
+  it("reads a lot with or without its saved search and exports results", async () => {
+    const search = contract("search/response.example.json")
+    const http = client({ upload: summary, lot, search })
     const detail = await createHttpGateway(http).lot("u 1", "10/a")
-    expect(detail.recommendation?.companies).toHaveLength(3)
+    expect(detail.search?.candidates).toHaveLength(2)
     expect(vi.mocked(http.get).mock.calls[0]?.[0]).toBe("/uploads/u%201/lots/10%2Fa")
-    const pending = await createHttpGateway(
-      client({ upload: summary, lot, recommendation: null }),
-    ).lot("u", "10")
-    expect(pending.recommendation).toBeUndefined()
-    const results = client({ results: [{ lot, recommendation: recommendationFixture }] })
+    const pending = await createHttpGateway(client({ upload: summary, lot, search: null })).lot(
+      "u",
+      "10",
+    )
+    expect(pending.search).toBeUndefined()
+    const broken = client({ upload: summary, lot, search: { ...(search as object), items: 1 } })
+    await expect(createHttpGateway(broken).lot("u", "10")).rejects.toThrow("$.search")
+    const results = client({ results: [{ lot, search }] })
     expect(await createHttpGateway(results).results("u", ["10"])).toHaveLength(1)
     expect(vi.mocked(results.post).mock.calls[0]?.[1]).toMatchObject({
       body: { lotIds: ["10"] },

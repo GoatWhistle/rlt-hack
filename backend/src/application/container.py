@@ -99,6 +99,7 @@ class Container:
         self._versions = VersionSequencer()
         self._gateway: GatewayPool | None = None
         self._api_gateway: GatewayPool | None = None
+        self._background_gateway: GatewayPool | None = None
         self._control: ControlChannel | None = None
         # Справочники читаются один раз на процесс: они не меняются на ходу.
         self._normalizer: OfferNormalizer | None = None
@@ -123,6 +124,16 @@ class Container:
                 await self.control_gateway(),
             )
         return self._api_gateway
+
+    async def background_gateway(self) -> GatewayPool:
+        if self._background_gateway is None:
+            config = self._api_clickhouse(self._config.upload.lot_timeout_seconds)
+            self._background_gateway = GatewayPool(
+                partial(self._open_with, config),
+                self._config.api_storage.background_pool_size,
+                await self.control_gateway(),
+            )
+        return self._background_gateway
 
     async def control_gateway(self) -> ControlChannel:
         if self._control is None:
@@ -482,10 +493,15 @@ class Container:
         return ProductCollectionWorker(self.product_provider(), storage)
 
     async def aclose(self) -> None:
-        pools = [pool for pool in (self._gateway, self._api_gateway) if pool is not None]
+        pools = [
+            pool
+            for pool in (self._gateway, self._api_gateway, self._background_gateway)
+            if pool is not None
+        ]
         control, self._control = self._control, None
         self._gateway = None
         self._api_gateway = None
+        self._background_gateway = None
         for pool in pools:
             await pool.aclose()
         if control is not None:

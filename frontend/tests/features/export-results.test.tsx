@@ -2,8 +2,14 @@ import { screen, waitFor } from "@testing-library/react"
 import { en } from "@tests/support/dictionaries"
 import { lotSummary, stubGateway } from "@tests/support/gateway"
 import { renderWithProviders } from "@tests/support/render"
+import { contractResult } from "@tests/support/search"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { resetShortlists, toggleShortlisted } from "@/entities/shortlist/store"
+import {
+  resetShortlists,
+  SEARCH_SCOPE,
+  searchShortlistOf,
+  toggleShortlisted,
+} from "@/entities/shortlist/store"
 import { UploadGatewayProvider } from "@/entities/upload/gateway-context"
 import type { LotResult } from "@/entities/upload/model"
 import { ExportDialog, type ExportDialogProps } from "@/features/export-results"
@@ -16,12 +22,15 @@ import {
   toCsv,
 } from "@/features/export-results/csv"
 import * as download from "@/shared/download/save-text-file"
-import { recommendationFixture } from "../entities/recommendation/fixture"
 
+const SEARCH = contractResult()
+const SEARCH_ID = SEARCH.searchId
+const LEADER = SEARCH.candidates[0]?.id ?? ""
 const results: LotResult[] = [
-  { lot: lotSummary("10"), recommendation: recommendationFixture },
+  { lot: lotSummary("10", { searchId: SEARCH_ID }), search: SEARCH },
   { lot: lotSummary("11", { status: "queued" }) },
 ]
+const labels = { checkReason: (code: string) => `[${code}]`, highlight: () => "" }
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -32,16 +41,16 @@ describe("the result files", () => {
   it("link products and suppliers to the source lot", () => {
     const products = productsCsv(results)
     expect(products.startsWith(CSV_BOM)).toBe(true)
-    expect(products).toContain("lot_id;product_name;okpd2_code;origin\r\n")
-    expect(products).toContain("10;Sugar;10.81.12;inferred\r\n")
-    const suppliers = suppliersCsv(results)
-    expect(suppliers).toContain(
-      "10;1;7800000011;North Foods;Supplier;recommended;;5;5;1;3;1;11;4;",
-    )
-    expect(suppliers).toContain("10;3;7800000033;West Trade;Distributor;check;;1;5;0;1;0;3;0;")
-    const chosen = suppliersCsv(results, { "10": ["west"] })
-    expect(chosen).not.toContain("North Foods")
-    expect(chosen).toContain("West Trade")
+    expect(products).toContain("lot_id;search_id;item_name;okpd2_code;origin\r\n")
+    expect(products).toContain(`10;${SEARCH_ID};Крупа гречневая ядрица;`)
+    const suppliers = suppliersCsv(results, labels)
+    expect(suppliers.split("\r\n")[0]).toMatch(/^\uFEFFlot_id;search_id;rank;supplier_inn/)
+    expect(suppliers).toContain(`10;${SEARCH_ID};1;7801234567;ООО «Северный Провиант»;`)
+    expect(suppliers).toContain("[innMissing] [roleUnconfirmed]")
+    toggleShortlisted(SEARCH_SCOPE, SEARCH_ID, LEADER)
+    const chosen = suppliersCsv(results, labels, searchShortlistOf)
+    expect(chosen).toContain("Северный Провиант")
+    expect(chosen).not.toContain("Зерновой Двор")
   })
 
   it("keeps spreadsheet formulas from running", () => {
@@ -75,7 +84,11 @@ function openDialog(props: Partial<ExportDialogProps>, gateway = stubGateway()) 
         onClose={onClose}
         uploadId="u1"
         fileName="notices.csv"
-        lots={[lotSummary("10"), lotSummary("11", { status: "queued" }), lotSummary("12")]}
+        lots={[
+          lotSummary("10", { searchId: SEARCH_ID }),
+          lotSummary("11", { status: "queued" }),
+          lotSummary("12"),
+        ]}
         {...props}
       />
     </UploadGatewayProvider>,
@@ -105,7 +118,7 @@ describe("the export dialog", () => {
 
   it("narrows to this purchase or the selection and to chosen candidates", async () => {
     vi.spyOn(download, "saveTextFile").mockImplementation(() => {})
-    toggleShortlisted("u1", "10", "west")
+    toggleShortlisted(SEARCH_SCOPE, SEARCH_ID, LEADER)
     const gateway = stubGateway({ results: vi.fn(async () => results) })
     const { user } = openDialog({ currentLotId: "10", selectedIds: ["10", "12"] }, gateway)
     expect(screen.getByRole("radio", { name: en("lots.lot", "export") })).toBeChecked()
@@ -126,14 +139,15 @@ describe("the export dialog", () => {
     expect(screen.queryByText(/still processing/)).toBeNull()
   })
 
-  it("writes the summary of each company", async () => {
+  it("writes check reasons as text in the interface language", async () => {
     const save = vi.spyOn(download, "saveTextFile").mockImplementation(() => {})
     const gateway = stubGateway({ results: vi.fn(async () => results) })
     const { user, onClose } = openDialog({ currentLotId: "10" }, gateway)
     await user.click(screen.getByRole("button", { name: en("submit", "export") }))
     await waitFor(() => expect(onClose).toHaveBeenCalled())
     const suppliers = String(save.mock.calls[1]?.[1])
-    expect(suppliers).toContain(recommendationFixture.companies[0]?.summary ?? "")
+    expect(suppliers).toContain("innMissing,roleUnconfirmed")
+    expect(suppliers).not.toContain("[innMissing]")
   })
 
   it("warns when nothing is ready or nothing was chosen, and reports failures", async () => {

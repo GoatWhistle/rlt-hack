@@ -136,6 +136,11 @@ class WarningCode(StrEnum):
     ITEMS_INFERRED = "itemsInferred"
 
 
+class SearchOrigin(StrEnum):
+    MANUAL = "manual"
+    UPLOAD = "upload"
+
+
 class RetrievalChannel(StrEnum):
     LEXICAL = "lexical"
     HISTORY = "history"
@@ -161,6 +166,7 @@ class IssueCode(StrEnum):
     MISSING_TITLE = "missingTitle"
     BAD_PRICE = "badPrice"
     BAD_DATE = "badDate"
+    BAD_INN = "badInn"
     COLUMN_COUNT = "columnCount"
 
 

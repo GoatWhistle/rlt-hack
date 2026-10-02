@@ -6,10 +6,10 @@ import {
   uploadDetail,
   uploadSummary,
 } from "@tests/support/gateway"
+import { contractResult } from "@tests/support/search"
 import { vi } from "vitest"
 import type { UploadGateway } from "@/entities/upload/gateway"
 import type { LotDetail } from "@/entities/upload/model"
-import { recommendationFixture } from "../../entities/recommendation/fixture"
 
 export const LOTS = [
   lotSummary("9"),
@@ -21,7 +21,7 @@ export function lotDetail(overrides: Partial<LotDetail> = {}): LotDetail {
   return {
     upload: uploadSummary(),
     lot: LOTS[1] ?? lotSummary("10"),
-    recommendation: recommendationFixture,
+    search: contractResult(),
     ...overrides,
   }
 }

@@ -20,12 +20,13 @@ async def test_lifespan_resolves_services_once_and_closes_provider() -> None:
         assert app.state.services == Services(
             supplier_search=provider.searching,
             supplier_profiles=provider.profiles,
+            procurement_uploads=provider.uploads,
             health=provider.readiness,
-            background=(provider.task,),
+            background=(provider.uploads,),
         )
-        assert (provider.task.started, provider.task.stopped) == (1, 0)
+        assert (provider.uploads.started, provider.uploads.stopped) == (1, 0)
         assert provider.closed == 0
-    assert (provider.task.started, provider.task.stopped) == (1, 1)
+    assert (provider.uploads.started, provider.uploads.stopped) == (1, 1)
     assert provider.closed == 1
 
 

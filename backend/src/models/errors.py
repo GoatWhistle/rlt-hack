@@ -69,6 +69,11 @@ class InvalidPurchaseSummaryError(DomainError):
         super().__init__(f"purchase summary is invalid: {reason}")
 
 
+class InvalidSearchContextError(InvalidInputError):
+    def __init__(self, reason: str) -> None:
+        super().__init__(f"search context is invalid: {reason}")
+
+
 class InvalidSearchResultError(DomainError):
     def __init__(self, reason: str) -> None:
         super().__init__(f"search result is invalid: {reason}")

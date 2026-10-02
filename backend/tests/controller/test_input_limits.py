@@ -3,6 +3,7 @@ import pytest
 
 from src.controller.search.dto import MAX_REGIONS, REGION_MAX_LENGTH
 from tests.fakes.http import FakeServiceProvider
+from tests.fakes.uploads import UPLOAD_ID
 
 LONG = "x" * 300
 
@@ -33,11 +34,31 @@ async def test_accepts_regions_within_limits(
     assert len(provider.searching.queries[0].filters.regions) == MAX_REGIONS
 
 
+async def test_rejects_long_lot_ids(
+    client: httpx.AsyncClient, provider: FakeServiceProvider
+) -> None:
+    response = await client.post(f"/api/uploads/{UPLOAD_ID}/results", json={"lotIds": [LONG]})
+    assert (response.status_code, response.json()["code"]) == (422, "invalid_request")
+    assert provider.uploads.selections == []
+
+
+@pytest.mark.parametrize("lot_id", [LONG, "bad%20id", "lot.1"])
+async def test_malformed_lot_id_does_not_reach_store(
+    client: httpx.AsyncClient, lot_id: str
+) -> None:
+    response = await client.get(f"/api/uploads/{UPLOAD_ID}/lots/{lot_id}")
+    body = response.json()
+    assert (response.status_code, body["code"]) == (404, "lot_not_found")
+    assert body["message"] == f"lot not found in upload {UPLOAD_ID}"
+
+
 @pytest.mark.parametrize(
     ("path", "message"),
     [
         (f"/api/searches/{LONG}", "search not found"),
         (f"/api/suppliers/{LONG}", "supplier not found"),
+        (f"/api/uploads/{LONG}", "upload not found"),
+        (f"/api/uploads/{LONG}/lots/L1", "upload not found"),
     ],
 )
 async def test_not_found_message_does_not_echo_input(

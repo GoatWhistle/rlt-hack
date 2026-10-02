@@ -7,6 +7,7 @@ ClickHouse в рабочем шлюзе.
 """
 
 import asyncio
+import importlib
 import json
 import re
 from collections.abc import Mapping, Sequence
@@ -111,3 +112,8 @@ def _json_value(value: Any) -> Any:
     if isinstance(value, tuple):
         return list(value)
     return value
+
+
+def open_session(path: str) -> Any:
+    module: Any = importlib.import_module("chdb.session")
+    return module.Session(path)

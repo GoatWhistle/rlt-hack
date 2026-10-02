@@ -97,7 +97,18 @@ async def test_health_probes_clickhouse(failing: bool, ready: bool) -> None:
     api = container(AppConfig(), RecordingGateway(failing=failing))
     readiness = await (await api.health()).readiness()
     assert readiness.ready is ready
-    assert [component.name for component in readiness.components] == ["clickhouse"]
+    names = [component.name for component in readiness.components]
+    assert names == ["clickhouse", "catalog", "history"]
+    assert [component.required for component in readiness.components] == [True, False, False]
+
+
+async def test_ml_channel_is_an_optional_component() -> None:
+    config = replace(AppConfig(), ml_service=MlServiceConfig(enabled=True))
+    api = container(config, RecordingGateway(rows=[(1,)]))
+    readiness = await (await api.health()).readiness()
+    assert readiness.ready
+    assert readiness.degraded == ("semantic",)
+    await api.aclose()
 
 
 async def test_closing_releases_the_database_and_the_ml_client() -> None:
@@ -143,6 +154,8 @@ async def test_unreachable_clickhouse_returns_503() -> None:
                 "/api/searches",
                 f"/api/searches/{uuid4()}",
                 f"/api/suppliers/{uuid4()}",
+                "/api/uploads",
+                f"/api/uploads/{uuid4()}",
             ):
                 response = await http.get(path)
                 assert (response.status_code, response.json()["code"]) == (
@@ -152,3 +165,30 @@ async def test_unreachable_clickhouse_returns_503() -> None:
             searched = await http.post("/api/searches", json={"text": "рис 5 кг"})
             assert (searched.status_code, searched.json()["code"]) == (503, "search_unavailable")
             assert (await http.get("/api/health/ready")).status_code == 503
+
+
+async def test_uploads_use_separate_gateway() -> None:
+    interactive = Connector(RecordingGateway(rows=[]))
+    background = Connector(RecordingGateway(rows=[]))
+    control = Connector(RecordingGateway())
+    api = ApiContainer(
+        AppConfig(),
+        interactive.connect,
+        background=background.connect,
+        control=control.connect,
+    )
+    uploads = await api.procurement_uploads()
+    await uploads.start()
+    try:
+        for _ in range(100):
+            if background.gateway.statements:
+                break
+            await asyncio.sleep(0.01)
+        await uploads.recent("a" * 32, 5)
+    finally:
+        await uploads.stop()
+    assert "upload_lots" in background.gateway.statements[0]
+    assert len(interactive.gateway.statements) == 1
+    assert "uploads" in interactive.gateway.statements[0]
+    assert (await (await api.health()).readiness()).ready
+    assert len(control.gateway.statements) == 3

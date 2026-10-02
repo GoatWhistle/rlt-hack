@@ -7,6 +7,9 @@ from src.models.supplier_search import SupplierCandidate
 
 
 class SearchEngine(Protocol):
+    @property
+    def version(self) -> str: ...
+
     async def search(self, text: str, limit: int = 10) -> list[SupplierCandidate]: ...
 
 

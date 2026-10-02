@@ -8,7 +8,6 @@ from pathlib import Path
 from uuid import uuid4
 
 import httpx
-from chdb.session import Session
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -22,7 +21,7 @@ from src.models.enums import Availability
 from src.models.offer import Offer
 from src.service.embedding.worker import EmbeddingWorker
 from src.service.errors import ServiceError
-from tests.clickhouse.chdb_gateway import ChdbGateway
+from tests.clickhouse.chdb_gateway import ChdbGateway, open_session
 
 
 async def check() -> None:
@@ -43,7 +42,7 @@ async def check() -> None:
         return httpx.Response(200, json={"embeddings": vectors})
 
     with tempfile.TemporaryDirectory(prefix="rlt-embedding-") as directory:
-        session = Session(str(Path(directory) / "db"))
+        session = open_session(str(Path(directory) / "db"))
         try:
             gateway = ChdbGateway(session)
             await Migrator(gateway).apply_pending()

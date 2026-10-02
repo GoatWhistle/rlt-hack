@@ -3,6 +3,8 @@ import { render } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { createMemoryRouter, type RouteObject, RouterProvider } from "react-router"
 import { vi } from "vitest"
+import { SearchGatewayProvider } from "@/entities/search/gateway-context"
+import { SupplierGatewayProvider } from "@/entities/supplier/gateway-context"
 import type { UploadGateway } from "@/entities/upload/gateway"
 import { UploadGatewayProvider } from "@/entities/upload/gateway-context"
 import type { LotSummary, UploadDetail, UploadSummary } from "@/entities/upload/model"
@@ -15,6 +17,7 @@ import { createQueryClient } from "@/shared/api/query-client"
 import type { Locale } from "@/shared/i18n/locale"
 import { LocaleProvider } from "@/shared/i18n/locale-provider"
 import { ToastProvider } from "@/shared/ui/toast"
+import { stubSearch, stubSuppliers } from "./search"
 
 export function lotSummary(id: string, overrides: Partial<LotSummary> = {}): LotSummary {
   return {
@@ -75,10 +78,7 @@ const pageRoutes: RouteObject[] = [
   { path: "/uploads/:uploadId", Component: LotsPage },
   { path: "/uploads/:uploadId/lots/:lotId", Component: LotPage },
   { path: "/lots", Component: LotsEntryPage },
-  {
-    path: "/uploads/:uploadId/lots/:lotId/evidence/:inn/:purchaseId",
-    Component: ProcurementSourcePage,
-  },
+  { path: "/suppliers/:supplierId/purchases/:lotId", Component: ProcurementSourcePage },
 ]
 
 export type PageOptions = {
@@ -92,9 +92,13 @@ export function renderPage(path: string, gateway: UploadGateway, options: PageOp
     <LocaleProvider initialLocale={options.locale ?? "en"}>
       <QueryClientProvider client={createQueryClient()}>
         <ToastProvider>
-          <UploadGatewayProvider gateway={gateway}>
-            <RouterProvider router={router} />
-          </UploadGatewayProvider>
+          <SearchGatewayProvider gateway={stubSearch()}>
+            <SupplierGatewayProvider gateway={stubSuppliers()}>
+              <UploadGatewayProvider gateway={gateway}>
+                <RouterProvider router={router} />
+              </UploadGatewayProvider>
+            </SupplierGatewayProvider>
+          </SearchGatewayProvider>
         </ToastProvider>
       </QueryClientProvider>
     </LocaleProvider>,

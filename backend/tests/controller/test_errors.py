@@ -22,6 +22,7 @@ from src.service.errors import (
 )
 from tests.fakes.domain import uid
 from tests.fakes.http import FakeServiceProvider
+from tests.fakes.uploads import UPLOAD_ID
 
 SECRET = "password=hunter2 at clickhouse:8123"
 
@@ -157,6 +158,10 @@ STORAGE_ROUTES = [
     ("GET", f"/api/searches/{uid('search')}", None),
     ("POST", "/api/searches", {"text": "рис"}),
     ("GET", f"/api/suppliers/{uid('supplier')}", None),
+    ("GET", "/api/uploads", None),
+    ("GET", f"/api/uploads/{UPLOAD_ID}", None),
+    ("GET", f"/api/uploads/{UPLOAD_ID}/lots/L1", None),
+    ("POST", f"/api/uploads/{UPLOAD_ID}/results", {"lotIds": ["L1"]}),
 ]
 
 
@@ -172,8 +177,19 @@ async def test_storage_outage_maps_to_503(
     outage = StorageUnavailableError()
     provider.searching.error = outage
     provider.profiles.error = outage
+    provider.uploads.error = outage
     with caplog.at_level(logging.ERROR):
         response = await client.request(method, path, json=payload)
     assert_error(response, 503, "storage_unavailable")
     assert response.headers["retry-after"] == "5"
     assert not any(record.levelno >= logging.ERROR for record in caplog.records)
+
+
+async def test_storage_outage_on_upload_maps_to_503(
+    client: httpx.AsyncClient, provider: FakeServiceProvider
+) -> None:
+    provider.uploads.error = StorageUnavailableError()
+    response = await client.post(
+        "/api/uploads", files={"file": ("a.csv", b"lot_id;procedure_name")}
+    )
+    assert_error(response, 503, "storage_unavailable")

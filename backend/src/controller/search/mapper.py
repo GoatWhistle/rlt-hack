@@ -1,4 +1,5 @@
 import re
+from decimal import Decimal, InvalidOperation
 from uuid import UUID
 
 from src.controller.http.schema import plain_decimal, score
@@ -6,6 +7,7 @@ from src.controller.search.dto import (
     CandidateDto,
     ChannelRankDto,
     ContactsDto,
+    ContextDto,
     FilterItemType,
     FiltersDto,
     HighlightDto,
@@ -25,11 +27,18 @@ from src.controller.search.dto import (
 )
 from src.models.candidate import Highlight, ProductMatch, SupplierCandidate
 from src.models.enums import ItemType, Locale
+from src.models.errors import InvalidSearchContextError
 from src.models.evidence import Evidence, is_web_url
 from src.models.purchase import PurchaseRecord, PurchaseSummary
 from src.models.query_item import QueryItem
 from src.models.scoring import ScoreBreakdown
-from src.models.search import CandidateLimit, SearchFilters, SearchQuery, SearchText
+from src.models.search import (
+    CandidateLimit,
+    SearchContext,
+    SearchFilters,
+    SearchQuery,
+    SearchText,
+)
 from src.models.search_result import PipelineInfo, SearchResult, SearchSummary, SearchWarning
 from src.models.supplier import Supplier
 from src.service.errors import SearchNotFoundError
@@ -50,6 +59,15 @@ def parse_search_id(raw: str) -> UUID:
         raise SearchNotFoundError from error
 
 
+def to_context(dto: ContextDto) -> SearchContext:
+    raw_price = (dto.start_price or "").replace(" ", "").replace(",", ".")
+    try:
+        price = Decimal(raw_price) if raw_price else None
+    except InvalidOperation as error:
+        raise InvalidSearchContextError("start price is not a number") from error
+    return SearchContext(customer_inn=dto.customer_inn or "", start_price=price)
+
+
 def to_query(dto: SearchRequestDto, locale: Locale) -> SearchQuery:
     item_type = dto.filters.item_type
     return SearchQuery(
@@ -60,6 +78,15 @@ def to_query(dto: SearchRequestDto, locale: Locale) -> SearchQuery:
             regions=tuple(dto.filters.regions),
             item_type=None if item_type is None else ItemType(item_type),
         ),
+        context=to_context(dto.context),
+    )
+
+
+def context_dto(context: SearchContext) -> ContextDto:
+    price = context.start_price
+    return ContextDto(
+        customer_inn=context.customer_inn or None,
+        start_price=None if price is None else format(price, "f"),
     )
 
 
@@ -101,6 +128,8 @@ def query_dto(query: SearchQuery) -> QueryDto:
             regions=list(query.filters.regions),
             item_type=None if item_type is None else FILTER_ITEM_TYPES.get(item_type),
         ),
+        context=context_dto(query.context),
+        origin=query.origin,
     )
 
 
@@ -184,7 +213,10 @@ def candidate_dto(candidate: SupplierCandidate) -> CandidateDto:
 
 def pipeline_dto(pipeline: PipelineInfo) -> PipelineDto:
     return PipelineDto(
-        version=pipeline.version, channels=list(pipeline.channels), as_of=pipeline.as_of
+        version=pipeline.version,
+        channels=list(pipeline.channels),
+        as_of=pipeline.as_of,
+        inputs=list(pipeline.inputs),
     )
 
 

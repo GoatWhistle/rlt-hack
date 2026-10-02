@@ -49,9 +49,9 @@ failed() {
     fi
   fi
   if [[ $frontend_changed == true && -n $previous ]]; then
-    echo "Deployment failed; restoring frontend $(basename "$previous")" >&2
-    if ! compose_at "$previous" up -d --no-deps --wait --wait-timeout 120 frontend; then
-      echo "Automatic frontend rollback failed; inspect the containers" >&2
+    echo "Deployment failed; restoring api and frontend $(basename "$previous")" >&2
+    if ! compose_at "$previous" up -d --no-deps --wait --wait-timeout 120 api frontend; then
+      echo "Automatic rollback failed; inspect the containers" >&2
     fi
   fi
   echo "Deployment $revision failed. Database volumes and backups are preserved." >&2

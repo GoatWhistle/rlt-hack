@@ -125,6 +125,15 @@ export type Pipeline = {
   readonly version: string
   readonly channels: readonly string[]
   readonly asOf: string
+  readonly inputs: readonly string[]
+}
+
+export const SEARCH_ORIGINS = ["manual", "upload"] as const
+export type SearchOrigin = (typeof SEARCH_ORIGINS)[number]
+
+export type SearchContext = {
+  readonly customerInn?: string
+  readonly startPrice?: string
 }
 
 export type SearchQuery = {
@@ -132,6 +141,8 @@ export type SearchQuery = {
   readonly locale: Locale
   readonly limit: number
   readonly filters: SearchFilters
+  readonly context: SearchContext
+  readonly origin: SearchOrigin
 }
 
 export type SearchResult = {

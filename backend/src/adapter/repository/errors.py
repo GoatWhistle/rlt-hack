@@ -22,3 +22,9 @@ class CorruptRecordError(RepositoryError):
         super().__init__(f"stored {record} cannot be read: {reason}")
         self.record = record
         self.reason = reason
+
+
+class DatasetMissingError(RepositoryError):
+    def __init__(self, dataset: str) -> None:
+        super().__init__(f"dataset {dataset} is not loaded")
+        self.dataset = dataset

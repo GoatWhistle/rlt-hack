@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 from src.adapter.repository.clickhouse.offer import ClickHouseOfferRepository
@@ -20,6 +20,21 @@ MATCH_COLUMNS = (
     "confidence",
     "offer_content_hash",
     "version",
+)
+
+EVIDENCE_COLUMNS = (
+    "index_id",
+    "supplier_inn",
+    "category",
+    "lot_id",
+    "title",
+    "publish_date",
+    "customer_inn",
+    "source_system",
+    "product_names",
+    "is_winner",
+    "category_lots",
+    "category_wins",
 )
 
 
@@ -74,4 +89,30 @@ class Seeder:
             f"{DATABASE}.lot_participations",
             ("lot_id", "supplier_inn", "supplier_kpp", "supplier_id", "is_winner", "version"),
             [(lot_id, supplier.inn or "", "", supplier.supplier_id, int(won), 1)],
+        )
+
+    async def evidence(
+        self,
+        supplier: Supplier,
+        lot_id: str,
+        title: str,
+        *,
+        category: str = "10.61",
+        won: bool = False,
+        category_lots: int = 1,
+        category_wins: int = 0,
+        index_id: str = "index-1",
+    ) -> None:
+        tail = ("7807022750", "ЕИС", [title], int(won), category_lots, category_wins)
+        await self._gateway.insert(
+            f"{DATABASE}.supplier_procurement_evidence",
+            EVIDENCE_COLUMNS,
+            [(index_id, supplier.inn or "", category, lot_id, title, date(2024, 11, 6), *tail)],
+        )
+
+    async def evidence_import(self, index_id: str = "index-1", rows: int = 1) -> None:
+        await self._gateway.insert(
+            f"{DATABASE}.supplier_evidence_imports",
+            ("index_id", "history_before", "row_count", "prepared_sha256"),
+            [(index_id, date(2025, 6, 1), rows, "sha")],
         )

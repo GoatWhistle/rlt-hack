@@ -1,9 +1,14 @@
 # Контракт HTTP API
 
-Примеры `*.example.json` фиксируют форму ответов и запросов сервиса `api`: поиск
-по тексту (`/api/searches`) и профиль компании (`/api/suppliers/{id}`). Загрузки
-CSV (`/api/uploads`) обслуживает `search-api` из main, их форма задана
-`backend/src/controller/uploads/presentation.py`. Контрактные тесты backend
+Версия контракта: **2** (2026-10-02). Примеры `*.example.json` фиксируют форму
+ответов и запросов сервиса `api`: поиск по тексту (`/api/searches`), загрузки CSV
+(`/api/uploads`), профиль компании (`/api/suppliers/{id}`) и архивная запись
+закупки (`/api/suppliers/{id}/purchases/{lotId}`). Результат закупки CSV — это
+тот же `SearchResponseDto`, что и у ручного поиска (`upload/lot.example.json`,
+поле `search`), поэтому кандидаты, совпадения и основания описаны одной схемой.
+Версия 2 добавила `query.context`, `query.origin`, `pipeline.inputs`,
+`lots[].searchId`; сохранённые поиски версии 1 читаются с пустым контекстом.
+Контрактные тесты backend
 (`backend/tests/controller/test_contracts.py`, `test_error_codes.py`) прогоняют их через DTO, а фронтенд разбирает каждый пример
 своими парсерами (`frontend/tests/entities/*`). `error-codes.json` — полный список
 кодов ошибок с HTTP-статусами; у каждого кода есть текст в словарях фронтенда

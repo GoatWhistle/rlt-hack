@@ -18,6 +18,7 @@
   "invalid_request": "The request is invalid. Check the query and try again.",
   "search_not_found": "This search was not found. The link may be outdated.",
   "supplier_not_found": "This company was not found in the records.",
+  "purchase_not_found": "The archived procurement record was not found.",
   "missing_file": "No file was chosen. Choose a CSV file and try again.",
   "file_too_large": "The file is too large. Split it into several parts.",
   "unsupported_file_type": "This format is not supported. Upload a CSV file.",

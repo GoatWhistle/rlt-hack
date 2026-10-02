@@ -12,18 +12,23 @@ class LiveDto(CamelModel):
 class ComponentDto(CamelModel):
     name: str
     state: ComponentState
+    required: bool
 
 
 class ReadinessDto(CamelModel):
     ready: bool
+    degraded: list[str]
     components: list[ComponentDto]
 
     @classmethod
     def of(cls, readiness: Readiness) -> "ReadinessDto":
         return cls(
             ready=readiness.ready,
+            degraded=list(readiness.degraded),
             components=[
-                ComponentDto(name=component.name, state=component.state)
+                ComponentDto(
+                    name=component.name, state=component.state, required=component.required
+                )
                 for component in readiness.components
             ],
         )

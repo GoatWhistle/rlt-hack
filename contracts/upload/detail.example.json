@@ -1,0 +1,59 @@
+{
+  "id": "3b7d1c2e-8f4a-4b6c-9d0e-1f2a3b4c5d6e",
+  "fileName": "notices.csv",
+  "createdAt": "2026-10-01T12:00:00Z",
+  "total": 3,
+  "processed": 2,
+  "counts": {
+    "ready": 0,
+    "needsCheck": 1,
+    "noCandidates": 1,
+    "failed": 0
+  },
+  "rejected": 1,
+  "lots": [
+    {
+      "id": "4257576",
+      "title": "Поставка крупы гречневой ядрицы",
+      "subject": "Крупа гречневая ядрица 500 кг; рис шлифованный 200 кг",
+      "customerInn": "7807022750",
+      "publishDate": "2024-01-18",
+      "startPrice": 2835.54,
+      "status": "needsCheck",
+      "products": 2,
+      "candidates": 2,
+      "searchId": "e6ae342f-a141-57ef-b666-c2e951c35591"
+    },
+    {
+      "id": "4633163",
+      "title": "Оказание услуг связи",
+      "subject": null,
+      "customerInn": null,
+      "publishDate": null,
+      "startPrice": null,
+      "status": "noCandidates",
+      "products": 1,
+      "candidates": 0,
+      "searchId": "50251896-812b-5d44-934f-b6c3e3e691a0"
+    },
+    {
+      "id": "4652711",
+      "title": "Поставка бумаги офисной",
+      "subject": null,
+      "customerInn": "7805149197",
+      "publishDate": "2024-12-06",
+      "startPrice": 13500.0,
+      "status": "queued",
+      "products": 0,
+      "candidates": 0,
+      "searchId": null
+    }
+  ],
+  "issues": [
+    {
+      "row": 5,
+      "code": "badPrice",
+      "value": "abc"
+    }
+  ]
+}

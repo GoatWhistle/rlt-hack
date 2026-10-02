@@ -33,6 +33,8 @@ import {
   type PurchaseRecord,
   type QueryItem,
   type Score,
+  SEARCH_ORIGINS,
+  type SearchContext,
   type SearchFilters,
   type SearchQuery,
   type SearchResult,
@@ -66,6 +68,18 @@ function filters(value: unknown, path: string): SearchFilters {
   )
 }
 
+function context(value: unknown, path: string): SearchContext {
+  if (value === undefined || value === null) return {}
+  const fields = record(value, path)
+  return withOptional(
+    {},
+    {
+      customerInn: optionalText(fields, "customerInn", path),
+      startPrice: optionalText(fields, "startPrice", path),
+    },
+  )
+}
+
 function query(value: unknown, path: string): SearchQuery {
   const fields = record(value, path)
   return {
@@ -73,6 +87,8 @@ function query(value: unknown, path: string): SearchQuery {
     locale: oneOf(LOCALES, fields, "locale", path),
     limit: count(fields, "limit", path),
     filters: filters(fields.filters, `${path}.filters`),
+    context: context(fields.context, `${path}.context`),
+    origin: optionalOneOf(SEARCH_ORIGINS, fields, "origin", path) ?? "manual",
   }
 }
 
@@ -164,31 +180,39 @@ function candidate(value: unknown, path: string): Candidate {
   )
 }
 
-function checkLinks(result: SearchResult): SearchResult {
+function checkLinks(result: SearchResult, path: string): SearchResult {
   const known = new Set(result.items.map((entry) => entry.id))
   result.candidates.forEach((entry, index) => {
     const broken = entry.matches.findIndex((found) => !known.has(found.itemId))
-    if (broken >= 0) throw new PayloadFormatError(`$.candidates[${index}].matches[${broken}]`)
+    if (broken >= 0) {
+      throw new PayloadFormatError(`${path}.candidates[${index}].matches[${broken}]`)
+    }
   })
   return result
 }
 
-export function parseSearchResult(value: unknown): SearchResult {
-  const fields = record(value, "$")
-  const pipeline = nested(fields, "pipeline", "$")
-  return checkLinks({
-    searchId: text(fields, "searchId", "$"),
-    query: query(fields.query, "$.query"),
-    items: list(fields, "items", "$", item),
-    candidates: list(fields, "candidates", "$", candidate),
-    pipeline: {
-      version: text(pipeline, "version", "$.pipeline"),
-      channels: list(pipeline, "channels", "$.pipeline", plainText),
-      asOf: text(pipeline, "asOf", "$.pipeline"),
+export function parseSearchResult(value: unknown, path = "$"): SearchResult {
+  const fields = record(value, path)
+  const pipeline = nested(fields, "pipeline", path)
+  const at = `${path}.pipeline`
+  return checkLinks(
+    {
+      searchId: text(fields, "searchId", path),
+      query: query(fields.query, `${path}.query`),
+      items: list(fields, "items", path, item),
+      candidates: list(fields, "candidates", path, candidate),
+      pipeline: {
+        version: text(pipeline, "version", at),
+        channels: list(pipeline, "channels", at, plainText),
+        asOf: text(pipeline, "asOf", at),
+        inputs:
+          pipeline.inputs === undefined ? ["text"] : list(pipeline, "inputs", at, plainText),
+      },
+      warnings: parseWarnings(fields, path),
+      createdAt: text(fields, "createdAt", path),
     },
-    warnings: parseWarnings(fields, "$"),
-    createdAt: text(fields, "createdAt", "$"),
-  })
+    path,
+  )
 }
 
 function summary(value: unknown, path: string): SearchSummary {
