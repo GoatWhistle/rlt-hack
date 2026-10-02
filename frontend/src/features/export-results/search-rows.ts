@@ -1,4 +1,5 @@
-import type { SearchResult } from "@/entities/search/model"
+import { coverageOf } from "@/entities/search/coverage"
+import type { Candidate, QueryItem, SearchResult } from "@/entities/search/model"
 import {
   type Cell,
   CODE_SEPARATOR,
@@ -29,7 +30,35 @@ export const SEARCH_COLUMNS = [
   "site",
   "email",
   "phone",
+  "role_basis",
+  "role_note",
+  "novelty",
+  "origins",
+  "items_confirmed",
+  "items_to_clarify",
+  "evidence",
+  "result_created_at",
 ] as const
+
+const EVIDENCE_SEPARATOR = " | "
+
+function evidenceOf(candidate: Candidate, items: readonly QueryItem[]): string {
+  return items
+    .flatMap((item) => {
+      const match = candidate.matches.find((entry) => entry.itemId === item.id)
+      const offer = match?.offer
+      if (!offer) return []
+      const checks = match.checks
+        .map((check) => `${check.text}:${check.status}`)
+        .join(CODE_SEPARATOR)
+      return [
+        [item.name, offer.name, offer.url, offer.observedAt.slice(0, 10), checks].join(
+          NOTE_SEPARATOR,
+        ),
+      ]
+    })
+    .join(EVIDENCE_SEPARATOR)
+}
 
 export function candidateRows(
   result: SearchResult,
@@ -42,6 +71,7 @@ export function candidateRows(
     .filter((candidate) => !keep || keep.has(candidate.id))
     .map((candidate) => {
       const basis = (kind: string) => candidate.matches.filter((m) => m.basis === kind).length
+      const coverage = coverageOf(candidate, result.items)
       return [
         result.searchId,
         candidate.rank,
@@ -64,6 +94,14 @@ export function candidateRows(
         candidate.contacts.site ?? "",
         candidate.contacts.email ?? "",
         candidate.contacts.phone ?? "",
+        candidate.roleContext.basis,
+        candidate.roleContext.note ?? candidate.roleContext.product ?? "",
+        candidate.novelty,
+        candidate.origins.join(CODE_SEPARATOR),
+        coverage.confirmed,
+        coverage.toClarify,
+        evidenceOf(candidate, result.items),
+        result.createdAt,
       ]
     })
 }

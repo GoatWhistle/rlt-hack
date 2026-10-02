@@ -192,3 +192,22 @@ describe("the coverage matrix", () => {
     expect(screen.getByRole("article", { name: /Зерновой Двор/ })).toBeInTheDocument()
   })
 })
+
+describe("comparing chosen candidates", () => {
+  it("uses the same items and states for every chosen company", async () => {
+    const view = await openContract()
+    const compare = screen.getByRole("button", { name: /Compare chosen/ })
+    expect(compare).toBeDisabled()
+    const list = region(en("candidates.title", "search"))
+    for (const name of [/Северный Провиант/, /Зерновой Двор/]) {
+      await view.user.click(within(list).getByRole("button", { name }))
+      await view.user.click(
+        within(screen.getByRole("article")).getByRole("button", { name: /choose candidate/i }),
+      )
+    }
+    await view.user.click(screen.getByRole("button", { name: "Compare chosen (2)" }))
+    const dialog = screen.getByRole("dialog", { name: "Compare chosen candidates" })
+    expect(within(dialog).getAllByRole("row")).toHaveLength(3)
+    expect(within(dialog).getAllByRole("columnheader")).toHaveLength(3)
+  })
+})

@@ -19,6 +19,7 @@ import {
 } from "@/shared/ui/workspace-layout"
 import { CandidateList } from "./candidate-list"
 import { CandidatePanel } from "./candidate-panel"
+import { CompareDialog } from "./compare-dialog"
 import { ItemList } from "./item-list"
 
 export const SEARCH_PARAMS = ["candidate", "item", "view"] as const
@@ -32,6 +33,10 @@ export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
   const shortlist = useSearchShortlist(result.searchId)
   const [profileOpen, setProfileOpen] = useState(false)
   const [coverageOpen, setCoverageOpen] = useState(false)
+  const [compareOpen, setCompareOpen] = useState(false)
+  const chosenCandidates = candidates.filter((candidate) =>
+    shortlist.ids.includes(candidate.id),
+  )
 
   const focusItem = items.find((item) => item.id === params.item)
   const shown = focusItem
@@ -126,6 +131,15 @@ export function SearchWorkspace({ result }: { readonly result: SearchResult }) {
       <TextButton aria-expanded={coverageOpen} onClick={() => setCoverageOpen(!coverageOpen)}>
         {coverageOpen ? t("coverage.hide") : t("coverage.show")}
       </TextButton>
+      <TextButton disabled={chosenCandidates.length < 2} onClick={() => setCompareOpen(true)}>
+        {t("compare.open", { count: chosenCandidates.length })}
+      </TextButton>
+      <CompareDialog
+        open={compareOpen}
+        candidates={chosenCandidates}
+        items={items}
+        onClose={() => setCompareOpen(false)}
+      />
       {coverageOpen ? (
         <CoverageMatrix candidates={candidates} items={items} onPick={select} />
       ) : null}

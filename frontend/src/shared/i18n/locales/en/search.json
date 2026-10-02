@@ -157,5 +157,10 @@
     },
     "show": "Show item coverage",
     "hide": "Hide item coverage"
+  },
+  "compare": {
+    "title": "Compare chosen candidates",
+    "open_one": "Compare chosen ({{count, number}})",
+    "open_other": "Compare chosen ({{count, number}})"
   }
 }

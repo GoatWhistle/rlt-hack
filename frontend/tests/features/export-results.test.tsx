@@ -47,6 +47,15 @@ describe("the result files", () => {
     expect(suppliers.split("\r\n")[0]).toMatch(/^\uFEFFlot_id;search_id;rank;supplier_inn/)
     expect(suppliers).toContain(`10;${SEARCH_ID};1;7801234567;ООО «Северный Провиант»;`)
     expect(suppliers).toContain("[innMissing] [roleUnconfirmed]")
+    const header = suppliers.split("\r\n")[0] ?? ""
+    expect(header).toContain(
+      ";role_basis;role_note;novelty;origins;items_confirmed;items_to_clarify;evidence;result_created_at",
+    )
+    const lead = suppliers.split("\r\n")[1] ?? ""
+    expect(lead).toContain(";offer;")
+    expect(lead).toContain("catalog,history")
+    expect(lead).toContain(SEARCH.createdAt)
+    expect(lead).toContain("https://")
     toggleShortlisted(SEARCH_SCOPE, SEARCH_ID, LEADER)
     const chosen = suppliersCsv(results, labels, searchShortlistOf)
     expect(chosen).toContain("Северный Провиант")
