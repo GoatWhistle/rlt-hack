@@ -53,4 +53,8 @@
   .page[data-recent="closed"] {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .page[data-recent="open"] .query {
+    padding-inline-start: calc(var(--space-8) - var(--layout-gutter));
+  }
 }
