@@ -77,7 +77,7 @@ class UploadService:
                 replace(
                     lot,
                     candidates=await relevant_evidence(
-                        lot.notice.title + " " + lot.notice.subject,
+                        lot.notice.query_text,
                         [next(enriched) for _ in lot.candidates],
                     ),
                 )
@@ -88,9 +88,9 @@ class UploadService:
     async def _recommend(self, notice: Notice) -> list[SupplierCandidate]:
         if isinstance(self._search, NoticeSearchEngine):
             return await relevant_evidence(
-                notice.title + " " + notice.subject, await self._search.search_notice(notice, 10)
+                notice.query_text, await self._search.search_notice(notice, 10)
             )
-        query = "\n".join(filter(None, (notice.title, notice.subject)))
+        query = notice.query_text
         return await relevant_evidence(query, await self._search.search(query, 10))
 
     def _version(self) -> str:

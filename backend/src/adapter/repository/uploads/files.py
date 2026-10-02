@@ -7,7 +7,7 @@ from dataclasses import asdict
 from decimal import Decimal
 from pathlib import Path
 
-from src.models.operations.upload import LotRecommendation, Notice, Upload
+from src.models.operations.upload import LotRecommendation, Notice, NoticePosition, Upload
 from src.models.search.supplier_search import (
     SupplierCandidate,
     SupplierCatalogOffer,
@@ -46,6 +46,9 @@ class FileUploads:
                 Notice(
                     **{
                         **lot["notice"],
+                        "positions": tuple(
+                            NoticePosition(**item) for item in lot["notice"].get("positions", [])
+                        ),
                         "start_price": Decimal(str(lot["notice"]["start_price"]))
                         if lot["notice"].get("start_price") is not None
                         else None,

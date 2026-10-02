@@ -15,6 +15,7 @@ import { StepTrail } from "@/shared/ui/step-trail"
 import { useToast } from "@/shared/ui/toast/toast-context"
 import { CheckSkeleton, CheckSummary } from "../check-summary"
 import { Dropzone } from "../dropzone"
+import { ItemsAttachment } from "../items-attachment"
 import { ProcessingView } from "../processing-view"
 import styles from "./styles.module.css"
 
@@ -121,6 +122,7 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
   const { t } = useTranslation("uploads")
   const create = useCreateUpload(useFinish(open))
   const errorMessage = useErrorMessage()
+  const [itemsFile, setItemsFile] = useState<File | undefined>()
   const [phase, setPhase] = useState<Phase>(
     initialFile ? { kind: "reading" } : { kind: "file" },
   )
@@ -143,7 +145,7 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
 
   function start(file: File, check: FileCheck) {
     if (!check.ok) return
-    create.mutate({ file, check })
+    create.mutate({ file, check, itemsFile })
   }
 
   const checked = phase.kind === "checked" ? phase : null
@@ -172,6 +174,7 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
             pending={create.isPending}
             onOther={() => {
               create.reset()
+              setItemsFile(undefined)
               setPhase({ kind: "file" })
             }}
             onStart={() => start(checked.file, checked.check)}
@@ -184,6 +187,9 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
         steps={steps}
         current={create.isPending ? 2 : checked ? 1 : 0}
       />
+      {accepted && !processing ? (
+        <ItemsAttachment file={itemsFile} onChange={setItemsFile} />
+      ) : null}
       <UploadBody phase={phase} processing={processing} onSelect={(file) => void read(file)} />
     </Dialog>
   )

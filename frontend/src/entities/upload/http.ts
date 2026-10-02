@@ -22,9 +22,10 @@ export function createHttpGateway(client: HttpClient): UploadGateway {
       client.get(`${uploadPath(uploadId)}/summary`, {
         parse: (value) => parseUploadSummary(value),
       }),
-    create: ({ file }) => {
+    create: ({ file, itemsFile }) => {
       const body = new FormData()
       body.append("file", file)
+      if (itemsFile) body.append("items_file", itemsFile)
       return client.post(UPLOADS_PATH, { body, parse: (value) => parseUploadSummary(value) })
     },
     lot: (uploadId, lotId) =>

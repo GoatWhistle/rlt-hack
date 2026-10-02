@@ -1,0 +1,12 @@
+.attachment {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: var(--line-width) solid var(--line-hairline);
+  border-radius: var(--radius-md);
+}
+
+.attachment input {
+  max-width: 100%;
+  min-width: 0;
+}

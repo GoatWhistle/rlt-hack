@@ -68,6 +68,7 @@ describe("the http gateway", () => {
     const file = new File(["x"], "n.csv")
     await createHttpGateway(post).create({
       file,
+      itemsFile: new File(["lot_id;product_name;okpd2_code"], "items.csv"),
       check: {
         ok: true,
         fileName: "n.csv",
@@ -81,6 +82,9 @@ describe("the http gateway", () => {
     const [path, options] = vi.mocked(post.post).mock.calls[0] ?? []
     expect(path).toBe(UPLOADS_PATH)
     expect(options?.body instanceof FormData && options.body.get("file")).toBeInstanceOf(File)
+    expect(options?.body instanceof FormData && options.body.get("items_file")).toBeInstanceOf(
+      File,
+    )
   })
 
   it("reads a lot with or without a recommendation and exports results", async () => {
