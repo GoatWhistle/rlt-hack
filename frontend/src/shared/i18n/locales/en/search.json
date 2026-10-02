@@ -18,6 +18,13 @@
   },
   "recent": {
     "title": "Recent searches",
+    "items_one": "<b>{{count, number}}</b> item",
+    "items_other": "<b>{{count, number}}</b> items",
+    "candidates_one": "<b>{{count, number}}</b> candidate",
+    "candidates_other": "<b>{{count, number}}</b> candidates",
+    "recommended_one": "<b>{{count, number}}</b> recommended",
+    "recommended_other": "<b>{{count, number}}</b> recommended",
+    "none": "No candidates found",
     "retry": "Try again",
     "today": "Today",
     "earlier": "Earlier",

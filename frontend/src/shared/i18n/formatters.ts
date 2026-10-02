@@ -7,6 +7,7 @@ export type Formatters = {
   readonly price: (value: number) => string
   readonly date: (value: Date | string) => string
   readonly dateTime: (value: Date | string) => string
+  readonly time: (value: Date | string) => string
   readonly list: (items: readonly string[]) => string
 }
 
@@ -22,6 +23,7 @@ function build(locale: Locale): Formatters {
   const currencies = new Map<string, Intl.NumberFormat>()
   const dates = new Intl.DateTimeFormat(tag, { dateStyle: "medium", timeZone: "UTC" })
   const dateTimes = new Intl.DateTimeFormat(tag, { dateStyle: "medium", timeStyle: "short" })
+  const times = new Intl.DateTimeFormat(tag, { timeStyle: "short" })
   const lists = new Intl.ListFormat(tag, { type: "conjunction" })
   const prices = new Intl.NumberFormat(tag, {
     style: "currency",
@@ -46,6 +48,7 @@ function build(locale: Locale): Formatters {
     price: (value) => prices.format(value),
     date: (value) => dates.format(toDate(value)),
     dateTime: (value) => dateTimes.format(toDate(value)),
+    time: (value) => times.format(toDate(value)),
     list: (items) => lists.format(items),
   }
 }

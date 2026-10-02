@@ -1,14 +1,14 @@
 import type { ReactNode } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { Link } from "react-router"
 import type { SearchSummary } from "@/entities/search/model"
 import { useRecentSearches } from "@/entities/search/queries"
 import { searchPath } from "@/shared/config/paths"
 import { useErrorMessage } from "@/shared/errors/use-error-message"
 import { useFormatters } from "@/shared/i18n/formatters"
-import { Dot } from "@/shared/ui/dot"
 import { Icon } from "@/shared/ui/icon"
 import { LoadingState } from "@/shared/ui/loading-state"
+import { MetaChip, MetaChips } from "@/shared/ui/meta-chip"
 import { ResultSection } from "@/shared/ui/result-section"
 import { TextButton } from "@/shared/ui/text-button"
 import { RecentCollapse } from "../recent-toggle"
@@ -23,29 +23,40 @@ export function isToday(iso: string, now: Date = new Date()): boolean {
   )
 }
 
-function Mix({ search }: { readonly search: SearchSummary }) {
-  const check = Math.max(0, search.candidates - search.recommended)
-  if (search.candidates === 0) return <Dot shape="dashed" tone="muted" />
+function RecentFacts({ search }: { readonly search: SearchSummary }) {
+  const { t } = useTranslation("search")
+  const fact = (key: "items" | "candidates" | "recommended", count: number) => (
+    <Trans t={t} i18nKey={`recent.${key}`} count={count} components={{ b: <b /> }} />
+  )
+  if (search.candidates === 0) {
+    return (
+      <MetaChips>
+        <MetaChip tone="muted">{t("recent.none")}</MetaChip>
+      </MetaChips>
+    )
+  }
   return (
-    <span className={styles.mix} aria-hidden="true">
+    <MetaChips>
+      <MetaChip>{fact("items", search.items)}</MetaChip>
+      <MetaChip>{fact("candidates", search.candidates)}</MetaChip>
       {search.recommended > 0 ? (
-        <span className={styles.recommended} style={{ flexGrow: search.recommended }} />
+        <MetaChip tone="accent">{fact("recommended", search.recommended)}</MetaChip>
       ) : null}
-      {check > 0 ? <span className={styles.check} style={{ flexGrow: check }} /> : null}
-    </span>
+    </MetaChips>
   )
 }
 
 function RecentRow({ search }: { readonly search: SearchSummary }) {
-  const { dateTime } = useFormatters()
+  const { dateTime, time } = useFormatters()
+  const today = isToday(search.createdAt)
   return (
     <Link to={searchPath(search.searchId)} className={styles.row}>
       <span className={styles.text}>{search.text}</span>
       <span className={styles.meta}>
-        <span className={styles.facts}>
-          <Mix search={search} />
-        </span>
-        <time dateTime={search.createdAt}>{dateTime(search.createdAt)}</time>
+        <RecentFacts search={search} />
+        <time dateTime={search.createdAt}>
+          {today ? time(search.createdAt) : dateTime(search.createdAt)}
+        </time>
       </span>
       <span className={styles.chevron} aria-hidden="true">
         <Icon name="chevron" size="sm" />
