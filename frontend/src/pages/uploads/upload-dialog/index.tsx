@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router"
 import { checkNotices } from "@/entities/notice/check"
 import { decodeFile } from "@/entities/notice/decode"
-import type { FileCheck } from "@/entities/notice/model"
+import type { CheckedFile, FileCheck } from "@/entities/notice/model"
 import { useUploadGateway } from "@/entities/upload/gateway-context"
+import { isProcessing, type UploadSummary } from "@/entities/upload/model"
 import { useCreateUpload } from "@/entities/upload/queries"
 import { uploadPath } from "@/shared/config/paths"
 import { useErrorMessage } from "@/shared/errors/use-error-message"
@@ -12,8 +13,10 @@ import { Button } from "@/shared/ui/button"
 import { Dialog } from "@/shared/ui/dialog"
 import { Icon } from "@/shared/ui/icon"
 import { StepTrail } from "@/shared/ui/step-trail"
+import { useToast } from "@/shared/ui/toast/toast-context"
 import { CheckSkeleton, CheckSummary } from "../check-summary"
 import { Dropzone } from "../dropzone"
+import { ProcessingView } from "../processing-view"
 import styles from "./styles.module.css"
 
 type Phase =
@@ -41,7 +44,7 @@ function DialogActions({ check, pending, onOther, onStart }: DialogActionsProps)
   const count = check.ok ? check.notices.length : 0
   return (
     <>
-      <Button variant="secondary" onClick={onOther}>
+      <Button variant="secondary" disabled={pending} onClick={onOther}>
         {t("dialog.otherFile")}
       </Button>
       {count > 0 ? (
@@ -53,6 +56,62 @@ function DialogActions({ check, pending, onOther, onStart }: DialogActionsProps)
   )
 }
 
+function useWatching(open: boolean) {
+  const watching = useRef(open)
+  useEffect(() => {
+    watching.current = open
+    return () => {
+      watching.current = false
+    }
+  }, [open])
+  return watching
+}
+
+function useFinish(open: boolean) {
+  const { t } = useTranslation("uploads")
+  const navigate = useNavigate()
+  const toast = useToast()
+  const watching = useWatching(open)
+  return (upload: UploadSummary) => {
+    const target = uploadPath(upload.id)
+    if (watching.current) {
+      navigate(target)
+      return
+    }
+    toast.show({
+      tone: "success",
+      message: isProcessing(upload)
+        ? t("dialog.accepted", { file: upload.fileName })
+        : t("list.finished", {
+            file: upload.fileName,
+            ready: upload.counts.ready,
+            check: upload.counts.needsCheck,
+          }),
+      action: { label: t("dialog.open"), run: () => navigate(target) },
+    })
+  }
+}
+
+type UploadBodyProps = {
+  readonly phase: Phase
+  readonly processing: CheckedFile | null
+  readonly onSelect: (file: File) => void
+}
+
+function UploadBody({ phase, processing, onSelect }: UploadBodyProps) {
+  const { t } = useTranslation("uploads")
+  return (
+    <div key={processing ? "processing" : phase.kind} className={styles.body}>
+      {phase.kind === "file" ? <Dropzone onSelect={onSelect} /> : null}
+      {phase.kind === "reading" ? <CheckSkeleton label={t("dialog.reading")} /> : null}
+      {processing ? (
+        <ProcessingView fileName={processing.fileName} count={processing.notices.length} />
+      ) : null}
+      {phase.kind === "checked" && !processing ? <CheckSummary check={phase.check} /> : null}
+    </div>
+  )
+}
+
 export type UploadDialogProps = {
   readonly open: boolean
   readonly initialFile: File | null
@@ -61,9 +120,8 @@ export type UploadDialogProps = {
 
 export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) {
   const { t } = useTranslation("uploads")
-  const navigate = useNavigate()
   const gateway = useUploadGateway()
-  const create = useCreateUpload()
+  const create = useCreateUpload(useFinish(open))
   const errorMessage = useErrorMessage()
   const [phase, setPhase] = useState<Phase>(
     initialFile ? { kind: "reading" } : { kind: "file" },
@@ -87,10 +145,12 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
 
   function start(file: File, check: FileCheck) {
     if (!check.ok) return
-    create.mutate({ file, check }, { onSuccess: (upload) => navigate(uploadPath(upload.id)) })
+    create.mutate({ file, check })
   }
 
   const checked = phase.kind === "checked" ? phase : null
+  const accepted = checked?.check.ok ? checked.check : null
+  const processing = create.isPending ? accepted : null
   const steps = [t("dialog.steps.file"), t("dialog.steps.check"), t("dialog.steps.processing")]
 
   return (
@@ -99,6 +159,14 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
       size="wide"
       title={t("dialog.title")}
       onClose={onClose}
+      status={
+        checked && create.isError ? (
+          <p role="alert" className={styles.error}>
+            <Icon name="warning" size="sm" tone="warning" />
+            {errorMessage(create.error)}
+          </p>
+        ) : null
+      }
       footer={
         checked ? (
           <DialogActions
@@ -118,17 +186,7 @@ export function UploadDialog({ open, initialFile, onClose }: UploadDialogProps) 
         steps={steps}
         current={create.isPending ? 2 : checked ? 1 : 0}
       />
-      <div key={phase.kind} className={styles.body}>
-        {phase.kind === "file" ? <Dropzone onSelect={(file) => void read(file)} /> : null}
-        {phase.kind === "reading" ? <CheckSkeleton label={t("dialog.reading")} /> : null}
-        {checked ? <CheckSummary check={checked.check} /> : null}
-        {checked && create.isError ? (
-          <p role="alert" className={styles.error}>
-            <Icon name="warning" size="sm" tone="warning" />
-            {errorMessage(create.error)}
-          </p>
-        ) : null}
-      </div>
+      <UploadBody phase={phase} processing={processing} onSelect={(file) => void read(file)} />
     </Dialog>
   )
 }

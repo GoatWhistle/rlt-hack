@@ -105,13 +105,14 @@ export function useLot(uploadId: string, lotId: string) {
   })
 }
 
-export function useCreateUpload() {
+export function useCreateUpload(onCreated?: (upload: UploadSummary) => void) {
   const gateway = useUploadGateway()
   const client = useQueryClient()
   return useMutation({
     mutationFn: (upload: NewUpload) => gateway.create(upload),
-    onSuccess: () => {
+    onSuccess: (upload) => {
       void client.invalidateQueries({ queryKey: uploadKeys.all })
+      onCreated?.(upload)
     },
     meta: { silent: true },
   })

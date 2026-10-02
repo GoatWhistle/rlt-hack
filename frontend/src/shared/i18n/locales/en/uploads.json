@@ -54,7 +54,7 @@
     "otherFile": "Choose another file",
     "start_one": "Process {{count, number}} purchase",
     "start_other": "Process {{count, number}} purchases",
-    "starting": "Starting…",
+    "starting": "Processing…",
     "total": "Rows in the file",
     "valid": "Will be processed",
     "invalid": "Need fixing",
@@ -67,6 +67,19 @@
     "issues_one": "Error in {{count, number}} row",
     "issues_other": "Errors in {{count, number}} rows",
     "issuesNote": "These rows will not be processed; the rest will. Fix the errors in the file and upload it again to add the skipped purchases.",
-    "rowNumber": "Row"
+    "rowNumber": "Row",
+    "processing": {
+      "title_one": "Finding suppliers for {{count, number}} purchase",
+      "title_other": "Finding suppliers for {{count, number}} purchases",
+      "note": "This usually takes up to a minute. You can close this window — we'll let you know when the file is ready.",
+      "stage": {
+        "send": "Sending the file to the server",
+        "match": "Looking for suppliers for each purchase",
+        "rank": "Checking the evidence and ranking candidates",
+        "slow": "The file is large, processing is taking longer than usual"
+      }
+    },
+    "accepted": "{{file}} is accepted, processing continues",
+    "open": "Open"
   }
 }

@@ -50,10 +50,17 @@ export function ToastProvider({ children }: ToastProviderProps) {
   )
 
   const show = useCallback(
-    ({ message, tone = "info", durationMs }: ToastInput) => {
+    ({ message, tone = "info", durationMs, action }: ToastInput) => {
       nextId.current += 1
       const id = nextId.current
-      const entry = { id, message, tone, open: true, durationMs: durationOf(tone, durationMs) }
+      const entry = {
+        id,
+        message,
+        tone,
+        action,
+        open: true,
+        durationMs: durationOf(tone, durationMs),
+      }
       let overflow = new Set<number>()
       setEntries((current) => {
         const open = current.filter((item) => item.open)

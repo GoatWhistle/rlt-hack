@@ -3,7 +3,7 @@ import { type FocusEvent, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { usePresence } from "@/shared/motion/use-presence"
 import styles from "./styles.module.css"
-import type { ToastTone } from "./toast-context"
+import type { ToastAction, ToastTone } from "./toast-context"
 
 export type ToastEntry = {
   readonly id: number
@@ -11,6 +11,7 @@ export type ToastEntry = {
   readonly tone: ToastTone
   readonly open: boolean
   readonly durationMs: number
+  readonly action?: ToastAction
 }
 
 const TONES: Record<ToastTone, string | undefined> = {
@@ -61,6 +62,18 @@ export function ToastItem({ entry, onDismiss }: ToastItemProps) {
       <div className={styles.clip}>
         <div className={clsx(styles.toast, TONES[entry.tone])}>
           <p className={styles.message}>{entry.message}</p>
+          {entry.action ? (
+            <button
+              type="button"
+              className={styles.action}
+              onClick={() => {
+                entry.action?.run()
+                onDismiss(entry.id)
+              }}
+            >
+              {entry.action.label}
+            </button>
+          ) : null}
           <button
             type="button"
             className={styles.close}

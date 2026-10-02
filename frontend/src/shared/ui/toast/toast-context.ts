@@ -2,10 +2,16 @@ import { createContext, use } from "react"
 
 export type ToastTone = "info" | "success" | "error"
 
+export type ToastAction = {
+  readonly label: string
+  readonly run: () => void
+}
+
 export type ToastInput = {
   readonly message: string
   readonly tone?: ToastTone
   readonly durationMs?: number
+  readonly action?: ToastAction
 }
 
 export type ToastApi = {
