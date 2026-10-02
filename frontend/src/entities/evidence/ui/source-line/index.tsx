@@ -5,7 +5,12 @@ import { Icon } from "@/shared/ui/icon"
 import { VisuallyHidden } from "@/shared/ui/visually-hidden"
 import styles from "./styles.module.css"
 
-export function SourceLine({ source }: { readonly source?: Source }) {
+export type SourceLineProps = {
+  readonly source?: Source
+  readonly stale?: boolean
+}
+
+export function SourceLine({ source, stale = false }: SourceLineProps) {
   const { t } = useTranslation("evidence")
   const { date } = useFormatters()
   if (!source) return <span className={styles.missing}>{t("noSource")}</span>
@@ -20,7 +25,9 @@ export function SourceLine({ source }: { readonly source?: Source }) {
         <VisuallyHidden>{t("newTab")}</VisuallyHidden>
       </a>
       {source.checkedAt ? (
-        <span>{t("checkedAt", { date: date(source.checkedAt) })}</span>
+        <span className={stale ? styles.stale : undefined}>
+          {t(stale ? "offer.staleCheck" : "checkedAt", { date: date(source.checkedAt) })}
+        </span>
       ) : null}
     </span>
   )

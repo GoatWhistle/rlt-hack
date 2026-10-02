@@ -6,6 +6,7 @@ import type {
   Highlight,
   MatchBasis,
   MeterBasis,
+  OfferView,
   PurchaseOutcome,
   Source,
 } from "./model"
@@ -20,6 +21,7 @@ export type MatchView = {
   readonly basis: MatchBasis
   readonly source?: Source
   readonly offerId?: string
+  readonly offer?: OfferView
 }
 
 export type PurchaseView = {

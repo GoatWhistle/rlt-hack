@@ -65,6 +65,31 @@
   "assumed_many": "+{{count, number}} предположений",
   "assumed_other": "+{{count, number}} предположения",
   "newTab": "(откроется в новой вкладке)",
+  "offer": {
+    "listLabel": "Предложения компании",
+    "price": "{{price}} за {{unit}}",
+    "noPrice": "Цена не указана",
+    "amount": "{{value}} {{currency}}",
+    "article": "арт. {{article}}",
+    "okpd2": "ОКПД2 {{code}}",
+    "attribute": "{{name}}: {{value}}",
+    "availability": {
+      "available": "В наличии",
+      "on_order": "Под заказ",
+      "unavailable": "Нет в наличии",
+      "unknown": "Наличие неизвестно"
+    },
+    "seller": {
+      "unverified": "Продавец не подтверждён",
+      "conflict": "Источники расходятся о продавце"
+    },
+    "item": "Позиция «{{name}}»",
+    "staleCheck": "проверено {{date}}, давно не обновлялось",
+    "inferred": "Предложения нет — система предполагает по похожим закупкам",
+    "empty": "Актуальных предложений нет",
+    "emptyHint": "Компания найдена по истории закупок. Ассортимент и цены уточняйте напрямую.",
+    "short": "{{price}} · {{availability}}"
+  },
   "region": {
     "named": "{{name}} ({{code}})",
     "code": "Регион {{code}}"

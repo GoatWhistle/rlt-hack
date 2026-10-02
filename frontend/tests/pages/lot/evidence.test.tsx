@@ -105,7 +105,7 @@ describe("the grounds panel", () => {
     const grounds = panel("North Foods")
     await user.click(within(grounds).getByText(en("evidence.matchesTitle", "lot")))
     expect(within(grounds).getByText(en("evidence.basis.inferred", "lot"))).toBeVisible()
-    expect(within(grounds).getByText(en("evidence.noSource", "lot"))).toBeVisible()
+    expect(within(grounds).getByText(en("offer.inferred", "evidence"))).toBeVisible()
     await user.click(within(grounds).getByText(en("evidence.purchasesTitle", "lot")))
     expect(within(grounds).getByRole("link", { name: "Lot 42" })).toHaveAttribute("href", "#42")
     expect(within(grounds).getByText(en("evidence.purchasesNote", "lot"))).toBeVisible()

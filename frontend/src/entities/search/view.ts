@@ -1,7 +1,15 @@
-import type { CandidateView, ItemView } from "@/entities/evidence/view"
-import type { Candidate, QueryItem } from "./model"
+import type { OfferView } from "@/entities/evidence/model"
+import type { CandidateView, ItemView, MatchView } from "@/entities/evidence/view"
+import type { Candidate, CandidateMatch, QueryItem } from "./model"
 
-export function candidateView(candidate: Candidate): CandidateView {
+export type OfferIndex = Readonly<Record<string, OfferView>>
+
+function matchView(match: CandidateMatch, offers: OfferIndex): MatchView {
+  const offer = match.offerId ? offers[match.offerId] : undefined
+  return offer ? { ...match, offer } : match
+}
+
+export function candidateView(candidate: Candidate, offers: OfferIndex = {}): CandidateView {
   return {
     id: candidate.id,
     rank: candidate.rank,
@@ -14,7 +22,7 @@ export function candidateView(candidate: Candidate): CandidateView {
     status: candidate.status,
     checkReasons: candidate.checkReasons,
     highlights: candidate.highlights,
-    matches: candidate.matches,
+    matches: candidate.matches.map((match) => matchView(match, offers)),
     similarPurchases: candidate.history.similarPurchases,
     wins: candidate.history.wins,
     purchases: candidate.history.records.map((record) => ({

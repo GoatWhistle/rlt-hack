@@ -55,6 +55,31 @@
   "assumed_one": "+{{count, number}} assumption",
   "assumed_other": "+{{count, number}} assumptions",
   "newTab": "(opens in a new tab)",
+  "offer": {
+    "listLabel": "Company offers",
+    "price": "{{price}} per {{unit}}",
+    "noPrice": "No price given",
+    "amount": "{{value}} {{currency}}",
+    "article": "SKU {{article}}",
+    "okpd2": "OKPD2 {{code}}",
+    "attribute": "{{name}}: {{value}}",
+    "availability": {
+      "available": "In stock",
+      "on_order": "On order",
+      "unavailable": "Out of stock",
+      "unknown": "Availability unknown"
+    },
+    "seller": {
+      "unverified": "Seller not confirmed",
+      "conflict": "Sources disagree on the seller"
+    },
+    "item": "Item “{{name}}”",
+    "staleCheck": "checked {{date}}, may be outdated",
+    "inferred": "No offer: the system infers this from similar purchases",
+    "empty": "No current offers",
+    "emptyHint": "The company was found through past purchases. Ask the company about its range and prices directly.",
+    "short": "{{price}} · {{availability}}"
+  },
   "region": {
     "named": "{{name}} ({{code}})",
     "code": "Region {{code}}"

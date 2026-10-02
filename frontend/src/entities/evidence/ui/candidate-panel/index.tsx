@@ -26,6 +26,8 @@ import { SegmentMeter } from "../segment-meter"
 import { StatusTag } from "../status-tag"
 import { HistoryBlock, MatchBlock } from "./blocks"
 
+export { offerEntries } from "./blocks"
+
 export type CandidatePanelProps = {
   readonly candidate: CandidateView
   readonly items: readonly ItemView[]

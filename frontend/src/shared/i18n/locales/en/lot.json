@@ -163,7 +163,6 @@
     "lastDate": "Latest procurement in this profile: {{date}}",
     "note": "These examples describe historical specialization. Check current availability and supply terms with the company.",
     "catalog": "Published company products",
-    "checkedAt": "Page read on {{date}}",
     "examples_one": "{{count, number}} example",
     "examples_other": "{{count, number}} examples",
     "requestTitle": "Search by description",

@@ -24,7 +24,9 @@ export function ResultView({ result }: { readonly result: SearchResult }) {
   const [exporting, setExporting] = useState(false)
   const [comparing, setComparing] = useState(false)
   const known = shortlist.ids.filter((id) => result.candidates.some((item) => item.id === id))
-  const chosen = result.candidates.filter((item) => known.includes(item.id)).map(candidateView)
+  const chosen = result.candidates
+    .filter((item) => known.includes(item.id))
+    .map((item) => candidateView(item, result.offers))
 
   return (
     <DockArea docked={known.length > 0}>

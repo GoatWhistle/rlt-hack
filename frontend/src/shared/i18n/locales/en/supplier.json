@@ -15,13 +15,6 @@
   "noRoleBasis": "No source confirms the role",
   "contacts": "Contacts",
   "offers": "Current offers",
-  "noOffers": "No current offers in the sources.",
-  "price": "{{price}} per {{unit}}",
-  "noPrice": "No price given",
-  "availability": {
-    "available": "In stock",
-    "on_order": "On order",
-    "unavailable": "Out of stock",
-    "unknown": "Availability unknown"
-  }
+  "forQuery": "For your request",
+  "otherOffers": "Other offers"
 }

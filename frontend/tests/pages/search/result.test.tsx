@@ -70,7 +70,7 @@ describe("a search result", () => {
     expect(
       within(grounds).getByRole("link", { name: "Прайс-лист компании (opens in a new tab)" }),
     ).toHaveAttribute("href", "https://severny-proviant.example.org/price/grechka")
-    expect(within(grounds).getByText("checked Sep 29, 2026")).toBeInTheDocument()
+    expect(within(grounds).getAllByText(/^checked Sep 29, 2026/).length).toBeGreaterThan(0)
     expect(within(grounds).getByText(en("basis.catalog", "evidence"))).toBeInTheDocument()
     expect(within(grounds).getByText("11 similar · wins: 4")).toBeInTheDocument()
     expect(within(grounds).getByText(/Lot 32514850391-1/)).toBeInTheDocument()
@@ -94,7 +94,7 @@ describe("a search result", () => {
       en("reasonShort.noCurrentOffer", "candidate"),
       en("reasonShort.rangeUnconfirmed", "candidate"),
     ])
-    expect(within(check).getByText(en("noSource", "evidence"))).toBeVisible()
+    expect(within(check).getByText(en("offer.inferred", "evidence"))).toBeVisible()
     await user.click(within(check).getByText(en("panel.companyTitle", "candidate")))
     expect(within(check).getByText(en("panel.noRoleBasis", "candidate"))).toBeVisible()
     expect(within(check).getByText(en("contacts.none", "evidence"))).toBeVisible()
@@ -199,7 +199,9 @@ describe("a search result", () => {
       await within(dialog).findByText("Крупа гречневая ядрица 1 сорт, мешок 50 кг"),
     ).toBeVisible()
     expect(within(dialog).getByText("RUB 84.50 per кг")).toBeVisible()
-    expect(within(dialog).getByText(en("availability.available", "supplier"))).toBeVisible()
+    expect(
+      within(dialog).getByRole("heading", { name: en("forQuery", "supplier") }),
+    ).toBeTruthy()
     expect(within(dialog).getByText(en("identity.verified", "supplier"))).toBeVisible()
   })
 

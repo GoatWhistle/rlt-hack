@@ -41,6 +41,7 @@
     "noHighlights": "No supporting records.",
     "figure": "Match by item",
     "matchesTitle": "Match by item",
+    "offersLabel": "Offers covering the items",
     "matchesHint": "Price lists and catalogs show the company sells the item. Confirm stock and delivery time with the company.",
     "clarifyTitle": "What to clarify with the company",
     "historyTitle": "Purchase history",
@@ -83,7 +84,8 @@
     "channelFailed": "One of the sources didn't respond, so some companies may be missing.",
     "enrichmentFailed": "Some company details could not be loaded. Affected candidates are marked for checking.",
     "archiveFailed": "The result was not saved: the link will not open later.",
-    "itemsInferred": "Some items were identified by the system. Confirm them before contacting suppliers."
+    "itemsInferred": "Some items were identified by the system. Confirm them before contacting suppliers.",
+    "itemsTruncated": "The request has more items than one search covers, so only the first ones were used. Search for the rest separately."
   },
   "selection": {
     "label": "Chosen candidates",

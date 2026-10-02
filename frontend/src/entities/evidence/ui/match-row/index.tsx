@@ -43,7 +43,11 @@ export function MatchRow({ name, basis, source, note }: MatchRowProps) {
             {basis ? t(`basis.${basis}`) : t("notFound")}
           </span>
         </div>
-        {basis ? <SourceLine source={source} /> : null}
+        {basis === "inferred" && !source ? (
+          <span className={styles.assumed}>{t("offer.inferred")}</span>
+        ) : basis ? (
+          <SourceLine source={source} />
+        ) : null}
         {note}
       </div>
     </div>

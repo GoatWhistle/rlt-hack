@@ -47,7 +47,7 @@ const FAMILIES: readonly Family[] = [
   ["evidence", "sourceKind", SOURCE_KINDS],
   ["evidence", "outcome", PURCHASE_OUTCOMES],
   ["evidence", "status", CANDIDATE_STATUSES],
-  ["supplier", "availability", AVAILABILITIES],
+  ["evidence", "offer.availability", AVAILABILITIES],
   ["supplier", "identity", IDENTITY_STATUSES],
 ]
 

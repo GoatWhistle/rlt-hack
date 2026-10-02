@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { CandidateList } from "@/entities/evidence/ui/candidate-list"
-import { CandidatePanel } from "@/entities/evidence/ui/candidate-panel"
-import { coverageOf } from "@/entities/evidence/view"
+import { CandidatePanel, offerEntries } from "@/entities/evidence/ui/candidate-panel"
+import { coverageOf, rowsOf } from "@/entities/evidence/view"
 import type { CandidateStatus, SearchResult } from "@/entities/search/model"
 import { candidateView, itemViews } from "@/entities/search/view"
 import { SupplierProfilePanel } from "@/entities/supplier/ui/profile-panel"
@@ -54,7 +54,9 @@ export function SearchWorkspace({
   const medium = useMediaQuery(MEDIUM_LAYOUT)
   const [profileOpen, setProfileOpen] = useState(false)
   const items = itemViews(result.items)
-  const candidates = result.candidates.map(candidateView)
+  const candidates = result.candidates.map((candidate) =>
+    candidateView(candidate, result.offers),
+  )
   const facet = parseFacet(params.status)
   const focusItem = result.items.find((item) => item.id === params.item)
   const focusId = focusItem?.id ?? null
@@ -185,6 +187,7 @@ export function SearchWorkspace({
         open={profileOpen}
         supplierId={selected.id}
         name={selected.name}
+        matched={offerEntries(rowsOf(selected, items))}
         onClose={() => setProfileOpen(false)}
       />
     </>

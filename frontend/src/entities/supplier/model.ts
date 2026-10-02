@@ -1,20 +1,11 @@
-import type { CompanyRole, Contacts, Source } from "@/entities/evidence/model"
+import type { CompanyRole, Contacts, OfferView, Source } from "@/entities/evidence/model"
+
+export { AVAILABILITIES, type Availability } from "@/entities/evidence/model"
 
 export const IDENTITY_STATUSES = ["verified", "unverified", "conflict"] as const
 export type IdentityStatus = (typeof IDENTITY_STATUSES)[number]
 
-export const AVAILABILITIES = ["available", "on_order", "unavailable", "unknown"] as const
-export type Availability = (typeof AVAILABILITIES)[number]
-
-export type Offer = {
-  readonly id: string
-  readonly name: string
-  readonly price?: number
-  readonly currency: string
-  readonly unit: string
-  readonly availability: Availability
-  readonly source?: Source
-}
+export type Offer = OfferView
 
 export type SupplierProfile = {
   readonly id: string

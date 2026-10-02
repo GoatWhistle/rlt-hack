@@ -38,7 +38,7 @@ describe("historical supplier data", () => {
     expect(within(panel).getByText("Why this supplier was found")).toBeInTheDocument()
     expect(within(panel).getByText(/Latest procurement.*2024-11-30/)).toBeInTheDocument()
     expect(within(panel).getByText("Office paper")).toBeInTheDocument()
-    expect(within(panel).getByRole("link", { name: "A4 paper" })).toHaveAttribute(
+    expect(within(panel).getByRole("link", { name: /^A4 paper/ })).toHaveAttribute(
       "href",
       "https://example.test/paper",
     )
@@ -101,7 +101,7 @@ describe("grounded procurement recommendations", () => {
       "href",
       "/api/evidence/one",
     )
-    expect(within(panel).getByRole("link", { name: "A4 paper" })).toBeInTheDocument()
+    expect(within(panel).getByRole("link", { name: /^A4 paper/ })).toBeInTheDocument()
     expect(within(panel).queryByText("Key thing to clarify.")).not.toBeInTheDocument()
   })
 })

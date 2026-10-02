@@ -5,6 +5,7 @@ import type {
   Contacts,
   Highlight,
   MatchBasis,
+  OfferView,
   PurchaseOutcome,
   SearchWarning,
   Source,
@@ -142,6 +143,7 @@ export type SearchResult = {
   readonly pipeline: Pipeline
   readonly warnings: readonly SearchWarning[]
   readonly createdAt: string
+  readonly offers: Readonly<Record<string, OfferView>>
 }
 
 export type SearchSummary = {

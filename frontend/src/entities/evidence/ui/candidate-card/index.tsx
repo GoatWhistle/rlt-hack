@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { useHistoryLine, useStatusText } from "@/entities/evidence/candidate-labels"
 import { useInnText, useRoleLabel } from "@/entities/evidence/labels"
 import { countMatches } from "@/entities/evidence/model"
+import { useOfferText } from "@/entities/evidence/offer-labels"
 import type { CandidateView, ItemView, MatchView } from "@/entities/evidence/view"
 import { segmentsOf } from "@/entities/evidence/view"
 import { useFormatters } from "@/shared/i18n/formatters"
@@ -89,12 +90,15 @@ export function CandidateCard({
 function FocusLine({ match }: { readonly match: MatchView }) {
   const { t: evidence } = useTranslation("evidence")
   const { date } = useFormatters()
+  const offerText = useOfferText()
   const checkedAt = match.source?.checkedAt
   return (
     <span className={styles.focus} data-basis={match.basis}>
       <BasisMarker basis={match.basis} />
       <span className={styles.focusText}>
-        {evidence(`basis.${match.basis}`)}
+        {match.offer?.price !== undefined && match.basis !== "inferred"
+          ? offerText.short(match.offer)
+          : evidence(`basis.${match.basis}`)}
         {checkedAt ? ` · ${date(checkedAt)}` : null}
       </span>
     </span>

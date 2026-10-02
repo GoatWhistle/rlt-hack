@@ -18,6 +18,7 @@ import {
   MatchValue,
   MissingNames,
 } from "./compare-table"
+import { useOfferCriteria } from "./offer-criteria"
 
 export {
   bestOf,
@@ -37,13 +38,17 @@ export type CompareDialogProps = {
 
 type Column = CompareColumn & { readonly candidate: CandidateView }
 
-function useCriteria(items: readonly ItemView[]): CompareCriterion<Column>[] {
+function useCriteria(
+  items: readonly ItemView[],
+  candidates: readonly CandidateView[],
+): CompareCriterion<Column>[] {
   const { t } = useTranslation("candidate")
   const { t: label } = useTranslation("evidence")
   const figureOf = useMatchFigure()
   const statusText = useStatusText()
   const clarifyItems = useClarifyItems()
   const { list, number } = useFormatters()
+  const offers = useOfferCriteria<Column>(items, candidates)
   const amount = (candidate: CandidateView, basis: MatchBasis) =>
     candidate.matches.filter((match) => match.basis === basis).length
   const unmatched = (candidate: CandidateView) => {
@@ -71,6 +76,7 @@ function useCriteria(items: readonly ItemView[]): CompareCriterion<Column>[] {
       },
       score: ({ candidate }) => countMatches(candidate.matches).confirmed,
     },
+    ...offers,
     {
       id: "stock",
       label: label("basis.stock"),
@@ -132,7 +138,7 @@ function useCriteria(items: readonly ItemView[]): CompareCriterion<Column>[] {
 export function CompareDialog({ open, candidates, items, onClose }: CompareDialogProps) {
   const { t } = useTranslation("candidate")
   const roleLabel = useRoleLabel()
-  const criteria = useCriteria(items)
+  const criteria = useCriteria(items, candidates)
   return (
     <CompareTable
       open={open}
