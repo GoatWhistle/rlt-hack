@@ -92,6 +92,9 @@ services:
     volumes: *production-data
 
   embedding-worker:
+    depends_on: !override
+      clickhouse:
+        condition: service_healthy
     image: rlt/backend:${RLT_IMAGE_TAG:?Set the release revision}
     build: !reset null
 

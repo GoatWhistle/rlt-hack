@@ -189,3 +189,9 @@ Workflow по SSH вызывает `deploy/import-registry.sh` текущего 
 Источники: [GitHub Secrets](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets),
 [Compose healthcheck/wait](https://docs.docker.com/reference/cli/docker/compose/up/),
 [резервное копирование ClickHouse](https://clickhouse.com/docs/operations/backup).
+
+Для production с внешним совместимым энкодером 4B задайте
+`RLT_RUN_LOCAL_EMBEDDER=false` в серверном `production.env`. Тогда
+`run-workers.sh` запускает векторизацию без контейнера локального энкодера.
+Рабочая модель определяется серверным файлом `EMBEDDING_ENV_FILE`; кеши
+локальных энкодеров не требуются.

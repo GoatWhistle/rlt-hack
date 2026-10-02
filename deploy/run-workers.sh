@@ -14,7 +14,9 @@ compose() {
     --file "$directory/deploy/compose.production.yml" "${extra[@]}" \
     --profile ml --profile workers --profile search "$@"
 }
-compose up -d --no-deps --wait --wait-timeout 180 embedder
+if ! grep -Eq '^RLT_RUN_LOCAL_EMBEDDER=false$' "${RLT_ENV_FILE:-/etc/rlt-hack/production.env}"; then
+  compose up -d --no-deps --wait --wait-timeout 180 embedder
+fi
 compose run --rm --no-deps embedding-worker index --max-batches 1
 compose up -d --no-deps --wait --wait-timeout 120 embedding-worker
 if grep -Eq '^RLT_RUN_SEARCH=true$' "${RLT_ENV_FILE:-/etc/rlt-hack/production.env}"; then
