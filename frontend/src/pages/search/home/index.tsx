@@ -26,6 +26,8 @@ export function SearchPage() {
         </div>
         <SearchBox
           key={draft}
+          autoFocus
+          shortcut
           initialText={draft}
           onFound={(result) => navigate(searchPath(result.searchId), { viewTransition: true })}
         />

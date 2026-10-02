@@ -83,16 +83,6 @@
   font-weight: var(--weight-semibold);
 }
 
-.error {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  max-width: var(--measure-prose);
-  color: var(--warning-text);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-}
-
 .compact {
   gap: var(--space-2);
 }
@@ -114,6 +104,19 @@
 .compact .input:not(:focus) {
   max-height: calc(var(--text-md) * var(--leading-normal) + 2 * var(--space-3));
   overflow: hidden;
+  clip-path: inset(0 0 var(--space-3) 0);
+}
+
+.compact .input:not(:focus)[data-overflow] {
+  mask-image: var(--mask-fade-end);
+}
+
+.key {
+  margin-inline-end: var(--space-2);
+}
+
+.field:focus-within .key {
+  display: none;
 }
 
 .compact .bar {

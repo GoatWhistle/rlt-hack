@@ -49,6 +49,7 @@ export function useRunSearch() {
       void client.invalidateQueries({
         queryKey: searchKeys.all,
         predicate: (query) => query.queryKey[2] === RECENT_PART,
+        refetchType: "none",
       })
     },
   })

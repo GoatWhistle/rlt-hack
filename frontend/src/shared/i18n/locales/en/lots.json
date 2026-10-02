@@ -17,8 +17,7 @@
   "search": {
     "label": "Search purchases",
     "placeholder": "Name, customer INN or lot number",
-    "clear": "Clear search",
-    "shortcut": "/"
+    "clear": "Clear search"
   },
   "filter": {
     "legend": "Result",

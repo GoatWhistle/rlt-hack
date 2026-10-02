@@ -1,19 +1,32 @@
 import { clsx } from "clsx"
-import { type FormEvent, type KeyboardEvent, useId, useRef, useState } from "react"
+import { type FormEvent, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { invalidQuery } from "@/entities/search/gateway"
 import { DEFAULT_LIMIT, MAX_QUERY_LENGTH, type SearchResult } from "@/entities/search/model"
 import { useRunSearch } from "@/entities/search/queries"
-import { useErrorMessage } from "@/shared/errors/use-error-message"
+import { FOCUS_SHORTCUT } from "@/shared/keyboard/use-focus-shortcut"
 import { useMediaQuery } from "@/shared/media/use-media-query"
 import { Button } from "@/shared/ui/button"
 import { Icon } from "@/shared/ui/icon"
+import { KeyHint } from "@/shared/ui/key-hint"
 import { Spinner } from "@/shared/ui/spinner"
 import { ExampleChips } from "./example-chips"
+import {
+  isInputProblem,
+  joinIds,
+  problemOf,
+  useFieldEffects,
+  useReportStage,
+  wantsSubmit,
+} from "./field-effects"
+import { SearchError } from "./search-error"
 import { StageLine, SweepBar } from "./stage-line"
 import styles from "./styles.module.css"
 import { useAutoHeight } from "./use-auto-height"
 import { type SearchStage, useStage } from "./use-stage"
+
+export { FINE_POINTER, isInputProblem } from "./field-effects"
+export { StageLine } from "./stage-line"
+export type { SearchStage } from "./use-stage"
 
 export const COUNTER_FROM = 3600
 export const PICK_TO_FIELD = "(max-width: 47.99rem)"
@@ -23,22 +36,10 @@ export type SearchBoxProps = {
   readonly showExamples?: boolean
   readonly compact?: boolean
   readonly inputId?: string
+  readonly autoFocus?: boolean
+  readonly shortcut?: boolean
+  readonly onStage?: (stage: SearchStage | null) => void
   readonly onFound: (result: SearchResult) => void
-}
-
-function problemOf(text: string) {
-  if (!text) return invalidQuery("empty_query")
-  if (text.length > MAX_QUERY_LENGTH) return invalidQuery("query_too_long")
-  return null
-}
-
-function wantsSubmit(event: KeyboardEvent<HTMLTextAreaElement>): boolean {
-  if (event.key !== "Enter" || event.nativeEvent.isComposing) return false
-  return event.metaKey || event.ctrlKey || !event.shiftKey
-}
-
-function joinIds(ids: readonly string[]): string | undefined {
-  return ids.filter(Boolean).join(" ") || undefined
 }
 
 type FieldBarProps = {
@@ -48,9 +49,11 @@ type FieldBarProps = {
   readonly counterId: string
   readonly length: number
   readonly pending: boolean
+  readonly shortcut: boolean
 }
 
-function FieldBar({ compact, stage, hintId, counterId, length, pending }: FieldBarProps) {
+function FieldBar(props: FieldBarProps) {
+  const { compact, stage, hintId, counterId, length, pending, shortcut } = props
   const { t } = useTranslation("search")
   return (
     <div className={styles.bar}>
@@ -68,6 +71,7 @@ function FieldBar({ compact, stage, hintId, counterId, length, pending }: FieldB
           {t("box.counter", { count: length, limit: MAX_QUERY_LENGTH })}
         </span>
       ) : null}
+      {shortcut && !pending ? <KeyHint keys={FOCUS_SHORTCUT} className={styles.key} /> : null}
       <Button
         type="submit"
         className={styles.submit}
@@ -86,10 +90,12 @@ export function SearchBox({
   showExamples = true,
   compact = false,
   inputId,
+  autoFocus,
+  shortcut,
+  onStage,
   onFound,
 }: SearchBoxProps) {
   const { t } = useTranslation("search")
-  const errorMessage = useErrorMessage()
   const search = useRunSearch()
   const [text, setText] = useState(initialText)
   const [problem, setProblem] = useState<unknown>(null)
@@ -102,8 +108,11 @@ export function SearchBox({
   const pickToField = useMediaQuery(PICK_TO_FIELD)
   const stage = useStage(search.isPending)
   useAutoHeight(fieldRef, text)
+  useFieldEffects(fieldRef, { autoFocus: autoFocus === true, shortcut: shortcut === true })
+  useReportStage(stage, onStage)
 
   const error = problem ?? search.error
+  const invalid = isInputProblem(error)
   const showCounter = text.length >= COUNTER_FROM
   const describedBy = joinIds([
     compact ? "" : hintId,
@@ -154,7 +163,7 @@ export function SearchBox({
           {t("box.label")}
         </label>
       )}
-      <div className={clsx(styles.field, error ? styles.invalid : undefined)}>
+      <div className={clsx(styles.field, invalid && styles.invalid)}>
         <textarea
           id={fieldId}
           ref={fieldRef}
@@ -163,8 +172,9 @@ export function SearchBox({
           value={text}
           placeholder={t("box.placeholder")}
           aria-label={compact ? t("box.label") : undefined}
-          aria-invalid={error ? true : undefined}
+          aria-invalid={invalid || undefined}
           aria-describedby={describedBy}
+          aria-keyshortcuts={shortcut ? FOCUS_SHORTCUT : undefined}
           onChange={(event) => change(event.target.value)}
           onKeyDown={(event) => {
             if (!wantsSubmit(event)) return
@@ -179,16 +189,11 @@ export function SearchBox({
           counterId={counterId}
           length={text.length}
           pending={search.isPending}
+          shortcut={shortcut === true}
         />
         {search.isPending ? <SweepBar /> : null}
       </div>
-      {compact ? <StageLine stage={stage} /> : null}
-      {error ? (
-        <p id={errorId} role="alert" className={styles.error}>
-          <Icon name="warning" size="sm" />
-          {errorMessage(error)}
-        </p>
-      ) : null}
+      <SearchError id={errorId} error={error} onRetry={() => submit()} />
       {showExamples ? <ExampleChips disabled={search.isPending} onPick={pick} /> : null}
     </form>
   )
