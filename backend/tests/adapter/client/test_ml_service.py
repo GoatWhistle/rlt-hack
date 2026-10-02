@@ -77,7 +77,7 @@ async def test_candidates_are_mapped_by_inn_in_rank_order() -> None:
         return httpx.Response(200, json=answer(RANKED))
 
     hits = await retriever(handler).retrieve(regional_request(), 10)
-    assert hits.channel == "semantic"
+    assert (hits.channel, hits.version) == ("semantic", "supplier-retrieval-v1")
     assert [(hit.supplier_id, hit.rank) for hit in hits.hits] == [(ALPHA, 1), (BETA, 2)]
     assert hits.hits[0].items == (ItemHit("i1", 1.0),)
     assert hits.hits[1].items == (ItemHit("i2", 0.5),)

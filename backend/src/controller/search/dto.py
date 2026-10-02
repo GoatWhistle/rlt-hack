@@ -205,6 +205,8 @@ class PipelineDto(CamelModel):
     as_of: UtcDateTime
     inputs: list[str]
     novelty_set: str | None
+    models: dict[str, str]
+    contract_version: str
 
 
 class WarningDto(CamelModel):

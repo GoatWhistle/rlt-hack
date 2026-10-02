@@ -22,6 +22,7 @@ class PipelineInfo:
     as_of: datetime
     inputs: tuple[str, ...] = ("text",)
     novelty_set: str = ""
+    models: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

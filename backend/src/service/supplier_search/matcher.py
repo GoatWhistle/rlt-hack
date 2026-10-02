@@ -63,6 +63,7 @@ class SupplierMatcher:
             channels=tuple(channel.channel for channel in hits),
             warnings=(*channel_warnings, *enrichment_warnings, *roster_warnings),
             novelty_set="" if roster is None else roster.version,
+            models=tuple((channel.channel, channel.version) for channel in hits if channel.version),
         )
 
     async def _candidates(

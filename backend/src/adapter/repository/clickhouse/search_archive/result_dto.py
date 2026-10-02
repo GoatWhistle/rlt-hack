@@ -103,6 +103,7 @@ class PipelineDto(FrozenDto):
     as_of: datetime
     inputs: tuple[str, ...] = ("text",)
     novelty_set: str = ""
+    models: tuple[tuple[str, str], ...] = ()
 
     @classmethod
     def from_domain(cls, pipeline: PipelineInfo) -> Self:
@@ -112,6 +113,7 @@ class PipelineDto(FrozenDto):
             as_of=pipeline.as_of,
             inputs=pipeline.inputs,
             novelty_set=pipeline.novelty_set,
+            models=pipeline.models,
         )
 
     @classmethod
@@ -119,7 +121,14 @@ class PipelineDto(FrozenDto):
         return None if pipeline is None else cls.from_domain(pipeline)
 
     def to_domain(self) -> PipelineInfo:
-        return PipelineInfo(self.version, self.channels, self.as_of, self.inputs, self.novelty_set)
+        return PipelineInfo(
+            self.version,
+            self.channels,
+            self.as_of,
+            self.inputs,
+            self.novelty_set,
+            self.models,
+        )
 
 
 class SearchResultDto(FrozenDto):

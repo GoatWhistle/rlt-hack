@@ -36,6 +36,7 @@ from src.models.search_result import PipelineInfo, SearchResult, SearchSummary, 
 from src.models.supplier import Supplier
 from src.service.errors import SearchNotFoundError
 
+CONTRACT_VERSION = "2"
 EMAIL = re.compile(r"[^@\s?&#/:]+@[^@\s?&#/:]+\.[^@\s?&#/:]+")
 
 
@@ -209,6 +210,8 @@ def pipeline_dto(pipeline: PipelineInfo) -> PipelineDto:
         as_of=pipeline.as_of,
         inputs=list(pipeline.inputs),
         novelty_set=pipeline.novelty_set or None,
+        models=dict(pipeline.models),
+        contract_version=CONTRACT_VERSION,
     )
 
 

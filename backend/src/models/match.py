@@ -11,6 +11,7 @@ class MatchOutcome:
     channels: tuple[str, ...]
     warnings: tuple[SearchWarning, ...] = ()
     novelty_set: str = ""
+    models: tuple[tuple[str, str], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

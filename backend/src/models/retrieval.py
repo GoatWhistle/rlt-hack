@@ -38,6 +38,7 @@ class ChannelHit:
 class RetrievalHits:
     channel: str
     hits: tuple[ChannelHit, ...] = ()
+    version: str = ""
 
     def __post_init__(self) -> None:
         if not self.channel:

@@ -63,7 +63,9 @@ class MlServiceRetriever:
             request, limit, self._request_ids(), self._clock()
         )
         response = await self._exchange(wire)
-        return await self._hits(response.candidates, request, limit)
+        hits = await self._hits(response.candidates, request, limit)
+        version = "" if response.pipeline is None else response.pipeline.pipeline_version
+        return RetrievalHits(hits.channel, hits.hits, version)
 
     async def _exchange(self, wire: RecommendationRequestDto) -> RecommendationResponseDto:
         body = wire.model_dump_json(by_alias=True)

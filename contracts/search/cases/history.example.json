@@ -111,7 +111,7 @@
     }
   ],
   "pipeline": {
-    "version": "search-v1",
+    "version": "search-v2",
     "channels": [
       "lexical",
       "semantic"
@@ -120,7 +120,11 @@
     "inputs": [
       "text"
     ],
-    "noveltySet": "inn-3f2a9c41d0b7e65a"
+    "noveltySet": "inn-3f2a9c41d0b7e65a",
+    "models": {
+      "semantic": "cc79a0a0a751af3e602d149b3766df7e5c30f4f57a7b114b3f54bbbecd4ce49f"
+    },
+    "contractVersion": "2"
   },
   "warnings": [],
   "createdAt": "2026-10-01T12:00:00Z"

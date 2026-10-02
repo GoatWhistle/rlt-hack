@@ -49,6 +49,7 @@ class SearchPipeline:
                 as_of=started_at,
                 inputs=("text", *context),
                 novelty_set=outcome.novelty_set,
+                models=outcome.models,
             ),
             warnings=(*item_warnings(items), *outcome.warnings),
         )

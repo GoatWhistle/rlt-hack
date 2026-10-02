@@ -245,7 +245,7 @@
     }
   ],
   "pipeline": {
-    "version": "search-v1",
+    "version": "search-v2",
     "channels": [
       "lexical"
     ],
@@ -253,7 +253,9 @@
     "inputs": [
       "text"
     ],
-    "noveltySet": "inn-3f2a9c41d0b7e65a"
+    "noveltySet": "inn-3f2a9c41d0b7e65a",
+    "models": {},
+    "contractVersion": "2"
   },
   "warnings": [
     {
