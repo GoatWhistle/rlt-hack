@@ -3,14 +3,16 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from uuid import uuid4
 
+from src.models.errors import NoValidLotsError, TooManyNoticeRowsError
 from src.models.upload import LotRecommendation, Notice, Upload
-from src.service.errors import ServiceError
 from src.service.upload.protocols import (
     CandidateEnrichment,
     SearchEngine,
     SearchVersion,
     UploadRepository,
 )
+
+MAX_LOTS = 20
 
 
 class UploadService:
@@ -20,8 +22,10 @@ class UploadService:
         self._refresh_lock = asyncio.Lock()
 
     async def create(self, owner: str, filename: str, notices: list[Notice]) -> Upload:
-        if not notices or len(notices) > 20:
-            raise ServiceError("в тестовом режиме загрузите от 1 до 20 закупок")
+        if not notices:
+            raise NoValidLotsError
+        if len(notices) > MAX_LOTS:
+            raise TooManyNoticeRowsError(MAX_LOTS)
         lots = []
         for notice in notices:
             query = "\n".join(filter(None, (notice.title, notice.subject)))

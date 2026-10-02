@@ -25,6 +25,7 @@ from src.models.errors import (
     EmptySearchTextError,
     InvalidCandidateLimitError,
     InvalidInputError,
+    InvalidNoticeRowError,
     MissingNoticeColumnsError,
     NoValidLotsError,
     SearchTextTooLongError,
@@ -76,6 +77,7 @@ UPLOAD_ERRORS: tuple[tuple[type[Exception], ErrorKind], ...] = (
     (UnreadableNoticeFileError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "invalid_file")),
     (MissingNoticeColumnsError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "missing_columns")),
     (TooManyNoticeRowsError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "too_many_rows")),
+    (InvalidNoticeRowError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "invalid_row")),
     (NoValidLotsError, ErrorKind(HTTPStatus.UNPROCESSABLE_ENTITY, "no_valid_lots")),
     (UploadNotFoundError, ErrorKind(HTTPStatus.NOT_FOUND, "upload_not_found")),
     (

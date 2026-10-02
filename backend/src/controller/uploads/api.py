@@ -1,17 +1,29 @@
-import asyncio
+import logging
 import re
 from dataclasses import asdict
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Request, Response, UploadFile
+from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
-from src.controller.uploads.csv_file import decode_notices
+from src.controller.uploads.csv_file import NoticeReader
 from src.controller.uploads.presentation import detail, result, summary
 from src.controller.uploads.protocols import UploadManager
-from src.service.errors import ServiceError
+from src.controller.uploads.received import receive_file
+from src.models.errors import DomainError
+from src.service.errors import (
+    LotNotFoundError,
+    SearchUnavailableError,
+    StorageUnavailableError,
+    UploadError,
+    UploadNotFoundError,
+)
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/uploads")
+reader = NoticeReader()
+ENGINE = ("supplier_search",)
 
 
 class SelectedLots(BaseModel):
@@ -37,7 +49,7 @@ async def get_upload(request: Request, response: Response, upload_id: str):
     manager: UploadManager = request.app.state.uploads
     upload = await manager.get(owner(request, response), upload_id)
     if upload is None:
-        raise HTTPException(404)
+        raise UploadNotFoundError(upload_id)
     return upload
 
 
@@ -49,24 +61,17 @@ async def list_uploads(request: Request, response: Response):
 
 
 @router.post("")
-async def create_upload(file: UploadFile, request: Request, response: Response):
-    data = await file.read(2 * 1024 * 1024 + 1)
-    await file.close()
-    if len(data) > 2 * 1024 * 1024:
-        raise HTTPException(413)
-    try:
-        notices = await asyncio.to_thread(decode_notices, data)
-    except (ValueError, UnicodeError):
-        raise HTTPException(422, "CSV: 1–20 строк, lot_id и procedure_name") from None
+async def create_upload(request: Request, response: Response):
+    received = await receive_file(request)
+    notices = await reader.read(received.content)
     manager: UploadManager = request.app.state.uploads
     try:
-        upload = await manager.create(
-            owner(request, response), (file.filename or "upload.csv")[:200], notices
-        )
-    except ServiceError:
-        raise HTTPException(422) from None
-    except Exception:
-        raise HTTPException(503, "search_unavailable") from None
+        upload = await manager.create(owner(request, response), received.name, notices)
+    except (DomainError, UploadError, StorageUnavailableError):
+        raise
+    except Exception as error:
+        logger.warning("upload search failed", exc_info=error)
+        raise SearchUnavailableError(ENGINE) from error
     return summary(upload)
 
 
@@ -81,7 +86,7 @@ async def get_lot(upload_id: str, lot_id: str, request: Request, response: Respo
     for lot in upload.lots:
         if lot.notice.lot_id == lot_id:
             return {**result(upload, lot), "upload": summary(upload)}
-    raise HTTPException(404)
+    raise LotNotFoundError(upload_id, lot_id)
 
 
 @router.post("/{upload_id}/results")
