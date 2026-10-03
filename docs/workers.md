@@ -16,20 +16,6 @@ docker compose --profile ml --profile workers up -d parser-worker embedding-work
 docker compose run --rm --no-deps embedding-worker search 'бумага для принтера'
 ```
 
-На сервере использовать `docker compose --project-name rlt-hack
---env-file /etc/rlt-hack/production.env -f docker-compose.yml
--f deploy/compose.production.yml`, находясь в каталоге исходников активного
-выпуска и задав `RLT_IMAGE_TAG` его ревизией. Первичная ручная подготовка env:
-`bash deploy/prepare-runtime.sh` от root. Скрипт не создаёт SSH-пользователей
-или ключи; существующий env сохраняется. Настройка постоянного доступа CI/CD
-выполняется отдельно.
-
-После загрузки модели команда `bash deploy/run-workers.sh /path/to/release`
-проверяет её наличие и БД и поднимает воркер эмбеддингов. `RLT_RUN_WORKERS=true`
-включает его обновление при последующих деплоях. Парсинг на сервере
-запускается вручную workflow «Parsing» — см. [README](README.md#ручной-парсинг);
-`parser-worker` деплой не поднимает.
-
 Для ProductCenter задать `PRODUCTCENTER_WEB_PROVIDER=true`,
 `PRODUCTCENTER_MAX_CARDS=0`, `SYNC_PARALLEL_REQUESTS=2`, `REQUEST_TIMEOUT=45`.
 Остальные источники оставить выключенными до настройки и проверки их доступа.
@@ -40,8 +26,7 @@ ProductCenter сохраняет порции до 32 товаров во вре
 Кеш успешных страниц сохраняется между перезапусками.
 
 Эмбеддер: localhost:11435, 2 CPU, 3500 MiB; парсер: 1 CPU, 768 MiB;
-воркер векторизации: 256 MiB. Для сервера с 8 ГБ RAM в production env задан
-`CLICKHOUSE_MEMORY_LIMIT=1500m`. Векторы имеют 2560 измерений, контекст 512,
+воркер векторизации: 256 MiB. Для машины с 8 ГБ RAM задайте `CLICKHOUSE_MEMORY_LIMIT=1500m`. Векторы имеют 2560 измерений, контекст 512,
 батч воркера `EMBEDDING_BATCH_SIZE=16` (1–32). Неполный батч накапливается
 до `EMBEDDING_BATCH_WAIT_SECONDS=5` секунд, полный отправляется сразу.
 Для ограниченной памяти энкодера размер можно уменьшить до 1. Запись векторов

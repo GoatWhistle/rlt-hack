@@ -44,3 +44,4 @@ var/
 backend/var/
 
 .local/
+.impeccable/

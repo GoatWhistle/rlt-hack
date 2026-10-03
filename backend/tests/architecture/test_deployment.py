@@ -9,7 +9,6 @@ DOCKERFILE = BACKEND / "Dockerfile"
 LAUNCHERS = (
     DOCKERFILE,
     REPOSITORY / "docker-compose.yml",
-    REPOSITORY / "deploy" / "compose.production.yml",
 )
 
 
@@ -32,9 +31,6 @@ def test_api_runs_in_a_single_process(path: Path) -> None:
 
 def test_api_image_runs_as_unprivileged_user() -> None:
     assert re.search(r"^USER api$", stage(read(DOCKERFILE), "api"), re.M)
-    package = read(REPOSITORY / "deploy" / "package.sh")
-    assert '--target api --tag "rlt/backend-api:$revision"' in package
-    assert '--target job --tag "rlt/backend:$revision"' in package
 
 
 def test_image_installs_locked_dependencies() -> None:
@@ -44,20 +40,6 @@ def test_image_installs_locked_dependencies() -> None:
     assert "pip install" not in base
 
 
-def test_production_api_hides_docs_and_drops_privileges() -> None:
-    production = read(REPOSITORY / "deploy" / "compose.production.yml")
-    api = production.split("\n  frontend:", 1)[0]
-    for setting in (
-        "image: rlt/backend-api:",
-        "API_DOCS: ${API_DOCS:-false}",
-        "mem_limit:",
-        "read_only: true",
-        "cap_drop: [ALL]",
-        "no-new-privileges:true",
-    ):
-        assert setting in api, setting
-
-
 def test_api_healthcheck_uses_readiness() -> None:
     compose = read(REPOSITORY / "docker-compose.yml")
     api = compose.split("\n  api:\n", 1)[1].split("\n  backend-tests:", 1)[0]
@@ -65,19 +47,7 @@ def test_api_healthcheck_uses_readiness() -> None:
     assert "/api/health/live" not in api
 
 
-def test_production_frontend_replaces_port_bindings() -> None:
-    production = read(REPOSITORY / "deploy" / "compose.production.yml")
-    frontend = production.split("\n  frontend:\n", 1)[1].split("\n  clickhouse:", 1)[0]
-    assert "ports: !override" in frontend
-
-
-def test_release_smoke_requires_a_successful_search() -> None:
-    smoke = read(REPOSITORY / "deploy" / "smoke.sh")
-    for check in ("$api/health/ready", "'.candidates | length'", "grep -qx 201", "/summary"):
-        assert check in smoke, check
-
-
-@pytest.mark.parametrize("path", LAUNCHERS[:2], ids=lambda path: path.name)
+@pytest.mark.parametrize("path", LAUNCHERS, ids=lambda path: path.name)
 def test_api_command_uses_json_logging(path: Path) -> None:
     assert '"--log-config", "src/controller/api/logging.json"' in read(path)
     assert (BACKEND / "src" / "controller" / "api" / "logging.json").is_file()

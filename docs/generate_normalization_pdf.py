@@ -15,7 +15,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import ListFlowable, ListItem, Paragraph, SimpleDocTemplate, Spacer
 
-SOURCE = Path(__file__).resolve().parents[1] / "context" / "normalization-and-classification.md"
+SOURCE = Path(__file__).resolve().parent / "normalization-and-classification.md"
 OUTPUT = Path(__file__).with_name("normalization-and-classification.pdf")
 
 INK = HexColor("#172238")
