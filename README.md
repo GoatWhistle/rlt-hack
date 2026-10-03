@@ -14,11 +14,6 @@
 </p>
 
 <p align="center">
-  <a href="https://rlt.goatwhistle.ru/"><img src="https://img.shields.io/badge/Открыть_решение-rlt.goatwhistle.ru-4f46e5?style=for-the-badge&labelColor=1b1d29" alt="Открыть решение"/></a>
-  <a href="docs/README.md"><img src="https://img.shields.io/badge/Документация-docs-eef0ff?style=for-the-badge&labelColor=1b1d29" alt="Документация"/></a>
-</p>
-
-<p align="center">
   <a href="#идея"><img src="https://img.shields.io/badge/Идея-3a3f52?style=flat" alt="Идея"/></a>
   <a href="#три-решения"><img src="https://img.shields.io/badge/Три_решения-3a3f52?style=flat" alt="Три решения"/></a>
   <a href="#как-это-работает"><img src="https://img.shields.io/badge/Как_это_работает-3a3f52?style=flat" alt="Как это работает"/></a>
