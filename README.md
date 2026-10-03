@@ -1,10 +1,8 @@
 <p align="center">
-  <a href="https://rlt.goatwhistle.ru/">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="docs/brand/wordmark-dark.svg"/>
-      <img src="docs/brand/wordmark-light.svg" alt="lotive" width="300"/>
-    </picture>
-  </a>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/wordmark-dark.svg"/>
+    <img src="docs/brand/wordmark-light.svg" alt="lotive" width="300"/>
+  </picture>
 </p>
 
 <p align="center">
@@ -17,7 +15,7 @@
   <a href="#идея"><img src="https://img.shields.io/badge/Идея-3a3f52?style=flat" alt="Идея"/></a>
   <a href="#три-решения"><img src="https://img.shields.io/badge/Три_решения-3a3f52?style=flat" alt="Три решения"/></a>
   <a href="#как-это-работает"><img src="https://img.shields.io/badge/Как_это_работает-3a3f52?style=flat" alt="Как это работает"/></a>
-  <a href="#попробовать-за-две-минуты"><img src="https://img.shields.io/badge/Попробовать-3a3f52?style=flat" alt="Попробовать"/></a>
+  <a href="#как-пользоваться"><img src="https://img.shields.io/badge/Как_пользоваться-3a3f52?style=flat" alt="Как пользоваться"/></a>
   <a href="#что-измерено"><img src="https://img.shields.io/badge/Что_измерено-3a3f52?style=flat" alt="Что измерено"/></a>
   <a href="#запуск"><img src="https://img.shields.io/badge/Запуск-3a3f52?style=flat" alt="Запуск"/></a>
   <a href="#ограничения"><img src="https://img.shields.io/badge/Ограничения-8a4b08?style=flat" alt="Ограничения"/></a>
@@ -117,11 +115,11 @@ flowchart LR
   <img src="docs/images/parsing.jpg" alt="Конвейер парсинга: источники обходятся параллельно, порции проходят обогащение, нормализатор и классификатор и записываются в ClickHouse" width="900"/>
 </p>
 
-## Попробовать за две минуты
+## Как пользоваться
 
 | Шаг | Что сделать | Что увидите |
 |---|---|---|
-| 1 | Откройте [rlt.goatwhistle.ru](https://rlt.goatwhistle.ru/) | Поле поиска и историю запросов |
+| 1 | Запустите сервис ([как](#запуск)) и откройте `http://localhost:8080` | Поле поиска и историю запросов |
 | 2 | Опишите, что нужно, например «перчатки хирургические латексные» | Десять компаний с ролью, регионом и статусом |
 | 3 | Выберите компанию | Почему она в списке: причины, число закупок и побед, закупки-основания со ссылками |
 | 4 | Загрузите извещения и потоварку двумя CSV | Список по каждой закупке, склеенный по `lot_id` |
