@@ -16,8 +16,6 @@ playwright-report/
 blob-report/
 *.tsbuildinfo
 .vite/
-.playwright-mcp/
-.impeccable/
 screenshots/
 
 __pycache__/
